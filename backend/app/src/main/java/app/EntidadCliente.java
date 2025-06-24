@@ -34,7 +34,7 @@ public class EntidadCliente {
 
         // 1. Create an entity and convert to DTO
         System.out.println("\n1. Creating new EntidadDTO...");
-        EntidadDTO nuevaEntidadDTO = new EntidadDTO("Test Info - Created at startup");
+        EntidadDTO nuevaEntidadDTO = new EntidadDTO("Test Info - Created at startup - " + System.currentTimeMillis());
         System.out.println("Created DTO: " + nuevaEntidadDTO);
 
         // 2. Persist it using the service
@@ -50,7 +50,7 @@ public class EntidadCliente {
 
         // 4. Find the one we created (comes back as DTO)
         System.out.println("\n4. Searching for the created entity (ID: " + entidadGuardadaDTO.getId() + ")...");
-        EntidadDTO encontradaDTO = entidadServicio.buscarPorId(entidadGuardadaDTO.getId());
+        EntidadDTO encontradaDTO = entidadServicio.buscarPorId(1);
         System.out.println("Found DTO: " + encontradaDTO);
 
         // 5. Convert DTO back to entity and show in console
@@ -64,5 +64,4 @@ public class EntidadCliente {
 
         System.out.println("\n=== TESTING COMPLETED ===");
     }
-
 }
