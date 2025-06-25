@@ -11,3 +11,5 @@ spring:
           schema-generation:
             database:
               action: update
+  application:
+    name: app

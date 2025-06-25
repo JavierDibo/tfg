@@ -1,15 +1,13 @@
 package app.servicios;
 
-import app.dtos.EntidadDTO;
 import app.entidades.Entidad;
 import app.repositorios.EntidadRepositorio;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class EntidadServicio {
@@ -18,42 +16,41 @@ public class EntidadServicio {
     private EntidadRepositorio entidadRepositorio;
 
     // Crear una nueva entidad
-    public EntidadDTO crearEntidad(EntidadDTO entidadDTO) {
-        Entidad entidad = convertirDTOAEntidad(entidadDTO);
-        Entidad entidadGuardada = entidadRepositorio.save(entidad);
-        return convertirEntidadADTO(entidadGuardada);
+    @Transactional
+    public Entidad crearEntidad(Entidad entidad) {
+        return entidadRepositorio.save(entidad);
     }
 
     // Buscar entidad por ID
-    public EntidadDTO buscarPorId(int id) {
-        Optional<Entidad> entidadOpt = entidadRepositorio.findById(id);
-        if (entidadOpt.isPresent()) {
-            return convertirEntidadADTO(entidadOpt.get());
+    @Transactional
+    public Optional<Entidad> buscarPorId(int id) {
+        Optional<Entidad> entidad = entidadRepositorio.findById(id);
+        if (entidad.isEmpty()) {
+            return Optional.empty();
         }
-        return null;
+        return entidad;
     }
 
     // Actualizar una entidad existente
-    public EntidadDTO actualizarEntidad(int id, EntidadDTO entidadDTO) {
-        Optional<Entidad> entidadExistenteOpt = entidadRepositorio.findById(id);
-        if (entidadExistenteOpt.isPresent()) {
-            Entidad entidadExistente = entidadExistenteOpt.get();
-            entidadExistente.setInfo(entidadDTO.getInfo());
-            Entidad entidadActualizada = entidadRepositorio.save(entidadExistente);
-            return convertirEntidadADTO(entidadActualizada);
-        }
-        return null;
+    @Transactional
+    public Optional<Entidad> actualizarEntidad(Entidad entidad) {
+        Optional<Entidad> entidadRecibida = entidadRepositorio.findById(entidad.getId());
+
+        if (entidadRecibida.isEmpty())
+            return Optional.empty();
+
+        Entidad entidadExistente = entidadRepositorio.save(entidadRecibida.get());
+
+        return Optional.of(entidadExistente);
     }
 
-    // Métodos de conversión entre Entity y DTO
-    private EntidadDTO convertirEntidadADTO(Entidad entidad) {
-        return new EntidadDTO(entidad.getId(), entidad.getInfo());
+    @Transactional
+    public List<Entidad> devolverTodasLasEntidades() {
+        return entidadRepositorio.findAll();
     }
 
-    private Entidad convertirDTOAEntidad(EntidadDTO entidadDTO) {
-        Entidad entidad = new Entidad();
-        entidad.setId(entidadDTO.getId() != null ? entidadDTO.getId() : 0);
-        entidad.setInfo(entidadDTO.getInfo());
-        return entidad;
+    @Transactional
+    public void borrarTodasLasEntidades(List<Entidad> entidades) {
+        entidadRepositorio.deleteAll(entidades);
     }
-} 
+}
