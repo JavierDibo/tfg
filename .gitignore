@@ -67,6 +67,7 @@ logs/
 *.jar
 *.war
 *.ear
+backend/.idea
 
 # Maven
 # El wrapper de Maven se puede descargar automáticamente, no es necesario subir el JAR
