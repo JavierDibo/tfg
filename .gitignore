@@ -40,9 +40,6 @@ desktop.ini
 .env.test.local
 .env.production.local
 
-# Un archivo de ejemplo SÍ debe estar en git
-!/.env.example
-
 # Archivos de propiedades locales de Spring Boot
 application-local.properties
 application-dev.properties
