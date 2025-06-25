@@ -1,19 +1,21 @@
 package app.entidades;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 public class Entidad {
     @Id
-    @SequenceGenerator(name = "entidad_seq", sequenceName = "entidad_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entidad_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
     String info;
+
+    public Entidad() {
+        this.info = "info por defecto";
+    }
+
+    public Entidad(String info) {
+        this.info = info;
+    }
 }
