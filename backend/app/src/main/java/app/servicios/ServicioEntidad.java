@@ -21,6 +21,12 @@ public class ServicioEntidad {
         return repositorioEntidad.save(entidad);
     }
 
+    @Transactional
+    public Entidad crearEntidad(String info) {
+        Entidad entidad = new Entidad(info);
+        return repositorioEntidad.save(entidad);
+    }
+
     // Buscar entidad por ID
     @Transactional
     public Optional<Entidad> buscarPorId(int id) {
@@ -52,5 +58,16 @@ public class ServicioEntidad {
     @Transactional
     public void borrarTodasLasEntidades(List<Entidad> entidades) {
         repositorioEntidad.deleteAll(entidades);
+    }
+
+    @Transactional
+    public Optional<Entidad> borrarEntidadPorId(int id) {
+        Optional<Entidad> entidad = repositorioEntidad.findById(id);
+        if (entidad.isEmpty()) {
+            System.out.println("No se encontró la entidad con ID: " + id);
+            return Optional.empty();
+        }
+        repositorioEntidad.deleteById(id);
+        return entidad;
     }
 }

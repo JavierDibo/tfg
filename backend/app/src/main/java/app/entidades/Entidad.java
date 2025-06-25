@@ -7,7 +7,8 @@ import lombok.Data;
 @Entity
 public class Entidad {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "seq_entidad", sequenceName = "seq_entidad", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_entidad")
     int id;
     String info;
 

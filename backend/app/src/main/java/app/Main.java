@@ -1,6 +1,6 @@
 package app;
 
-import app.clientes.EntidadCliente;
+import app.clientes.ClienteEntidad;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,7 +15,7 @@ public class Main {
         app.setBannerMode(Banner.Mode.OFF);
         ApplicationContext contexto = app.run(args);
 
-        EntidadCliente cliente = new EntidadCliente(contexto);
+        ClienteEntidad cliente = new ClienteEntidad(contexto);
         cliente.run();
     }
 }
