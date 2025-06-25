@@ -1,6 +1,6 @@
 package app.dtos;
 
-public record EntidadDTO() {
+public record DTOEntidad() {
     private static Integer id;
     private static String info;
 }

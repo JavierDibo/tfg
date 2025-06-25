@@ -1,20 +1,20 @@
 package app.clientes;
 
 import app.entidades.Entidad;
-import app.servicios.EntidadServicio;
+import app.servicios.ServicioEntidad;
 import org.springframework.context.ApplicationContext;
 
 import java.util.List;
 import java.util.Optional;
 
-public class EntidadCliente {
+public class ClienteEntidad {
 
     ApplicationContext appContext;
-    EntidadServicio entidadServicio;
+    ServicioEntidad entidadServicio;
 
-    public EntidadCliente(ApplicationContext appContext) {
+    public ClienteEntidad(ApplicationContext appContext) {
         this.appContext = appContext;
-        entidadServicio = appContext.getBean(EntidadServicio.class);
+        entidadServicio = appContext.getBean(ServicioEntidad.class);
     }
 
     private void crearYRecuperarEntidad() {

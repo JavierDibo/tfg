@@ -1,7 +1,7 @@
 package app.servicios;
 
 import app.entidades.Entidad;
-import app.repositorios.EntidadRepositorio;
+import app.repositorios.RepositorioEntidad;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,21 +10,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class EntidadServicio {
+public class ServicioEntidad {
 
     @Autowired
-    private EntidadRepositorio entidadRepositorio;
+    private RepositorioEntidad repositorioEntidad;
 
     // Crear una nueva entidad
     @Transactional
     public Entidad crearEntidad(Entidad entidad) {
-        return entidadRepositorio.save(entidad);
+        return repositorioEntidad.save(entidad);
     }
 
     // Buscar entidad por ID
     @Transactional
     public Optional<Entidad> buscarPorId(int id) {
-        Optional<Entidad> entidad = entidadRepositorio.findById(id);
+        Optional<Entidad> entidad = repositorioEntidad.findById(id);
         if (entidad.isEmpty()) {
             return Optional.empty();
         }
@@ -34,23 +34,23 @@ public class EntidadServicio {
     // Actualizar una entidad existente
     @Transactional
     public Optional<Entidad> actualizarEntidad(Entidad entidad) {
-        Optional<Entidad> entidadRecibida = entidadRepositorio.findById(entidad.getId());
+        Optional<Entidad> entidadRecibida = repositorioEntidad.findById(entidad.getId());
 
         if (entidadRecibida.isEmpty())
             return Optional.empty();
 
-        Entidad entidadExistente = entidadRepositorio.save(entidadRecibida.get());
+        Entidad entidadExistente = repositorioEntidad.save(entidadRecibida.get());
 
         return Optional.of(entidadExistente);
     }
 
     @Transactional
     public List<Entidad> devolverTodasLasEntidades() {
-        return entidadRepositorio.findAll();
+        return repositorioEntidad.findAll();
     }
 
     @Transactional
     public void borrarTodasLasEntidades(List<Entidad> entidades) {
-        entidadRepositorio.deleteAll(entidades);
+        repositorioEntidad.deleteAll(entidades);
     }
 }
