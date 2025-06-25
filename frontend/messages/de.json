@@ -1,0 +1,4 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"bienvenida": "Hallo {name}! Willkommen in unserer Akademie 🎓"
+}

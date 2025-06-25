@@ -76,7 +76,6 @@ backend/.idea
 # ===================================================================
 # Frontend - Node.js / Svelte / npm
 # ===================================================================
-# Dependencias (¡la carpeta más importante a ignorar!)
 /frontend/node_modules/
 node_modules/
 
@@ -85,10 +84,25 @@ node_modules/
 /frontend/.svelte-kit/
 /frontend/build/
 
+# Vercel deployment files
+/frontend/.vercel/
+
+# Storybook cache (si se genera)
+/frontend/storybook-static/
+
+# Coverage reports
+/frontend/coverage/
+
+# Playwright test results
+/frontend/test-results/
+/frontend/playwright-report/
+/frontend/playwright/.cache/
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # ===================================================================
 # Archivos de Docker (opcional, pero buena práctica)
