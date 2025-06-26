@@ -19,7 +19,7 @@ public class SecurityConfig {
         UserDetails ajrueda = User.withUsername("jfdg")
                 .roles("USUARIO").password("{noop}admin").build();
         UserDetails admin = User.withUsername("admin")
-                .roles("ADMIN","USURIO").password("{noop}admin").build();
+                .roles("ADMIN","USUARIO").password("{noop}admin").build();
         return new InMemoryUserDetailsManager(ajrueda, admin);
     }
 

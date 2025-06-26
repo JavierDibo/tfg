@@ -1,8 +1,14 @@
 package app.rest;
 
+import app.dtos.DTOEntidad;
 import app.entidades.Entidad;
 import app.servicios.ServicioEntidad;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,39 +16,87 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/entidades")
-@CrossOrigin(origins = "localhost:8080")
+@CrossOrigin(origins = {"localhost:8080", "http://localhost:5173"})
 public class EntidadRest {
 
     @Autowired
     ServicioEntidad servicioEntidad;
 
-    @GetMapping("/lista")
-    public List<Entidad> obtenerTodasLasEntidades() {
-        System.out.println("\n\n\n\nObteniendo todas las entidades\n\n\n\n");
-        return servicioEntidad.devolverTodasLasEntidades();
-    }
-
-    @DeleteMapping("/borrar")
-    public void borrarTodasLasEntidades() {
-        System.out.println("\n\n\n\nBorrando todas las entidades\n\n\n\n");
-        List<Entidad> entidades = servicioEntidad.devolverTodasLasEntidades();
-        servicioEntidad.borrarTodasLasEntidades(entidades);
-    }
-
-    @DeleteMapping("/borrar/{id}")
-    public void borrarEntidadPorId(@PathVariable int id) {
-        System.out.println("\n\n\n\nBorrando entidad: " + id + "\n\n\n\n");
-        Optional<Entidad> entidad = servicioEntidad.borrarEntidadPorId(id);
-        if (entidad.isEmpty()) {
-            System.out.println("Entidad no encontrada con ID: " + id);
+    @GetMapping("/obtener")
+    public ResponseEntity<List<DTOEntidad>> obtenerEntidadPorInfo(@RequestParam(required = false) @Size(max = 100) String info) {
+        if (info == null) {
+            System.out.println("Obteniendo todas las entidades");
+            List<Entidad> entidades = servicioEntidad.obtenerTodasLasEntidades();
+            return crearRespuesta(entidades);
         } else {
-            System.out.println("Entidad borrada: " + entidad.get().getId() + ", " + entidad.get().getInfo());
+            System.out.println("Obteniendo entidades con info: " + info);
+            List<Entidad> entidades = servicioEntidad.obtenerEntidadesPorInfo(info);
+            return crearRespuesta(entidades);
         }
     }
 
+    private ResponseEntity<List<DTOEntidad>> crearRespuesta(@NotNull List<Entidad> entidades) {
+        if (entidades.isEmpty()) {
+            return new ResponseEntity<>(List.of(), HttpStatus.NOT_FOUND);
+        }
+        List<DTOEntidad> entidadesDTO = entidades
+                .stream()
+                .map(e -> new DTOEntidad(e.getId(), e.getInfo()))
+                .toList();
+        return new ResponseEntity<>(entidadesDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/obtener/{id}")
+    public ResponseEntity<DTOEntidad> obtenerEntidadPorId(@PathVariable @NotNull @Min(1) int id) {
+        System.out.println("Obteniendo la entidad con ID: " + id);
+        Optional<Entidad> entidad = servicioEntidad.obtenerEntidadPorId(id);
+
+        if (entidad.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        DTOEntidad dtoEntidad = entidad.map(e -> new DTOEntidad(e.getId(), e.getInfo())).orElse(null);
+        return new ResponseEntity<>(dtoEntidad, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/borrar")
+    public ResponseEntity<List<DTOEntidad>> borrarTodasLasEntidades() {
+        System.out.println("Borrando todas las entidades");
+        List<Entidad> entidades = servicioEntidad.borrarTodasLasEntidades();
+        List<DTOEntidad> entidadesDTO = entidades
+                .stream()
+                .map(entidad -> new DTOEntidad(entidad.getId(), entidad.getInfo()))
+                .toList();
+        return new ResponseEntity<>(entidadesDTO, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/borrar/{id}")
+    public ResponseEntity<DTOEntidad> borrarEntidadPorId(@PathVariable @NotNull @Min(1) int id) {
+        Optional<Entidad> entidadOptional = servicioEntidad.borrarEntidadPorId(id);
+        if (entidadOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        Entidad entidad = entidadOptional.get();
+        return new ResponseEntity<>(new DTOEntidad(entidad.getId(), entidad.getInfo()), HttpStatus.OK);
+    }
+
     @PostMapping("/crear")
-    public void crearEntidad(@RequestParam String info) {
-        System.out.println("\n\n\n\nCreando entidad con info: " + info + "\n\n\n\n");
-        servicioEntidad.crearEntidad(info);
+    public ResponseEntity<DTOEntidad> crearEntidad(@RequestParam @Size(max = 100) String info) {
+        System.out.println("Creando entidad con info: " + info);
+        Entidad entidad = new Entidad(info);
+        Entidad entidadCreada = servicioEntidad.crearEntidad(entidad);
+        DTOEntidad dtoEntidad = new DTOEntidad(entidadCreada.getId(), entidadCreada.getInfo());
+        return new ResponseEntity<>(dtoEntidad, HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/actualizar/{id}")
+    public  ResponseEntity<DTOEntidad> actualizarEntidad(@PathVariable @NotNull @Min(1) int id, @RequestParam @Size(max = 100) String info) {
+        System.out.println("Actualizando entidad con ID: " + id + " a info: " + info);
+        Optional<Entidad> entidadOptional = servicioEntidad.actualizarEntidad(id, info);
+        if (entidadOptional.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        Entidad entidad = entidadOptional.get();
+        DTOEntidad dtoEntidad = new DTOEntidad(entidad.getId(), entidad.getInfo());
+        return new ResponseEntity<>(dtoEntidad, HttpStatus.OK);
     }
 }

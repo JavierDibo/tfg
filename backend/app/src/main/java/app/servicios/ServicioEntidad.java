@@ -1,8 +1,12 @@
 package app.servicios;
 
+import app.dtos.DTOEntidad;
 import app.entidades.Entidad;
 import app.repositorios.RepositorioEntidad;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,64 +14,46 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class ServicioEntidad {
 
     @Autowired
     private RepositorioEntidad repositorioEntidad;
 
-    // Crear una nueva entidad
-    @Transactional
-    public Entidad crearEntidad(Entidad entidad) {
-        return repositorioEntidad.save(entidad);
-    }
-
-    @Transactional
-    public Entidad crearEntidad(String info) {
-        Entidad entidad = new Entidad(info);
-        return repositorioEntidad.save(entidad);
-    }
-
-    // Buscar entidad por ID
-    @Transactional
-    public Optional<Entidad> buscarPorId(int id) {
-        Optional<Entidad> entidad = repositorioEntidad.findById(id);
-        if (entidad.isEmpty()) {
-            return Optional.empty();
+    public List<Entidad> obtenerTodasLasEntidades() {
+        List<Entidad> entidades = repositorioEntidad.obtenerTodasLasEntidades();
+        if (entidades.isEmpty()) {
+            return List.of();
         }
-        return entidad;
+        return entidades;
     }
 
-    // Actualizar una entidad existente
-    @Transactional
-    public Optional<Entidad> actualizarEntidad(Entidad entidad) {
-        Optional<Entidad> entidadRecibida = repositorioEntidad.findById(entidad.getId());
-
-        if (entidadRecibida.isEmpty())
-            return Optional.empty();
-
-        Entidad entidadExistente = repositorioEntidad.save(entidadRecibida.get());
-
-        return Optional.of(entidadExistente);
+    public Optional<Entidad> obtenerEntidadPorId(@NotNull @Min(1) int id) {
+        return repositorioEntidad.obtenerEntidadPorId(id);
     }
 
-    @Transactional
-    public List<Entidad> devolverTodasLasEntidades() {
-        return repositorioEntidad.findAll();
+    public List<Entidad> obtenerEntidadesPorInfo(@NotNull @Size(max=100) String info) {
+        List<Entidad> entidades = repositorioEntidad.obtenerEntidadesPorInfo(info);
+        if (entidades.isEmpty())
+            return List.of();
+        else
+            return entidades;
     }
 
-    @Transactional
-    public void borrarTodasLasEntidades(List<Entidad> entidades) {
-        repositorioEntidad.deleteAll(entidades);
+    public Entidad crearEntidad(@NotNull Entidad entidad) {
+        return repositorioEntidad.crearEntidad(entidad);
     }
 
-    @Transactional
+    public Optional<Entidad> actualizarEntidad(@NotNull @Min(1) int id, @NotNull @Size(max=100) String info) {
+        return repositorioEntidad.actualizarEntidad(id, info);
+    }
+
+    public List<Entidad> borrarTodasLasEntidades() {
+        // Por implementar
+        return null;
+    }
+
     public Optional<Entidad> borrarEntidadPorId(int id) {
-        Optional<Entidad> entidad = repositorioEntidad.findById(id);
-        if (entidad.isEmpty()) {
-            System.out.println("No se encontró la entidad con ID: " + id);
-            return Optional.empty();
-        }
-        repositorioEntidad.deleteById(id);
-        return entidad;
+        return repositorioEntidad.borrarEntidadPorId(id);
     }
 }

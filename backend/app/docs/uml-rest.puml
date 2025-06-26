@@ -4,27 +4,6 @@ UML rest
 Ultima edicion: 26/06/25 10:47
 end note
 
-class Mapper <<Interfaz>> {
-    + CursoAEntidad(dtoCurso: DTOCurso): Curso
-    + CursoADTO(curso: Curso): DTOCurso
-    + TallerAEntidad(dtoTaller: DTOTaller): Taller
-    + TallerADTO(taller: Taller): DTOTaller
-    + ProfesorAEntidad(dtoProfesor: DTOProfesor): Profesor
-    + ProfesorADTO(profesor: Profesor): DTOProfesor
-    + AlumnoAEntidad(dtoAlumno: DTOAlumno): Alumno
-    + AlumnoADTO(alumno: Alumno): DTOAlumno
-    + AdministradorAEntidad(dtoAdministrador: DTOAdministrador): Administrador
-    + AdministradorADTO(administrador: Administrador): DTOAdministrador
-    + PagoAEntidad(dtoPago: DTOPago): Pago
-    + PagoADTO(pago: Pago): DTOPago
-    + EjercicioAEntidad(dtoEjercicio: DTOEjercicio): Ejercicio
-    + EjercicioADTO(ejercicio: Ejercicio): DTOEjercicio
-    + EntregaEjercicioAEntidad(dtoEntrega: DTOEntregaEjercicio): EntregaEjercicio
-    + EntregaEjercicioADTO(entrega: EntregaEjercicio): DTOEntregaEjercicio
-    + PagoAEntidad(dtoPago: DTOPago): Pago
-    + PagoADTO(pago: Pago): DTOPago
-}
-
 together {
     class ServicioAlumno <<Servicio>> #eba9b0 {
         - EntityManager em
@@ -366,13 +345,6 @@ Clase --> ServicioAlumno
 Clase --> ServicioEjercicio
 Ejercicio --> ServicioClase
 EntregaEjercicio --> ServicioAlumno
-
-RESTClase -down-> Mapper
-RESTEjercicio -down-> Mapper
-RESTEntregaEjercicio -down-> Mapper
-RESTAlumno -down-> Mapper
-RESTProfesor -down-> Mapper
-RESTPago -down-> Mapper
 
 Clase::material *- Material
 EntregaEjercicio -- Ejercicio
