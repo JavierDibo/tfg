@@ -1,5 +1,6 @@
 package app.rest;
 
+import app.aop.Validador;
 import app.dtos.DTOEntidad;
 import app.entidades.Entidad;
 import app.servicios.ServicioEntidad;
@@ -46,8 +47,9 @@ public class EntidadRest {
         }
     }
 
+    @Validador
     @GetMapping("/obtener/{id}")
-    public ResponseEntity<DTOEntidad> obtenerEntidadPorId(@PathVariable @NotNull @Min(1) int id) {
+    public ResponseEntity<DTOEntidad> obtenerEntidadPorId(@PathVariable int id) {
         System.out.println("Obteniendo la entidad con ID: " + id);
         Optional<Entidad> entidad = servicioEntidad.obtenerEntidadPorId(id);
 
@@ -69,8 +71,9 @@ public class EntidadRest {
         return new ResponseEntity<>(entidadesDTO, HttpStatus.OK);
     }
 
+    @Validador
     @DeleteMapping("/borrar/{id}")
-    public ResponseEntity<DTOEntidad> borrarEntidadPorId(@PathVariable @NotNull @Min(1) int id) {
+    public ResponseEntity<DTOEntidad> borrarEntidadPorId(@PathVariable int id) {
         Optional<Entidad> entidadOptional = servicioEntidad.borrarEntidadPorId(id);
         if (entidadOptional.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -79,8 +82,9 @@ public class EntidadRest {
         return new ResponseEntity<>(new DTOEntidad(entidad.getId(), entidad.getInfo()), HttpStatus.OK);
     }
 
+    @Validador
     @PostMapping("/crear")
-    public ResponseEntity<DTOEntidad> crearEntidad(@RequestParam @Size(max = 100) String info) {
+    public ResponseEntity<DTOEntidad> crearEntidad(@RequestParam String info) {
         System.out.println("Creando entidad con info: " + info);
         Entidad entidad = new Entidad(info);
         Entidad entidadCreada = servicioEntidad.crearEntidad(entidad);
@@ -88,8 +92,9 @@ public class EntidadRest {
         return new ResponseEntity<>(dtoEntidad, HttpStatus.CREATED);
     }
 
+    @Validador
     @PatchMapping("/actualizar/{id}")
-    public ResponseEntity<DTOEntidad> actualizarEntidad(@PathVariable @NotNull @Min(1) int id, @RequestParam @Size(max = 100) String info) {
+    public ResponseEntity<DTOEntidad> actualizarEntidad(@PathVariable int id, @RequestParam String info) {
         System.out.println("Actualizando entidad con ID: " + id + " a info: " + info);
         Optional<Entidad> entidadOptional = servicioEntidad.actualizarEntidad(id, info);
         if (entidadOptional.isEmpty())
