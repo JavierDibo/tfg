@@ -21,10 +21,10 @@
 		</div>
 		<nav class="lato-regular flex items-center gap-[40px] text-[19px]">
 			<a href="/" class={itemsClass}>Inicio</a>
-			<a href="/cursos" class={itemsClass}>Cursos</a>
+			<a href="/entidades" class={itemsClass}>Entidades</a>
 			<a href="/videos" class={itemsClass}>Videos</a>
 			<a href="/horarios" class={itemsClass}>Horarios</a>
-			<a href="/contacto" class={itemsClass}>Contacto</a>
+			<a href="/contacto" class={itemsClass}>Contactanos</a>
 			<a href="/sobre-nosotros" class={itemsClass}>Sobre nosotros</a>
 		</nav>
 	</div>
