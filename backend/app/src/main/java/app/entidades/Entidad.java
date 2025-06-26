@@ -3,6 +3,10 @@ package app.entidades;
 import jakarta.persistence.*;
 import lombok.Data;
 
+/**
+ * Entidad
+ * Persistente
+ */
 @Data
 @Entity
 public class Entidad {
