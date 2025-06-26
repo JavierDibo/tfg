@@ -27,23 +27,23 @@ public class EntidadRest {
         if (info == null) {
             System.out.println("Obteniendo todas las entidades");
             List<Entidad> entidades = servicioEntidad.obtenerTodasLasEntidades();
-            return crearRespuesta(entidades);
+            List<DTOEntidad> entidadesDTO = entidades
+                    .stream()
+                    .map(e -> new DTOEntidad(e.getId(), e.getInfo()))
+                    .toList();
+            return new ResponseEntity<>(entidadesDTO, HttpStatus.OK);
         } else {
             System.out.println("Obteniendo entidades con info: " + info);
             List<Entidad> entidades = servicioEntidad.obtenerEntidadesPorInfo(info);
-            return crearRespuesta(entidades);
+            if (entidades.isEmpty()) {
+                return new ResponseEntity<>(List.of(), HttpStatus.NOT_FOUND);
+            }
+            List<DTOEntidad> entidadesDTO = entidades
+                    .stream()
+                    .map(e -> new DTOEntidad(e.getId(), e.getInfo()))
+                    .toList();
+            return new ResponseEntity<>(entidadesDTO, HttpStatus.OK);
         }
-    }
-
-    private ResponseEntity<List<DTOEntidad>> crearRespuesta(@NotNull List<Entidad> entidades) {
-        if (entidades.isEmpty()) {
-            return new ResponseEntity<>(List.of(), HttpStatus.NOT_FOUND);
-        }
-        List<DTOEntidad> entidadesDTO = entidades
-                .stream()
-                .map(e -> new DTOEntidad(e.getId(), e.getInfo()))
-                .toList();
-        return new ResponseEntity<>(entidadesDTO, HttpStatus.OK);
     }
 
     @GetMapping("/obtener/{id}")
@@ -89,7 +89,7 @@ public class EntidadRest {
     }
 
     @PatchMapping("/actualizar/{id}")
-    public  ResponseEntity<DTOEntidad> actualizarEntidad(@PathVariable @NotNull @Min(1) int id, @RequestParam @Size(max = 100) String info) {
+    public ResponseEntity<DTOEntidad> actualizarEntidad(@PathVariable @NotNull @Min(1) int id, @RequestParam @Size(max = 100) String info) {
         System.out.println("Actualizando entidad con ID: " + id + " a info: " + info);
         Optional<Entidad> entidadOptional = servicioEntidad.actualizarEntidad(id, info);
         if (entidadOptional.isEmpty())

@@ -39,8 +39,7 @@ public class RepositorioEntidad {
     }
 
     public Entidad crearEntidad(@NotNull Entidad entidad) {
-        em.merge(entidad);
-        em.persist(entidad);
+        em.persist(em.merge(entidad));
         return entidad;
     }
 
@@ -50,8 +49,7 @@ public class RepositorioEntidad {
             return List.of();
 
         for (Entidad entidad : entidades) {
-            em.merge(entidad);
-            em.remove(entidad);
+            em.remove(em.merge(entidad));
         }
         return entidades;
     }
@@ -62,8 +60,7 @@ public class RepositorioEntidad {
             return Optional.empty();
 
         Entidad entidad = entidadOptional.get();
-        em.merge(entidad);
-        em.remove(entidad);
+        em.remove(em.merge(entidad));
         return Optional.of(entidad);
     }
 

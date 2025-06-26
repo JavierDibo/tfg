@@ -49,8 +49,11 @@ public class ServicioEntidad {
     }
 
     public List<Entidad> borrarTodasLasEntidades() {
-        // Por implementar
-        return null;
+        List<Entidad> entidades = repositorioEntidad.borrarTodasLasEntidades();
+        if (entidades.isEmpty())
+            return List.of();
+        else
+            return entidades;
     }
 
     public Optional<Entidad> borrarEntidadPorId(int id) {
