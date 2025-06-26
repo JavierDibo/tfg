@@ -1,8 +1,13 @@
 @startuml
 note as Fecha
 UML servicios
-Ultima edicion: 26/06/25 10:10
+Ultima edicion: 26/06/25 10:33
 end note
+
+together {
+    class ServicioProfesor
+    class ServicioEjercicio
+}
 
 class ServicioAlumno <<Servicio>> #eba9b0 {
 	+ obtenerAlumnos(): List<Alumno>
@@ -10,7 +15,6 @@ class ServicioAlumno <<Servicio>> #eba9b0 {
 	+ obtenerAlumnoPorEmail(email: string): Alumno
 	+ crearAlumno(usuario: Alumno): Alumno
 	+ borrarAlumnoPorId(id: string): boolean
-	+ resetearContraseña(usuario: Alumno): boolean
 }
 
 class ServicioProfesor <<Servicio>> #eba9b0 {
@@ -19,7 +23,6 @@ class ServicioProfesor <<Servicio>> #eba9b0 {
 	+ obtenerProfesorPorEmail(email: string): Profesor
 	+ crearProfesor(usuario: Profesor): Profesor
 	+ borrarProfesorPorId(id: string): boolean
-	+ resetearContraseña(usuario: Profesor): boolean
 }
 
 class ServicioClase <<Servicio>> #eba9b0 {
@@ -61,8 +64,6 @@ class ServicioEntregaEjercicio <<Servicio>> #eba9b0 {
 }
 
 namespace clase {
-
-
 
     abstract class Clase <<Entidad>>  #baf5ba {
       - id: string
@@ -107,11 +108,6 @@ namespace clase {
       intermedio
       avanzado
     }
-
-    note top of Clase
-    Clase es una clase abstracta
-    Taller y Curso la implementan
-    end note
 }
 
 ' clase, pago, ejercicio
@@ -153,18 +149,25 @@ namespace usuario {
     mediante email
     end note
 
-    note right of Alumno::matriculado
+    note as N
     La matricula viene
     derivada de un pago
     Un alumno tiene una matrícula
     anual pagada una vez por año
     end note
+
+    N . Alumno::matriculado
+    Administrador -up[hidden]- N
 }
 
 ' usuario
 namespace pago {
 
-
+    class FactoriaFacturacion <<Factoria>> #ffd5ba {
+        ~ crearFacturaDesdePago()
+        ~ crearFacturasDesdeListaPago()
+        ~ crearTodasLasFacturas()
+    }
 
     class Pago <<Entidad>> #ffd5ba {
       - id: string
@@ -173,6 +176,7 @@ namespace pago {
       - metodoPago : eMetodoPago
       - estado: eEstadoPago
       - alumnoId: string
+      - facturaCreada: boolean
       ..
       - items: List<ItemPago>
       ..
@@ -206,10 +210,16 @@ namespace pago {
     que se haya hecho en metálico
     end note
 
-    note right of Pago
+    note bottom of Pago
     Una entidad pago solo se crea
     cuando se devuelva la
     confirmacion de Stripe
+    end note
+
+    note right of Pago::facturaCreada
+    No se puede crear una
+    factura de un pago que
+    ya tenga factura
     end note
 }
 
@@ -257,7 +267,7 @@ Ejercicio -- ServicioClase
 EntregaEjercicio -- ServicioAlumno
 
 Clase::material *- Material
-EntregaEjercicio "0..1" -- Ejercicio 
+EntregaEjercicio -- Ejercicio
 ItemPago "1..*" -* "1" Pago::items
 
 ' Relaciones Enums
