@@ -20,24 +20,24 @@ public class ServicioEntidad {
     private RepositorioEntidad repositorioEntidad;
 
     private DTOEntidad ADTO(Entidad entidad) {
-        return new DTOEntidad(entidad.getId(), entidad.getInfo());
+        return new DTOEntidad(entidad);
     }
 
     private List<DTOEntidad> ADTO(List<Entidad> entidades) {
         return entidades
                 .stream()
-                .map(e -> new DTOEntidad(e.getId(), e.getInfo()))
+                .map(DTOEntidad::new)
                 .toList();
     }
 
     private Entidad AEntidad(DTOEntidad dtoEntidad) {
-        return new Entidad(dtoEntidad.info());
+        return new Entidad(dtoEntidad);
     }
 
     private List<Entidad> AEntidad(List<DTOEntidad> dtos) {
         return dtos
                 .stream()
-                .map(dto -> new Entidad(dto.info()))
+                .map(Entidad::new)
                 .toList();
     }
 
@@ -92,14 +92,13 @@ public class ServicioEntidad {
     public Entidad actualizarEntidad(int id, DTOEntidad dtoParcial) {
         Entidad entidad = repositorioEntidad.obtenerEntidadPorId(id);
 
-        if (dtoParcial.id() != null)
-            entidad.setId(dtoParcial.id());
-
         if (dtoParcial.info() != null)
             entidad.setInfo(dtoParcial.info());
 
-        repositorioEntidad.actualizarEntidad(entidad);
-        return entidad;
+        if (dtoParcial.otraInfo() != null)
+            entidad.setInfo(dtoParcial.otraInfo());
+
+        return repositorioEntidad.actualizarEntidad(entidad);
     }
 
     public DTOEntidad actualizarEntidadDTO(int id, DTOEntidad dtoParcial) {

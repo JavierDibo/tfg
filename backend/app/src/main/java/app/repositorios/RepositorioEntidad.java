@@ -1,6 +1,8 @@
 package app.repositorios;
 
 import app.aop.exceptions.EntidadNoEncontradaException;
+import app.aop.exceptions.ParametroInvalidoException;
+import app.aop.exceptions.ValidacionException;
 import app.entidades.Entidad;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -15,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
+@Transactional(rollbackOn = { EntidadNoEncontradaException.class, ParametroInvalidoException.class, ValidacionException.class })
 @Validated
 public class RepositorioEntidad {
 

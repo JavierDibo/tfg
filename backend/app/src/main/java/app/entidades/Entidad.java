@@ -1,5 +1,6 @@
 package app.entidades;
 
+import app.dtos.DTOEntidad;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -23,16 +24,23 @@ public class Entidad {
     int id;
     @NotNull
     @Size(max = 100)
-    String info;
+    String info = "info por defecto";
+    @NotNull
+    @Size(max = 100)
+    String otraInfo = "otra info por defecto";
+
 
     @Transient // no se mapea
     LocalDateTime fechaCreacion = LocalDateTime.now();
 
-    public Entidad() {
-        this.info = "info por defecto";
+    public Entidad() {    }
+
+    public Entidad(String info, String otraInfo) {
+        this.info = info;
     }
 
-    public Entidad(String info) {
-        this.info = info;
+    public Entidad(DTOEntidad dtoEntidad) {
+        this.info = dtoEntidad.info();
+        this.otraInfo = dtoEntidad.otraInfo();
     }
 }

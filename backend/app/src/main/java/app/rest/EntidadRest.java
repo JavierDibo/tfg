@@ -13,13 +13,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/entidades")
-@CrossOrigin(origins = {"localhost:8080", "http://localhost:5173"})
+@CrossOrigin(origins = {"http://localhost:8080", "http://localhost:5173"})
 public class EntidadRest {
 
     @Autowired
     ServicioEntidad servicioEntidad;
 
-    @GetMapping({"", "/"})
+    @GetMapping
     public ResponseEntity<List<DTOEntidad>> obtenerEntidadPorInfo(@RequestParam(required = false) @Size(max = 100) String info) {
         if (info == null) {
             System.out.println("Obteniendo todas las entidades");
@@ -44,7 +44,7 @@ public class EntidadRest {
         return new ResponseEntity<>(dtoEntidad, HttpStatus.OK);
     }
 
-    @DeleteMapping({"", "/"})
+    @DeleteMapping
     public ResponseEntity<List<DTOEntidad>> borrarTodasLasEntidades() {
         System.out.println("Borrando todas las entidades");
         List<DTOEntidad> entidadesDTO = servicioEntidad.borrarTodasLasEntidadesDTO();
@@ -59,7 +59,7 @@ public class EntidadRest {
     }
 
     @Validador
-    @PostMapping({"", "/"})
+    @PostMapping
     public ResponseEntity<DTOEntidad> crearEntidad(@RequestBody DTOEntidad dtoEntidad) {
         DTOEntidad dtoEntidadNueva = servicioEntidad.crearEntidadDTO(dtoEntidad);
         return new ResponseEntity<>(dtoEntidadNueva, HttpStatus.CREATED);
