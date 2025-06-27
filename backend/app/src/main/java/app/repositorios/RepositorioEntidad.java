@@ -34,8 +34,8 @@ public class RepositorioEntidad {
     }
 
     public List<Entidad> obtenerEntidadesPorInfo(@NotNull @Size(max = 100) String info) {
-        String query = "SELECT e FROM Entidad e WHERE e.info = :info";
-        return em.createQuery(query, Entidad.class).setParameter("info", info).getResultList();
+        String query = "SELECT e FROM Entidad e WHERE e.info LIKE :info";
+        return em.createQuery(query, Entidad.class).setParameter("info", "%" + info + "%").getResultList();
     }
 
     public Entidad crearEntidad(@NotNull Entidad entidad) {
