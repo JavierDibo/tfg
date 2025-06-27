@@ -7,6 +7,7 @@ const config = {
 	kit: { adapter: adapter(),
 		alias: {
 			$lib: './src/lib',
+			'@/api': './src/lib/api.ts',
 			$paraglide: './src/lib/paraglide'
 		}
 	 },
