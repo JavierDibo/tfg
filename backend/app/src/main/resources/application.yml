@@ -13,3 +13,6 @@ spring:
               action: update
   application:
     name: app
+  docker:
+    compose:
+      file: docker-compose.db.yml

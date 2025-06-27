@@ -10,13 +10,7 @@ import org.springframework.context.ApplicationContext;
 @SpringBootApplication()
 public class Main {
 
-    public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(Main.class);
-        app.setBannerMode(Banner.Mode.OFF);
-        ApplicationContext contexto = app.run(args);
-
-        ClienteEntidad cliente = contexto.getBean(ClienteEntidad.class);
-        
+    private static void  ejemplosOperacion(ClienteEntidad cliente) {
         // Ejemplo 1: Esto debería fallar por ID inválido
         try {
             System.out.println("=== Probando con ID inválido ===");
@@ -24,7 +18,7 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Error capturado: " + e.getMessage());
         }
-        
+
         // Ejemplo 2: Esto debería fallar por texto vacío
         try {
             System.out.println("\n=== Probando con texto vacío ===");
@@ -32,7 +26,7 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Error capturado: " + e.getMessage());
         }
-        
+
         // Ejemplo 3: Esto debería funcionar correctamente
         try {
             System.out.println("\n=== Probando con parámetros válidos ===");
@@ -41,7 +35,7 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Error inesperado: " + e.getMessage());
         }
-        
+
         // Ejemplo 4: Probando configuración personalizada
         try {
             System.out.println("\n=== Probando operación sin validar ID ===");
@@ -50,5 +44,15 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+    }
+
+    public static void main(String[] args) {
+        SpringApplication app = new SpringApplication(Main.class);
+        app.setBannerMode(Banner.Mode.OFF);
+        ApplicationContext contexto = app.run(args);
+
+        ClienteEntidad cliente = contexto.getBean(ClienteEntidad.class);
+
+        // ejemplosOperacion(cliente);
     }
 }

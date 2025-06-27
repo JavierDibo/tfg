@@ -4,12 +4,16 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.time.LocalDateTime;
 
 /**
  * Entidad
  * Persistente
  */
 @Data
+@EqualsAndHashCode
 @Entity
 public class Entidad {
     @NotNull
@@ -19,6 +23,9 @@ public class Entidad {
     int id;
     @Size(max = 100)
     String info;
+
+    @Transient // no se mapea
+    LocalDateTime fechaCreacion = LocalDateTime.now();
 
     public Entidad() {
         this.info = "info por defecto";
