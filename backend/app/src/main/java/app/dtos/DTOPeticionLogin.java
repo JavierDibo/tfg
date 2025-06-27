@@ -2,7 +2,7 @@ package app.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record LoginRequest(
+public record DTOPeticionLogin(
     @NotBlank(message = "El username es obligatorio")
     String username,
     

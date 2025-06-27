@@ -1,7 +1,7 @@
 package app.config;
 
-import app.repositorios.UsuarioRepositorio;
-import app.util.JwtService;
+import app.repositorios.RepositorioUsuario;
+import app.servicios.ServicioJwt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,20 +28,20 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class ConfigSeguridad {
 
-    private final UsuarioRepositorio usuarioRepositorio;
-    private final JwtService jwtService;
+    private final RepositorioUsuario repositorioUsuario;
+    private final ServicioJwt servicioJwt;
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> usuarioRepositorio.findByUsername(username)
+        return username -> repositorioUsuario.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtService, userDetailsService());
+    public ConfigFiltroJwt jwtAuthenticationFilter() {
+        return new ConfigFiltroJwt(servicioJwt, userDetailsService());
     }
 
     @Bean

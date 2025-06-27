@@ -1,6 +1,6 @@
 package app.config;
 
-import app.util.JwtService;
+import app.servicios.ServicioJwt;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,9 +17,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class ConfigFiltroJwt extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final ServicioJwt servicioJwt;
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -38,12 +38,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         
         jwt = authHeader.substring(7);
-        username = jwtService.extractUsername(jwt);
+        username = servicioJwt.extractUsername(jwt);
         
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+            if (servicioJwt.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

@@ -1,11 +1,10 @@
 package app.servicios;
 
-import app.dtos.LoginRequest;
-import app.dtos.LoginResponse;
-import app.dtos.RegistroRequest;
+import app.dtos.DTOPeticionLogin;
+import app.dtos.DTORespuestaLogin;
+import app.dtos.DTOPeticionRegistro;
 import app.entidades.Usuario;
-import app.repositorios.UsuarioRepositorio;
-import app.util.JwtService;
+import app.repositorios.RepositorioUsuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,14 +13,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
+public class ServicioAutenticacion {
     
-    private final UsuarioRepositorio usuarioRepositorio;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final RepositorioUsuario repositorioUsuario;
+    private final PasswordEncoder pe;
+    private final ServicioJwt servicioJwt;
     private final AuthenticationManager authenticationManager;
     
-    public LoginResponse login(LoginRequest request) {
+    public DTORespuestaLogin login(DTOPeticionLogin request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.username(),
@@ -29,33 +28,33 @@ public class AuthenticationService {
                 )
         );
         
-        var usuario = usuarioRepositorio.findByUsername(request.username())
+        var usuario = repositorioUsuario.findByUsername(request.username())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
-        var jwtToken = jwtService.generateToken(usuario);
-        return LoginResponse.from(usuario, jwtToken);
+        var jwtToken = servicioJwt.generateToken(usuario);
+        return DTORespuestaLogin.from(usuario, jwtToken);
     }
     
-    public LoginResponse registro(RegistroRequest request) {
-        if (usuarioRepositorio.existsByUsername(request.username())) {
+    public DTORespuestaLogin registro(DTOPeticionRegistro request) {
+        if (repositorioUsuario.existsByUsername(request.username())) {
             throw new RuntimeException("El username ya existe");
         }
         
-        if (usuarioRepositorio.existsByEmail(request.email())) {
+        if (repositorioUsuario.existsByEmail(request.email())) {
             throw new RuntimeException("El email ya existe");
         }
         
         var usuario = new Usuario(
                 request.username(),
-                passwordEncoder.encode(request.password()),
+                pe.encode(request.password()),
                 request.email(),
                 request.nombre(),
                 request.apellidos()
         );
         
-        usuarioRepositorio.save(usuario);
+        repositorioUsuario.save(usuario);
         
-        var jwtToken = jwtService.generateToken(usuario);
-        return LoginResponse.from(usuario, jwtToken);
+        var jwtToken = servicioJwt.generateToken(usuario);
+        return DTORespuestaLogin.from(usuario, jwtToken);
     }
 } 

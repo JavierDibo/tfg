@@ -2,7 +2,7 @@ package app.dtos;
 
 import app.entidades.Usuario;
 
-public record LoginResponse(
+public record DTORespuestaLogin(
     String token,
     String type,
     Long id,
@@ -12,8 +12,8 @@ public record LoginResponse(
     String apellidos,
     String rol
 ) {
-    public static LoginResponse from(Usuario usuario, String token) {
-        return new LoginResponse(
+    public static DTORespuestaLogin from(Usuario usuario, String token) {
+        return new DTORespuestaLogin(
             token,
             "Bearer",
             usuario.getId(),
