@@ -2,14 +2,21 @@ import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { jwtDecode } from 'jwt-decode';
 
+interface DecodedToken {
+	sub: string;
+	roles: string[];
+}
+
 // State
 let token = $state<string | null>(null);
-let user = $state<{ sub: string } | null>(null);
+let user = $state<DecodedToken | null>(null);
+let isAuthenticated = $derived(!!token);
+let isAdmin = $derived(user?.roles?.includes('ROLE_ADMIN') ?? false);
 
 // Helper to decode and set user from token
 function updateUserFromToken(jwt: string) {
 	try {
-		const decoded = jwtDecode<{ sub: string }>(jwt);
+		const decoded = jwtDecode<DecodedToken>(jwt);
 		user = decoded;
 		token = jwt;
 		if (browser) {
@@ -53,7 +60,10 @@ export const authStore = {
 		return user;
 	},
 	get isAuthenticated() {
-		return !!token;
+		return isAuthenticated;
+	},
+	get isAdmin() {
+		return isAdmin;
 	},
 	login,
 	logout

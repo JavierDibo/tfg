@@ -248,13 +248,15 @@
 				<button onclick={loadEntities} class="btn btn-primary" disabled={loading}>
 					{loading ? 'Loading...' : 'Refresh All'}
 				</button>
-				<button
-					onclick={deleteAllEntities}
-					class="btn btn-danger"
-					disabled={loading || entidades.length === 0}
-				>
-					Delete All Entities
-				</button>
+				{#if authStore.isAdmin}
+					<button
+						onclick={deleteAllEntities}
+						class="btn btn-danger"
+						disabled={loading || entidades.length === 0}
+					>
+						Delete All Entities
+					</button>
+				{/if}
 			</div>
 		</div>
 

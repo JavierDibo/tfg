@@ -29,7 +29,20 @@
 				authStore.login(response.token || '');
 			}
 		} catch (e: any) {
-			error = e.message || 'An unknown error occurred.';
+			if (e.response) {
+				try {
+					const errorData = await e.response.json();
+					if (errorData.fieldErrors) {
+						error = Object.values(errorData.fieldErrors).join(', ');
+					} else {
+						error = errorData.message || 'An unknown error occurred.';
+					}
+				} catch (jsonError) {
+					error = 'Failed to parse error response.';
+				}
+			} else {
+				error = e.message || 'An unknown network error occurred.';
+			}
 			console.error(e);
 		} finally {
 			loading = false;
