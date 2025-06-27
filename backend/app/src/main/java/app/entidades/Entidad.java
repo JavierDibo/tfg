@@ -37,6 +37,7 @@ public class Entidad {
 
     public Entidad(String info, String otraInfo) {
         this.info = info;
+        this.otraInfo = otraInfo;
     }
 
     public Entidad(DTOEntidad dtoEntidad) {

@@ -1,4 +1,4 @@
-package app.aop.exceptions;
+package app.excepciones;
 
 public class EntidadNoEncontradaException extends RuntimeException {
     public EntidadNoEncontradaException(String message) {
