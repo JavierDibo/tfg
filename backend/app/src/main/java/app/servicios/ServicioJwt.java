@@ -45,6 +45,10 @@ public class ServicioJwt {
             UserDetails userDetails,
             long expiration
     ) {
+        extraClaims.put("roles", userDetails.getAuthorities().stream()
+                .map(grantedAuthority -> grantedAuthority.getAuthority())
+                .toList());
+
         return Jwts
                 .builder()
                 .claims(extraClaims)

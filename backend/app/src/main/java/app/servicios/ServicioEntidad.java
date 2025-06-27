@@ -1,129 +1,97 @@
 package app.servicios;
 
-import app.aop.Validador;
-import app.aop.exceptions.EntidadNoEncontradaException;
+import app.excepciones.EntidadNoEncontradaException;
 import app.dtos.DTOEntidad;
+import app.dtos.DTOParametrosBusqueda;
 import app.entidades.Entidad;
 import app.repositorios.RepositorioEntidad;
-import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 @Transactional
 public class ServicioEntidad {
 
-    @Autowired
-    private RepositorioEntidad repositorioEntidad;
+    private final RepositorioEntidad repositorioEntidad;
 
-    private DTOEntidad ADTO(Entidad entidad) {
-        return new DTOEntidad(entidad);
-    }
-
-    private List<DTOEntidad> ADTO(List<Entidad> entidades) {
-        return entidades
+    public List<DTOEntidad> obtenerTodasLasEntidades() {
+        return repositorioEntidad.findAll()
                 .stream()
                 .map(DTOEntidad::new)
                 .toList();
     }
 
-    private Entidad AEntidad(DTOEntidad dtoEntidad) {
-        return new Entidad(dtoEntidad);
+    public DTOEntidad obtenerEntidadPorId(int id) {
+        Entidad entidad = repositorioEntidad.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Entidad con ID " + id + " no encontrada."));
+        return new DTOEntidad(entidad);
     }
 
-    private List<Entidad> AEntidad(List<DTOEntidad> dtos) {
-        return dtos
+    public List<DTOEntidad> obtenerEntidadesPorInfo(String info) {
+        return repositorioEntidad.findByInfoContainingIgnoreCase(info)
                 .stream()
-                .map(Entidad::new)
+                .map(DTOEntidad::new)
                 .toList();
     }
 
-    public List<Entidad> obtenerTodasLasEntidades() {
-        List<Entidad> entidades = repositorioEntidad.obtenerTodasLasEntidades();
-        if (entidades.isEmpty()) {
-            return List.of();
+    public List<DTOEntidad> obtenerEntidadesPorOtraInfo(String otraInfo) {
+        return repositorioEntidad.findByOtraInfoContainingIgnoreCase(otraInfo)
+                .stream()
+                .map(DTOEntidad::new)
+                .toList();
+    }
+
+    public List<DTOEntidad> obtenerEntidadesPorParametros(DTOParametrosBusqueda parametros) {
+        // Si ambos parámetros son nulos, devolver todas las entidades
+        if (parametros.info() == null && parametros.otraInfo() == null) {
+            return obtenerTodasLasEntidades();
         }
-        return entidades;
+        
+        return repositorioEntidad.findByInfoAndOtraInfoContainingIgnoreCase(
+                parametros.info(), parametros.otraInfo())
+                .stream()
+                .map(DTOEntidad::new)
+                .toList();
     }
 
-    public List<DTOEntidad> obtenerTodasLasEntidadesDTO() {
-        List<Entidad> entidades = obtenerTodasLasEntidades();
-        return ADTO(entidades);
+    public DTOEntidad crearEntidad(DTOEntidad dtoEntidad) {
+        Entidad entidad = new Entidad(dtoEntidad);
+        Entidad entidadGuardada = repositorioEntidad.save(entidad);
+        return new DTOEntidad(entidadGuardada);
     }
 
-    @Validador
-    public Entidad obtenerEntidadPorId(int id) {
-        return repositorioEntidad.obtenerEntidadPorId(id);
-    }
+    public DTOEntidad actualizarEntidad(int id, DTOEntidad dtoParcial) {
+        Entidad entidad = repositorioEntidad.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Entidad con ID " + id + " no encontrada."));
 
-    @Validador
-    public DTOEntidad obtenerEntidadPorIdDTO(int id) {
-        Entidad entidad = obtenerEntidadPorId(id);
-        return ADTO(entidad);
-    }
-
-    @Validador
-    public List<Entidad> obtenerEntidadesPorInfo(String info) {
-        List<Entidad> entidades = repositorioEntidad.obtenerEntidadesPorInfo(info);
-        if (entidades.isEmpty())
-            return List.of();
-        else
-            return entidades;
-    }
-
-    public List<DTOEntidad> obtenerEntidadesPorInfoDTO(String info) {
-        List<Entidad> entidades = obtenerEntidadesPorInfo(info);
-        return ADTO(entidades);
-    }
-
-    public Entidad crearEntidad(@NotNull Entidad entidad) {
-        return repositorioEntidad.crearEntidad(entidad);
-    }
-
-    public DTOEntidad crearEntidadDTO(@NotNull DTOEntidad dtoEntidad) {
-        Entidad entidad = AEntidad(dtoEntidad);
-        return ADTO(crearEntidad(entidad));
-    }
-
-    @Validador
-    public Entidad actualizarEntidad(int id, DTOEntidad dtoParcial) {
-        Entidad entidad = repositorioEntidad.obtenerEntidadPorId(id);
-
-        if (dtoParcial.info() != null)
+        if (dtoParcial.info() != null) {
             entidad.setInfo(dtoParcial.info());
+        }
 
-        if (dtoParcial.otraInfo() != null)
-            entidad.setInfo(dtoParcial.otraInfo());
+        if (dtoParcial.otraInfo() != null) {
+            entidad.setOtraInfo(dtoParcial.otraInfo());
+        }
 
-        return repositorioEntidad.actualizarEntidad(entidad);
+        Entidad entidadActualizada = repositorioEntidad.save(entidad);
+        return new DTOEntidad(entidadActualizada);
     }
 
-    public DTOEntidad actualizarEntidadDTO(int id, DTOEntidad dtoParcial) {
-        return ADTO(actualizarEntidad(id, dtoParcial));
+    public List<DTOEntidad> borrarTodasLasEntidades() {
+        List<Entidad> entidades = repositorioEntidad.findAll();
+        repositorioEntidad.deleteAll();
+        return entidades.stream()
+                .map(DTOEntidad::new)
+                .toList();
     }
 
-    public List<Entidad> borrarTodasLasEntidades() {
-        List<Entidad> entidades = repositorioEntidad.borrarTodasLasEntidades();
-        if (entidades.isEmpty())
-            return List.of();
-        else
-            return entidades;
-    }
-
-    public List<DTOEntidad> borrarTodasLasEntidadesDTO() {
-        return ADTO(borrarTodasLasEntidades());
-    }
-
-    @Validador
-    public Entidad borrarEntidadPorId(int id) {
-        return repositorioEntidad.borrarEntidadPorId(id);
-    }
-
-    @Validador
-    public DTOEntidad borrarEntidadPorIdDTO(int id) {
-        return ADTO(borrarEntidadPorId(id));
+    public DTOEntidad borrarEntidadPorId(int id) {
+        Entidad entidad = repositorioEntidad.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Entidad con ID " + id + " no encontrada."));
+        repositorioEntidad.deleteById(id);
+        return new DTOEntidad(entidad);
     }
 }
