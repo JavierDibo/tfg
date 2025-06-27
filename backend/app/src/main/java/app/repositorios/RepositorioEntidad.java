@@ -1,5 +1,6 @@
 package app.repositorios;
 
+import app.aop.exceptions.EntidadNoEncontradaException;
 import app.entidades.Entidad;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -22,25 +23,28 @@ public class RepositorioEntidad {
     EntityManager em;
 
     public List<Entidad> obtenerTodasLasEntidades() {
-        return em.createQuery("SELECT e FROM Entidad e", Entidad.class).getResultList();
+        return em.createQuery("SELECT e FROM Entidad e ORDER BY id", Entidad.class).getResultList();
     }
 
-    public Optional<Entidad> obtenerEntidadPorId(@NotNull @Min(1) int id) {
+    public Entidad obtenerEntidadPorId(@NotNull @Min(1) int id) {
         Entidad entidad = em.find(Entidad.class, id);
-        if (entidad == null)
-            return Optional.empty();
-
-        return Optional.of(entidad);
+        if (entidad == null) {
+            throw new EntidadNoEncontradaException("Entidad con ID " + id + " no encontrada.");
+        }
+        return entidad;
     }
 
     public List<Entidad> obtenerEntidadesPorInfo(@NotNull @Size(max = 100) String info) {
-        String query = "SELECT e FROM Entidad e WHERE e.info LIKE :info";
+        String query = "SELECT e FROM Entidad e WHERE e.info LIKE :info ORDER BY id";
         return em.createQuery(query, Entidad.class).setParameter("info", "%" + info + "%").getResultList();
     }
 
     public Entidad crearEntidad(@NotNull Entidad entidad) {
-        em.persist(em.merge(entidad));
-        return entidad;
+        if (em.contains(entidad)) {
+            em.persist(entidad); // no op
+            return entidad;
+        }
+        return em.merge(entidad);
     }
 
     public List<Entidad> borrarTodasLasEntidades() {
@@ -54,25 +58,15 @@ public class RepositorioEntidad {
         return entidades;
     }
 
-    public Optional<Entidad> borrarEntidadPorId(@NotNull @Min(1) int id) {
-        Optional<Entidad> entidadOptional = obtenerEntidadPorId(id);
-        if (entidadOptional.isEmpty())
-            return Optional.empty();
-
-        Entidad entidad = entidadOptional.get();
+    public Entidad borrarEntidadPorId(@NotNull @Min(1) int id) {
+        Entidad entidad = obtenerEntidadPorId(id);
         em.remove(em.merge(entidad));
-        return Optional.of(entidad);
+        return entidad;
     }
 
-    public Optional<Entidad> actualizarEntidad(@NotNull @Min(1) int id, @NotNull @Size(max = 100) String info) {
-        Optional<Entidad> entidadOptional = obtenerEntidadPorId(id);
-        if (entidadOptional.isEmpty()) {
-            return Optional.empty();
-        }
-
-        Entidad entidad = entidadOptional.get();
-        entidad.setInfo(info);
-        em.merge(entidad);
-        return Optional.of(entidad);
+    public Entidad actualizarEntidad(@NotNull Entidad entidad) {
+        Entidad entidadObtenida = obtenerEntidadPorId(entidad.getId());
+        em.merge(entidadObtenida);
+        return entidad;
     }
 }

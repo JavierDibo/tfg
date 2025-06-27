@@ -32,6 +32,23 @@ public class GlobalExceptionHandler {
         
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(EntidadNoEncontradaException.class)
+    public ResponseEntity<Map<String, Object>> handleEntidadNoEncontrada(
+            EntidadNoEncontradaException ex, WebRequest request) {
+
+        log.warn("Entidad no encontrada: {}", ex.getMessage());
+
+        Map<String, Object> errorDetails = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", HttpStatus.BAD_REQUEST.value(),
+                "error", "Entidad no encontrada",
+                "message", ex.getMessage(),
+                "path", request.getDescription(false).replace("uri=", "")
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
     
     @ExceptionHandler(ValidacionException.class)
     public ResponseEntity<Map<String, Object>> handleValidacion(

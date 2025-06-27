@@ -1,17 +1,16 @@
 package app.servicios;
 
+import app.aop.Validador;
+import app.aop.exceptions.EntidadNoEncontradaException;
 import app.dtos.DTOEntidad;
 import app.entidades.Entidad;
 import app.repositorios.RepositorioEntidad;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -19,6 +18,28 @@ public class ServicioEntidad {
 
     @Autowired
     private RepositorioEntidad repositorioEntidad;
+
+    private DTOEntidad ADTO(Entidad entidad) {
+        return new DTOEntidad(entidad.getId(), entidad.getInfo());
+    }
+
+    private List<DTOEntidad> ADTO(List<Entidad> entidades) {
+        return entidades
+                .stream()
+                .map(e -> new DTOEntidad(e.getId(), e.getInfo()))
+                .toList();
+    }
+
+    private Entidad AEntidad(DTOEntidad dtoEntidad) {
+        return new Entidad(dtoEntidad.info());
+    }
+
+    private List<Entidad> AEntidad(List<DTOEntidad> dtos) {
+        return dtos
+                .stream()
+                .map(dto -> new Entidad(dto.info()))
+                .toList();
+    }
 
     public List<Entidad> obtenerTodasLasEntidades() {
         List<Entidad> entidades = repositorioEntidad.obtenerTodasLasEntidades();
@@ -28,11 +49,24 @@ public class ServicioEntidad {
         return entidades;
     }
 
-    public Optional<Entidad> obtenerEntidadPorId(@NotNull @Min(1) int id) {
+    public List<DTOEntidad> obtenerTodasLasEntidadesDTO() {
+        List<Entidad> entidades = obtenerTodasLasEntidades();
+        return ADTO(entidades);
+    }
+
+    @Validador
+    public Entidad obtenerEntidadPorId(int id) {
         return repositorioEntidad.obtenerEntidadPorId(id);
     }
 
-    public List<Entidad> obtenerEntidadesPorInfo(@NotNull @Size(max=100) String info) {
+    @Validador
+    public DTOEntidad obtenerEntidadPorIdDTO(int id) {
+        Entidad entidad = obtenerEntidadPorId(id);
+        return ADTO(entidad);
+    }
+
+    @Validador
+    public List<Entidad> obtenerEntidadesPorInfo(String info) {
         List<Entidad> entidades = repositorioEntidad.obtenerEntidadesPorInfo(info);
         if (entidades.isEmpty())
             return List.of();
@@ -40,12 +74,36 @@ public class ServicioEntidad {
             return entidades;
     }
 
+    public List<DTOEntidad> obtenerEntidadesPorInfoDTO(String info) {
+        List<Entidad> entidades = obtenerEntidadesPorInfo(info);
+        return ADTO(entidades);
+    }
+
     public Entidad crearEntidad(@NotNull Entidad entidad) {
         return repositorioEntidad.crearEntidad(entidad);
     }
 
-    public Optional<Entidad> actualizarEntidad(@NotNull @Min(1) int id, @NotNull @Size(max=100) String info) {
-        return repositorioEntidad.actualizarEntidad(id, info);
+    public DTOEntidad crearEntidadDTO(@NotNull DTOEntidad dtoEntidad) {
+        Entidad entidad = AEntidad(dtoEntidad);
+        return ADTO(crearEntidad(entidad));
+    }
+
+    @Validador
+    public Entidad actualizarEntidad(int id, DTOEntidad dtoParcial) {
+        Entidad entidad = repositorioEntidad.obtenerEntidadPorId(id);
+
+        if (dtoParcial.id() != null)
+            entidad.setId(dtoParcial.id());
+
+        if (dtoParcial.info() != null)
+            entidad.setInfo(dtoParcial.info());
+
+        repositorioEntidad.actualizarEntidad(entidad);
+        return entidad;
+    }
+
+    public DTOEntidad actualizarEntidadDTO(int id, DTOEntidad dtoParcial) {
+        return ADTO(actualizarEntidad(id, dtoParcial));
     }
 
     public List<Entidad> borrarTodasLasEntidades() {
@@ -56,7 +114,17 @@ public class ServicioEntidad {
             return entidades;
     }
 
-    public Optional<Entidad> borrarEntidadPorId(int id) {
+    public List<DTOEntidad> borrarTodasLasEntidadesDTO() {
+        return ADTO(borrarTodasLasEntidades());
+    }
+
+    @Validador
+    public Entidad borrarEntidadPorId(int id) {
         return repositorioEntidad.borrarEntidadPorId(id);
+    }
+
+    @Validador
+    public DTOEntidad borrarEntidadPorIdDTO(int id) {
+        return ADTO(borrarEntidadPorId(id));
     }
 }

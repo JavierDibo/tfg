@@ -21,6 +21,7 @@ public class Entidad {
     @SequenceGenerator(name = "seq_entidad", sequenceName = "seq_entidad", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_entidad")
     int id;
+    @NotNull
     @Size(max = 100)
     String info;
 
