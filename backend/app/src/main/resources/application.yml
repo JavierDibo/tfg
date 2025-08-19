@@ -1,4 +1,5 @@
 spring:
+ # La config del DataSource esta en el docker file
   datasource:
     url: jdbc:postgresql://localhost:5432/academia_db
     username: admin
