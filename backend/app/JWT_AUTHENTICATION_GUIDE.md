@@ -76,7 +76,7 @@ curl -X POST http://localhost:8080/api/auth/registro \
   -H "Content-Type: application/json" \
   -d '{
     "username": "nuevo_usuario",
-    "password": "password123",
+    "contraseña": "password123",
     "email": "usuario@example.com",
     "nombre": "Juan",
     "apellidos": "Pérez"
@@ -103,7 +103,7 @@ curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
-    "password": "admin123"
+    "contraseña": "admin123"
   }'
 ```
 
@@ -212,7 +212,7 @@ curl http://localhost:8080/api/test/public
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}'
+  -d '{"username": "admin", "contraseña": "admin123"}'
 ```
 
 ### 4. Test Protected Endpoint

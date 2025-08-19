@@ -4,7 +4,20 @@ import { jwtDecode } from 'jwt-decode';
 
 interface DecodedToken {
 	sub: string;
-	roles: string[];
+	usuario?: string;
+	id?: number;
+	roles?: string[];
+}
+
+interface LoginResponse {
+	token?: string;
+	type?: string;
+	id?: number;
+	username?: string;
+	email?: string;
+	nombre?: string;
+	apellidos?: string;
+	rol?: string;
 }
 
 // State
@@ -12,6 +25,8 @@ let token = $state<string | null>(null);
 let user = $state<DecodedToken | null>(null);
 let isAuthenticated = $derived(!!token);
 let isAdmin = $derived(user?.roles?.includes('ROLE_ADMIN') ?? false);
+let isProfesor = $derived(user?.roles?.includes('ROLE_PROFESOR') ?? false);
+let isAlumno = $derived(user?.roles?.includes('ROLE_ALUMNO') ?? false);
 
 // Helper to decode and set user from token
 function updateUserFromToken(jwt: string) {
@@ -29,9 +44,50 @@ function updateUserFromToken(jwt: string) {
 }
 
 // Actions
-function login(jwt: string) {
-	updateUserFromToken(jwt);
-	goto('/entidades');
+function login(jwtOrResponse: string | LoginResponse) {
+	if (typeof jwtOrResponse === 'string') {
+		// Handle JWT token
+		updateUserFromToken(jwtOrResponse);
+	} else {
+		// Handle full login response
+		const response = jwtOrResponse;
+		const roleMapping = {
+			'ADMIN': 'ROLE_ADMIN',
+			'PROFESOR': 'ROLE_PROFESOR',
+			'ALUMNO': 'ROLE_ALUMNO'
+		};
+
+		// Validate required fields
+		if (!response.token || !response.username || !response.rol) {
+			console.error('Invalid login response:', response);
+			throw new Error('Invalid login response from server');
+		}
+
+		// Create a user object with the response data and proper role format
+		user = {
+			sub: response.username,
+			usuario: response.username,
+			id: response.id,
+			roles: [roleMapping[response.rol as keyof typeof roleMapping] || `ROLE_${response.rol}`]
+		};
+		
+		token = response.token;
+		
+		if (browser) {
+			localStorage.setItem('jwt_token', token);
+		}
+	}
+	
+	// Redirect based on role
+	if (user?.roles?.includes('ROLE_ADMIN')) {
+		goto('/alumnos');
+	} else if (user?.roles?.includes('ROLE_PROFESOR')) {
+		goto('/alumnos');
+	} else if (user?.roles?.includes('ROLE_ALUMNO')) {
+		goto('/alumnos/perfil');
+	} else {
+		goto('/');
+	}
 }
 
 function logout() {
@@ -65,6 +121,12 @@ export const authStore = {
 	get isAdmin() {
 		return isAdmin;
 	},
-	login,
+	get isProfesor() {
+		return isProfesor;
+	},
+	get isAlumno() {
+		return isAlumno;
+	},
+	login: login as (jwtOrResponse: string | LoginResponse) => void,
 	logout
 }; 

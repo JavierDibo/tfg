@@ -1,9 +1,8 @@
 package app.entidades;
 
+import app.validation.*;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,6 +16,9 @@ import java.util.List;
 @EqualsAndHashCode
 @Entity
 @Table(name = "usuarios")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo_usuario", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorValue("USUARIO")
 public class Usuario implements UserDetails {
     
     @Id
@@ -25,25 +27,36 @@ public class Usuario implements UserDetails {
     
     @NotNull
     @Size(min = 3, max = 50)
+    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El usuario solo puede contener letras, números, puntos, guiones y guiones bajos")
     @Column(unique = true)
-    private String username;
+    private String usuario;
     
     @NotNull
     @Size(min = 6)
-    private String password;
-    
-    @NotNull
-    @Email
-    @Column(unique = true)
-    private String email;
+    private String contraseña;
     
     @NotNull
     @Size(max = 100)
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "El nombre solo puede contener letras y espacios")
     private String nombre;
     
     @NotNull
     @Size(max = 100)
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "Los apellidos solo pueden contener letras y espacios")
     private String apellidos;
+    
+    @NotNull
+    @ValidDNI
+    @Column(unique = true)
+    private String dni;
+    
+    @NotNull
+    @ValidEmail
+    @Column(unique = true)
+    private String email;
+    
+    @ValidPhone
+    private String numeroTelefono;
     
     @Enumerated(EnumType.STRING)
     private Rol rol = Rol.USUARIO;
@@ -51,17 +64,29 @@ public class Usuario implements UserDetails {
     private boolean enabled = true;
     
     public enum Rol {
-        ADMIN, USUARIO
+        ADMIN, PROFESOR, ALUMNO, USUARIO
     }
     
     public Usuario() {}
     
-    public Usuario(String username, String password, String email, String nombre, String apellidos) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
+    public Usuario(String usuario, String contraseña, String nombre, String apellidos, String dni, String email, String numeroTelefono) {
+        this.usuario = usuario;
+        this.contraseña = contraseña;
         this.nombre = nombre;
         this.apellidos = apellidos;
+        this.dni = dni;
+        this.email = email;
+        this.numeroTelefono = numeroTelefono;
+    }
+    
+    @Override
+    public String getUsername() {
+        return this.usuario;
+    }
+    
+    @Override
+    public String getPassword() {
+        return this.contraseña;
     }
     
     @Override

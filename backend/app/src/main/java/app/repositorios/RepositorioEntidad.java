@@ -27,4 +27,7 @@ public interface RepositorioEntidad extends JpaRepository<Entidad, Integer> {
     );
     
     boolean existsByInfo(String info);
+    
+    @Query("SELECT e FROM Entidad e ORDER BY e.id")
+    List<Entidad> findAllOrderedById();
 }
