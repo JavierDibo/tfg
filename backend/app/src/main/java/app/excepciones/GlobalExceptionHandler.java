@@ -114,6 +114,57 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(EstudianteNoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> handleEstudianteNoEncontrado(
+            EstudianteNoEncontradoException ex, WebRequest request) {
+
+        log.warn("Estudiante no encontrado: {}", ex.getMessage());
+
+        Map<String, Object> errorDetails = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", HttpStatus.NOT_FOUND.value(),
+                "error", "Estudiante no encontrado",
+                "message", ex.getMessage(),
+                "path", request.getDescription(false).replace("uri=", "")
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(AlumnoNoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> handleAlumnoNoEncontrado(
+            AlumnoNoEncontradoException ex, WebRequest request) {
+
+        log.warn("Alumno no encontrado: {}", ex.getMessage());
+
+        Map<String, Object> errorDetails = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", HttpStatus.NOT_FOUND.value(),
+                "error", "Alumno no encontrado",
+                "message", ex.getMessage(),
+                "path", request.getDescription(false).replace("uri=", "")
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(
+            IllegalArgumentException ex, WebRequest request) {
+
+        log.warn("Argumento inválido: {}", ex.getMessage());
+
+        Map<String, Object> errorDetails = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", HttpStatus.BAD_REQUEST.value(),
+                "error", "Datos inválidos",
+                "message", ex.getMessage(),
+                "path", request.getDescription(false).replace("uri=", "")
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(

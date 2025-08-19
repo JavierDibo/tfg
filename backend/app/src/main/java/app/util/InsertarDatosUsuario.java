@@ -39,8 +39,8 @@ public class InsertarDatosUsuario implements CommandLineRunner {
             repositorioUsuario.save(usuario);
 
             System.out.println("Usuarios de prueba creados:");
-            System.out.println("Admin - username: admin, password: admin");
-            System.out.println("Usuario - username: usuario, password: admin");
+            System.out.println("Admin - username: " + admin.getUsername() + ", password: admin" );
+            System.out.println("Usuario - username: " + usuario.getUsername() + ", password: user");
         }
     }
 } 

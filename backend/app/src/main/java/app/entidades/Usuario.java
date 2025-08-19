@@ -17,6 +17,9 @@ import java.util.List;
 @EqualsAndHashCode
 @Entity
 @Table(name = "usuarios")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo_usuario", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorValue("USUARIO")
 public class Usuario implements UserDetails {
     
     @Id
@@ -26,16 +29,11 @@ public class Usuario implements UserDetails {
     @NotNull
     @Size(min = 3, max = 50)
     @Column(unique = true)
-    private String username;
+    private String usuario;
     
     @NotNull
     @Size(min = 6)
-    private String password;
-    
-    @NotNull
-    @Email
-    @Column(unique = true)
-    private String email;
+    private String contraseña;
     
     @NotNull
     @Size(max = 100)
@@ -45,23 +43,48 @@ public class Usuario implements UserDetails {
     @Size(max = 100)
     private String apellidos;
     
+    @NotNull
+    @Size(max = 20)
+    @Column(unique = true)
+    private String dni;
+    
+    @NotNull
+    @Email
+    @Column(unique = true)
+    private String email;
+    
+    @Size(max = 15)
+    private String numeroTelefono;
+    
     @Enumerated(EnumType.STRING)
     private Rol rol = Rol.USUARIO;
     
     private boolean enabled = true;
     
     public enum Rol {
-        ADMIN, USUARIO
+        ADMIN, PROFESOR, ALUMNO, USUARIO
     }
     
     public Usuario() {}
     
-    public Usuario(String username, String password, String email, String nombre, String apellidos) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
+    public Usuario(String usuario, String contraseña, String nombre, String apellidos, String dni, String email, String numeroTelefono) {
+        this.usuario = usuario;
+        this.contraseña = contraseña;
         this.nombre = nombre;
         this.apellidos = apellidos;
+        this.dni = dni;
+        this.email = email;
+        this.numeroTelefono = numeroTelefono;
+    }
+    
+    @Override
+    public String getUsername() {
+        return this.usuario;
+    }
+    
+    @Override
+    public String getPassword() {
+        return this.contraseña;
     }
     
     @Override
