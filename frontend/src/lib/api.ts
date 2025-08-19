@@ -2,6 +2,7 @@ import {
 	Configuration,
 	EntidadRestApi,
 	AutenticacionRestApi,
+	AlumnoRestApi,
 	type Middleware
 } from './generated/api';
 import { authStore } from './stores/authStore.svelte';
@@ -32,4 +33,5 @@ const config = new Configuration({
 
 // Create pre-configured API clients
 export const entidadApi = new EntidadRestApi(config);
-export const autenticacionApi = new AutenticacionRestApi(config); 
+export const autenticacionApi = new AutenticacionRestApi(config);
+export const alumnoApi = new AlumnoRestApi(config); 

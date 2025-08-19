@@ -21,12 +21,12 @@
 				const response = await autenticacionApi.login({
 					dTOPeticionLogin: { username, password }
 				});
-				authStore.login(response.token || '');
+				authStore.login(response);
 			} else {
 				const response = await autenticacionApi.registro({
 					dTOPeticionRegistro: { username, password, email, nombre, apellidos }
 				});
-				authStore.login(response.token || '');
+				authStore.login(response);
 			}
 		} catch (e: any) {
 			if (e.response) {
@@ -52,7 +52,7 @@
 
 <div>
 	<h2 class="text-xl font-bold text-center mb-6">{isLogin ? 'Sign in to your account' : 'Create a new account'}</h2>
-	<form class="space-y-6" onsubmit={handleSubmit}>
+	<form class="space-y-6" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
 		<div>
 			<label for="username" class="block text-sm font-medium leading-6 text-gray-900"
 				>Username</label

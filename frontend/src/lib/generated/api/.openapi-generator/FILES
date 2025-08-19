@@ -1,11 +1,15 @@
+apis/AlumnoRestApi.ts
 apis/AutenticacionRestApi.ts
 apis/EntidadRestApi.ts
 apis/TestRestApi.ts
 apis/index.ts
 index.ts
+models/DTOActualizacionAlumno.ts
+models/DTOAlumno.ts
 models/DTOEntidad.ts
 models/DTOPeticionLogin.ts
 models/DTOPeticionRegistro.ts
+models/DTOPeticionRegistroAlumno.ts
 models/DTORespuestaLogin.ts
 models/index.ts
 runtime.ts

@@ -1,5 +1,0 @@
-{
-	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"bienvenida": "Hello {name}! Welcome to our academy 🎓",
-	"goodbye": "Goodbye {name}! Thanks for visiting our academy!"
-}
