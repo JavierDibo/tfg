@@ -10,7 +10,7 @@ spring:
         persistence:
           schema-generation:
             database:
-              action: drop-and-create
+              action: update
   application:
     name: app
   docker:

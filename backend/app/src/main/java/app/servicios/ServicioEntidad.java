@@ -19,7 +19,7 @@ public class ServicioEntidad {
     private final RepositorioEntidad repositorioEntidad;
 
     public List<DTOEntidad> obtenerTodasLasEntidades() {
-        return repositorioEntidad.findAll()
+        return repositorioEntidad.findAllOrderedById()
                 .stream()
                 .map(DTOEntidad::new)
                 .toList();
@@ -81,7 +81,7 @@ public class ServicioEntidad {
     }
 
     public List<DTOEntidad> borrarTodasLasEntidades() {
-        List<Entidad> entidades = repositorioEntidad.findAll();
+        List<Entidad> entidades = repositorioEntidad.findAllOrderedById();
         repositorioEntidad.deleteAll();
         return entidades.stream()
                 .map(DTOEntidad::new)

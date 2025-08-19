@@ -1,5 +1,6 @@
 package app.servicios;
 
+import app.dtos.DTOActualizacionAlumno;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
@@ -22,7 +23,7 @@ public class ServicioAlumno {
     private final PasswordEncoder passwordEncoder;
 
     public List<DTOAlumno> obtenerAlumnos() {
-        return repositorioAlumno.findAll()
+        return repositorioAlumno.findAllOrderedById()
                 .stream()
                 .map(DTOAlumno::new)
                 .toList();
@@ -106,7 +107,7 @@ public class ServicioAlumno {
         return new DTOAlumno(alumnoGuardado);
     }
 
-    public DTOAlumno actualizarAlumno(Long id, DTOAlumno dtoParcial) {
+    public DTOAlumno actualizarAlumno(Long id, DTOActualizacionAlumno dtoParcial) {
         Alumno alumno = repositorioAlumno.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + id + " no encontrado."));
 

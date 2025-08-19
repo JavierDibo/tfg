@@ -24,13 +24,13 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
     
     boolean existsByDni(String dni);
     
-    @Query("SELECT a FROM Alumno a WHERE a.nombre LIKE %:nombre% ORDER BY a.apellidos, a.nombre")
+    @Query("SELECT a FROM Alumno a WHERE a.nombre LIKE %:nombre% ORDER BY a.id")
     List<Alumno> findByNombreContainingIgnoreCase(@Param("nombre") String nombre);
     
-    @Query("SELECT a FROM Alumno a WHERE a.apellidos LIKE %:apellidos% ORDER BY a.apellidos, a.nombre")
+    @Query("SELECT a FROM Alumno a WHERE a.apellidos LIKE %:apellidos% ORDER BY a.id")
     List<Alumno> findByApellidosContainingIgnoreCase(@Param("apellidos") String apellidos);
     
-    @Query("SELECT a FROM Alumno a WHERE a.matriculado = :matriculado ORDER BY a.apellidos, a.nombre")
+    @Query("SELECT a FROM Alumno a WHERE a.matriculado = :matriculado ORDER BY a.id")
     List<Alumno> findByMatriculado(@Param("matriculado") boolean matriculado);
     
     @Query("SELECT a FROM Alumno a WHERE " +
@@ -39,7 +39,7 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
            "(:dni IS NULL OR a.dni LIKE %:dni%) AND " +
            "(:email IS NULL OR a.email LIKE %:email%) AND " +
            "(:matriculado IS NULL OR a.matriculado = :matriculado) " +
-           "ORDER BY a.apellidos, a.nombre")
+           "ORDER BY a.id")
     List<Alumno> findByFiltros(
         @Param("nombre") String nombre,
         @Param("apellidos") String apellidos,
@@ -50,4 +50,7 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
     
     @Query("SELECT COUNT(a) FROM Alumno a WHERE a.matriculado = :matriculado")
     long countByMatriculado(@Param("matriculado") boolean matriculado);
+    
+    @Query("SELECT a FROM Alumno a ORDER BY a.id")
+    List<Alumno> findAllOrderedById();
 }

@@ -1,5 +1,6 @@
 package app.rest;
 
+import app.dtos.DTOActualizacionAlumno;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
@@ -107,7 +108,7 @@ public class AlumnoRest {
     @PreAuthorize("hasRole('ADMIN') or (hasRole('ALUMNO') and #id == authentication.principal.id)")
     public ResponseEntity<DTOAlumno> actualizarAlumno(
             @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id, 
-            @Valid @RequestBody DTOAlumno dtoParcial) {
+            @Valid @RequestBody DTOActualizacionAlumno dtoParcial) {
         
         DTOAlumno dtoActualizado = servicioAlumno.actualizarAlumno(id, dtoParcial);
         return new ResponseEntity<>(dtoActualizado, HttpStatus.OK);

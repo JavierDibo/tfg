@@ -3,9 +3,14 @@ package app.excepciones;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -115,7 +120,73 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<Map<String, Object>> handleAccountDisabled(
+            DisabledException ex, WebRequest request) {
 
+        log.warn("Intento de login con cuenta deshabilitada: {}", ex.getMessage());
+
+        Map<String, Object> errorDetails = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", HttpStatus.FORBIDDEN.value(),
+                "error", "Cuenta deshabilitada",
+                "message", "Tu cuenta está deshabilitada. Contacta con el administrador para más información.",
+                "path", request.getDescription(false).replace("uri=", "")
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccountLocked(
+            LockedException ex, WebRequest request) {
+
+        log.warn("Intento de login con cuenta bloqueada: {}", ex.getMessage());
+
+        Map<String, Object> errorDetails = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", HttpStatus.FORBIDDEN.value(),
+                "error", "Cuenta bloqueada",
+                "message", "Tu cuenta está bloqueada. Contacta con el administrador.",
+                "path", request.getDescription(false).replace("uri=", "")
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(AccountExpiredException.class)
+    public ResponseEntity<Map<String, Object>> handleAccountExpired(
+            AccountExpiredException ex, WebRequest request) {
+
+        log.warn("Intento de login con cuenta expirada: {}", ex.getMessage());
+
+        Map<String, Object> errorDetails = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", HttpStatus.FORBIDDEN.value(),
+                "error", "Cuenta expirada",
+                "message", "Tu cuenta ha expirado. Contacta con el administrador.",
+                "path", request.getDescription(false).replace("uri=", "")
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(CredentialsExpiredException.class)
+    public ResponseEntity<Map<String, Object>> handleCredentialsExpired(
+            CredentialsExpiredException ex, WebRequest request) {
+
+        log.warn("Intento de login con credenciales expiradas: {}", ex.getMessage());
+
+        Map<String, Object> errorDetails = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", HttpStatus.FORBIDDEN.value(),
+                "error", "Credenciales expiradas",
+                "message", "Tu contraseña ha expirado. Debes cambiarla.",
+                "path", request.getDescription(false).replace("uri=", "")
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+    }
 
     @ExceptionHandler(AlumnoNoEncontradoException.class)
     public ResponseEntity<Map<String, Object>> handleAlumnoNoEncontrado(
@@ -149,6 +220,39 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, WebRequest request) {
+
+        log.warn("Violación de integridad de datos: {}", ex.getMessage());
+
+        String userMessage = "Ya existe un registro con los datos proporcionados";
+        
+        // Detectar el tipo específico de violación de constraint
+        String exceptionMessage = ex.getMessage();
+        if (exceptionMessage != null) {
+            if (exceptionMessage.contains("usuarios_dni_key")) {
+                userMessage = "Ya existe un usuario con este DNI";
+            } else if (exceptionMessage.contains("usuarios_usuario_key")) {
+                userMessage = "Ya existe un usuario con este nombre de usuario";
+            } else if (exceptionMessage.contains("usuarios_email_key")) {
+                userMessage = "Ya existe un usuario con este email";
+            } else if (exceptionMessage.contains("duplicate key")) {
+                userMessage = "Ya existe un registro con estos datos únicos";
+            }
+        }
+
+        Map<String, Object> errorDetails = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", HttpStatus.CONFLICT.value(),
+                "error", "Datos duplicados",
+                "message", userMessage,
+                "path", request.getDescription(false).replace("uri=", "")
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
     }
     
     @ExceptionHandler(Exception.class)

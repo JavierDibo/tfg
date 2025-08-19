@@ -1,9 +1,8 @@
 package app.entidades;
 
+import app.validation.*;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.security.core.GrantedAuthority;
@@ -28,6 +27,7 @@ public class Usuario implements UserDetails {
     
     @NotNull
     @Size(min = 3, max = 50)
+    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El usuario solo puede contener letras, números, puntos, guiones y guiones bajos")
     @Column(unique = true)
     private String usuario;
     
@@ -37,23 +37,25 @@ public class Usuario implements UserDetails {
     
     @NotNull
     @Size(max = 100)
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "El nombre solo puede contener letras y espacios")
     private String nombre;
     
     @NotNull
     @Size(max = 100)
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "Los apellidos solo pueden contener letras y espacios")
     private String apellidos;
     
     @NotNull
-    @Size(max = 20)
+    @ValidDNI
     @Column(unique = true)
     private String dni;
     
     @NotNull
-    @Email
+    @ValidEmail
     @Column(unique = true)
     private String email;
     
-    @Size(max = 15)
+    @ValidPhone
     private String numeroTelefono;
     
     @Enumerated(EnumType.STRING)
