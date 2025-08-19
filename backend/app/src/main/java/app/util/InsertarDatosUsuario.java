@@ -21,9 +21,11 @@ public class InsertarDatosUsuario implements CommandLineRunner {
             Usuario admin = new Usuario(
                     "admin",
                     pe.encode("admin"),
-                    "admin@academia.com",
                     "Administrador",
-                    "Sistema"
+                    "Sistema",
+                    "12345678A",
+                    "admin@academia.com",
+                    "600000000"
             );
             admin.setRol(Usuario.Rol.ADMIN);
             repositorioUsuario.save(admin);
@@ -31,9 +33,11 @@ public class InsertarDatosUsuario implements CommandLineRunner {
             Usuario usuario = new Usuario(
                     "user",
                     pe.encode("user"),
-                    "usuario@academia.com",
                     "Usuario",
-                    "Prueba"
+                    "Prueba",
+                    "87654321B",
+                    "usuario@academia.com",
+                    "600000001"
             );
             usuario.setRol(Usuario.Rol.USUARIO);
             repositorioUsuario.save(usuario);

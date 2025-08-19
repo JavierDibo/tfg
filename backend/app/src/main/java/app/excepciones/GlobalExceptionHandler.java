@@ -115,22 +115,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(EstudianteNoEncontradoException.class)
-    public ResponseEntity<Map<String, Object>> handleEstudianteNoEncontrado(
-            EstudianteNoEncontradoException ex, WebRequest request) {
 
-        log.warn("Estudiante no encontrado: {}", ex.getMessage());
-
-        Map<String, Object> errorDetails = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", HttpStatus.NOT_FOUND.value(),
-                "error", "Estudiante no encontrado",
-                "message", ex.getMessage(),
-                "path", request.getDescription(false).replace("uri=", "")
-        );
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
-    }
 
     @ExceptionHandler(AlumnoNoEncontradoException.class)
     public ResponseEntity<Map<String, Object>> handleAlumnoNoEncontrado(

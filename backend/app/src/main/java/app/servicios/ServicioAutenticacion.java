@@ -28,7 +28,7 @@ public class ServicioAutenticacion {
                 )
         );
         
-        var usuario = repositorioUsuario.findByUsername(request.username())
+        var usuario = repositorioUsuario.findByUsuario(request.username())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
         var jwtToken = servicioJwt.generateToken(usuario);
@@ -36,7 +36,7 @@ public class ServicioAutenticacion {
     }
     
     public DTORespuestaLogin registro(DTOPeticionRegistro request) {
-        if (repositorioUsuario.existsByUsername(request.username())) {
+        if (repositorioUsuario.existsByUsuario(request.username())) {
             throw new RuntimeException("El username ya existe");
         }
         
@@ -47,9 +47,11 @@ public class ServicioAutenticacion {
         var usuario = new Usuario(
                 request.username(),
                 pe.encode(request.password()),
-                request.email(),
                 request.nombre(),
-                request.apellidos()
+                request.apellidos(),
+                "00000000X", // DNI temporal
+                request.email(),
+                null // numeroTelefono temporal
         );
         
         repositorioUsuario.save(usuario);

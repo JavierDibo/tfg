@@ -37,7 +37,7 @@ public class ConfigSeguridad {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> repositorioUsuario.findByUsername(username)
+        return username -> repositorioUsuario.findByUsuario(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 
