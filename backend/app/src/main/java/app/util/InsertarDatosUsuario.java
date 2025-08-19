@@ -20,7 +20,7 @@ public class InsertarDatosUsuario implements CommandLineRunner {
         if (repositorioUsuario.count() == 0) {
             Usuario admin = new Usuario(
                     "admin",
-                    pe.encode("admin123"),
+                    pe.encode("admin"),
                     "admin@academia.com",
                     "Administrador",
                     "Sistema"
@@ -29,8 +29,8 @@ public class InsertarDatosUsuario implements CommandLineRunner {
             repositorioUsuario.save(admin);
 
             Usuario usuario = new Usuario(
-                    "usuario",
-                    pe.encode("user123"),
+                    "user",
+                    pe.encode("user"),
                     "usuario@academia.com",
                     "Usuario",
                     "Prueba"
@@ -39,8 +39,8 @@ public class InsertarDatosUsuario implements CommandLineRunner {
             repositorioUsuario.save(usuario);
 
             System.out.println("Usuarios de prueba creados:");
-            System.out.println("Admin - username: admin, password: admin123");
-            System.out.println("Usuario - username: usuario, password: user123");
+            System.out.println("Admin - username: admin, password: admin");
+            System.out.println("Usuario - username: usuario, password: admin");
         }
     }
 } 
