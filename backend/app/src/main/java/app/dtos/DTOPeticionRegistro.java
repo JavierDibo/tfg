@@ -9,8 +9,8 @@ public record DTOPeticionRegistro(
     @Size(min = 3, max = 50, message = "El username debe tener entre 3 y 50 caracteres")
     String username,
     
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    @NotBlank(message = "La password es obligatoria")
+    @Size(min = 6, message = "La password debe tener al menos 6 caracteres")
     String password,
     
     @NotBlank(message = "El email es obligatorio")

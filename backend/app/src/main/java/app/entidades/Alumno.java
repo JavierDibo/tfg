@@ -35,18 +35,18 @@ public class Alumno extends Usuario {
         this.setRol(Rol.ALUMNO);
     }
     
-    public Alumno(String usuario, String contraseña, String nombre, String apellidos, 
+    public Alumno(String usuario, String password, String nombre, String apellidos, 
                   String dni, String email, String numeroTelefono) {
-        super(usuario, contraseña, nombre, apellidos, dni, email, numeroTelefono);
+        super(usuario, password, nombre, apellidos, dni, email, numeroTelefono);
         this.setRol(Rol.ALUMNO);
     }
     
     /**
-     * Método para resetear contraseña según UML
+     * Método para resetear password según UML
      * TODO: Implementar lógica de reseteo por email
      */
-    public void resetearContraseña() {
+    public void resetearpassword() {
         // TODO: Implementar según especificaciones del proyecto
-        throw new UnsupportedOperationException("Método resetearContraseña por implementar");
+        throw new UnsupportedOperationException("Método resetearpassword por implementar");
     }
 }

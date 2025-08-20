@@ -113,7 +113,7 @@ public class GlobalExceptionHandler {
                 "timestamp", LocalDateTime.now(),
                 "status", HttpStatus.UNAUTHORIZED.value(),
                 "error", "Autenticación fallida",
-                "message", "Usuario o contraseña incorrectos",
+                "message", "Usuario o password incorrectos",
                 "path", request.getDescription(false).replace("uri=", "")
         );
 
@@ -181,7 +181,7 @@ public class GlobalExceptionHandler {
                 "timestamp", LocalDateTime.now(),
                 "status", HttpStatus.FORBIDDEN.value(),
                 "error", "Credenciales expiradas",
-                "message", "Tu contraseña ha expirado. Debes cambiarla.",
+                "message", "Tu password ha expirado. Debes cambiarla.",
                 "path", request.getDescription(false).replace("uri=", "")
         );
 

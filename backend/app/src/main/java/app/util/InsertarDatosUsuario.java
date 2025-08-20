@@ -68,8 +68,8 @@ public class InsertarDatosUsuario implements CommandLineRunner {
         repositorioUsuario.saveAll(usuarios);
 
         System.out.println("Usuarios de prueba creados:");
-        System.out.println("Admin - username: " + admin.getUsername() + ", contraseña: admin");
-        System.out.println("Usuario Deshabilitado - username: " + usuarioDeshabilitado.getUsername() + ", contraseña: password123 (DESHABILITADO)");
+        System.out.println("Admin - username: " + admin.getUsername() + ", password: admin");
+        System.out.println("Usuario Deshabilitado - username: " + usuarioDeshabilitado.getUsername() + ", password: password123 (DESHABILITADO)");
     }
 
     private void crearEstudiantesAleatorios(int numeroEstudiantes) {
@@ -108,7 +108,7 @@ public class InsertarDatosUsuario implements CommandLineRunner {
 
             Alumno alumno = new Alumno(
                     usuario,
-                    pe.encode("password123"), // Contraseña por defecto
+                    pe.encode("password123"), // password por defecto
                     nombre,
                     apellidosCompletos,
                     dni,

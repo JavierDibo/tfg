@@ -9,9 +9,9 @@ public record DTOPeticionRegistroAlumno(
     @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El usuario solo puede contener letras, números, puntos, guiones y guiones bajos")
     String usuario,
     
-    @NotBlank(message = "La contraseña no puede estar vacía")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
-    String contraseña,
+    @NotBlank(message = "La password no puede estar vacía")
+    @Size(min = 6, message = "La password debe tener al menos 6 caracteres")
+    String password,
     
     @NotBlank(message = "El nombre no puede estar vacío")
     @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")

@@ -93,7 +93,7 @@ public class ValidationTest {
         // Registro válido completo
         DTOPeticionRegistroAlumno validRegistro = new DTOPeticionRegistroAlumno(
             "usuario123",
-            "contraseña123",
+            "password123",
             "Juan",
             "Pérez García",
             "12345678Z",
@@ -107,7 +107,7 @@ public class ValidationTest {
         // Registro con email inválido
         DTOPeticionRegistroAlumno invalidRegistro = new DTOPeticionRegistroAlumno(
             "usuario123",
-            "contraseña123",
+            "password123",
             "Juan",
             "Pérez García",
             "12345678Z",

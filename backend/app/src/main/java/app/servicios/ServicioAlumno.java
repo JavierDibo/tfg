@@ -100,7 +100,7 @@ public class ServicioAlumno {
         // Crear el alumno
         Alumno alumno = new Alumno(
             peticion.usuario(),
-            passwordEncoder.encode(peticion.contraseña()),
+            passwordEncoder.encode(peticion.password()),
             peticion.nombre(),
             peticion.apellidos(),
             peticion.dni(),

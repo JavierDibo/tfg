@@ -28,7 +28,7 @@ La plataforma servirá a tres roles principales: **Administradores**, **Profesor
 * Registro y autenticación de usuarios (Alumnos, Profesores).  
 * Gestión de perfiles de usuario.  
 * Sistema de roles y permisos (Administrador, Profesor, Alumno).  
-* Funcionalidad de "resetear contraseña" mediante correo electrónico.
+* Funcionalidad de "resetear password" mediante correo electrónico.
 
 **Módulo de Academia (Administrador):**
 
@@ -94,7 +94,7 @@ La plataforma servirá a tres roles principales: **Administradores**, **Profesor
 
 #### **3.2. Seguridad**
 
-* **Autenticación y Autorización:** Se implementará con **Spring Security**. Las contraseñas se almacenarán hasheadas usando `BCryptPasswordEncoder`.  
+* **Autenticación y Autorización:** Se implementará con **Spring Security**. Las passwords se almacenarán hasheadas usando `BCryptPasswordEncoder`.  
   * Se utilizará un chequeo del hashing al iniciar sesión y se expedirá un token de JWT válido hasta que finalice la sesión, es decir, un timeout o un logout.  
 * **Protección de Datos:** Todo el tráfico entre el cliente y el servidor se realizará a través de **HTTPS**.  
 * **Pagos:** La gestión de datos de tarjetas de crédito será delegada completamente a **Stripe**, asegurando el cumplimiento de la normativa **PCI-DSS**. La aplicación solo almacenará el identificador de la transacción y su estado.  
@@ -102,8 +102,8 @@ La plataforma servirá a tres roles principales: **Administradores**, **Profesor
 * **CORS**: Se configurará para solo permitir peticiones del frontend.  
 * **Validación de datos:** Anotaciones en los DTOs y @Valid en los controladores.  
 - [ ] SEGURIDAD: Revisar sugerencias (abajo de esta tarea)  
-* **Rate Limiting:** Menciona la implementación de limitación de peticiones (rate limiting) en endpoints críticos como el login y el reseteo de contraseña para prevenir ataques de fuerza bruta. Librerías como Bucket4j se integran bien con Spring Boot.  
-* **Gestión de Secretos:** ¿Cómo se gestionarán las claves de API (Stripe, SendGrid), contraseñas de la base de datos, etc.? Mencionar el uso de variables de entorno o un sistema de gestión de secretos (como GitHub Secrets para Actions, o Vault) fortalecería esta sección.
+* **Rate Limiting:** Menciona la implementación de limitación de peticiones (rate limiting) en endpoints críticos como el login y el reseteo de password para prevenir ataques de fuerza bruta. Librerías como Bucket4j se integran bien con Spring Boot.  
+* **Gestión de Secretos:** ¿Cómo se gestionarán las claves de API (Stripe, SendGrid), passwords de la base de datos, etc.? Mencionar el uso de variables de entorno o un sistema de gestión de secretos (como GitHub Secrets para Actions, o Vault) fortalecería esta sección.
 
 
 #### **3.3. Cumplimiento Normativo (LOPD/RGPD)**

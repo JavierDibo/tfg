@@ -40,13 +40,13 @@ enum eNivel #baf5ba {
 abstract class Usuario <<Entidad>> #baecf5 {
   - id: string
   - usuario: string
-  - contraseña: string 
+  - password: string 
   - nombre: string
   - apellidos: string
   - dni: string
   - email : string
   - numeroTelefono: string
-  + resetearContraseña()
+  + resetearpassword()
 }
 
 class Profesor <<Entidad>> #baecf5 extends Usuario  {
@@ -149,7 +149,7 @@ Taller y Curso la implementan
 end note
 
 note as NotaUsuario
-La contraseña se encriptaria
+La password se encriptaria
 con BCryptPasswordEncoder
 
 El reseteo debería funcionar

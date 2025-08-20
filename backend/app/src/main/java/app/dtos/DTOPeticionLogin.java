@@ -6,6 +6,6 @@ public record DTOPeticionLogin(
     @NotBlank(message = "El username es obligatorio")
     String username,
     
-    @NotBlank(message = "La contraseña es obligatoria")
+    @NotBlank(message = "La password es obligatoria")
     String password
 ) {} 
