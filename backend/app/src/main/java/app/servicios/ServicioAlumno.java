@@ -4,10 +4,15 @@ import app.dtos.DTOActualizacionAlumno;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
+import app.dtos.DTORespuestaPaginada;
 import app.entidades.Alumno;
 import app.excepciones.EntidadNoEncontradaException;
 import app.repositorios.RepositorioAlumno;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,7 +100,7 @@ public class ServicioAlumno {
         // Crear el alumno
         Alumno alumno = new Alumno(
             peticion.usuario(),
-            passwordEncoder.encode(peticion.contraseña()),
+            passwordEncoder.encode(peticion.password()),
             peticion.nombre(),
             peticion.apellidos(),
             peticion.dni(),
@@ -183,5 +188,109 @@ public class ServicioAlumno {
 
     public long contarTotalAlumnos() {
         return repositorioAlumno.count();
+    }
+
+    // Métodos con paginación
+    
+    /**
+     * Obtiene todos los alumnos con paginación
+     * @param page número de página (0-indexed)
+     * @param size tamaño de página
+     * @param sortBy campo por el que ordenar (por defecto: id)
+     * @param sortDirection dirección del ordenamiento (por defecto: ASC)
+     * @return DTORespuestaPaginada con los alumnos y metadatos de paginación
+     */
+    public DTORespuestaPaginada<DTOAlumno> obtenerAlumnosPaginados(
+            int page, int size, String sortBy, String sortDirection) {
+        
+        // Validar parámetros
+        if (page < 0) page = 0;
+        if (size <= 0 || size > 100) size = 20; // Máximo 100 elementos por página
+        if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
+        
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (Exception e) {
+            direction = Sort.Direction.ASC;
+        }
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<Alumno> pageAlumnos = repositorioAlumno.findAllPaged(pageable);
+        
+        // Convertir a DTOs
+        Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
+        
+        return new DTORespuestaPaginada<>(pageDTOs);
+    }
+    
+    /**
+     * Busca alumnos por parámetros con paginación
+     */
+    public DTORespuestaPaginada<DTOAlumno> buscarAlumnosPorParametrosPaginados(
+            DTOParametrosBusquedaAlumno parametros, int page, int size, String sortBy, String sortDirection) {
+        
+        // Validar parámetros
+        if (page < 0) page = 0;
+        if (size <= 0 || size > 100) size = 20;
+        if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
+        
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (Exception e) {
+            direction = Sort.Direction.ASC;
+        }
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        Page<Alumno> pageAlumnos;
+        
+        // Si todos los parámetros son nulos, usar findAllPaged
+        if (parametros.nombre() == null && parametros.apellidos() == null && 
+            parametros.dni() == null && parametros.email() == null && parametros.matriculado() == null) {
+            pageAlumnos = repositorioAlumno.findAllPaged(pageable);
+        } else {
+            pageAlumnos = repositorioAlumno.findByFiltrosPaged(
+                parametros.nombre(), 
+                parametros.apellidos(),
+                parametros.dni(),
+                parametros.email(),
+                parametros.matriculado(),
+                pageable
+            );
+        }
+        
+        // Convertir a DTOs
+        Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
+        
+        return new DTORespuestaPaginada<>(pageDTOs);
+    }
+    
+    /**
+     * Obtiene alumnos matriculados/no matriculados con paginación
+     */
+    public DTORespuestaPaginada<DTOAlumno> obtenerAlumnosPorMatriculadoPaginados(
+            boolean matriculado, int page, int size, String sortBy, String sortDirection) {
+        
+        // Validar parámetros
+        if (page < 0) page = 0;
+        if (size <= 0 || size > 100) size = 20;
+        if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
+        
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (Exception e) {
+            direction = Sort.Direction.ASC;
+        }
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<Alumno> pageAlumnos = repositorioAlumno.findByMatriculadoPaged(matriculado, pageable);
+        
+        // Convertir a DTOs
+        Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
+        
+        return new DTORespuestaPaginada<>(pageDTOs);
     }
 }

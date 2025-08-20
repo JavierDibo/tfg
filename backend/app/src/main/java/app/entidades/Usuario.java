@@ -33,7 +33,7 @@ public class Usuario implements UserDetails {
     
     @NotNull
     @Size(min = 6)
-    private String contraseña;
+    private String password;
     
     @NotNull
     @Size(max = 100)
@@ -69,9 +69,9 @@ public class Usuario implements UserDetails {
     
     public Usuario() {}
     
-    public Usuario(String usuario, String contraseña, String nombre, String apellidos, String dni, String email, String numeroTelefono) {
+    public Usuario(String usuario, String password, String nombre, String apellidos, String dni, String email, String numeroTelefono) {
         this.usuario = usuario;
-        this.contraseña = contraseña;
+        this.password = password;
         this.nombre = nombre;
         this.apellidos = apellidos;
         this.dni = dni;
@@ -86,7 +86,7 @@ public class Usuario implements UserDetails {
     
     @Override
     public String getPassword() {
-        return this.contraseña;
+        return this.password;
     }
     
     @Override

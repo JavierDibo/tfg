@@ -1,5 +1,6 @@
-import type { DTOAlumno, DTOPeticionRegistroAlumno, DTOActualizacionAlumno } from '$lib/generated/api';
+import type { DTOAlumno, DTOPeticionRegistroAlumno, DTOActualizacionAlumno, DTORespuestaPaginadaDTOAlumno } from '$lib/generated/api';
 import { alumnoApi } from '$lib/api';
+import type { PaginatedAlumnosResponse } from '$lib/types/pagination';
 
 // Search parameters interface
 export interface AlumnoSearchParams {
@@ -32,6 +33,31 @@ export interface AlumnoStatistics {
 
 export class AlumnoService {
   
+  // ==================== PAGINATED OPERATIONS ====================
+  
+  /**
+   * Get students with pagination and filters (unified method)
+   */
+  static async getPaginatedAlumnos(params: {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: 'ASC' | 'DESC';
+    nombre?: string;
+    apellidos?: string;
+    dni?: string;
+    email?: string;
+    matriculado?: boolean;
+  } = {}): Promise<DTORespuestaPaginadaDTOAlumno> {
+    try {
+      // Use the pre-configured API (handles auth automatically)
+      return await alumnoApi.obtenerAlumnosPaginados(params);
+    } catch (error) {
+      console.error('Error fetching paginated alumnos:', error);
+      throw this.handleApiError(error);
+    }
+  }
+  
   // ==================== CRUD Operations ====================
   
   /**
@@ -59,6 +85,26 @@ export class AlumnoService {
       return response;
     } catch (error) {
       console.error('Error fetching alumnos:', error);
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
+   * Get all filtered students for CSV export (uses same filters as pagination)
+   */
+  static async getAllFilteredAlumnos(filters: {
+    nombre?: string;
+    apellidos?: string;
+    dni?: string;
+    email?: string;
+    matriculado?: boolean;
+  }): Promise<DTOAlumno[]> {
+    try {
+      // Use the obtenerAlumnos API which returns all students matching the filters
+      const response = await alumnoApi.obtenerAlumnos(filters);
+      return response;
+    } catch (error) {
+      console.error('Error fetching filtered alumnos for export:', error);
       throw this.handleApiError(error);
     }
   }

@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -20,6 +21,7 @@ public class InsertarDatosUsuario implements CommandLineRunner {
     private final RepositorioAlumno repositorioAlumno;
     private final PasswordEncoder pe;
     private final Random random = new Random();
+    private ArrayList<Alumno> alumnos = new ArrayList<>();
 
     @Override
     public void run(String... args) throws Exception {
@@ -29,23 +31,26 @@ public class InsertarDatosUsuario implements CommandLineRunner {
     private void datos() {
         // Crear usuarios de prueba si no existen
         if (repositorioUsuario.count() == 0) {
-            crearEstudiantesAleatorios(25);
+            crearEstudiantesAleatorios(1000);
             crearUsuariosPrueba();
         }
     }
 
     private void crearUsuariosPrueba() {
+
+        ArrayList<Usuario> usuarios = new ArrayList<>();
+
         Usuario admin = new Usuario(
                 "admin",
                 pe.encode("admin"),
                 "Administrador",
                 "Sistema",
-                "12345678A",
+                "12345678Z",
                 "admin@academia.com",
                 "600000000"
         );
         admin.setRol(Usuario.Rol.ADMIN);
-        repositorioUsuario.save(admin);
+        usuarios.add(admin);
 
         // Crear un usuario deshabilitado para pruebas
         Usuario usuarioDeshabilitado = new Usuario(
@@ -53,17 +58,18 @@ public class InsertarDatosUsuario implements CommandLineRunner {
                 pe.encode("password123"),
                 "Usuario",
                 "Deshabilitado",
-                "11111111Z",
+                "11111111H",
                 "disabled@academia.com",
                 "600000002"
         );
         usuarioDeshabilitado.setRol(Usuario.Rol.USUARIO);
         usuarioDeshabilitado.setEnabled(false); // Usuario deshabilitado
-        repositorioUsuario.save(usuarioDeshabilitado);
+        usuarios.add(admin);
+        repositorioUsuario.saveAll(usuarios);
 
         System.out.println("Usuarios de prueba creados:");
-        System.out.println("Admin - username: " + admin.getUsername() + ", contraseña: admin");
-        System.out.println("Usuario Deshabilitado - username: " + usuarioDeshabilitado.getUsername() + ", contraseña: password123 (DESHABILITADO)");
+        System.out.println("Admin - username: " + admin.getUsername() + ", password: admin");
+        System.out.println("Usuario Deshabilitado - username: " + usuarioDeshabilitado.getUsername() + ", password: password123 (DESHABILITADO)");
     }
 
     private void crearEstudiantesAleatorios(int numeroEstudiantes) {
@@ -102,7 +108,7 @@ public class InsertarDatosUsuario implements CommandLineRunner {
 
             Alumno alumno = new Alumno(
                     usuario,
-                    pe.encode("password123"), // Contraseña por defecto
+                    pe.encode("password123"), // password por defecto
                     nombre,
                     apellidosCompletos,
                     dni,
@@ -111,11 +117,13 @@ public class InsertarDatosUsuario implements CommandLineRunner {
             );
 
             alumno.setMatriculado(matriculado);
-            repositorioAlumno.save(alumno);
+            alumnos.add(alumno);
 
-            System.out.println(String.format("  %d. %s %s - usuario: %s, DNI: %s, matriculado: %s",
-                    i, nombre, apellidosCompletos, usuario, dni, matriculado ? "Sí" : "No"));
+            // System.out.println(String.format("  %d. %s %s - usuario: %s, DNI: %s, matriculado: %s", i, nombre, apellidosCompletos, usuario, dni, matriculado ? "Sí" : "No"));
         }
+
+        repositorioAlumno.saveAll(alumnos);
+        System.out.println("Estudiantes aleatorios creados: " + alumnos.size());
     }
 
     private String generarDniAleatorio() {

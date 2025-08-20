@@ -1,916 +1,583 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import type { DTOAlumno } from '$lib/generated/api';
-  import { AlumnoService, type AlumnoSearchParams } from '$lib/services/alumnoService';
-  import { authStore } from '$lib/stores/authStore.svelte';
+	import { onMount } from 'svelte';
+	import { goto, invalidate } from '$app/navigation';
+	import { page } from '$app/stores';
+	import type { DTOAlumno } from '$lib/generated/api';
+	import { AlumnoService } from '$lib/services/alumnoService';
+	import { authStore } from '$lib/stores/authStore.svelte';
+	import type { PageData } from './$types';
+	import { getPageDisplayInfo, type PaginatedAlumnosResponse } from '$lib/types/pagination';
+	import {
+		AlumnosSearchSection,
+		AlumnosPaginationControls,
+		AlumnosDataTable,
+		AlumnosDeleteModal,
+		AlumnosMessages
+	} from '$lib/components/alumnos';
 
-  // State management
-  let alumnos: DTOAlumno[] = $state([]);
-  let loading = $state(false);
-  let error = $state<string | null>(null);
-  let successMessage = $state<string | null>(null);
+	// Props from load function
+	const { data }: { data: PageData } = $props();
 
-  // Search and filter state
-  let searchParams: AlumnoSearchParams = $state({
-    // Campos de texto
-    nombre: '',
-    apellidos: '',
-    usuario: '',
-    dni: '',
-    email: '',
-    numeroTelefono: '',
-    
-    // Estados booleanos
-    matriculado: undefined,
-    enabled: undefined,
-    
-    // Filtros de fecha
-    fechaInscripcionDesde: undefined,
-    fechaInscripcionHasta: undefined,
-    
-    // Búsqueda general
-    busquedaGeneral: ''
-  });
+	// Minimal state - only what's not in URL
+	let loading = $state(false);
+	let error = $state<string | null>(null);
+	let successMessage = $state<string | null>(null);
+	let paginatedData = $state<PaginatedAlumnosResponse | null>(null);
+	
+	// Debug reactive updates
+	$effect(() => {
+		if (paginatedData?.content) {
+			console.log('🔄 paginatedData updated - content length:', paginatedData.content.length);
+			console.log('🔄 Current URL:', $page.url.toString());
+			console.log('🔄 Current filters in URL:', Object.fromEntries($page.url.searchParams.entries()));
+		}
+	});
 
-  // UI state for search
-  let showAdvancedSearch = $state(false);
-  let searchMode = $state<'simple' | 'advanced'>('simple');
+	// Modal state
+	let showDeleteModal = $state(false);
+	let alumnoToDelete: DTOAlumno | null = $state(null);
 
-  // Pagination state
-  let currentPage = $state(1);
-  let itemsPerPage = $state(10);
-  
-  // Modal state
-  let showDeleteModal = $state(false);
-  let alumnoToDelete: DTOAlumno | null = $state(null);
+	// All derived from URL - no duplication
+	const currentPagination = $derived(data.pagination);
+	const currentFilters = $derived(data.filters);
+	const currentUrl = $derived($page.url);
 
-  // Check authentication and permissions
-  $effect(() => {
-    if (!authStore.isAuthenticated) {
-      goto('/auth');
-      return;
-    }
-    
-    if (!authStore.isAdmin && !authStore.isProfesor) {
-      goto('/');
-      return;
-    }
-  });
+	// UI helpers
+	const pageDisplayInfo = $derived(
+		paginatedData?.page ? getPageDisplayInfo(paginatedData.page) : null
+	);
 
-  onMount(() => {
-    loadAlumnos();
-  });
+	// Check authentication and permissions
+	$effect(() => {
+		if (!authStore.isAuthenticated) {
+			goto('/auth');
+			return;
+		}
 
-  // ==================== SEARCH FUNCTIONS ====================
-  
-  /**
-   * Búsqueda general en todos los campos de texto
-   */
-  function matchesGeneralSearch(alumno: DTOAlumno, searchTerm: string): boolean {
-    if (!searchTerm) return true;
-    
-    const term = searchTerm.toLowerCase();
-    const searchableFields = [
-      alumno.nombre,
-      alumno.apellidos,
-      alumno.usuario,
-      alumno.dni,
-      alumno.email,
-      alumno.numeroTelefono || ''
-    ];
-    
-    return searchableFields.some(field => 
-      field.toLowerCase().includes(term)
-    );
-  }
+		if (!authStore.isAdmin && !authStore.isProfesor) {
+			goto('/');
+			return;
+		}
+	});
 
-  /**
-   * Verificar si una fecha está en el rango especificado
-   */
-  function isDateInRange(date: Date | undefined, desde: Date | undefined, hasta: Date | undefined): boolean {
-    if (!date) return false;
-    if (!desde && !hasta) return true;
-    
-    const targetDate = new Date(date);
-    
-    if (desde && targetDate < desde) return false;
-    if (hasta && targetDate > hasta) return false;
-    
-    return true;
-  }
+	// Track URL changes separately from data updates
+	let lastUrlKey = $state('');
 
-  // Computed properties
-  const filteredAlumnos = $derived(() => {
-    const filtered = alumnos.filter(alumno => {
-      // Determinar si usa búsqueda general o filtros específicos
-      let matchesTextFields = false;
+	// Load data when URL changes (pagination/filters) or auth changes
+	$effect(() => {
+		if (authStore.isAuthenticated && (authStore.isAdmin || authStore.isProfesor)) {
+			const urlKey = `${currentPagination.page}-${currentPagination.size}-${currentPagination.sortBy}-${currentPagination.sortDirection}-${JSON.stringify(currentFilters)}`;
 
-      if (searchParams.busquedaGeneral && searchParams.busquedaGeneral.trim()) {
-        // Modo búsqueda general
-        matchesTextFields = matchesGeneralSearch(alumno, searchParams.busquedaGeneral);
-      } else {
-        // Modo filtros específicos de campos de texto
-        const matchesNombre = !searchParams.nombre || 
-          alumno.nombre.toLowerCase().includes(searchParams.nombre.toLowerCase());
-        
-        const matchesApellidos = !searchParams.apellidos || 
-          alumno.apellidos.toLowerCase().includes(searchParams.apellidos.toLowerCase());
-        
-        const matchesUsuario = !searchParams.usuario || 
-          alumno.usuario.toLowerCase().includes(searchParams.usuario.toLowerCase());
-        
-        const matchesDni = !searchParams.dni || 
-          alumno.dni.toLowerCase().includes(searchParams.dni.toLowerCase());
-        
-        const matchesEmail = !searchParams.email || 
-          alumno.email.toLowerCase().includes(searchParams.email.toLowerCase());
-        
-        const matchesTelefono = !searchParams.numeroTelefono || 
-          (alumno.numeroTelefono && alumno.numeroTelefono.includes(searchParams.numeroTelefono));
+			if (urlKey !== lastUrlKey) {
+				lastUrlKey = urlKey;
+				loadData();
+			}
+		}
+	});
 
-        matchesTextFields = Boolean(matchesNombre && matchesApellidos && matchesUsuario && 
-                                   matchesDni && matchesEmail && matchesTelefono);
-      }
+	// Helper function to normalize text for case and accent insensitive search
+	function normalizeText(text: string): string {
+		return text
+			.toLowerCase()
+			.normalize('NFD') // Decompose accented characters
+			.replace(/[\u0300-\u036f]/g, '') // Remove accent marks
+			.trim();
+	}
 
-      // Filtros de estado (SIEMPRE se aplican, independientemente del modo de búsqueda)
-      const matchesMatriculado = searchParams.matriculado === undefined || 
-        alumno.matriculado === searchParams.matriculado;
-      
-      const matchesEnabled = searchParams.enabled === undefined || 
-        alumno.enabled === searchParams.enabled;
+	// Simple data loading
+	async function loadData() {
+		loading = true;
+		error = null;
 
-      // Filtro de fecha de inscripción (SIEMPRE se aplica)
-      const matchesFechaInscripcion = isDateInRange(
-        alumno.fechaInscripcion,
-        searchParams.fechaInscripcionDesde,
-        searchParams.fechaInscripcionHasta
-      );
+		try {
+			// Build search parameters based on search mode
+			let searchParams: any = {
+				...currentPagination,
+				matriculado: currentFilters.matriculado
+			};
+			
+			if (currentFilters.searchMode === 'advanced') {
+				// Advanced mode: use specific field filters
+				if (currentFilters.nombre?.trim()) searchParams.nombre = currentFilters.nombre.trim();
+				if (currentFilters.apellidos?.trim()) searchParams.apellidos = currentFilters.apellidos.trim();
+				if (currentFilters.dni?.trim()) searchParams.dni = currentFilters.dni.trim();
+				if (currentFilters.email?.trim()) searchParams.email = currentFilters.email.trim();
+			}
 
-      // Combinar TODOS los filtros
-      return matchesTextFields && matchesMatriculado && matchesEnabled && matchesFechaInscripcion;
-    });
-    
-    return filtered;
-  });
+			// Handle general search vs normal pagination
+			if (currentFilters.searchMode === 'simple' && currentFilters.busquedaGeneral?.trim()) {
+				// For general search, we need to search across all fields
+				const searchTerm = normalizeText(currentFilters.busquedaGeneral);
+				console.log('🔍 SEARCHING for:', `"${currentFilters.busquedaGeneral}" -> "${searchTerm}"`);
+				
+				// Get all students
+				const allStudents = await AlumnoService.getAllFilteredAlumnos({
+					matriculado: currentFilters.matriculado
+				});
+				console.log('📊 Total students:', allStudents.length);
+				
+				// Show a sample of actual data from backend
+				if (allStudents.length > 0) {
+					const sample = allStudents[0];
+					console.log('📝 Sample student data:', {
+						nombre: sample.nombre,
+						apellidos: sample.apellidos,
+						usuario: sample.usuario,
+						normalized_nombre: normalizeText(sample.nombre || ''),
+						normalized_apellidos: normalizeText(sample.apellidos || '')
+					});
+				}
+				
+				// Split search term into words for multi-word search
+				const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
+				console.log('🔍 Search words:', searchWords);
+				
+				// Filter students - all words must be found somewhere in the searchable fields
+				const filteredStudents = allStudents.filter((alumno: any) => {
+					const searchableFields = [
+						normalizeText(alumno.nombre || ''),
+						normalizeText(alumno.apellidos || ''),
+						normalizeText(alumno.usuario || ''),
+						normalizeText(alumno.dni || ''),
+						normalizeText(alumno.email || ''),
+						normalizeText(alumno.numeroTelefono || '')
+					];
+					
+					// Combine all searchable fields into one string
+					const allFieldsText = searchableFields.join(' ');
+					
+					// Check that ALL search words are found in the combined text
+					return searchWords.every(word => allFieldsText.includes(word));
+				});
+				console.log('✅ Found matches:', filteredStudents.length);
+				
+				// Implement client-side pagination
+				const pageSize = currentPagination.size;
+				const currentPageIndex = currentPagination.page;
+				const startIndex = currentPageIndex * pageSize;
+				const endIndex = startIndex + pageSize;
+				const paginatedResults = filteredStudents.slice(startIndex, endIndex);
+				
+				// Create paginated response structure - force reactivity
+				const newPaginatedData = {
+					content: paginatedResults,
+					page: {
+						size: pageSize,
+						number: currentPageIndex,
+						totalElements: filteredStudents.length,
+						totalPages: Math.ceil(filteredStudents.length / pageSize),
+						first: currentPageIndex === 0,
+						last: currentPageIndex >= Math.ceil(filteredStudents.length / pageSize) - 1,
+						hasNext: currentPageIndex < Math.ceil(filteredStudents.length / pageSize) - 1,
+						hasPrevious: currentPageIndex > 0
+					}
+				};
+				
+				// Force Svelte 5 reactivity by reassigning
+				paginatedData = newPaginatedData;
+				console.log('📄 Paginated results for UI:', {
+					totalResults: filteredStudents.length,
+					currentPage: currentPageIndex,
+					pageSize: pageSize,
+					resultsOnThisPage: paginatedResults.length,
+					firstResult: paginatedResults[0]?.nombre,
+					paginatedDataSet: !!paginatedData
+				});
+			} else {
+				// Normal backend pagination for advanced search or no search
+				paginatedData = await AlumnoService.getPaginatedAlumnos(searchParams);
+			}
+		} catch (err) {
+			error = `Error al cargar alumnos: ${err}`;
+			console.error('Error loading alumnos:', err);
+		} finally {
+			loading = false;
+		}
+	}
 
-  const paginatedAlumnos = $derived(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginated = filteredAlumnos().slice(startIndex, endIndex);
-    console.log('Pagination - currentPage:', currentPage, 'itemsPerPage:', itemsPerPage);
-    console.log('Pagination - startIndex:', startIndex, 'endIndex:', endIndex);
-    console.log('Paginated alumnos:', paginated);
-    console.log('Paginated count:', paginated.length);
-    return paginated;
-  });
+	// Simple navigation - just update URL
+	function goToPage(page: number) {
+		const url = new URL(currentUrl);
+		url.searchParams.set('page', Math.max(0, page - 1).toString());
+		goto(url.toString());
+	}
 
-  const totalPages = $derived(() => {
-    return Math.ceil(filteredAlumnos().length / itemsPerPage);
-  });
+	function changePageSize(newSize: number) {
+		const url = new URL(currentUrl);
+		url.searchParams.set('size', newSize.toString());
+		url.searchParams.set('page', '0'); // Reset to first page
+		goto(url.toString());
+	}
 
-  // Functions
-  async function loadAlumnos() {
-    loading = true;
-    error = null;
-    try {
-      alumnos = await AlumnoService.getAlumnos();
-      console.log('Loaded alumnos:', alumnos);
-      console.log('Alumnos count:', alumnos.length);
-    } catch (err) {
-      error = `Error al cargar alumnos: ${err}`;
-      console.error('Error loading alumnos:', err);
-    } finally {
-      loading = false;
-    }
-  }
+	function changeSorting(newSortBy: string, newDirection?: 'ASC' | 'DESC') {
+		const url = new URL(currentUrl);
+		url.searchParams.set('sortBy', newSortBy);
 
-  async function toggleEnrollmentStatus(alumno: DTOAlumno) {
-    if (!authStore.isAdmin) {
-      error = 'No tienes permisos para cambiar el estado de matrícula';
-      return;
-    }
+		if (newDirection) {
+			url.searchParams.set('sortDirection', newDirection);
+		} else {
+			// Toggle direction if same field
+			const currentDirection = currentPagination.sortDirection === 'ASC' ? 'DESC' : 'ASC';
+			url.searchParams.set('sortDirection', currentDirection);
+		}
 
-    try {
-      const updatedAlumno = await AlumnoService.changeEnrollmentStatus(
-        alumno.id!, 
-        !alumno.matriculado
-      );
-      
-      // Update the local state
-      const index = alumnos.findIndex(a => a.id === alumno.id);
-      if (index !== -1) {
-        alumnos[index] = updatedAlumno;
-      }
-      
-      successMessage = `Estado de matrícula ${updatedAlumno.matriculado ? 'activado' : 'desactivado'} correctamente`;
-      setTimeout(() => successMessage = null, 3000);
-    } catch (err) {
-      error = `Error al cambiar estado de matrícula: ${err}`;
-    }
-  }
+		url.searchParams.set('page', '0'); // Reset to first page
+		goto(url.toString());
+	}
 
-  async function toggleAccountStatus(alumno: DTOAlumno) {
-    if (!authStore.isAdmin) {
-      error = 'No tienes permisos para habilitar/deshabilitar cuentas';
-      return;
-    }
+	function updateFilters(newFilters: Record<string, string | boolean | undefined>) {
+		const url = new URL(currentUrl);
+		url.searchParams.set('page', '0'); // Reset page
 
-    try {
-      const updatedAlumno = await AlumnoService.toggleAccountStatus(
-        alumno.id!, 
-        !alumno.enabled
-      );
-      
-      // Update the local state
-      const index = alumnos.findIndex(a => a.id === alumno.id);
-      if (index !== -1) {
-        alumnos[index] = updatedAlumno;
-      }
-      
-      successMessage = `Cuenta ${updatedAlumno.enabled ? 'habilitada' : 'deshabilitada'} correctamente`;
-      setTimeout(() => successMessage = null, 3000);
-    } catch (err) {
-      error = `Error al cambiar estado de cuenta: ${err}`;
-    }
-  }
+		Object.entries(newFilters).forEach(([key, value]) => {
+			if (value !== undefined && value !== '') {
+				url.searchParams.set(key, value.toString());
+			} else {
+				url.searchParams.delete(key);
+			}
+		});
 
-  function confirmDelete(alumno: DTOAlumno) {
-    alumnoToDelete = alumno;
-    showDeleteModal = true;
-  }
+		goto(url.toString());
+	}
 
-  async function deleteAlumno() {
-    if (!alumnoToDelete || !authStore.isAdmin) return;
+	function clearFilters() {
+		const url = new URL(currentUrl);
+		['nombre', 'apellidos', 'dni', 'email', 'matriculado', 'busquedaGeneral'].forEach((key) => {
+			url.searchParams.delete(key);
+		});
+		url.searchParams.set('page', '0');
+		url.searchParams.set('searchMode', 'simple');
+		goto(url.toString());
+	}
 
-    try {
-      await AlumnoService.deleteAlumno(alumnoToDelete.id!);
-      
-      // Remove from local state
-      alumnos = alumnos.filter(a => a.id !== alumnoToDelete!.id);
-      
-      successMessage = 'Alumno eliminado correctamente';
-      setTimeout(() => successMessage = null, 3000);
-      
-      showDeleteModal = false;
-      alumnoToDelete = null;
-    } catch (err) {
-      error = `Error al eliminar alumno: ${err}`;
-      showDeleteModal = false;
-      alumnoToDelete = null;
-    }
-  }
+	function switchSearchMode(mode: 'simple' | 'advanced') {
+		const url = new URL(currentUrl);
+		url.searchParams.set('searchMode', mode);
+		url.searchParams.set('page', '0');
 
-  function clearSearch() {
-    searchParams = {
-      nombre: '',
-      apellidos: '',
-      usuario: '',
-      dni: '',
-      email: '',
-      numeroTelefono: '',
-      matriculado: undefined,
-      enabled: undefined,
-      fechaInscripcionDesde: undefined,
-      fechaInscripcionHasta: undefined,
-      busquedaGeneral: ''
-    };
-    currentPage = 1;
-  }
+		if (mode === 'simple') {
+			// Clear advanced filters
+			['nombre', 'apellidos', 'dni', 'email'].forEach((key) => {
+				url.searchParams.delete(key);
+			});
+		} else {
+			// Clear general search
+			url.searchParams.delete('busquedaGeneral');
+		}
 
-  function switchSearchMode(mode: 'simple' | 'advanced') {
-    searchMode = mode;
-    if (mode === 'simple') {
-      // Limpiar filtros avanzados pero conservar búsqueda general
-      const generalSearch = searchParams.busquedaGeneral;
-      clearSearch();
-      searchParams.busquedaGeneral = generalSearch;
-    } else {
-      // Limpiar búsqueda general al cambiar a avanzada
-      searchParams.busquedaGeneral = '';
-    }
-  }
+		goto(url.toString());
+	}
 
-  function exportResults() {
-    const csvContent = generateCSV(filteredAlumnos());
-    downloadCSV(csvContent, 'alumnos-filtered.csv');
-  }
+	// Student actions
+	async function toggleEnrollmentStatus(alumno: DTOAlumno) {
+		if (!authStore.isAdmin) {
+			error = 'No tienes permisos para cambiar el estado de matrícula';
+			return;
+		}
 
-  function generateCSV(data: DTOAlumno[]): string {
-    const headers = ['ID', 'Usuario', 'Nombre', 'Apellidos', 'DNI', 'Email', 'Teléfono', 'Fecha Inscripción', 'Matriculado', 'Habilitado'];
-    const rows = data.map(alumno => [
-      alumno.id || '',
-      alumno.usuario,
-      alumno.nombre,
-      alumno.apellidos,
-      alumno.dni,
-      alumno.email,
-      alumno.numeroTelefono || '',
-      alumno.fechaInscripcion ? formatDate(alumno.fechaInscripcion) : '',
-      alumno.matriculado ? 'Sí' : 'No',
-      alumno.enabled ? 'Sí' : 'No'
-    ]);
-    
-    return [headers, ...rows].map(row => 
-      row.map(field => `"${field}"`).join(',')
-    ).join('\n');
-  }
+		// Prevent any potential focus-related scrolling
+		(document.activeElement as HTMLElement)?.blur();
 
-  function downloadCSV(content: string, filename: string) {
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  }
+		try {
+			loading = true;
 
-  function formatDateForInput(date: Date | undefined): string {
-    if (!date) return '';
-    return new Date(date).toISOString().split('T')[0];
-  }
+			const updatedAlumno = await AlumnoService.changeEnrollmentStatus(
+				alumno.id!,
+				!alumno.matriculado
+			);
 
-  function goToPage(page: number) {
-    currentPage = page;
-  }
+			// Update the local data
+			if (paginatedData?.content) {
+				const index = paginatedData.content.findIndex((a: DTOAlumno) => a.id === alumno.id);
+				if (index !== -1) {
+					paginatedData.content[index] = updatedAlumno;
+					paginatedData = { ...paginatedData }; // Trigger reactivity
+				}
+			}
 
-  function formatDate(date: Date | undefined): string {
-    if (!date) return '-';
-    return new Date(date).toLocaleDateString('es-ES');
-  }
+			successMessage = `Estado de matrícula ${updatedAlumno.matriculado ? 'activado' : 'desactivado'} correctamente`;
+			setTimeout(() => (successMessage = null), 1500);
+		} catch (err) {
+			error = `Error al cambiar estado de matrícula: ${err}`;
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function toggleAccountStatus(alumno: DTOAlumno) {
+		if (!authStore.isAdmin) {
+			error = 'No tienes permisos para habilitar/deshabilitar cuentas';
+			return;
+		}
+
+		// Prevent any potential focus-related scrolling
+		(document.activeElement as HTMLElement)?.blur();
+
+		try {
+			loading = true;
+
+			const updatedAlumno = await AlumnoService.toggleAccountStatus(alumno.id!, !alumno.enabled);
+
+			// Update the local data
+			if (paginatedData?.content) {
+				const index = paginatedData.content.findIndex((a: DTOAlumno) => a.id === alumno.id);
+				if (index !== -1) {
+					paginatedData.content[index] = updatedAlumno;
+					paginatedData = { ...paginatedData }; // Trigger reactivity
+				}
+			}
+
+			successMessage = `Cuenta ${updatedAlumno.enabled ? 'habilitada' : 'deshabilitada'} correctamente`;
+			setTimeout(() => (successMessage = null), 1500);
+		} catch (err) {
+			error = `Error al cambiar estado de cuenta: ${err}`;
+		} finally {
+			loading = false;
+		}
+	}
+
+	function confirmDelete(alumno: DTOAlumno) {
+		alumnoToDelete = alumno;
+		showDeleteModal = true;
+	}
+
+	async function deleteAlumno() {
+		if (!alumnoToDelete || !authStore.isAdmin) return;
+
+		try {
+			loading = true;
+
+			await AlumnoService.deleteAlumno(alumnoToDelete.id!);
+
+			successMessage = 'Alumno eliminado correctamente';
+			setTimeout(() => (successMessage = null), 1500);
+
+			showDeleteModal = false;
+			alumnoToDelete = null;
+
+			// Reload data
+			await loadData();
+		} catch (err) {
+			error = `Error al eliminar alumno: ${err}`;
+			showDeleteModal = false;
+			alumnoToDelete = null;
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Utility functions
+	async function exportResults() {
+		try {
+			loading = true;
+			
+			// Build filters from current filter state - only include non-empty values
+			const exportFilters: {
+				nombre?: string;
+				apellidos?: string;
+				dni?: string;
+				email?: string;
+				matriculado?: boolean;
+			} = {};
+			
+			// Add filters that are actually being used
+			if (currentFilters.nombre?.trim()) exportFilters.nombre = currentFilters.nombre.trim();
+			if (currentFilters.apellidos?.trim()) exportFilters.apellidos = currentFilters.apellidos.trim();
+			if (currentFilters.dni?.trim()) exportFilters.dni = currentFilters.dni.trim();
+			if (currentFilters.email?.trim()) exportFilters.email = currentFilters.email.trim();
+			if (currentFilters.matriculado !== undefined && currentFilters.matriculado !== null) {
+				exportFilters.matriculado = currentFilters.matriculado;
+			}
+			
+			// Get ALL filtered results (not just current page)
+			const allFilteredData = await AlumnoService.getAllFilteredAlumnos(exportFilters);
+			
+			// Filter by general search if in simple mode (case and accent insensitive)
+			let finalData = allFilteredData;
+			if (currentFilters.searchMode === 'simple' && currentFilters.busquedaGeneral?.trim()) {
+				const term = normalizeText(currentFilters.busquedaGeneral);
+				const searchWords = term.split(/\s+/).filter(word => word.length > 0);
+				
+				finalData = allFilteredData.filter((alumno) => {
+					const searchableFields = [
+						normalizeText(alumno.nombre || ''),
+						normalizeText(alumno.apellidos || ''),
+						normalizeText(alumno.usuario || ''),
+						normalizeText(alumno.dni || ''),
+						normalizeText(alumno.email || ''),
+						normalizeText(alumno.numeroTelefono || '')
+					];
+					
+					const allFieldsText = searchableFields.join(' ');
+					return searchWords.every(word => allFieldsText.includes(word));
+				});
+			}
+			
+			if (finalData.length === 0) {
+				error = 'No hay datos para exportar con los filtros actuales';
+				setTimeout(() => (error = null), 3000);
+				return;
+			}
+			
+			const csvContent = generateCSV(finalData);
+			downloadCSV(csvContent, `alumnos-export-${finalData.length}-records.csv`);
+			
+			successMessage = `Exportados ${finalData.length} alumnos correctamente`;
+			setTimeout(() => (successMessage = null), 3000);
+			
+		} catch (err) {
+			error = `Error al exportar datos: ${err}`;
+			setTimeout(() => (error = null), 5000);
+		} finally {
+			loading = false;
+		}
+	}
+
+	function generateCSV(data: DTOAlumno[]): string {
+		const headers = [
+			'ID',
+			'Usuario',
+			'Nombre',
+			'Apellidos',
+			'DNI',
+			'Email',
+			'Teléfono',
+			'Fecha Inscripción',
+			'Matriculado',
+			'Habilitado'
+		];
+		const rows = data.map((alumno) => [
+			alumno.id || '',
+			alumno.usuario,
+			alumno.nombre,
+			alumno.apellidos,
+			alumno.dni,
+			alumno.email,
+			alumno.numeroTelefono || '',
+			alumno.fechaInscripcion ? formatDate(alumno.fechaInscripcion) : '',
+			alumno.matriculado ? 'Sí' : 'No',
+			alumno.enabled ? 'Sí' : 'No'
+		]);
+
+		return [headers, ...rows].map((row) => row.map((field) => `"${field}"`).join(',')).join('\n');
+	}
+
+	function downloadCSV(content: string, filename: string) {
+		const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+		const link = document.createElement('a');
+		if (link.download !== undefined) {
+			const url = URL.createObjectURL(blob);
+			link.setAttribute('href', url);
+			link.setAttribute('download', filename);
+			link.style.visibility = 'hidden';
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		}
+	}
+
+	function formatDate(date: Date | undefined): string {
+		if (!date) return '-';
+		return new Date(date).toLocaleDateString('es-ES');
+	}
+
+	// Configuration
+	const sortFields = [
+		{ value: 'id', label: 'ID' },
+		{ value: 'usuario', label: 'Usuario' },
+		{ value: 'nombre', label: 'Nombre' },
+		{ value: 'apellidos', label: 'Apellidos' },
+		{ value: 'dni', label: 'DNI' },
+		{ value: 'email', label: 'Email' },
+		{ value: 'matriculado', label: 'Estado Matrícula' },
+		{ value: 'fechaCreacion', label: 'Fecha Creación' }
+	];
+
+	const pageSizeOptions = [10, 20, 50, 100];
 </script>
 
 <div class="container mx-auto px-4 py-8">
-  <!-- Header -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Gestión de Alumnos</h1>
-    {#if authStore.isAdmin}
-      <button
-        onclick={() => goto('/alumnos/nuevo')}
-        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        Nuevo Alumno
-      </button>
-    {/if}
-  </div>
+	<!-- Header -->
+	<div class="mb-6 flex items-center justify-between">
+		<h1 class="text-3xl font-bold text-gray-900">Gestión de Alumnos</h1>
+		{#if authStore.isAdmin}
+			<button
+				onclick={() => goto('/alumnos/nuevo')}
+				class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+			>
+				Nuevo Alumno
+			</button>
+		{/if}
+	</div>
 
-  <!-- Success/Error Messages -->
-  {#if successMessage}
-    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-      {successMessage}
-    </div>
-  {/if}
+	<!-- Messages Component -->
+	<AlumnosMessages
+		{successMessage}
+		{error}
+		on:clearSuccess={() => (successMessage = null)}
+		on:clearError={() => (error = null)}
+	/>
 
-  {#if error}
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      {error}
-      <button 
-        onclick={() => error = null}
-        class="float-right text-red-500 hover:text-red-700"
-      >
-        ×
-      </button>
-    </div>
-  {/if}
+	<!-- Search and Filter Section -->
+	<AlumnosSearchSection
+		{currentFilters}
+		{paginatedData}
+		{loading}
+		on:switchSearchMode={(e) => switchSearchMode(e.detail)}
+		on:updateFilters={(e) => updateFilters(e.detail)}
+		on:clearFilters={clearFilters}
+		on:exportResults={exportResults}
+	/>
 
-  <!-- Enhanced Search and Filter Section -->
-  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-    <!-- Search Mode Toggle -->
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-lg font-semibold">Búsqueda de Alumnos</h2>
-      <div class="flex space-x-2">
-        <button
-          onclick={() => switchSearchMode('simple')}
-          class="px-3 py-1 text-sm rounded-md transition-colors {searchMode === 'simple' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
-        >
-          🔍 Búsqueda Simple
-        </button>
-        <button
-          onclick={() => switchSearchMode('advanced')}
-          class="px-3 py-1 text-sm rounded-md transition-colors {searchMode === 'advanced' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
-        >
-          ⚙️ Búsqueda Avanzada
-        </button>
-      </div>
-    </div>
+	<!-- Pagination Controls Top -->
+	<div class="pt-10 pb-5">
+		<AlumnosPaginationControls
+			{pageDisplayInfo}
+			{currentPagination}
+			{sortFields}
+			{pageSizeOptions}
+			on:goToPage={(e) => goToPage(e.detail)}
+			on:changePageSize={(e) => changePageSize(e.detail)}
+			on:changeSorting={(e) => changeSorting(e.detail)}
+		/>
+	</div>
 
-    {#if searchMode === 'simple'}
-      <!-- Simple Search Mode -->
-      <div class="space-y-4">
-        <div>
-          <label for="busquedaGeneral" class="block text-sm font-medium text-gray-700 mb-2">
-            Búsqueda General
-          </label>
-          <div class="relative">
-            <input
-              id="busquedaGeneral"
-              type="text"
-              bind:value={searchParams.busquedaGeneral}
-              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Buscar por nombre, apellidos, usuario, DNI, email o teléfono..."
-            />
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-            </div>
-          </div>
-          <p class="text-xs text-gray-500 mt-1">
-            Busca en todos los campos de texto: nombre, apellidos, usuario, DNI, email y teléfono.
-            <br><strong>Los filtros de estado y fecha se aplicarán adicionalmente.</strong>
-          </p>
-        </div>
+	<!-- Students Table -->
+	<AlumnosDataTable
+		{loading}
+		{paginatedData}
+		{currentPagination}
+		{authStore}
+		on:changeSorting={(e) => changeSorting(e.detail)}
+		on:viewAlumno={(e) => goto(`/alumnos/${e.detail}`)}
+		on:toggleEnrollmentStatus={(e) => toggleEnrollmentStatus(e.detail)}
+		on:toggleAccountStatus={(e) => toggleAccountStatus(e.detail)}
+		on:confirmDelete={(e) => confirmDelete(e.detail)}
+	/>
 
-        <!-- Quick State Filters for Simple Mode -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label for="matriculadoSimple" class="block text-sm font-medium text-gray-700 mb-1">Estado de Matrícula</label>
-            <select
-              id="matriculadoSimple"
-              bind:value={searchParams.matriculado}
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value={undefined}>Todos</option>
-              <option value={true}>✅ Matriculados</option>
-              <option value={false}>❌ No Matriculados</option>
-            </select>
-          </div>
-          <div>
-            <label for="enabledSimple" class="block text-sm font-medium text-gray-700 mb-1">Estado de Cuenta</label>
-            <select
-              id="enabledSimple"
-              bind:value={searchParams.enabled}
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value={undefined}>Todos</option>
-              <option value={true}>🟢 Habilitadas</option>
-              <option value={false}>🔴 Deshabilitadas</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    {:else}
-      <!-- Advanced Search Mode -->
-      <div class="space-y-6">
-        <!-- Campos de Texto -->
-        <div>
-          <h3 class="text-md font-medium text-gray-800 mb-3">📝 Campos de Texto</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-              <input
-                id="nombre"
-                type="text"
-                bind:value={searchParams.nombre}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ej: Juan"
-              />
-            </div>
-            <div>
-              <label for="apellidos" class="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
-              <input
-                id="apellidos"
-                type="text"
-                bind:value={searchParams.apellidos}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ej: García López"
-              />
-            </div>
-            <div>
-              <label for="usuario" class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
-              <input
-                id="usuario"
-                type="text"
-                bind:value={searchParams.usuario}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ej: juan123"
-              />
-            </div>
-            <div>
-              <label for="dniAdvanced" class="block text-sm font-medium text-gray-700 mb-1">DNI</label>
-              <input
-                id="dniAdvanced"
-                type="text"
-                bind:value={searchParams.dni}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ej: 12345678Z"
-              />
-            </div>
-            <div>
-              <label for="emailAdvanced" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                id="emailAdvanced"
-                type="email"
-                bind:value={searchParams.email}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ej: juan@universidad.es"
-              />
-            </div>
-            <div>
-              <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-              <input
-                id="telefono"
-                type="tel"
-                bind:value={searchParams.numeroTelefono}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ej: 123456789"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Estados -->
-        <div>
-          <h3 class="text-md font-medium text-gray-800 mb-3">⚙️ Estados</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="matriculadoAdvanced" class="block text-sm font-medium text-gray-700 mb-1">Estado de Matrícula</label>
-              <select
-                id="matriculadoAdvanced"
-                bind:value={searchParams.matriculado}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value={undefined}>Todos</option>
-                <option value={true}>✅ Matriculados</option>
-                <option value={false}>❌ No Matriculados</option>
-              </select>
-            </div>
-            <div>
-              <label for="enabledAdvanced" class="block text-sm font-medium text-gray-700 mb-1">Estado de Cuenta</label>
-              <select
-                id="enabledAdvanced"
-                bind:value={searchParams.enabled}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value={undefined}>Todos</option>
-                <option value={true}>🟢 Habilitadas</option>
-                <option value={false}>🔴 Deshabilitadas</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Filtros de Fecha -->
-        <div>
-          <h3 class="text-md font-medium text-gray-800 mb-3">📅 Rango de Fecha de Inscripción</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="fechaDesde" class="block text-sm font-medium text-gray-700 mb-1">Desde</label>
-              <input
-                id="fechaDesde"
-                type="date"
-                value={formatDateForInput(searchParams.fechaInscripcionDesde)}
-                onchange={(e) => {
-                  const target = e.target as HTMLInputElement;
-                  searchParams.fechaInscripcionDesde = target.value ? new Date(target.value) : undefined;
-                }}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label for="fechaHasta" class="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
-              <input
-                id="fechaHasta"
-                type="date"
-                value={formatDateForInput(searchParams.fechaInscripcionHasta)}
-                onchange={(e) => {
-                  const target = e.target as HTMLInputElement;
-                  searchParams.fechaInscripcionHasta = target.value ? new Date(target.value) : undefined;
-                }}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-          <p class="text-xs text-gray-500 mt-1">
-            Filtra por estudiantes inscritos en un rango de fechas específico
-          </p>
-        </div>
-      </div>
-    {/if}
-    
-    <!-- Action Buttons -->
-    <div class="flex flex-wrap gap-3 mt-6 pt-4 border-t">
-      <button
-        onclick={clearSearch}
-        class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
-      >
-        🗑️ Limpiar Filtros
-      </button>
-      <button
-        onclick={loadAlumnos}
-        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-      >
-        🔄 Actualizar
-      </button>
-      {#if filteredAlumnos().length > 0}
-        <button
-          onclick={exportResults}
-          class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-        >
-          📥 Exportar CSV ({filteredAlumnos().length})
-        </button>
-      {/if}
-    </div>
-
-    <!-- Search Results Summary -->
-    {#if searchParams.busquedaGeneral || searchParams.nombre || searchParams.apellidos || searchParams.usuario || searchParams.dni || searchParams.email || searchParams.numeroTelefono || searchParams.matriculado !== undefined || searchParams.enabled !== undefined || searchParams.fechaInscripcionDesde || searchParams.fechaInscripcionHasta}
-      <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-        <h4 class="text-sm font-medium text-blue-800 mb-2">🔍 Filtros Activos:</h4>
-        <div class="flex flex-wrap gap-2">
-          {#if searchParams.busquedaGeneral}
-            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-              General: "{searchParams.busquedaGeneral}"
-            </span>
-          {/if}
-          {#if searchParams.nombre}
-            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-              Nombre: "{searchParams.nombre}"
-            </span>
-          {/if}
-          {#if searchParams.apellidos}
-            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-              Apellidos: "{searchParams.apellidos}"
-            </span>
-          {/if}
-          {#if searchParams.usuario}
-            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-              Usuario: "{searchParams.usuario}"
-            </span>
-          {/if}
-          {#if searchParams.dni}
-            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-              DNI: "{searchParams.dni}"
-            </span>
-          {/if}
-          {#if searchParams.email}
-            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-              Email: "{searchParams.email}"
-            </span>
-          {/if}
-          {#if searchParams.numeroTelefono}
-            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-              Teléfono: "{searchParams.numeroTelefono}"
-            </span>
-          {/if}
-          {#if searchParams.matriculado !== undefined}
-            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-              {searchParams.matriculado ? '✅ Matriculados' : '❌ No Matriculados'}
-            </span>
-          {/if}
-          {#if searchParams.enabled !== undefined}
-            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-              {searchParams.enabled ? '🟢 Habilitados' : '🔴 Deshabilitados'}
-            </span>
-          {/if}
-          {#if searchParams.fechaInscripcionDesde}
-            <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
-              Desde: {formatDate(searchParams.fechaInscripcionDesde)}
-            </span>
-          {/if}
-          {#if searchParams.fechaInscripcionHasta}
-            <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
-              Hasta: {formatDate(searchParams.fechaInscripcionHasta)}
-            </span>
-          {/if}
-        </div>
-      </div>
-    {/if}
-  </div>
-
-  <!-- Students Table -->
-  <div class="bg-white rounded-lg shadow-md overflow-hidden">
-    {#if loading}
-      <div class="text-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-        <p class="mt-2 text-gray-600">Cargando alumnos...</p>
-      </div>
-    {:else if filteredAlumnos().length === 0}
-      <div class="text-center py-8">
-        <p class="text-gray-500">No se encontraron alumnos que coincidan con los filtros.</p>
-      </div>
-    {:else}
-      <!-- Desktop Table -->
-      <div class="hidden lg:block overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alumno</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inscripción</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {#each paginatedAlumnos() as alumno (alumno.id)}
-              <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div class="text-sm font-medium text-gray-900">
-                      {alumno.nombre} {alumno.apellidos}
-                    </div>
-                    <div class="text-sm text-gray-500">@{alumno.usuario}</div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {alumno.dni}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {alumno.email}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {alumno.numeroTelefono || '-'}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDate(alumno.fechaInscripcion)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="space-y-1">
-                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {alumno.matriculado ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                      {alumno.matriculado ? 'Matriculado' : 'No Matriculado'}
-                    </span>
-                    <br>
-                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {alumno.enabled ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}">
-                      {alumno.enabled ? 'Habilitado' : 'Deshabilitado'}
-                    </span>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div class="flex space-x-2">
-                    <button
-                      onclick={() => goto(`/alumnos/${alumno.id}`)}
-                      class="text-blue-600 hover:text-blue-900"
-                      title="Ver/Editar"
-                    >
-                      Ver
-                    </button>
-                    {#if authStore.isAdmin}
-                      <button
-                        onclick={() => toggleEnrollmentStatus(alumno)}
-                        class="text-green-600 hover:text-green-900"
-                        title={alumno.matriculado ? 'Desmatricular' : 'Matricular'}
-                      >
-                        {alumno.matriculado ? 'Desmatricular' : 'Matricular'}
-                      </button>
-                      <button
-                        onclick={() => toggleAccountStatus(alumno)}
-                        class="text-yellow-600 hover:text-yellow-900"
-                        title={alumno.enabled ? 'Deshabilitar' : 'Habilitar'}
-                      >
-                        {alumno.enabled ? 'Deshabilitar' : 'Habilitar'}
-                      </button>
-                      <button
-                        onclick={() => confirmDelete(alumno)}
-                        class="text-red-600 hover:text-red-900"
-                        title="Eliminar"
-                      >
-                        Eliminar
-                      </button>
-                    {/if}
-                  </div>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Mobile Cards -->
-      <div class="lg:hidden">
-        {#each paginatedAlumnos() as alumno (alumno.id)}
-          <div class="border-b border-gray-200 p-4">
-            <div class="flex justify-between items-start mb-2">
-              <div>
-                <h3 class="font-medium text-gray-900">{alumno.nombre} {alumno.apellidos}</h3>
-                <p class="text-sm text-gray-500">@{alumno.usuario}</p>
-              </div>
-              <div class="text-right">
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {alumno.matriculado ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                  {alumno.matriculado ? 'Matriculado' : 'No Matriculado'}
-                </span>
-              </div>
-            </div>
-            <div class="space-y-1 text-sm text-gray-600">
-              <p><strong>DNI:</strong> {alumno.dni}</p>
-              <p><strong>Email:</strong> {alumno.email}</p>
-              {#if alumno.numeroTelefono}
-                <p><strong>Teléfono:</strong> {alumno.numeroTelefono}</p>
-              {/if}
-              <p><strong>Inscripción:</strong> {formatDate(alumno.fechaInscripcion)}</p>
-              <p><strong>Estado:</strong> 
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {alumno.enabled ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}">
-                  {alumno.enabled ? 'Habilitado' : 'Deshabilitado'}
-                </span>
-              </p>
-            </div>
-            <div class="flex space-x-2 mt-3">
-              <button
-                onclick={() => goto(`/alumnos/${alumno.id}`)}
-                class="text-blue-600 hover:text-blue-900 text-sm"
-              >
-                Ver/Editar
-              </button>
-              {#if authStore.isAdmin}
-                <button
-                  onclick={() => toggleEnrollmentStatus(alumno)}
-                  class="text-green-600 hover:text-green-900 text-sm"
-                >
-                  {alumno.matriculado ? 'Desmatricular' : 'Matricular'}
-                </button>
-                <button
-                  onclick={() => toggleAccountStatus(alumno)}
-                  class="text-yellow-600 hover:text-yellow-900 text-sm"
-                >
-                  {alumno.enabled ? 'Deshabilitar' : 'Habilitar'}
-                </button>
-                <button
-                  onclick={() => confirmDelete(alumno)}
-                  class="text-red-600 hover:text-red-900 text-sm"
-                >
-                  Eliminar
-                </button>
-              {/if}
-            </div>
-          </div>
-        {/each}
-      </div>
-    {/if}
-  </div>
-
-  <!-- Pagination -->
-  {#if totalPages() > 1}
-    <div class="flex justify-center items-center space-x-2 mt-6">
-      <button
-        onclick={() => goToPage(currentPage - 1)}
-        disabled={currentPage === 1}
-        class="px-3 py-2 text-sm border rounded-md {currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}"
-      >
-        Anterior
-      </button>
-      
-      {#each Array.from({length: totalPages()}, (_, i) => i + 1) as page}
-        <button
-          onclick={() => goToPage(page)}
-          class="px-3 py-2 text-sm border rounded-md {page === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}"
-        >
-          {page}
-        </button>
-      {/each}
-      
-      <button
-        onclick={() => goToPage(currentPage + 1)}
-        disabled={currentPage === totalPages()}
-        class="px-3 py-2 text-sm border rounded-md {currentPage === totalPages() ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}"
-      >
-        Siguiente
-      </button>
-    </div>
-  {/if}
-
-  <!-- Statistics Summary -->
-  <div class="mt-6 text-center text-sm text-gray-600">
-    Mostrando {paginatedAlumnos().length} de {filteredAlumnos().length} alumnos
-    {#if filteredAlumnos().length !== alumnos.length}
-      (filtrados de {alumnos.length} total)
-    {/if}
-  </div>
+	<!-- Pagination Bottom - Centered -->
+	{#if pageDisplayInfo && pageDisplayInfo.totalPages > 1}
+		<div class="mt-6 flex flex-col items-center gap-4">
+			<AlumnosPaginationControls
+				{pageDisplayInfo}
+				{currentPagination}
+				{sortFields}
+				{pageSizeOptions}
+				on:goToPage={(e) => goToPage(e.detail)}
+				on:changePageSize={(e) => changePageSize(e.detail)}
+				on:changeSorting={(e) => changeSorting(e.detail)}
+			/>
+		</div>
+	{/if}
 </div>
 
 <!-- Delete Confirmation Modal -->
-{#if showDeleteModal && alumnoToDelete}
-  <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-      <div class="mt-3 text-center">
-        <h3 class="text-lg font-medium text-gray-900">Confirmar Eliminación</h3>
-        <div class="mt-2 px-7 py-3">
-          <p class="text-sm text-gray-500">
-            ¿Estás seguro de que quieres eliminar al alumno 
-            <strong>{alumnoToDelete.nombre} {alumnoToDelete.apellidos}</strong>?
-            Esta acción no se puede deshacer.
-          </p>
-        </div>
-        <div class="flex justify-center space-x-4 px-4 py-3">
-          <button
-            onclick={() => { showDeleteModal = false; alumnoToDelete = null; }}
-            class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600"
-          >
-            Cancelar
-          </button>
-          <button
-            onclick={deleteAlumno}
-            class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700"
-          >
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-{/if}
+<AlumnosDeleteModal
+	{showDeleteModal}
+	{alumnoToDelete}
+	on:cancelDelete={() => {
+		showDeleteModal = false;
+		alumnoToDelete = null;
+	}}
+	on:confirmDelete={deleteAlumno}
+/>
