@@ -30,7 +30,7 @@ export interface DTOPeticionRegistroAlumno {
      * @type {string}
      * @memberof DTOPeticionRegistroAlumno
      */
-    contrasea: string;
+    password: string;
     /**
      * 
      * @type {string}
@@ -68,7 +68,7 @@ export interface DTOPeticionRegistroAlumno {
  */
 export function instanceOfDTOPeticionRegistroAlumno(value: object): value is DTOPeticionRegistroAlumno {
     if (!('usuario' in value) || value['usuario'] === undefined) return false;
-    if (!('contrasea' in value) || value['contrasea'] === undefined) return false;
+    if (!('password' in value) || value['password'] === undefined) return false;
     if (!('nombre' in value) || value['nombre'] === undefined) return false;
     if (!('apellidos' in value) || value['apellidos'] === undefined) return false;
     if (!('dni' in value) || value['dni'] === undefined) return false;
@@ -87,7 +87,7 @@ export function DTOPeticionRegistroAlumnoFromJSONTyped(json: any, ignoreDiscrimi
     return {
         
         'usuario': json['usuario'],
-        'contrasea': json['contraseña'],
+        'password': json['password'],
         'nombre': json['nombre'],
         'apellidos': json['apellidos'],
         'dni': json['dni'],
@@ -108,7 +108,7 @@ export function DTOPeticionRegistroAlumnoToJSONTyped(value?: DTOPeticionRegistro
     return {
         
         'usuario': value['usuario'],
-        'contraseña': value['contrasea'],
+        'password': value['password'],
         'nombre': value['nombre'],
         'apellidos': value['apellidos'],
         'dni': value['dni'],
