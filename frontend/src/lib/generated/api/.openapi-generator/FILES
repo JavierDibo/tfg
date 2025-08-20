@@ -7,9 +7,11 @@ index.ts
 models/DTOActualizacionAlumno.ts
 models/DTOAlumno.ts
 models/DTOEntidad.ts
+models/DTOMetadatosPaginacion.ts
 models/DTOPeticionLogin.ts
 models/DTOPeticionRegistro.ts
 models/DTOPeticionRegistroAlumno.ts
 models/DTORespuestaLogin.ts
+models/DTORespuestaPaginadaDTOAlumno.ts
 models/index.ts
 runtime.ts

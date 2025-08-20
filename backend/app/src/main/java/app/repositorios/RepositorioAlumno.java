@@ -1,8 +1,11 @@
 package app.repositorios;
 
 import app.entidades.Alumno;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -53,4 +56,26 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
     
     @Query("SELECT a FROM Alumno a ORDER BY a.id")
     List<Alumno> findAllOrderedById();
+    
+    // Métodos con paginación
+    @Query("SELECT a FROM Alumno a")
+    Page<Alumno> findAllPaged(Pageable pageable);
+    
+    @Query("SELECT a FROM Alumno a WHERE " +
+           "(:nombre IS NULL OR a.nombre LIKE %:nombre%) AND " +
+           "(:apellidos IS NULL OR a.apellidos LIKE %:apellidos%) AND " +
+           "(:dni IS NULL OR a.dni LIKE %:dni%) AND " +
+           "(:email IS NULL OR a.email LIKE %:email%) AND " +
+           "(:matriculado IS NULL OR a.matriculado = :matriculado)")
+    Page<Alumno> findByFiltrosPaged(
+        @Param("nombre") String nombre,
+        @Param("apellidos") String apellidos,
+        @Param("dni") String dni,
+        @Param("email") String email,
+        @Param("matriculado") Boolean matriculado,
+        Pageable pageable
+    );
+    
+    @Query("SELECT a FROM Alumno a WHERE a.matriculado = :matriculado")
+    Page<Alumno> findByMatriculadoPaged(@Param("matriculado") boolean matriculado, Pageable pageable);
 }

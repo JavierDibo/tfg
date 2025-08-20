@@ -4,6 +4,7 @@ import app.dtos.DTOActualizacionAlumno;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
+import app.dtos.DTORespuestaPaginada;
 import app.servicios.ServicioAlumno;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -27,8 +28,33 @@ public class AlumnoRest {
 
     private final ServicioAlumno servicioAlumno;
 
+    // Endpoint con paginación (recomendado)
+    @GetMapping("/paged")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosPaginados(
+            @RequestParam(required = false) @Size(max = 100) String nombre,
+            @RequestParam(required = false) @Size(max = 100) String apellidos,
+            @RequestParam(required = false) @Size(max = 20) String dni,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Boolean matriculado,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        
+        DTOParametrosBusquedaAlumno parametros = new DTOParametrosBusquedaAlumno(
+            nombre, apellidos, dni, email, matriculado);
+        
+        DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.buscarAlumnosPorParametrosPaginados(
+            parametros, page, size, sortBy, sortDirection);
+        
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
+    // Endpoint sin paginación (mantenido por compatibilidad - DEPRECATED)
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @Deprecated(since = "1.1", forRemoval = true)
     public ResponseEntity<List<DTOAlumno>> obtenerAlumnos(
             @RequestParam(required = false) @Size(max = 100) String nombre,
             @RequestParam(required = false) @Size(max = 100) String apellidos,
@@ -79,8 +105,35 @@ public class AlumnoRest {
         return new ResponseEntity<>(dtoAlumno, HttpStatus.OK);
     }
 
+    @GetMapping("/matriculados/paged")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosMatriculadosPaginados(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        
+        DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.obtenerAlumnosPorMatriculadoPaginados(
+            true, page, size, sortBy, sortDirection);
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
+    @GetMapping("/no-matriculados/paged")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosNoMatriculadosPaginados(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        
+        DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.obtenerAlumnosPorMatriculadoPaginados(
+            false, page, size, sortBy, sortDirection);
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
     @GetMapping("/matriculados")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @Deprecated(since = "1.1", forRemoval = true)
     public ResponseEntity<List<DTOAlumno>> obtenerAlumnosMatriculados() {
         
         List<DTOAlumno> alumnosDTO = servicioAlumno.obtenerAlumnosPorMatriculado(true);
@@ -89,6 +142,7 @@ public class AlumnoRest {
 
     @GetMapping("/no-matriculados")
     @PreAuthorize("hasRole('ADMIN')")
+    @Deprecated(since = "1.1", forRemoval = true)
     public ResponseEntity<List<DTOAlumno>> obtenerAlumnosNoMatriculados() {
         
         List<DTOAlumno> alumnosDTO = servicioAlumno.obtenerAlumnosPorMatriculado(false);

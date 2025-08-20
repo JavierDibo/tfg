@@ -18,6 +18,7 @@ import type {
   DTOActualizacionAlumno,
   DTOAlumno,
   DTOPeticionRegistroAlumno,
+  DTORespuestaPaginadaDTOAlumno,
 } from '../models/index';
 import {
     DTOActualizacionAlumnoFromJSON,
@@ -26,6 +27,8 @@ import {
     DTOAlumnoToJSON,
     DTOPeticionRegistroAlumnoFromJSON,
     DTOPeticionRegistroAlumnoToJSON,
+    DTORespuestaPaginadaDTOAlumnoFromJSON,
+    DTORespuestaPaginadaDTOAlumnoToJSON,
 } from '../models/index';
 
 export interface ActualizarAlumnoRequest {
@@ -73,6 +76,32 @@ export interface ObtenerAlumnosRequest {
     dni?: string;
     email?: string;
     matriculado?: boolean;
+}
+
+export interface ObtenerAlumnosMatriculadosPaginadosRequest {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
+}
+
+export interface ObtenerAlumnosNoMatriculadosPaginadosRequest {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
+}
+
+export interface ObtenerAlumnosPaginadosRequest {
+    nombre?: string;
+    apellidos?: string;
+    dni?: string;
+    email?: string;
+    matriculado?: boolean;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
 }
 
 /**
@@ -428,6 +457,7 @@ export class AlumnoRestApi extends runtime.BaseAPI {
     }
 
     /**
+     * @deprecated
      */
     async obtenerAlumnosRaw(requestParameters: ObtenerAlumnosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOAlumno>>> {
         const queryParameters: any = {};
@@ -468,6 +498,7 @@ export class AlumnoRestApi extends runtime.BaseAPI {
     }
 
     /**
+     * @deprecated
      */
     async obtenerAlumnos(requestParameters: ObtenerAlumnosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOAlumno>> {
         const response = await this.obtenerAlumnosRaw(requestParameters, initOverrides);
@@ -475,6 +506,7 @@ export class AlumnoRestApi extends runtime.BaseAPI {
     }
 
     /**
+     * @deprecated
      */
     async obtenerAlumnosMatriculadosRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOAlumno>>> {
         const queryParameters: any = {};
@@ -495,6 +527,7 @@ export class AlumnoRestApi extends runtime.BaseAPI {
     }
 
     /**
+     * @deprecated
      */
     async obtenerAlumnosMatriculados(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOAlumno>> {
         const response = await this.obtenerAlumnosMatriculadosRaw(initOverrides);
@@ -502,6 +535,50 @@ export class AlumnoRestApi extends runtime.BaseAPI {
     }
 
     /**
+     */
+    async obtenerAlumnosMatriculadosPaginadosRaw(requestParameters: ObtenerAlumnosMatriculadosPaginadosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOAlumno>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/alumnos/matriculados/paged`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaDTOAlumnoFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async obtenerAlumnosMatriculadosPaginados(requestParameters: ObtenerAlumnosMatriculadosPaginadosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginadaDTOAlumno> {
+        const response = await this.obtenerAlumnosMatriculadosPaginadosRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @deprecated
      */
     async obtenerAlumnosNoMatriculadosRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOAlumno>>> {
         const queryParameters: any = {};
@@ -522,9 +599,116 @@ export class AlumnoRestApi extends runtime.BaseAPI {
     }
 
     /**
+     * @deprecated
      */
     async obtenerAlumnosNoMatriculados(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOAlumno>> {
         const response = await this.obtenerAlumnosNoMatriculadosRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async obtenerAlumnosNoMatriculadosPaginadosRaw(requestParameters: ObtenerAlumnosNoMatriculadosPaginadosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOAlumno>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/alumnos/no-matriculados/paged`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaDTOAlumnoFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async obtenerAlumnosNoMatriculadosPaginados(requestParameters: ObtenerAlumnosNoMatriculadosPaginadosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginadaDTOAlumno> {
+        const response = await this.obtenerAlumnosNoMatriculadosPaginadosRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async obtenerAlumnosPaginadosRaw(requestParameters: ObtenerAlumnosPaginadosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOAlumno>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['nombre'] != null) {
+            queryParameters['nombre'] = requestParameters['nombre'];
+        }
+
+        if (requestParameters['apellidos'] != null) {
+            queryParameters['apellidos'] = requestParameters['apellidos'];
+        }
+
+        if (requestParameters['dni'] != null) {
+            queryParameters['dni'] = requestParameters['dni'];
+        }
+
+        if (requestParameters['email'] != null) {
+            queryParameters['email'] = requestParameters['email'];
+        }
+
+        if (requestParameters['matriculado'] != null) {
+            queryParameters['matriculado'] = requestParameters['matriculado'];
+        }
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/alumnos/paged`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaDTOAlumnoFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async obtenerAlumnosPaginados(requestParameters: ObtenerAlumnosPaginadosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginadaDTOAlumno> {
+        const response = await this.obtenerAlumnosPaginadosRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
