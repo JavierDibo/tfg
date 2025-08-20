@@ -1,0 +1,66 @@
+package app.entidades;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Entidad Profesor
+ * Representa a un profesor en la plataforma
+ * Basado en el UML de especificación
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Entity
+@DiscriminatorValue("PROFESOR")
+public class Profesor extends Usuario {
+    
+    // TODO: Implementar relaciones según UML:
+    // - clasesId: List<string>
+    // Por ahora se maneja como lista de strings, después se refactorizará a relaciones JPA
+    @ElementCollection
+    @CollectionTable(name = "profesor_clases", joinColumns = @JoinColumn(name = "profesor_id"))
+    @Column(name = "clase_id")
+    private List<String> clasesId = new ArrayList<>();
+    
+    public Profesor() {
+        super();
+        this.setRol(Rol.PROFESOR);
+    }
+    
+    public Profesor(String usuario, String password, String nombre, String apellidos, 
+                   String dni, String email, String numeroTelefono) {
+        super(usuario, password, nombre, apellidos, dni, email, numeroTelefono);
+        this.setRol(Rol.PROFESOR);
+    }
+    
+    /**
+     * Método para resetear password según UML
+     * TODO: Implementar lógica de reseteo por email
+     */
+    public void resetearpassword() {
+        // TODO: Implementar según especificaciones del proyecto
+        throw new UnsupportedOperationException("Método resetearpassword por implementar");
+    }
+    
+    /**
+     * Agrega una clase al profesor
+     * @param claseId ID de la clase
+     */
+    public void agregarClase(String claseId) {
+        if (!this.clasesId.contains(claseId)) {
+            this.clasesId.add(claseId);
+        }
+    }
+    
+    /**
+     * Remueve una clase del profesor
+     * @param claseId ID de la clase
+     */
+    public void removerClase(String claseId) {
+        this.clasesId.remove(claseId);
+    }
+}
