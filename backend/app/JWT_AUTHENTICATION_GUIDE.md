@@ -161,7 +161,7 @@ The system automatically creates the `usuarios` table and populates it with test
 ```javascript
 // Login
 const loginResponse = await fetch('/api/auth/login', {
-  method: 'POST',
+  metodo: 'POST',
   headers: {
     'Content-Type': 'application/json'
   },

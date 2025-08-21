@@ -27,22 +27,23 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
     
     boolean existsByDni(String dni);
     
-    @Query("SELECT a FROM Alumno a WHERE a.nombre LIKE %:nombre% ORDER BY a.id")
+    @Query(value = "SELECT * FROM usuarios a WHERE normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%' AND a.tipo_usuario = 'ALUMNO' ORDER BY a.id", nativeQuery = true)
     List<Alumno> findByNombreContainingIgnoreCase(@Param("nombre") String nombre);
     
-    @Query("SELECT a FROM Alumno a WHERE a.apellidos LIKE %:apellidos% ORDER BY a.id")
+    @Query(value = "SELECT * FROM usuarios a WHERE normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%' AND a.tipo_usuario = 'ALUMNO' ORDER BY a.id", nativeQuery = true)
     List<Alumno> findByApellidosContainingIgnoreCase(@Param("apellidos") String apellidos);
     
     @Query("SELECT a FROM Alumno a WHERE a.matriculado = :matriculado ORDER BY a.id")
     List<Alumno> findByMatriculado(@Param("matriculado") boolean matriculado);
     
-    @Query("SELECT a FROM Alumno a WHERE " +
-           "(:nombre IS NULL OR a.nombre LIKE %:nombre%) AND " +
-           "(:apellidos IS NULL OR a.apellidos LIKE %:apellidos%) AND " +
-           "(:dni IS NULL OR a.dni LIKE %:dni%) AND " +
-           "(:email IS NULL OR a.email LIKE %:email%) AND " +
-           "(:matriculado IS NULL OR a.matriculado = :matriculado) " +
-           "ORDER BY a.id")
+    @Query(value = "SELECT * FROM usuarios a WHERE " +
+           "(:nombre IS NULL OR normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:apellidos IS NULL OR normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%') AND " +
+           "(:dni IS NULL OR LOWER(a.dni) LIKE '%' || LOWER(:dni) || '%') AND " +
+           "(:email IS NULL OR LOWER(a.email) LIKE '%' || LOWER(:email) || '%') AND " +
+           "(:matriculado IS NULL OR a.matriculado = :matriculado) AND " +
+           "a.tipo_usuario = 'ALUMNO' " +
+           "ORDER BY a.id", nativeQuery = true)
     List<Alumno> findByFiltros(
         @Param("nombre") String nombre,
         @Param("apellidos") String apellidos,
@@ -57,16 +58,25 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
     @Query("SELECT a FROM Alumno a ORDER BY a.id")
     List<Alumno> findAllOrderedById();
     
-    // Métodos con paginación
+    // metodos con paginación
     @Query("SELECT a FROM Alumno a")
     Page<Alumno> findAllPaged(Pageable pageable);
     
-    @Query("SELECT a FROM Alumno a WHERE " +
-           "(:nombre IS NULL OR a.nombre LIKE %:nombre%) AND " +
-           "(:apellidos IS NULL OR a.apellidos LIKE %:apellidos%) AND " +
-           "(:dni IS NULL OR a.dni LIKE %:dni%) AND " +
-           "(:email IS NULL OR a.email LIKE %:email%) AND " +
-           "(:matriculado IS NULL OR a.matriculado = :matriculado)")
+    @Query(value = "SELECT * FROM usuarios a WHERE " +
+           "(:nombre IS NULL OR normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:apellidos IS NULL OR normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%') AND " +
+           "(:dni IS NULL OR LOWER(a.dni) LIKE '%' || LOWER(:dni) || '%') AND " +
+           "(:email IS NULL OR LOWER(a.email) LIKE '%' || LOWER(:email) || '%') AND " +
+           "(:matriculado IS NULL OR a.matriculado = :matriculado) AND " +
+           "a.tipo_usuario = 'ALUMNO'",
+           countQuery = "SELECT COUNT(*) FROM usuarios a WHERE " +
+           "(:nombre IS NULL OR normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:apellidos IS NULL OR normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%') AND " +
+           "(:dni IS NULL OR LOWER(a.dni) LIKE '%' || LOWER(:dni) || '%') AND " +
+           "(:email IS NULL OR LOWER(a.email) LIKE '%' || LOWER(:email) || '%') AND " +
+           "(:matriculado IS NULL OR a.matriculado = :matriculado) AND " +
+           "a.tipo_usuario = 'ALUMNO'",
+           nativeQuery = true)
     Page<Alumno> findByFiltrosPaged(
         @Param("nombre") String nombre,
         @Param("apellidos") String apellidos,

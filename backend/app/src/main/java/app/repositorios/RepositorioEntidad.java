@@ -11,16 +11,16 @@ import java.util.List;
 @Repository
 public interface RepositorioEntidad extends JpaRepository<Entidad, Integer> {
     
-    @Query("SELECT e FROM Entidad e WHERE e.info LIKE %:info% ORDER BY e.id")
+    @Query(value = "SELECT * FROM entidad e WHERE normalize_text(e.info) LIKE '%' || normalize_text(:info) || '%' ORDER BY e.id", nativeQuery = true)
     List<Entidad> findByInfoContainingIgnoreCase(@Param("info") String info);
     
-    @Query("SELECT e FROM Entidad e WHERE e.otraInfo LIKE %:otraInfo% ORDER BY e.id")
+    @Query(value = "SELECT * FROM entidad e WHERE normalize_text(e.otra_info) LIKE '%' || normalize_text(:otraInfo) || '%' ORDER BY e.id", nativeQuery = true)
     List<Entidad> findByOtraInfoContainingIgnoreCase(@Param("otraInfo") String otraInfo);
     
-    @Query("SELECT e FROM Entidad e WHERE " +
-           "(:info IS NULL OR e.info LIKE %:info%) AND " +
-           "(:otraInfo IS NULL OR e.otraInfo LIKE %:otraInfo%) " +
-           "ORDER BY e.id")
+    @Query(value = "SELECT * FROM entidad e WHERE " +
+           "(:info IS NULL OR normalize_text(e.info) LIKE '%' || normalize_text(:info) || '%') AND " +
+           "(:otraInfo IS NULL OR normalize_text(e.otra_info) LIKE '%' || normalize_text(:otraInfo) || '%') " +
+           "ORDER BY e.id", nativeQuery = true)
     List<Entidad> findByInfoAndOtraInfoContainingIgnoreCase(
         @Param("info") String info, 
         @Param("otraInfo") String otraInfo

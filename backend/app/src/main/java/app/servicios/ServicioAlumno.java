@@ -177,7 +177,7 @@ public class ServicioAlumno {
         return new DTOAlumno(alumno);
     }
 
-    // Métodos de estadísticas útiles para administradores
+    // metodos de estadísticas útiles para administradores
     public long contarAlumnosMatriculados() {
         return repositorioAlumno.countByMatriculado(true);
     }
@@ -190,7 +190,7 @@ public class ServicioAlumno {
         return repositorioAlumno.count();
     }
 
-    // Métodos con paginación
+    // metodos con paginación
     
     /**
      * Obtiene todos los alumnos con paginación

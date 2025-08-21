@@ -27,8 +27,8 @@ public class GlobalExceptionHandler {
 
     // Maneja validaciones de @RequestBody con @Valid
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex, WebRequest request) {
+    public ResponseEntity<Map<String, Object>> handlemetodoArgumentNotValid(
+        MethodArgumentNotValidException ex, WebRequest request) {
         
         log.warn("Error de validación en @RequestBody: {}", ex.getMessage());
         

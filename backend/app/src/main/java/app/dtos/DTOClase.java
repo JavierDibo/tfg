@@ -1,0 +1,112 @@
+package app.dtos;
+
+import app.entidades.Clase;
+import app.entidades.Material;
+import app.entidades.enums.EPresencialidad;
+import app.entidades.enums.ENivel;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+/**
+ * DTO para la entidad Clase (abstracta)
+ * Contiene información de la clase sin exposer detalles internos
+ */
+public record DTOClase(
+        Long id,
+        String titulo,
+        String descripcion,
+        BigDecimal precio,
+        EPresencialidad presencialidad,
+        String imagenPortada,
+        ENivel nivel,
+        List<String> alumnosId,
+        List<String> profesoresId,
+        List<String> ejerciciosId,
+        List<Material> material,
+        String tipoClase // "TALLER" o "CURSO"
+) {
+    
+    /**
+     * Constructor que crea un DTO desde una entidad Clase
+     */
+    public DTOClase(Clase clase) {
+        this(
+                clase.getId(),
+                clase.getTitulo(),
+                clase.getDescripcion(),
+                clase.getPrecio(),
+                clase.getPresencialidad(),
+                clase.getImagenPortada(),
+                clase.getNivel(),
+                clase.getAlumnosId(),
+                clase.getProfesoresId(),
+                clase.getEjerciciosId(),
+                clase.getMaterial(),
+                clase.getClass().getAnnotation(jakarta.persistence.DiscriminatorValue.class).value()
+        );
+    }
+    
+    /**
+     * metodo estático para crear desde entidad
+     */
+    public static DTOClase from(Clase clase) {
+        return new DTOClase(clase);
+    }
+    
+    /**
+     * Verifica si la clase es online
+     */
+    public boolean esOnline() {
+        return this.presencialidad == EPresencialidad.ONLINE;
+    }
+    
+    /**
+     * Verifica si la clase es presencial
+     */
+    public boolean esPresencial() {
+        return this.presencialidad == EPresencialidad.PRESENCIAL;
+    }
+    
+    /**
+     * Obtiene el número de alumnos inscritos
+     */
+    public int getNumeroAlumnos() {
+        return this.alumnosId != null ? this.alumnosId.size() : 0;
+    }
+    
+    /**
+     * Obtiene el número de profesores asignados
+     */
+    public int getNumeroProfesores() {
+        return this.profesoresId != null ? this.profesoresId.size() : 0;
+    }
+    
+    /**
+     * Obtiene el número de ejercicios asignados
+     */
+    public int getNumeroEjercicios() {
+        return this.ejerciciosId != null ? this.ejerciciosId.size() : 0;
+    }
+    
+    /**
+     * Obtiene el número de materiales disponibles
+     */
+    public int getNumeroMateriales() {
+        return this.material != null ? this.material.size() : 0;
+    }
+    
+    /**
+     * Verifica si es un taller
+     */
+    public boolean esTaller() {
+        return "TALLER".equals(this.tipoClase);
+    }
+    
+    /**
+     * Verifica si es un curso
+     */
+    public boolean esCurso() {
+        return "CURSO".equals(this.tipoClase);
+    }
+}

@@ -27,11 +27,11 @@ public class Administrador extends Usuario {
     }
     
     /**
-     * Método para resetear password según UML
+     * metodo para resetear password según UML
      * TODO: Implementar lógica de reseteo por email
      */
     public void resetearpassword() {
         // TODO: Implementar según especificaciones del proyecto
-        throw new UnsupportedOperationException("Método resetearpassword por implementar");
+        throw new UnsupportedOperationException("metodo resetearpassword por implementar");
     }
 }

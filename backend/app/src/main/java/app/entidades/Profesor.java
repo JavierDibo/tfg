@@ -38,12 +38,12 @@ public class Profesor extends Usuario {
     }
     
     /**
-     * Método para resetear password según UML
+     * metodo para resetear password según UML
      * TODO: Implementar lógica de reseteo por email
      */
     public void resetearpassword() {
         // TODO: Implementar según especificaciones del proyecto
-        throw new UnsupportedOperationException("Método resetearpassword por implementar");
+        throw new UnsupportedOperationException("metodo resetearpassword por implementar");
     }
     
     /**
@@ -51,6 +51,9 @@ public class Profesor extends Usuario {
      * @param claseId ID de la clase
      */
     public void agregarClase(String claseId) {
+        if (this.clasesId == null) {
+            this.clasesId = new ArrayList<>();
+        }
         if (!this.clasesId.contains(claseId)) {
             this.clasesId.add(claseId);
         }
@@ -61,6 +64,8 @@ public class Profesor extends Usuario {
      * @param claseId ID de la clase
      */
     public void removerClase(String claseId) {
-        this.clasesId.remove(claseId);
+        if (this.clasesId != null) {
+            this.clasesId.remove(claseId);
+        }
     }
 }
