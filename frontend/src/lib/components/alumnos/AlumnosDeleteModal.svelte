@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import type { DTOAlumno } from '$lib/generated/api';
-	
+
 	export let showDeleteModal: boolean;
 	export let alumnoToDelete: DTOAlumno | null;
-	
+
 	const dispatch = createEventDispatcher();
-	
+
 	function cancelDelete() {
 		dispatch('cancelDelete');
 	}
-	
+
 	function confirmDelete() {
 		dispatch('confirmDelete');
 	}

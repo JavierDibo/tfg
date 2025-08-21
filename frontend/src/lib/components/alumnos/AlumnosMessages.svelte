@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	
+
 	export let successMessage: string | null;
 	export let error: string | null;
-	
+
 	const dispatch = createEventDispatcher();
-	
+
 	function clearSuccess() {
 		dispatch('clearSuccess');
 	}
-	
+
 	function clearError() {
 		dispatch('clearError');
 	}
@@ -22,10 +22,7 @@
 	>
 		<div class="flex items-center justify-between">
 			<span>{successMessage}</span>
-			<button
-				onclick={clearSuccess}
-				class="ml-4 font-bold text-green-500 hover:text-green-700"
-			>
+			<button onclick={clearSuccess} class="ml-4 font-bold text-green-500 hover:text-green-700">
 				×
 			</button>
 		</div>
@@ -38,10 +35,7 @@
 	>
 		<div class="flex items-center justify-between">
 			<span>{error}</span>
-			<button
-				onclick={clearError}
-				class="ml-4 font-bold text-red-500 hover:text-red-700"
-			>
+			<button onclick={clearError} class="ml-4 font-bold text-red-500 hover:text-red-700">
 				×
 			</button>
 		</div>

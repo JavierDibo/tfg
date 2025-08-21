@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	
-		export let pageDisplayInfo: any;
+
+	export let pageDisplayInfo: any;
 	export let currentPagination: any;
 	export let sortFields: any[];
 	export let pageSizeOptions: number[];
@@ -27,11 +27,11 @@
 			handlePageInputSubmit();
 		}
 	}
-	
+
 	function changePageSize(size: number) {
 		dispatch('changePageSize', size);
 	}
-	
+
 	function changeSorting(sortBy: string) {
 		dispatch('changeSorting', sortBy);
 	}
@@ -44,7 +44,9 @@
 			<div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
 				<!-- Page Size Selector -->
 				<div class="flex items-center gap-2">
-					<label for="pageSize" class="text-sm font-medium text-gray-700">Elementos por página:</label>
+					<label for="pageSize" class="text-sm font-medium text-gray-700"
+						>Elementos por página:</label
+					>
 					<select
 						id="pageSize"
 						value={currentPagination.size}
@@ -81,12 +83,13 @@
 
 				<!-- Results Summary -->
 				<div class="text-sm text-gray-600">
-					Mostrando {pageDisplayInfo.startItem}-{pageDisplayInfo.endItem} de {pageDisplayInfo.totalItems} alumnos
+					Mostrando {pageDisplayInfo.startItem}-{pageDisplayInfo.endItem} de {pageDisplayInfo.totalItems}
+					alumnos
 				</div>
 			</div>
 		</div>
 	</div>
-	
+
 	<!-- Page Navigation - Centered -->
 	{#if pageDisplayInfo.totalPages > 1}
 		<div class="flex justify-center">
@@ -130,7 +133,7 @@
 		</div>
 
 		<!-- Page Jump Input - Centered -->
-		<div class="flex justify-center mt-3">
+		<div class="mt-3 flex justify-center">
 			<div class="flex items-center gap-2">
 				<label for="pageInput" class="text-sm font-medium text-gray-700">Ir a página:</label>
 				<input
@@ -143,12 +146,16 @@
 					placeholder="Ej: 27"
 					autocomplete="off"
 					inputmode="numeric"
-					class="w-20 rounded-md border border-gray-300 px-2 py-1 text-sm text-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
+					class="w-20 rounded-md border border-gray-300 px-2 py-1 text-center text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
 				/>
 				<button
 					onclick={handlePageInputSubmit}
-					disabled={!pageInput || parseInt(pageInput) < 1 || parseInt(pageInput) > pageDisplayInfo.totalPages}
-					class="rounded-md border px-3 py-1 text-sm {!pageInput || parseInt(pageInput) < 1 || parseInt(pageInput) > pageDisplayInfo.totalPages
+					disabled={!pageInput ||
+						parseInt(pageInput) < 1 ||
+						parseInt(pageInput) > pageDisplayInfo.totalPages}
+					class="rounded-md border px-3 py-1 text-sm {!pageInput ||
+					parseInt(pageInput) < 1 ||
+					parseInt(pageInput) > pageDisplayInfo.totalPages
 						? 'cursor-not-allowed bg-gray-100 text-gray-400'
 						: 'bg-blue-600 text-white hover:bg-blue-700'}"
 				>
@@ -158,7 +165,7 @@
 		</div>
 
 		<!-- Page info - Centered -->
-		<div class="text-center mt-2">
+		<div class="mt-2 text-center">
 			<div class="text-sm text-gray-600">
 				Página {pageDisplayInfo.currentPage} de {pageDisplayInfo.totalPages}
 			</div>

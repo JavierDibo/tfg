@@ -1,39 +1,39 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import type { DTOAlumno } from '$lib/generated/api';
-	
+
 	export let loading: boolean;
 	export let paginatedData: any;
 	export let currentPagination: any;
 	export let authStore: any;
-	
+
 	const dispatch = createEventDispatcher();
-	
+
 	function formatDate(date: Date | undefined): string {
 		if (!date) return '-';
 		return new Date(date).toLocaleDateString('es-ES');
 	}
-	
+
 	function changeSorting(field: string) {
 		dispatch('changeSorting', field);
 	}
-	
+
 	function viewAlumno(id: string) {
 		dispatch('viewAlumno', id);
 	}
-	
+
 	function toggleEnrollmentStatus(alumno: DTOAlumno) {
 		dispatch('toggleEnrollmentStatus', alumno);
 	}
-	
+
 	function toggleAccountStatus(alumno: DTOAlumno) {
 		dispatch('toggleAccountStatus', alumno);
 	}
-	
+
 	function confirmDelete(alumno: DTOAlumno) {
 		dispatch('confirmDelete', alumno);
 	}
-	
+
 	// Removed filterAlumnos function - filtering is now handled in the main page component
 	// This prevents double-filtering and ensures proper accent-insensitive search
 </script>
@@ -55,7 +55,9 @@
 			<table class="min-w-full divide-y divide-gray-200">
 				<thead class="bg-gray-50">
 					<tr>
-						<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							<button
 								onclick={() => changeSorting('nombre')}
 								class="flex items-center hover:text-gray-700"
@@ -66,7 +68,9 @@
 								{/if}
 							</button>
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							<button
 								onclick={() => changeSorting('dni')}
 								class="flex items-center hover:text-gray-700"
@@ -77,7 +81,9 @@
 								{/if}
 							</button>
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							<button
 								onclick={() => changeSorting('email')}
 								class="flex items-center hover:text-gray-700"
@@ -88,8 +94,13 @@
 								{/if}
 							</button>
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Teléfono</th>
-						<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>Teléfono</th
+						>
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							<button
 								onclick={() => changeSorting('fechaCreacion')}
 								class="flex items-center hover:text-gray-700"
@@ -100,7 +111,9 @@
 								{/if}
 							</button>
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							<button
 								onclick={() => changeSorting('matriculado')}
 								class="flex items-center hover:text-gray-700"
@@ -111,7 +124,10 @@
 								{/if}
 							</button>
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Acciones</th>
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>Acciones</th
+						>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-gray-200 bg-white">
@@ -160,7 +176,8 @@
 								<td class="px-6 py-4 whitespace-nowrap">
 									<div>
 										<div class="text-sm font-medium text-gray-900">
-											{alumno.nombre} {alumno.apellidos}
+											{alumno.nombre}
+											{alumno.apellidos}
 										</div>
 										<div class="text-sm text-gray-500">@{alumno.usuario}</div>
 									</div>

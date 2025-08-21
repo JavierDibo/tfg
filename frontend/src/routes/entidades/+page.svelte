@@ -306,7 +306,9 @@
 			{:else if entidades.length === 0}
 				<div class="empty-state">
 					No entities found.
-					{searchInfo || searchOtraInfo ? 'Try adjusting your search filters.' : 'Create your first entity!'}
+					{searchInfo || searchOtraInfo
+						? 'Try adjusting your search filters.'
+						: 'Create your first entity!'}
 				</div>
 			{:else}
 				<div class="entities-grid">
@@ -321,7 +323,10 @@
 									<button onclick={() => showEditEntityForm(entity)} class="btn btn-sm btn-warning">
 										Edit
 									</button>
-									<button onclick={() => deleteEntity(entity.id || 0)} class="btn btn-sm btn-danger">
+									<button
+										onclick={() => deleteEntity(entity.id || 0)}
+										class="btn btn-sm btn-danger"
+									>
 										Delete
 									</button>
 								</div>
@@ -343,7 +348,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="container text-center py-10">
+	<div class="container py-10 text-center">
 		<p>Redirecting to login...</p>
 	</div>
 {/if}
@@ -354,7 +359,10 @@
 		max-width: 1200px;
 		margin: 0 auto;
 		padding: 20px;
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	h1 {
@@ -548,11 +556,6 @@
 	.entity-card:hover {
 		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 		transform: translateY(-2px);
-	}
-
-	.entity-card.highlight {
-		border-color: #007bff;
-		box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 	}
 
 	.entity-header {

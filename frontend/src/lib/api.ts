@@ -3,6 +3,7 @@ import {
 	EntidadRestApi,
 	AutenticacionRestApi,
 	AlumnoRestApi,
+	ProfesorRestApi,
 	type Middleware
 } from './generated/api';
 import { authStore } from './stores/authStore.svelte';
@@ -20,7 +21,7 @@ const authMiddleware: Middleware = {
 			// Set the Authorization header
 			(init.headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
 		}
-		//The return type of pre is Promise<FetchParams | void> 
+		//The return type of pre is Promise<FetchParams | void>
 		//The init property is part of FetchParams so we must return it inside an object
 		return { url, init };
 	}
@@ -34,4 +35,5 @@ const config = new Configuration({
 // Create pre-configured API clients
 export const entidadApi = new EntidadRestApi(config);
 export const autenticacionApi = new AutenticacionRestApi(config);
-export const alumnoApi = new AlumnoRestApi(config); 
+export const alumnoApi = new AlumnoRestApi(config);
+export const profesorApi = new ProfesorRestApi(config);

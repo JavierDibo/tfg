@@ -1,4 +1,4 @@
 <!-- Last Updated -->
-<div class="text-center text-sm text-gray-500 mt-6">
+<div class="mt-6 text-center text-sm text-gray-500">
 	Estadísticas actualizadas: {new Date().toLocaleString('es-ES')}
 </div>

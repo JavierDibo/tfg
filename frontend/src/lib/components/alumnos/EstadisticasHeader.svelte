@@ -15,19 +15,16 @@
 	}
 </script>
 
-<div class="flex justify-between items-center mb-6">
+<div class="mb-6 flex items-center justify-between">
 	<h1 class="text-3xl font-bold text-gray-900">Estadísticas de Alumnos</h1>
 	<div class="space-x-2">
 		<button
 			onclick={handleRefresh}
-			class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+			class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 		>
 			Actualizar
 		</button>
-		<button
-			onclick={handleBackToAlumnos}
-			class="text-gray-600 hover:text-gray-800"
-		>
+		<button onclick={handleBackToAlumnos} class="text-gray-600 hover:text-gray-800">
 			← Volver a Alumnos
 		</button>
 	</div>

@@ -52,9 +52,9 @@ function login(jwtOrResponse: string | LoginResponse) {
 		// Handle full login response
 		const response = jwtOrResponse;
 		const roleMapping = {
-			'ADMIN': 'ROLE_ADMIN',
-			'PROFESOR': 'ROLE_PROFESOR',
-			'ALUMNO': 'ROLE_ALUMNO'
+			ADMIN: 'ROLE_ADMIN',
+			PROFESOR: 'ROLE_PROFESOR',
+			ALUMNO: 'ROLE_ALUMNO'
 		};
 
 		// Validate required fields
@@ -70,14 +70,14 @@ function login(jwtOrResponse: string | LoginResponse) {
 			id: response.id,
 			roles: [roleMapping[response.rol as keyof typeof roleMapping] || `ROLE_${response.rol}`]
 		};
-		
+
 		token = response.token;
-		
+
 		if (browser) {
 			localStorage.setItem('jwt_token', token);
 		}
 	}
-	
+
 	// Redirect based on role
 	if (user?.roles?.includes('ROLE_ADMIN')) {
 		goto('/alumnos');
@@ -102,7 +102,7 @@ function logout() {
 // Initialization (run once on client)
 if (browser) {
 	const storedToken = localStorage.getItem('jwt_token');
-	if (storedToken && !token) {
+	if (storedToken) {
 		updateUserFromToken(storedToken);
 	}
 }
@@ -129,4 +129,4 @@ export const authStore = {
 	},
 	login: login as (jwtOrResponse: string | LoginResponse) => void,
 	logout
-}; 
+};

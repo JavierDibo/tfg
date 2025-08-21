@@ -1,6 +1,7 @@
 apis/AlumnoRestApi.ts
 apis/AutenticacionRestApi.ts
 apis/EntidadRestApi.ts
+apis/ProfesorRestApi.ts
 apis/TestRestApi.ts
 apis/index.ts
 index.ts
@@ -11,6 +12,8 @@ models/DTOMetadatosPaginacion.ts
 models/DTOPeticionLogin.ts
 models/DTOPeticionRegistro.ts
 models/DTOPeticionRegistroAlumno.ts
+models/DTOPeticionRegistroProfesor.ts
+models/DTOProfesor.ts
 models/DTORespuestaLogin.ts
 models/DTORespuestaPaginadaDTOAlumno.ts
 models/index.ts

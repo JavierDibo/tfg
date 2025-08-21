@@ -8,12 +8,14 @@
 	import type { PageData } from './$types';
 	import { getPageDisplayInfo, type PaginatedAlumnosResponse } from '$lib/types/pagination';
 	import {
-		AlumnosSearchSection,
-		AlumnosPaginationControls,
-		AlumnosDataTable,
-		AlumnosDeleteModal,
-		AlumnosMessages
-	} from '$lib/components/alumnos';
+		EntityDataTable,
+		EntitySearchSection,
+		EntityPaginationControls,
+		EntityDeleteModal,
+		EntityMessages,
+		type EntityColumn,
+		type EntityAction
+	} from '$lib/components/common';
 
 	// Props from load function
 	const { data }: { data: PageData } = $props();
@@ -23,15 +25,6 @@
 	let error = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
 	let paginatedData = $state<PaginatedAlumnosResponse | null>(null);
-	
-	// Debug reactive updates
-	$effect(() => {
-		if (paginatedData?.content) {
-			console.log('🔄 paginatedData updated - content length:', paginatedData.content.length);
-			console.log('🔄 Current URL:', $page.url.toString());
-			console.log('🔄 Current filters in URL:', Object.fromEntries($page.url.searchParams.entries()));
-		}
-	});
 
 	// Modal state
 	let showDeleteModal = $state(false);
@@ -95,11 +88,12 @@
 				...currentPagination,
 				matriculado: currentFilters.matriculado
 			};
-			
+
 			if (currentFilters.searchMode === 'advanced') {
 				// Advanced mode: use specific field filters
 				if (currentFilters.nombre?.trim()) searchParams.nombre = currentFilters.nombre.trim();
-				if (currentFilters.apellidos?.trim()) searchParams.apellidos = currentFilters.apellidos.trim();
+				if (currentFilters.apellidos?.trim())
+					searchParams.apellidos = currentFilters.apellidos.trim();
 				if (currentFilters.dni?.trim()) searchParams.dni = currentFilters.dni.trim();
 				if (currentFilters.email?.trim()) searchParams.email = currentFilters.email.trim();
 			}
@@ -109,13 +103,13 @@
 				// For general search, we need to search across all fields
 				const searchTerm = normalizeText(currentFilters.busquedaGeneral);
 				console.log('🔍 SEARCHING for:', `"${currentFilters.busquedaGeneral}" -> "${searchTerm}"`);
-				
+
 				// Get all students
 				const allStudents = await AlumnoService.getAllFilteredAlumnos({
 					matriculado: currentFilters.matriculado
 				});
 				console.log('📊 Total students:', allStudents.length);
-				
+
 				// Show a sample of actual data from backend
 				if (allStudents.length > 0) {
 					const sample = allStudents[0];
@@ -127,11 +121,11 @@
 						normalized_apellidos: normalizeText(sample.apellidos || '')
 					});
 				}
-				
+
 				// Split search term into words for multi-word search
-				const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
+				const searchWords = searchTerm.split(/\s+/).filter((word) => word.length > 0);
 				console.log('🔍 Search words:', searchWords);
-				
+
 				// Filter students - all words must be found somewhere in the searchable fields
 				const filteredStudents = allStudents.filter((alumno: any) => {
 					const searchableFields = [
@@ -142,22 +136,22 @@
 						normalizeText(alumno.email || ''),
 						normalizeText(alumno.numeroTelefono || '')
 					];
-					
+
 					// Combine all searchable fields into one string
 					const allFieldsText = searchableFields.join(' ');
-					
+
 					// Check that ALL search words are found in the combined text
-					return searchWords.every(word => allFieldsText.includes(word));
+					return searchWords.every((word) => allFieldsText.includes(word));
 				});
 				console.log('✅ Found matches:', filteredStudents.length);
-				
+
 				// Implement client-side pagination
 				const pageSize = currentPagination.size;
 				const currentPageIndex = currentPagination.page;
 				const startIndex = currentPageIndex * pageSize;
 				const endIndex = startIndex + pageSize;
 				const paginatedResults = filteredStudents.slice(startIndex, endIndex);
-				
+
 				// Create paginated response structure - force reactivity
 				const newPaginatedData = {
 					content: paginatedResults,
@@ -172,7 +166,7 @@
 						hasPrevious: currentPageIndex > 0
 					}
 				};
-				
+
 				// Force Svelte 5 reactivity by reassigning
 				paginatedData = newPaginatedData;
 				console.log('📄 Paginated results for UI:', {
@@ -209,16 +203,18 @@
 		goto(url.toString());
 	}
 
-	function changeSorting(newSortBy: string, newDirection?: 'ASC' | 'DESC') {
+	function changeSorting(newSortBy: string | { value: string; direction: 'ASC' | 'DESC' }) {
 		const url = new URL(currentUrl);
-		url.searchParams.set('sortBy', newSortBy);
 
-		if (newDirection) {
-			url.searchParams.set('sortDirection', newDirection);
-		} else {
+		if (typeof newSortBy === 'string') {
+			url.searchParams.set('sortBy', newSortBy);
+
 			// Toggle direction if same field
 			const currentDirection = currentPagination.sortDirection === 'ASC' ? 'DESC' : 'ASC';
 			url.searchParams.set('sortDirection', currentDirection);
+		} else {
+			url.searchParams.set('sortBy', newSortBy.value);
+			url.searchParams.set('sortDirection', newSortBy.direction);
 		}
 
 		url.searchParams.set('page', '0'); // Reset to first page
@@ -296,7 +292,6 @@
 			}
 
 			successMessage = `Estado de matrícula ${updatedAlumno.matriculado ? 'activado' : 'desactivado'} correctamente`;
-			setTimeout(() => (successMessage = null), 1500);
 		} catch (err) {
 			error = `Error al cambiar estado de matrícula: ${err}`;
 		} finally {
@@ -328,7 +323,6 @@
 			}
 
 			successMessage = `Cuenta ${updatedAlumno.enabled ? 'habilitada' : 'deshabilitada'} correctamente`;
-			setTimeout(() => (successMessage = null), 1500);
 		} catch (err) {
 			error = `Error al cambiar estado de cuenta: ${err}`;
 		} finally {
@@ -350,8 +344,6 @@
 			await AlumnoService.deleteAlumno(alumnoToDelete.id!);
 
 			successMessage = 'Alumno eliminado correctamente';
-			setTimeout(() => (successMessage = null), 1500);
-
 			showDeleteModal = false;
 			alumnoToDelete = null;
 
@@ -370,7 +362,7 @@
 	async function exportResults() {
 		try {
 			loading = true;
-			
+
 			// Build filters from current filter state - only include non-empty values
 			const exportFilters: {
 				nombre?: string;
@@ -379,25 +371,26 @@
 				email?: string;
 				matriculado?: boolean;
 			} = {};
-			
+
 			// Add filters that are actually being used
 			if (currentFilters.nombre?.trim()) exportFilters.nombre = currentFilters.nombre.trim();
-			if (currentFilters.apellidos?.trim()) exportFilters.apellidos = currentFilters.apellidos.trim();
+			if (currentFilters.apellidos?.trim())
+				exportFilters.apellidos = currentFilters.apellidos.trim();
 			if (currentFilters.dni?.trim()) exportFilters.dni = currentFilters.dni.trim();
 			if (currentFilters.email?.trim()) exportFilters.email = currentFilters.email.trim();
 			if (currentFilters.matriculado !== undefined && currentFilters.matriculado !== null) {
 				exportFilters.matriculado = currentFilters.matriculado;
 			}
-			
+
 			// Get ALL filtered results (not just current page)
 			const allFilteredData = await AlumnoService.getAllFilteredAlumnos(exportFilters);
-			
+
 			// Filter by general search if in simple mode (case and accent insensitive)
 			let finalData = allFilteredData;
 			if (currentFilters.searchMode === 'simple' && currentFilters.busquedaGeneral?.trim()) {
 				const term = normalizeText(currentFilters.busquedaGeneral);
-				const searchWords = term.split(/\s+/).filter(word => word.length > 0);
-				
+				const searchWords = term.split(/\s+/).filter((word) => word.length > 0);
+
 				finalData = allFilteredData.filter((alumno) => {
 					const searchableFields = [
 						normalizeText(alumno.nombre || ''),
@@ -407,27 +400,23 @@
 						normalizeText(alumno.email || ''),
 						normalizeText(alumno.numeroTelefono || '')
 					];
-					
+
 					const allFieldsText = searchableFields.join(' ');
-					return searchWords.every(word => allFieldsText.includes(word));
+					return searchWords.every((word) => allFieldsText.includes(word));
 				});
 			}
-			
+
 			if (finalData.length === 0) {
 				error = 'No hay datos para exportar con los filtros actuales';
-				setTimeout(() => (error = null), 3000);
 				return;
 			}
-			
+
 			const csvContent = generateCSV(finalData);
 			downloadCSV(csvContent, `alumnos-export-${finalData.length}-records.csv`);
-			
+
 			successMessage = `Exportados ${finalData.length} alumnos correctamente`;
-			setTimeout(() => (successMessage = null), 3000);
-			
 		} catch (err) {
 			error = `Error al exportar datos: ${err}`;
-			setTimeout(() => (error = null), 5000);
 		} finally {
 			loading = false;
 		}
@@ -481,7 +470,111 @@
 		return new Date(date).toLocaleDateString('es-ES');
 	}
 
-	// Configuration
+	// Configuration for table columns
+	const tableColumns: EntityColumn<DTOAlumno>[] = [
+		{
+			key: 'nombre',
+			header: 'Alumno',
+			sortable: true,
+			formatter: (_, alumno) => `${alumno.nombre} ${alumno.apellidos}`
+		},
+		{
+			key: 'dni',
+			header: 'DNI',
+			sortable: true
+		},
+		{
+			key: 'email',
+			header: 'Email',
+			sortable: true
+		},
+		{
+			key: 'numeroTelefono',
+			header: 'Teléfono'
+		},
+		{
+			key: 'fechaInscripcion',
+			header: 'Fecha Inscripción',
+			sortable: true,
+			formatter: (date) => formatDate(new Date(date))
+		},
+		{
+			key: 'matriculado',
+			header: 'Estado',
+			sortable: true,
+			formatter: (_, alumno) => {
+				return `
+					<div class="space-y-1">
+						<span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+							alumno.matriculado ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+						}">
+							${alumno.matriculado ? 'Matriculado' : 'No Matriculado'}
+						</span>
+						<br />
+						<span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+							alumno.enabled ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+						}">
+							${alumno.enabled ? 'Habilitado' : 'Deshabilitado'}
+						</span>
+					</div>
+				`;
+			}
+		}
+	];
+
+	// Table actions for students
+	const tableActions: EntityAction<DTOAlumno>[] = [
+		{
+			label: 'Ver',
+			color: 'blue',
+			hoverColor: 'blue',
+			action: (alumno) => goto(`/alumnos/${alumno.id}`)
+		},
+		{
+			label: 'Matrícula',
+			dynamicLabel: (alumno) => (alumno.matriculado ? 'Desmatricular' : 'Matricular'),
+			color: 'green',
+			hoverColor: 'green',
+			condition: (alumno) => !!authStore.isAdmin,
+			action: toggleEnrollmentStatus
+		},
+		{
+			label: 'Cuenta',
+			dynamicLabel: (alumno) => (alumno.enabled ? 'Deshabilitar' : 'Habilitar'),
+			color: 'yellow',
+			hoverColor: 'yellow',
+			condition: (alumno) => !!authStore.isAdmin,
+			action: toggleAccountStatus
+		},
+		{
+			label: 'Eliminar',
+			color: 'red',
+			hoverColor: 'red',
+			condition: (alumno) => !!authStore.isAdmin,
+			action: confirmDelete
+		}
+	];
+
+	// Search fields configuration
+	const advancedSearchFields = [
+		{ key: 'nombre', label: 'Nombre', type: 'text', placeholder: 'Ej: Juan' },
+		{ key: 'apellidos', label: 'Apellidos', type: 'text', placeholder: 'Ej: García López' },
+		{ key: 'dni', label: 'DNI', type: 'text', placeholder: 'Ej: 12345678Z' },
+		{ key: 'email', label: 'Email', type: 'email', placeholder: 'Ej: juan@universidad.es' }
+	];
+
+	// Status field configuration for search filters
+	const statusField = {
+		key: 'matriculado',
+		label: 'Estado de Matrícula',
+		options: [
+			{ value: '', label: 'Todos' },
+			{ value: 'true', label: '✅ Matriculados' },
+			{ value: 'false', label: '❌ No Matriculados' }
+		]
+	};
+
+	// Sort fields for pagination controls
 	const sortFields = [
 		{ value: 'id', label: 'ID' },
 		{ value: 'usuario', label: 'Usuario' },
@@ -511,7 +604,7 @@
 	</div>
 
 	<!-- Messages Component -->
-	<AlumnosMessages
+	<EntityMessages
 		{successMessage}
 		{error}
 		on:clearSuccess={() => (successMessage = null)}
@@ -519,10 +612,13 @@
 	/>
 
 	<!-- Search and Filter Section -->
-	<AlumnosSearchSection
+	<EntitySearchSection
 		{currentFilters}
 		{paginatedData}
 		{loading}
+		entityNamePlural="alumnos"
+		advancedFields={advancedSearchFields}
+		{statusField}
 		on:switchSearchMode={(e) => switchSearchMode(e.detail)}
 		on:updateFilters={(e) => updateFilters(e.detail)}
 		on:clearFilters={clearFilters}
@@ -531,7 +627,7 @@
 
 	<!-- Pagination Controls Top -->
 	<div class="pt-10 pb-5">
-		<AlumnosPaginationControls
+		<EntityPaginationControls
 			{pageDisplayInfo}
 			{currentPagination}
 			{sortFields}
@@ -543,26 +639,28 @@
 	</div>
 
 	<!-- Students Table -->
-	<AlumnosDataTable
+	<EntityDataTable
 		{loading}
 		{paginatedData}
 		{currentPagination}
 		{authStore}
+		columns={tableColumns}
+		actions={tableActions}
+		entityName="alumno"
+		entityNamePlural="alumnos"
 		on:changeSorting={(e) => changeSorting(e.detail)}
-		on:viewAlumno={(e) => goto(`/alumnos/${e.detail}`)}
-		on:toggleEnrollmentStatus={(e) => toggleEnrollmentStatus(e.detail)}
-		on:toggleAccountStatus={(e) => toggleAccountStatus(e.detail)}
-		on:confirmDelete={(e) => confirmDelete(e.detail)}
 	/>
 
 	<!-- Pagination Bottom - Centered -->
 	{#if pageDisplayInfo && pageDisplayInfo.totalPages > 1}
 		<div class="mt-6 flex flex-col items-center gap-4">
-			<AlumnosPaginationControls
+			<EntityPaginationControls
 				{pageDisplayInfo}
 				{currentPagination}
 				{sortFields}
 				{pageSizeOptions}
+				justifyContent="center"
+				showSortAndSize={false}
 				on:goToPage={(e) => goToPage(e.detail)}
 				on:changePageSize={(e) => changePageSize(e.detail)}
 				on:changeSorting={(e) => changeSorting(e.detail)}
@@ -572,9 +670,12 @@
 </div>
 
 <!-- Delete Confirmation Modal -->
-<AlumnosDeleteModal
-	{showDeleteModal}
-	{alumnoToDelete}
+<EntityDeleteModal
+	showModal={showDeleteModal}
+	entity={alumnoToDelete}
+	entityName="alumno"
+	entityNameCapitalized="Alumno"
+	displayNameField="nombre"
 	on:cancelDelete={() => {
 		showDeleteModal = false;
 		alumnoToDelete = null;
