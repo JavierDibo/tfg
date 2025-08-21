@@ -1,6 +1,8 @@
 package app.repositorios;
 
 import app.entidades.Profesor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -60,11 +62,38 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
     List<Profesor> findByEnabledTrue();
     
     /**
+     * Busca profesores habilitados con paginación
+     * @param pageable Configuración de paginación
+     * @return Página de profesores habilitados
+     */
+    Page<Profesor> findByEnabledTrue(Pageable pageable);
+    
+    /**
+     * Cuenta profesores habilitados
+     * @return número de profesores habilitados
+     */
+    long countByEnabledTrue();
+    
+    /**
+     * Cuenta profesores deshabilitados
+     * @return número de profesores deshabilitados
+     */
+    long countByEnabledFalse();
+    
+    /**
      * Obtiene todos los profesores ordenados por ID
      * @return Lista de profesores ordenada
      */
     @Query("SELECT p FROM Profesor p ORDER BY p.id")
     List<Profesor> findAllOrderedById();
+    
+    /**
+     * Obtiene todos los profesores con paginación
+     * @param pageable Configuración de paginación
+     * @return Página de profesores
+     */
+    @Query("SELECT p FROM Profesor p")
+    Page<Profesor> findAllOrderedById(Pageable pageable);
     
     /**
      * Busca profesores que tienen una clase específica asignada
@@ -121,5 +150,40 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
         @Param("habilitado") Boolean habilitado,
         @Param("claseId") String claseId,
         @Param("sinClases") Boolean sinClases
+    );
+    
+    /**
+     * Busca profesores por múltiples filtros con soporte para paginación
+     * @param nombre Filtro por nombre
+     * @param apellidos Filtro por apellidos
+     * @param email Filtro por email
+     * @param usuario Filtro por usuario
+     * @param dni Filtro por DNI
+     * @param habilitado Filtro por estado habilitado
+     * @param claseId Filtro por clase asignada
+     * @param sinClases Filtro para profesores sin clases
+     * @param pageable Configuración de paginación
+     * @return Página de profesores que cumplen los criterios
+     */
+    @Query("SELECT DISTINCT p FROM Profesor p " +
+           "WHERE " +
+           "(:nombre IS NULL OR UPPER(p.nombre) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
+           "(:apellidos IS NULL OR UPPER(p.apellidos) LIKE UPPER(CONCAT('%', :apellidos, '%'))) AND " +
+           "(:email IS NULL OR UPPER(p.email) LIKE UPPER(CONCAT('%', :email, '%'))) AND " +
+           "(:usuario IS NULL OR UPPER(p.usuario) LIKE UPPER(CONCAT('%', :usuario, '%'))) AND " +
+           "(:dni IS NULL OR UPPER(p.dni) LIKE UPPER(CONCAT('%', :dni, '%'))) AND " +
+           "(:habilitado IS NULL OR p.enabled = :habilitado) AND " +
+           "(:claseId IS NULL OR :claseId MEMBER OF p.clasesId) AND " +
+           "(:sinClases IS NULL OR (:sinClases = true AND SIZE(p.clasesId) = 0) OR (:sinClases = false))")
+    Page<Profesor> findByFiltrosPaginados(
+        @Param("nombre") String nombre,
+        @Param("apellidos") String apellidos,
+        @Param("email") String email,
+        @Param("usuario") String usuario,
+        @Param("dni") String dni,
+        @Param("habilitado") Boolean habilitado,
+        @Param("claseId") String claseId,
+        @Param("sinClases") Boolean sinClases,
+        Pageable pageable
     );
 }

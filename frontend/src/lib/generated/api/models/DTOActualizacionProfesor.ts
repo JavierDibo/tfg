@@ -16,53 +16,59 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface DTOActualizacionAlumno
+ * @interface DTOActualizacionProfesor
  */
-export interface DTOActualizacionAlumno {
+export interface DTOActualizacionProfesor {
     /**
      * 
      * @type {string}
-     * @memberof DTOActualizacionAlumno
+     * @memberof DTOActualizacionProfesor
      */
     nombre?: string;
     /**
      * 
      * @type {string}
-     * @memberof DTOActualizacionAlumno
+     * @memberof DTOActualizacionProfesor
      */
     apellidos?: string;
     /**
      * 
      * @type {string}
-     * @memberof DTOActualizacionAlumno
+     * @memberof DTOActualizacionProfesor
      */
     dni?: string;
     /**
      * 
      * @type {string}
-     * @memberof DTOActualizacionAlumno
+     * @memberof DTOActualizacionProfesor
      */
     email?: string;
     /**
      * 
      * @type {string}
-     * @memberof DTOActualizacionAlumno
+     * @memberof DTOActualizacionProfesor
      */
     numeroTelefono?: string;
+    /**
+     * 
+     * @type {Set<string>}
+     * @memberof DTOActualizacionProfesor
+     */
+    clasesId?: Set<string>;
 }
 
 /**
- * Check if a given object implements the DTOActualizacionAlumno interface.
+ * Check if a given object implements the DTOActualizacionProfesor interface.
  */
-export function instanceOfDTOActualizacionAlumno(value: object): value is DTOActualizacionAlumno {
+export function instanceOfDTOActualizacionProfesor(value: object): value is DTOActualizacionProfesor {
     return true;
 }
 
-export function DTOActualizacionAlumnoFromJSON(json: any): DTOActualizacionAlumno {
-    return DTOActualizacionAlumnoFromJSONTyped(json, false);
+export function DTOActualizacionProfesorFromJSON(json: any): DTOActualizacionProfesor {
+    return DTOActualizacionProfesorFromJSONTyped(json, false);
 }
 
-export function DTOActualizacionAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOActualizacionAlumno {
+export function DTOActualizacionProfesorFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOActualizacionProfesor {
     if (json == null) {
         return json;
     }
@@ -73,14 +79,15 @@ export function DTOActualizacionAlumnoFromJSONTyped(json: any, ignoreDiscriminat
         'dni': json['dni'] == null ? undefined : json['dni'],
         'email': json['email'] == null ? undefined : json['email'],
         'numeroTelefono': json['numeroTelefono'] == null ? undefined : json['numeroTelefono'],
+        'clasesId': json['clasesId'] == null ? undefined : new Set(json['clasesId']),
     };
 }
 
-export function DTOActualizacionAlumnoToJSON(json: any): DTOActualizacionAlumno {
-    return DTOActualizacionAlumnoToJSONTyped(json, false);
+export function DTOActualizacionProfesorToJSON(json: any): DTOActualizacionProfesor {
+    return DTOActualizacionProfesorToJSONTyped(json, false);
 }
 
-export function DTOActualizacionAlumnoToJSONTyped(value?: DTOActualizacionAlumno | null, ignoreDiscriminator: boolean = false): any {
+export function DTOActualizacionProfesorToJSONTyped(value?: DTOActualizacionProfesor | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -92,6 +99,7 @@ export function DTOActualizacionAlumnoToJSONTyped(value?: DTOActualizacionAlumno
         'dni': value['dni'],
         'email': value['email'],
         'numeroTelefono': value['numeroTelefono'],
+        'clasesId': value['clasesId'] == null ? undefined : Array.from(value['clasesId'] as Set<any>),
     };
 }
 

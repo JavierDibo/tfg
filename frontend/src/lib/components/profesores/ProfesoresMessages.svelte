@@ -1,39 +1,33 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
+	import { createEventDispatcher } from 'svelte';
+	import { fade } from 'svelte/transition';
 
-	let {
-		successMessage,
-		error,
-		onClearSuccess,
-		onClearError
-	}: {
-		successMessage: string | null;
-		error: string | null;
-		onClearSuccess: () => void;
-		onClearError: () => void;
-	} = $props();
+	export let successMessage: string | null = null;
+	export let error: string | null = null;
+
+	const dispatch = createEventDispatcher();
 </script>
 
 {#if successMessage}
 	<div
-		transition:slide={{ duration: 300 }}
-		class="mb-4 rounded-lg bg-green-100 p-4 text-sm text-green-700"
-		role="alert"
+		class="mb-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700"
+		transition:fade
 	>
-		<span class="font-medium">Éxito!</span>
 		{successMessage}
-		<button onclick={onClearSuccess} class="float-right font-bold">X</button>
 	</div>
 {/if}
 
 {#if error}
 	<div
-		transition:slide={{ duration: 300 }}
-		class="mb-4 rounded-lg bg-red-100 p-4 text-sm text-red-700"
-		role="alert"
+		class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700"
+		transition:fade
 	>
-		<span class="font-medium">Error!</span>
 		{error}
-		<button onclick={onClearError} class="float-right font-bold">X</button>
+		<button
+			on:click={() => dispatch('clearError')}
+			class="float-right text-red-500 hover:text-red-700"
+		>
+			×
+		</button>
 	</div>
 {/if}

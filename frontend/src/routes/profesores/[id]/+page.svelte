@@ -1,0 +1,832 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import type { DTOProfesor } from '$lib/generated/api';
+	import type { DTOActualizacionProfesor } from '$lib/services/profesorService';
+	import { ProfesorService } from '$lib/services/profesorService';
+	import { authStore } from '$lib/stores/authStore.svelte';
+
+	// Props and derived state
+	const profesorId = $derived(parseInt($page.params.id));
+	const isCreated = $derived($page.url.searchParams.get('created') === 'true');
+
+	// State management
+	let profesor: DTOProfesor | null = $state(null);
+	let editMode = $state(false);
+	let loading = $state(false);
+	let saving = $state(false);
+	let error = $state<string | null>(null);
+	let successMessage = $state<string | null>(null);
+
+	// Edit form state
+	let editForm: DTOActualizacionProfesor = $state({});
+
+	// Permissions
+	const canEdit = $derived(() => {
+		if (!profesor) return false;
+
+		// Admin can edit anyone
+		if (authStore.isAdmin) return true;
+
+		// Professor can only edit their own profile
+		if (
+			authStore.isProfesor &&
+			(authStore.user?.usuario === profesor.usuario || authStore.user?.sub === profesor.usuario)
+		)
+			return true;
+
+		return false;
+	});
+
+	const canChangeStatus = $derived(() => authStore.isAdmin);
+
+	// Check authentication
+	$effect(() => {
+		if (!authStore.isAuthenticated) {
+			goto('/auth');
+			return;
+		}
+	});
+
+	// Show success message if just created
+	$effect(() => {
+		if (isCreated) {
+			successMessage = 'Profesor creado exitosamente';
+			setTimeout(() => (successMessage = null), 5000);
+		}
+	});
+
+	onMount(() => {
+		loadProfesor();
+	});
+
+	async function loadProfesor() {
+		if (!profesorId || isNaN(profesorId)) {
+			error = 'ID de profesor inválido';
+			return;
+		}
+
+		loading = true;
+		error = null;
+
+		try {
+			profesor = await ProfesorService.getProfesorById(profesorId);
+
+			// Check if current user can access this profile
+			if (!authStore.isAdmin) {
+				if (
+					!authStore.isProfesor ||
+					(authStore.user?.usuario !== profesor.usuario && authStore.user?.sub !== profesor.usuario)
+				) {
+					error = 'No tienes permisos para ver este perfil';
+					return;
+				}
+			}
+		} catch (err) {
+			error = `Error al cargar el profesor: ${err}`;
+		} finally {
+			loading = false;
+		}
+	}
+
+	function startEdit() {
+		if (!profesor || !canEdit) return;
+
+		editForm = {
+			nombre: profesor.nombre || '',
+			apellidos: profesor.apellidos || '',
+			dni: profesor.dni || '',
+			email: profesor.email || '',
+			numeroTelefono: profesor.numeroTelefono || ''
+		};
+		editMode = true;
+	}
+
+	function cancelEdit() {
+		editMode = false;
+		editForm = {};
+		error = null;
+	}
+
+	// ==================== VALIDATION FUNCTIONS ====================
+
+	/**
+	 * Valida nombres y apellidos: solo letras, acentos, espacios, máximo 100 caracteres
+	 */
+	function validateName(name: string): { isValid: boolean; message: string } {
+		if (!name || name.trim().length === 0) {
+			return { isValid: false, message: 'Este campo es obligatorio' };
+		}
+		if (name.length > 100) {
+			return { isValid: false, message: 'Máximo 100 caracteres' };
+		}
+		const nameRegex = /^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/;
+		if (!nameRegex.test(name)) {
+			return { isValid: false, message: 'Solo se permiten letras, acentos y espacios' };
+		}
+		return { isValid: true, message: '✓ Válido' };
+	}
+
+	/**
+	 * Valida DNI español: 8 números + 1 letra calculada
+	 */
+	function validateDNI(dni: string): { isValid: boolean; message: string } {
+		if (!dni || dni.trim().length === 0) {
+			return { isValid: false, message: 'El DNI es obligatorio' };
+		}
+
+		const dniRegex = /^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$/i;
+		if (!dniRegex.test(dni)) {
+			return { isValid: false, message: 'Formato: 8 números + 1 letra (ej: 12345678Z)' };
+		}
+
+		// Calcular letra correcta
+		const numbers = dni.substring(0, 8);
+		const letter = dni.substring(8, 9).toUpperCase();
+		const correctLetters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+		const correctLetter = correctLetters[parseInt(numbers) % 23];
+
+		if (letter !== correctLetter) {
+			return { isValid: false, message: `La letra debería ser ${correctLetter}` };
+		}
+
+		return { isValid: true, message: '✓ DNI válido' };
+	}
+
+	/**
+	 * Valida email con límites específicos
+	 */
+	function validateEmail(email: string): { isValid: boolean; message: string } {
+		if (!email || email.trim().length === 0) {
+			return { isValid: false, message: 'El email es obligatorio' };
+		}
+
+		if (email.length > 254) {
+			return { isValid: false, message: 'Máximo 254 caracteres' };
+		}
+
+		const [localPart] = email.split('@');
+		if (localPart && localPart.length > 64) {
+			return { isValid: false, message: 'La parte local no puede superar 64 caracteres' };
+		}
+
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			return { isValid: false, message: 'Formato de email inválido' };
+		}
+
+		// Verificar puntos consecutivos
+		if (email.includes('..')) {
+			return { isValid: false, message: 'No se permiten puntos consecutivos' };
+		}
+
+		return { isValid: true, message: '✓ Email válido' };
+	}
+
+	/**
+	 * Valida teléfono: 6-14 dígitos, prefijos internacionales, caracteres permitidos
+	 */
+	function validatePhoneNumber(phone: string): { isValid: boolean; message: string } {
+		if (!phone || phone.trim().length === 0) {
+			return { isValid: true, message: 'Campo opcional' }; // Es opcional
+		}
+
+		// Caracteres permitidos: números, espacios, guiones, puntos, paréntesis, +
+		const allowedCharsRegex = /^[0-9+\-\s().]+$/;
+		if (!allowedCharsRegex.test(phone)) {
+			return { isValid: false, message: 'Solo números, espacios, guiones, puntos, paréntesis y +' };
+		}
+
+		// Extraer solo los dígitos
+		const digits = phone.replace(/[^0-9]/g, '');
+
+		if (digits.length < 6) {
+			return { isValid: false, message: 'Mínimo 6 dígitos' };
+		}
+
+		if (digits.length > 14) {
+			return { isValid: false, message: 'Máximo 14 dígitos' };
+		}
+
+		return { isValid: true, message: '✓ Teléfono válido' };
+	}
+
+	/**
+	 * Verifica si un campo debe enviarse en el PATCH (no vacío)
+	 */
+	function shouldIncludeField(value: string | undefined): boolean {
+		return value !== undefined && value !== null && value.trim() !== '';
+	}
+
+	/**
+	 * Verifica si el formulario completo es válido
+	 */
+	function isFormValid(): boolean {
+		// Verificar que todos los campos que tienen contenido sean válidos
+		if (editForm.nombre && !validateName(editForm.nombre).isValid) return false;
+		if (editForm.apellidos && !validateName(editForm.apellidos).isValid) return false;
+		if (editForm.dni && !validateDNI(editForm.dni).isValid) return false;
+		if (editForm.email && !validateEmail(editForm.email).isValid) return false;
+		if (editForm.numeroTelefono && !validatePhoneNumber(editForm.numeroTelefono).isValid)
+			return false;
+
+		// Verificar que al menos un campo tenga contenido para enviar
+		return (
+			shouldIncludeField(editForm.nombre) ||
+			shouldIncludeField(editForm.apellidos) ||
+			shouldIncludeField(editForm.dni) ||
+			shouldIncludeField(editForm.email) ||
+			shouldIncludeField(editForm.numeroTelefono)
+		);
+	}
+
+	/**
+	 * Verifica si hay errores de validación en el formulario
+	 */
+	function hasFormErrors(): boolean {
+		return Boolean(
+			(editForm.nombre && !validateName(editForm.nombre).isValid) ||
+				(editForm.apellidos && !validateName(editForm.apellidos).isValid) ||
+				(editForm.dni && !validateDNI(editForm.dni).isValid) ||
+				(editForm.email && !validateEmail(editForm.email).isValid) ||
+				(editForm.numeroTelefono && !validatePhoneNumber(editForm.numeroTelefono).isValid)
+		);
+	}
+
+	async function saveChanges() {
+		if (!profesor) return;
+
+		saving = true;
+		error = null;
+
+		try {
+			// Validar todos los campos que van a enviarse
+			const validationErrors: string[] = [];
+
+			// Solo incluir campos que no estén vacíos (PATCH parcial)
+			const updateData: DTOActualizacionProfesor = {};
+
+			// Validar y incluir nombre si está presente
+			if (shouldIncludeField(editForm.nombre)) {
+				const nameValidation = validateName(editForm.nombre!);
+				if (!nameValidation.isValid) {
+					validationErrors.push(`Nombre: ${nameValidation.message}`);
+				} else {
+					updateData.nombre = editForm.nombre;
+				}
+			}
+
+			// Validar y incluir apellidos si está presente
+			if (shouldIncludeField(editForm.apellidos)) {
+				const apellidosValidation = validateName(editForm.apellidos!);
+				if (!apellidosValidation.isValid) {
+					validationErrors.push(`Apellidos: ${apellidosValidation.message}`);
+				} else {
+					updateData.apellidos = editForm.apellidos;
+				}
+			}
+
+			// Validar y incluir DNI si está presente
+			if (shouldIncludeField(editForm.dni)) {
+				const dniValidation = validateDNI(editForm.dni!);
+				if (!dniValidation.isValid) {
+					validationErrors.push(`DNI: ${dniValidation.message}`);
+				} else {
+					updateData.dni = editForm.dni;
+				}
+			}
+
+			// Validar y incluir email si está presente
+			if (shouldIncludeField(editForm.email)) {
+				const emailValidation = validateEmail(editForm.email!);
+				if (!emailValidation.isValid) {
+					validationErrors.push(`Email: ${emailValidation.message}`);
+				} else {
+					updateData.email = editForm.email;
+				}
+			}
+
+			// Validar y incluir teléfono si está presente
+			if (shouldIncludeField(editForm.numeroTelefono)) {
+				const phoneValidation = validatePhoneNumber(editForm.numeroTelefono!);
+				if (!phoneValidation.isValid) {
+					validationErrors.push(`Teléfono: ${phoneValidation.message}`);
+				} else {
+					updateData.numeroTelefono = editForm.numeroTelefono;
+				}
+			}
+
+			// Si hay errores de validación, mostrarlos
+			if (validationErrors.length > 0) {
+				error = validationErrors.join('. ');
+				return;
+			}
+
+			// Si no hay datos para actualizar
+			if (Object.keys(updateData).length === 0) {
+				error = 'No hay cambios para guardar';
+				return;
+			}
+
+			const updatedProfesor = await ProfesorService.updateProfesor(profesor.id!, updateData);
+			profesor = updatedProfesor;
+			editMode = false;
+			editForm = {};
+			successMessage = 'Perfil actualizado correctamente';
+			setTimeout(() => (successMessage = null), 3000);
+		} catch (err) {
+			error = `Error al actualizar el perfil: ${err}`;
+		} finally {
+			saving = false;
+		}
+	}
+
+	async function toggleAccountStatus() {
+		if (!profesor || !canChangeStatus) return;
+
+		try {
+			const updatedProfesor = await ProfesorService.toggleAccountStatus(profesor.id!, !profesor.enabled);
+			profesor = updatedProfesor;
+			successMessage = `Cuenta ${updatedProfesor.enabled ? 'habilitada' : 'deshabilitada'} correctamente`;
+			setTimeout(() => (successMessage = null), 3000);
+		} catch (err) {
+			error = `Error al cambiar estado de cuenta: ${err}`;
+		}
+	}
+
+	function formatDate(date: Date | undefined): string {
+		if (!date) return '-';
+		return new Date(date).toLocaleDateString('es-ES', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		});
+	}
+</script>
+
+<div class="container mx-auto max-w-4xl px-4 py-8">
+	<!-- Header -->
+	<div class="mb-6 flex items-center justify-between">
+		<h1 class="text-3xl font-bold text-gray-900">Perfil de Profesor</h1>
+		<button onclick={() => goto('/profesores')} class="text-gray-600 hover:text-gray-800">
+			← Volver a Profesores
+		</button>
+	</div>
+
+	<!-- Success/Error Messages -->
+	{#if successMessage}
+		<div class="mb-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700">
+			{successMessage}
+		</div>
+	{/if}
+
+	{#if error}
+		<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+			{error}
+			<button onclick={() => (error = null)} class="float-right text-red-500 hover:text-red-700">
+				×
+			</button>
+		</div>
+	{/if}
+
+	<!-- Loading State -->
+	{#if loading}
+		<div class="py-12 text-center">
+			<div class="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"></div>
+			<p class="mt-4 text-gray-600">Cargando perfil del profesor...</p>
+		</div>
+	{:else if profesor}
+		<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+			<!-- Main Profile Info -->
+			<div class="lg:col-span-2">
+				<div class="rounded-lg bg-white p-6 shadow-md">
+					<div class="mb-6 flex items-start justify-between">
+						<div>
+							<h2 class="text-2xl font-bold text-gray-900">
+								{profesor.nombre}
+								{profesor.apellidos}
+							</h2>
+							<p class="text-gray-600">@{profesor.usuario}</p>
+						</div>
+
+						{#if canEdit() && !editMode}
+							<button
+								onclick={startEdit}
+								class="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+							>
+								Editar Datos
+							</button>
+						{/if}
+					</div>
+
+					{#if editMode}
+						<!-- Edit Form -->
+						<form
+							onsubmit={(e) => {
+								e.preventDefault();
+								saveChanges();
+							}}
+							class="space-y-4"
+						>
+							<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+								<!-- NOMBRE -->
+								<div>
+									<label for="nombre" class="mb-1 block text-sm font-medium text-gray-700">
+										Nombre <span class="text-red-500">*</span>
+									</label>
+									<div class="relative">
+										<input
+											id="nombre"
+											type="text"
+											bind:value={editForm.nombre}
+											maxlength="100"
+											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.nombre
+												? validateName(editForm.nombre).isValid
+													? 'border-green-500 bg-green-50'
+													: 'border-red-500 bg-red-50'
+												: 'border-gray-300'}"
+											placeholder="Ej: Juan Carlos"
+										/>
+										{#if editForm.nombre}
+											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+												{#if validateName(editForm.nombre).isValid}
+													<span class="text-green-500">✓</span>
+												{:else}
+													<span class="text-red-500">✗</span>
+												{/if}
+											</div>
+										{/if}
+									</div>
+									{#if editForm.nombre}
+										<p
+											class="mt-1 text-xs {validateName(editForm.nombre).isValid
+												? 'text-green-600'
+												: 'text-red-600'}"
+										>
+											{validateName(editForm.nombre).message}
+										</p>
+									{/if}
+									<p class="mt-1 text-xs text-gray-500">
+										Solo letras, acentos y espacios. Máximo 100 caracteres.
+									</p>
+								</div>
+
+								<!-- APELLIDOS -->
+								<div>
+									<label for="apellidos" class="mb-1 block text-sm font-medium text-gray-700">
+										Apellidos <span class="text-red-500">*</span>
+									</label>
+									<div class="relative">
+										<input
+											id="apellidos"
+											type="text"
+											bind:value={editForm.apellidos}
+											maxlength="100"
+											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.apellidos
+												? validateName(editForm.apellidos).isValid
+													? 'border-green-500 bg-green-50'
+													: 'border-red-500 bg-red-50'
+												: 'border-gray-300'}"
+											placeholder="Ej: García López"
+										/>
+										{#if editForm.apellidos}
+											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+												{#if validateName(editForm.apellidos).isValid}
+													<span class="text-green-500">✓</span>
+												{:else}
+													<span class="text-red-500">✗</span>
+												{/if}
+											</div>
+										{/if}
+									</div>
+									{#if editForm.apellidos}
+										<p
+											class="mt-1 text-xs {validateName(editForm.apellidos).isValid
+												? 'text-green-600'
+												: 'text-red-600'}"
+										>
+											{validateName(editForm.apellidos).message}
+										</p>
+									{/if}
+									<p class="mt-1 text-xs text-gray-500">
+										Solo letras, acentos y espacios. Máximo 100 caracteres.
+									</p>
+								</div>
+
+								<!-- DNI -->
+								<div>
+									<label for="dni" class="mb-1 block text-sm font-medium text-gray-700">
+										DNI <span class="text-red-500">*</span>
+									</label>
+									<div class="relative">
+										<input
+											id="dni"
+											type="text"
+											bind:value={editForm.dni}
+											maxlength="9"
+											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.dni
+												? validateDNI(editForm.dni).isValid
+													? 'border-green-500 bg-green-50'
+													: 'border-red-500 bg-red-50'
+												: 'border-gray-300'}"
+											placeholder="12345678Z"
+											style="text-transform: uppercase;"
+										/>
+										{#if editForm.dni}
+											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+												{#if validateDNI(editForm.dni).isValid}
+													<span class="text-green-500">✓</span>
+												{:else}
+													<span class="text-red-500">✗</span>
+												{/if}
+											</div>
+										{/if}
+									</div>
+									{#if editForm.dni}
+										<p
+											class="mt-1 text-xs {validateDNI(editForm.dni).isValid
+												? 'text-green-600'
+												: 'text-red-600'}"
+										>
+											{validateDNI(editForm.dni).message}
+										</p>
+									{/if}
+									<p class="mt-1 text-xs text-gray-500">
+										8 números seguidos de 1 letra. Ej: 12345678Z
+									</p>
+								</div>
+
+								<!-- EMAIL -->
+								<div>
+									<label for="email" class="mb-1 block text-sm font-medium text-gray-700">
+										Email <span class="text-red-500">*</span>
+									</label>
+									<div class="relative">
+										<input
+											id="email"
+											type="email"
+											bind:value={editForm.email}
+											maxlength="254"
+											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.email
+												? validateEmail(editForm.email).isValid
+													? 'border-green-500 bg-green-50'
+													: 'border-red-500 bg-red-50'
+												: 'border-gray-300'}"
+											placeholder="usuario@universidad.es"
+										/>
+										{#if editForm.email}
+											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+												{#if validateEmail(editForm.email).isValid}
+													<span class="text-green-500">✓</span>
+												{:else}
+													<span class="text-red-500">✗</span>
+												{/if}
+											</div>
+										{/if}
+									</div>
+									{#if editForm.email}
+										<p
+											class="mt-1 text-xs {validateEmail(editForm.email).isValid
+												? 'text-green-600'
+												: 'text-red-600'}"
+										>
+											{validateEmail(editForm.email).message}
+										</p>
+									{/if}
+									<p class="mt-1 text-xs text-gray-500">
+										Máximo 254 caracteres. Parte local máximo 64 caracteres.
+									</p>
+								</div>
+
+								<!-- TELÉFONO -->
+								<div class="md:col-span-2">
+									<label for="numeroTelefono" class="mb-1 block text-sm font-medium text-gray-700">
+										Teléfono <span class="text-gray-400">(Opcional)</span>
+									</label>
+									<div class="relative">
+										<input
+											id="numeroTelefono"
+											type="tel"
+											bind:value={editForm.numeroTelefono}
+											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.numeroTelefono
+												? validatePhoneNumber(editForm.numeroTelefono).isValid
+													? 'border-green-500 bg-green-50'
+													: 'border-red-500 bg-red-50'
+												: 'border-gray-300'}"
+											placeholder="Ej: +34 123 456 789, (555) 123-4567, 123456789"
+										/>
+										{#if editForm.numeroTelefono}
+											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+												{#if validatePhoneNumber(editForm.numeroTelefono).isValid}
+													<span class="text-green-500">✓</span>
+												{:else}
+													<span class="text-red-500">✗</span>
+												{/if}
+											</div>
+										{/if}
+									</div>
+									{#if editForm.numeroTelefono}
+										<p
+											class="mt-1 text-xs {validatePhoneNumber(editForm.numeroTelefono).isValid
+												? 'text-green-600'
+												: 'text-red-600'}"
+										>
+											{validatePhoneNumber(editForm.numeroTelefono).message}
+										</p>
+									{/if}
+									<p class="mt-1 text-xs text-gray-500">
+										6-14 dígitos. Permitidos: números, espacios, guiones, puntos, paréntesis y +
+									</p>
+								</div>
+							</div>
+
+							<div class="flex justify-end space-x-3 border-t pt-6">
+								<button
+									type="button"
+									onclick={cancelEdit}
+									class="rounded-md bg-gray-300 px-6 py-2 text-gray-700 transition-colors hover:bg-gray-400"
+									disabled={saving}
+								>
+									Cancelar
+								</button>
+								<button
+									type="submit"
+									disabled={saving || !isFormValid()}
+									class="rounded-md px-6 py-2 font-medium transition-colors {isFormValid() &&
+									!saving
+										? 'bg-blue-600 text-white hover:bg-blue-700'
+										: 'cursor-not-allowed bg-gray-400 text-gray-200'}"
+								>
+									{saving
+										? '🔄 Guardando...'
+										: isFormValid()
+											? '✓ Guardar Cambios'
+											: '⚠️ Corregir Errores'}
+								</button>
+							</div>
+
+							<!-- Form Validation Summary -->
+							{#if hasFormErrors()}
+								<div class="mt-4 rounded-md border border-yellow-200 bg-yellow-50 p-3">
+									<h4 class="mb-2 text-sm font-medium text-yellow-800">⚠️ Campos con errores:</h4>
+									<ul class="space-y-1 text-xs text-yellow-700">
+										{#if editForm.nombre && !validateName(editForm.nombre).isValid}
+											<li>• Nombre: {validateName(editForm.nombre).message}</li>
+										{/if}
+										{#if editForm.apellidos && !validateName(editForm.apellidos).isValid}
+											<li>• Apellidos: {validateName(editForm.apellidos).message}</li>
+										{/if}
+										{#if editForm.dni && !validateDNI(editForm.dni).isValid}
+											<li>• DNI: {validateDNI(editForm.dni).message}</li>
+										{/if}
+										{#if editForm.email && !validateEmail(editForm.email).isValid}
+											<li>• Email: {validateEmail(editForm.email).message}</li>
+										{/if}
+										{#if editForm.numeroTelefono && !validatePhoneNumber(editForm.numeroTelefono).isValid}
+											<li>• Teléfono: {validatePhoneNumber(editForm.numeroTelefono).message}</li>
+										{/if}
+									</ul>
+								</div>
+							{/if}
+						</form>
+					{:else}
+						<!-- View Mode -->
+						<div class="space-y-4">
+							<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+								<div>
+									<h3 class="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase">
+										Información Personal
+									</h3>
+									<dl class="space-y-2">
+										<div>
+											<dt class="text-sm font-medium text-gray-900">Nombre Completo</dt>
+											<dd class="text-sm text-gray-600">{profesor.nombre} {profesor.apellidos}</dd>
+										</div>
+										<div>
+											<dt class="text-sm font-medium text-gray-900">DNI</dt>
+											<dd class="text-sm text-gray-600">{profesor.dni}</dd>
+										</div>
+										<div>
+											<dt class="text-sm font-medium text-gray-900">Email</dt>
+											<dd class="text-sm text-gray-600">{profesor.email}</dd>
+										</div>
+										<div>
+											<dt class="text-sm font-medium text-gray-900">Teléfono</dt>
+											<dd class="text-sm text-gray-600">
+												{profesor.numeroTelefono || 'No especificado'}
+											</dd>
+										</div>
+									</dl>
+								</div>
+
+								<div>
+									<h3 class="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase">
+										Información Académica
+									</h3>
+									<dl class="space-y-2">
+										<div>
+											<dt class="text-sm font-medium text-gray-900">Usuario</dt>
+											<dd class="text-sm text-gray-600">@{profesor.usuario}</dd>
+										</div>
+										<div>
+											<dt class="text-sm font-medium text-gray-900">Fecha de Inscripción</dt>
+											<dd class="text-sm text-gray-600">{formatDate(profesor.fechaCreacion)}</dd>
+										</div>
+										<div>
+											<dt class="text-sm font-medium text-gray-900">Estado de Cuenta</dt>
+											<dd class="text-sm">
+												<span
+													class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {profesor.enabled
+														? 'bg-blue-100 text-blue-800'
+														: 'bg-red-100 text-red-800'}"
+												>
+													{profesor.enabled ? 'Habilitado' : 'Deshabilitado'}
+												</span>
+											</dd>
+										</div>
+									</dl>
+								</div>
+							</div>
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Action Panel -->
+			<div class="space-y-6">
+				{#if canChangeStatus()}
+					<!-- Admin Actions -->
+					<div class="rounded-lg bg-white p-6 shadow-md">
+						<h3 class="mb-4 text-lg font-semibold text-gray-900">Acciones de Administrador</h3>
+
+						<div class="space-y-3">
+							<button
+								onclick={toggleAccountStatus}
+								class="w-full {profesor.enabled
+									? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+									: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'} rounded-md px-4 py-2 text-white focus:ring-2 focus:outline-none"
+							>
+								{profesor.enabled ? 'Deshabilitar' : 'Habilitar'} Cuenta
+							</button>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Quick Stats -->
+				<div class="rounded-lg bg-white p-6 shadow-md">
+					<h3 class="mb-4 text-lg font-semibold text-gray-900">Información Rápida</h3>
+
+					<div class="space-y-3">
+						<div class="flex justify-between">
+							<span class="text-sm text-gray-600">ID del Profesor:</span>
+							<span class="text-sm font-medium text-gray-900">#{profesor.id}</span>
+						</div>
+
+						<div class="flex justify-between">
+							<span class="text-sm text-gray-600">Estado:</span>
+							<span
+								class="text-sm font-medium {profesor.enabled ? 'text-green-600' : 'text-red-600'}"
+							>
+								{profesor.enabled ? 'Activo' : 'Inactivo'}
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Navigation -->
+				<div class="rounded-lg bg-white p-6 shadow-md">
+					<h3 class="mb-4 text-lg font-semibold text-gray-900">Navegación</h3>
+
+					<div class="space-y-2">
+						<button
+							onclick={() => goto('/profesores')}
+							class="w-full text-left text-sm text-blue-600 hover:text-blue-800"
+						>
+							← Volver a Lista de Profesores
+						</button>
+
+						{#if authStore.isAdmin}
+							<button
+								onclick={() => goto('/profesores/nuevo')}
+								class="w-full text-left text-sm text-blue-600 hover:text-blue-800"
+							>
+								+ Crear Nuevo Profesor
+							</button>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+	{:else if !loading}
+		<div class="py-12 text-center">
+			<p class="text-lg text-gray-500">Profesor no encontrado</p>
+			<button
+				onclick={() => goto('/profesores')}
+				class="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+			>
+				Volver a Profesores
+			</button>
+		</div>
+	{/if}
+</div>

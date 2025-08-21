@@ -1,12 +1,14 @@
 package app.servicios;
 
-import app.dtos.DTOProfesor;
-import app.dtos.DTOPeticionRegistroProfesor;
-import app.dtos.DTOParametrosBusquedaProfesor;
+import app.dtos.*;
 import app.entidades.Profesor;
 import app.excepciones.EntidadNoEncontradaException;
 import app.repositorios.RepositorioProfesor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -134,6 +136,43 @@ public class ServicioProfesor {
     }
 
     /**
+     * Busca profesores por parámetros con paginación
+     * @param parametros Parámetros de búsqueda
+     * @param page Número de página (0-indexed)
+     * @param size Tamaño de la página
+     * @param sortBy Campo por el que ordenar
+     * @param sortDirection Dirección de ordenación (ASC/DESC)
+     * @return Respuesta paginada con profesores
+     */
+    public DTORespuestaPaginada<DTOProfesor> buscarProfesoresPorParametrosPaginados(
+            DTOParametrosBusquedaProfesor parametros, int page, int size, String sortBy, String sortDirection) {
+        
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<DTOProfesor> profesoresPage;
+        
+        if (parametros.estaVacio()) {
+            profesoresPage = repositorioProfesor.findAllOrderedById(pageable)
+                    .map(DTOProfesor::new);
+        } else {
+            profesoresPage = repositorioProfesor.findByFiltrosPaginados(
+                    parametros.nombre(),
+                    parametros.apellidos(),
+                    parametros.email(),
+                    parametros.usuario(),
+                    parametros.dni(),
+                    parametros.habilitado(),
+                    parametros.claseId(),
+                    parametros.sinClases(),
+                    pageable)
+                    .map(DTOProfesor::new);
+        }
+        
+        return new DTORespuestaPaginada<>(profesoresPage);
+    }
+
+    /**
      * Obtiene profesores habilitados
      * @return Lista de DTOProfesor habilitados
      */
@@ -142,6 +181,26 @@ public class ServicioProfesor {
                 .stream()
                 .map(DTOProfesor::new)
                 .toList();
+    }
+
+    /**
+     * Obtiene profesores habilitados con paginación
+     * @param page Número de página (0-indexed)
+     * @param size Tamaño de la página
+     * @param sortBy Campo por el que ordenar
+     * @param sortDirection Dirección de ordenación (ASC/DESC)
+     * @return Respuesta paginada con profesores habilitados
+     */
+    public DTORespuestaPaginada<DTOProfesor> obtenerProfesoresHabilitadosPaginados(
+            int page, int size, String sortBy, String sortDirection) {
+        
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<DTOProfesor> profesoresPage = repositorioProfesor.findByEnabledTrue(pageable)
+                .map(DTOProfesor::new);
+        
+        return new DTORespuestaPaginada<>(profesoresPage);
     }
 
     /**
@@ -273,5 +332,90 @@ public class ServicioProfesor {
         profesor.setEnabled(habilitado);
         Profesor profesorActualizado = repositorioProfesor.save(profesor);
         return new DTOProfesor(profesorActualizado);
+    }
+
+    /**
+     * Actualiza parcialmente los datos de un profesor
+     * @param profesorId ID del profesor a actualizar
+     * @param dtoParcial DTO con los campos a actualizar
+     * @return DTOProfesor actualizado
+     * @throws EntidadNoEncontradaException si el profesor no existe
+     * @throws IllegalArgumentException si el dto está vacío o hay campos inválidos
+     */
+    public DTOProfesor actualizarProfesor(Long profesorId, DTOActualizacionProfesor dtoParcial) {
+        if (dtoParcial == null || dtoParcial.estaVacio()) {
+            throw new IllegalArgumentException("No se proporcionaron datos para actualizar");
+        }
+
+        Profesor profesor = repositorioProfesor.findById(profesorId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado"));
+
+        // Actualizar solo los campos no nulos
+        if (dtoParcial.nombre() != null) {
+            profesor.setNombre(dtoParcial.nombre());
+        }
+
+        if (dtoParcial.apellidos() != null) {
+            profesor.setApellidos(dtoParcial.apellidos());
+        }
+
+        if (dtoParcial.dni() != null) {
+            // Verificar que no existe otro profesor con el mismo DNI
+            repositorioProfesor.findByDni(dtoParcial.dni())
+                    .ifPresent(existente -> {
+                        if (!existente.getId().equals(profesorId)) {
+                            throw new IllegalArgumentException("Ya existe otro profesor con el DNI: " + dtoParcial.dni());
+                        }
+                    });
+            profesor.setDni(dtoParcial.dni());
+        }
+
+        if (dtoParcial.email() != null) {
+            // Verificar que no existe otro profesor con el mismo email
+            repositorioProfesor.findByEmail(dtoParcial.email())
+                    .ifPresent(existente -> {
+                        if (!existente.getId().equals(profesorId)) {
+                            throw new IllegalArgumentException("Ya existe otro profesor con el email: " + dtoParcial.email());
+                        }
+                    });
+            profesor.setEmail(dtoParcial.email());
+        }
+
+        if (dtoParcial.numeroTelefono() != null) {
+            profesor.setNumeroTelefono(dtoParcial.numeroTelefono());
+        }
+
+        if (dtoParcial.clasesId() != null) {
+            // Actualizar clases (reemplazar todas)
+            profesor.getClasesId().clear();
+            dtoParcial.clasesId().forEach(profesor::agregarClase);
+        }
+
+        Profesor profesorActualizado = repositorioProfesor.save(profesor);
+        return new DTOProfesor(profesorActualizado);
+    }
+
+    /**
+     * Obtiene estadísticas del total de profesores
+     * @return total de profesores
+     */
+    public long contarTotalProfesores() {
+        return repositorioProfesor.count();
+    }
+    
+    /**
+     * Cuenta profesores habilitados
+     * @return número de profesores habilitados
+     */
+    public long contarProfesoresHabilitados() {
+        return repositorioProfesor.countByEnabledTrue();
+    }
+    
+    /**
+     * Cuenta profesores deshabilitados
+     * @return número de profesores deshabilitados
+     */
+    public long contarProfesoresDeshabilitados() {
+        return repositorioProfesor.countByEnabledFalse();
     }
 }

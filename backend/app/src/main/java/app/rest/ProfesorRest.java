@@ -1,8 +1,10 @@
 package app.rest;
 
+import app.dtos.DTOActualizacionProfesor;
 import app.dtos.DTOProfesor;
 import app.dtos.DTOPeticionRegistroProfesor;
 import app.dtos.DTOParametrosBusquedaProfesor;
+import app.dtos.DTORespuestaPaginada;
 import app.servicios.ServicioProfesor;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -31,7 +33,49 @@ public class ProfesorRest {
     private final ServicioProfesor servicioProfesor;
 
     /**
-     * Obtiene todos los profesores o busca con parámetros
+     * Obtiene todos los profesores paginados o busca con parámetros
+     * GET /api/profesores/paged
+     * @param nombre Nombre a buscar (opcional)
+     * @param apellidos Apellidos a buscar (opcional)
+     * @param email Email a buscar (opcional)
+     * @param usuario Usuario a buscar (opcional)
+     * @param dni DNI a buscar (opcional)
+     * @param habilitado Estado de habilitación (opcional)
+     * @param claseId ID de clase asignada (opcional)
+     * @param sinClases Si es true, busca profesores sin clases asignadas (opcional)
+     * @param page Número de página (0-indexed)
+     * @param size Tamaño de página
+     * @param sortBy Campo por el que ordenar
+     * @param sortDirection Dirección de ordenación (ASC/DESC)
+     * @return Respuesta paginada de profesores
+     */
+    @GetMapping("/paged")
+    public ResponseEntity<DTORespuestaPaginada<DTOProfesor>> obtenerProfesoresPaginados(
+            @RequestParam(required = false) @Size(max = 100) String nombre,
+            @RequestParam(required = false) @Size(max = 100) String apellidos,
+            @RequestParam(required = false) @Size(max = 100) String email,
+            @RequestParam(required = false) @Size(max = 50) String usuario,
+            @RequestParam(required = false) @Size(max = 20) String dni,
+            @RequestParam(required = false) Boolean habilitado,
+            @RequestParam(required = false) String claseId,
+            @RequestParam(required = false) Boolean sinClases,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        
+        DTOParametrosBusquedaProfesor parametros = new DTOParametrosBusquedaProfesor(
+                nombre, apellidos, email, usuario, dni, habilitado, claseId, sinClases);
+        
+        System.out.println("Obteniendo profesores paginados con parámetros: " + parametros);
+        DTORespuestaPaginada<DTOProfesor> respuesta = servicioProfesor.buscarProfesoresPorParametrosPaginados(
+                parametros, page, size, sortBy, sortDirection);
+                
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
+    /**
+     * Obtiene todos los profesores o busca con parámetros (sin paginación - DEPRECATED)
      * GET /api/profesores
      * @param nombre Nombre a buscar (opcional)
      * @param apellidos Apellidos a buscar (opcional)
@@ -40,6 +84,7 @@ public class ProfesorRest {
      * @return Lista de profesores
      */
     @GetMapping
+    @Deprecated(since = "1.1", forRemoval = true)
     public ResponseEntity<List<DTOProfesor>> obtenerProfesores(
             @RequestParam(required = false) @Size(max = 100) String nombre,
             @RequestParam(required = false) @Size(max = 100) String apellidos,
@@ -145,11 +190,35 @@ public class ProfesorRest {
     }
 
     /**
-     * Obtiene profesores habilitados
+     * Obtiene profesores habilitados paginados
+     * GET /api/profesores/habilitados/paged
+     * @param page Número de página (0-indexed)
+     * @param size Tamaño de página
+     * @param sortBy Campo por el que ordenar
+     * @param sortDirection Dirección de ordenación (ASC/DESC)
+     * @return Respuesta paginada de profesores habilitados
+     */
+    @GetMapping("/habilitados/paged")
+    public ResponseEntity<DTORespuestaPaginada<DTOProfesor>> obtenerProfesoresHabilitadosPaginados(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        
+        System.out.println("Obteniendo profesores habilitados paginados");
+        DTORespuestaPaginada<DTOProfesor> respuesta = servicioProfesor.obtenerProfesoresHabilitadosPaginados(
+                page, size, sortBy, sortDirection);
+                
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
+    /**
+     * Obtiene profesores habilitados (sin paginación - DEPRECATED)
      * GET /api/profesores/habilitados
      * @return Lista de profesores habilitados
      */
     @GetMapping("/habilitados")
+    @Deprecated(since = "1.1", forRemoval = true)
     public ResponseEntity<List<DTOProfesor>> obtenerProfesoresHabilitados() {
         System.out.println("Obteniendo profesores habilitados");
         List<DTOProfesor> profesores = servicioProfesor.obtenerProfesoresHabilitados();
@@ -274,12 +343,12 @@ public class ProfesorRest {
 
     /**
      * Habilita o deshabilita un profesor
-     * PUT /api/profesores/{id}/estado
+     * PATCH /api/profesores/{id}/estado
      * @param id ID del profesor
      * @param estado Map con el estado (habilitado: true/false)
      * @return DTOProfesor actualizado
      */
-    @PutMapping("/{id}/estado")
+    @PatchMapping("/{id}/estado")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DTOProfesor> cambiarEstadoProfesor(
             @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id,
@@ -293,6 +362,51 @@ public class ProfesorRest {
         System.out.println("Cambiando estado del profesor " + id + " a: " + habilitado);
         DTOProfesor profesorActualizado = servicioProfesor.cambiarEstadoProfesor(id, habilitado);
         return new ResponseEntity<>(profesorActualizado, HttpStatus.OK);
+    }
+
+    /**
+     * Actualiza parcialmente los datos de un profesor
+     * PATCH /api/profesores/{id}
+     * @param id ID del profesor a actualizar
+     * @param dtoParcial Datos a actualizar
+     * @return DTOProfesor con los datos actualizados
+     */
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESOR') and #id == authentication.principal.id)")
+    public ResponseEntity<DTOProfesor> actualizarProfesor(
+            @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id,
+            @Valid @RequestBody DTOActualizacionProfesor dtoParcial) {
+        
+        System.out.println("Actualizando profesor con ID: " + id);
+        DTOProfesor profesorActualizado = servicioProfesor.actualizarProfesor(id, dtoParcial);
+        return new ResponseEntity<>(profesorActualizado, HttpStatus.OK);
+    }
+
+    /**
+     * Endpoint para estadísticas de profesores
+     * GET /api/profesores/estadisticas/total
+     * @return Mapa con estadísticas
+     */
+    @GetMapping("/estadisticas/total")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Long>> obtenerTotalProfesores() {
+        long total = servicioProfesor.contarTotalProfesores();
+        return new ResponseEntity<>(Map.of("total", total), HttpStatus.OK);
+    }
+
+    /**
+     * Endpoint para estadísticas de habilitación de profesores
+     * GET /api/profesores/estadisticas/habilitacion
+     * @return Mapa con estadísticas
+     */
+    @GetMapping("/estadisticas/habilitacion")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Long>> obtenerEstadisticasHabilitacion() {
+        Map<String, Long> estadisticas = Map.of(
+            "habilitados", servicioProfesor.contarProfesoresHabilitados(),
+            "deshabilitados", servicioProfesor.contarProfesoresDeshabilitados()
+        );
+        return new ResponseEntity<>(estadisticas, HttpStatus.OK);
     }
 
     /**

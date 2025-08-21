@@ -6,6 +6,7 @@ apis/TestRestApi.ts
 apis/index.ts
 index.ts
 models/DTOActualizacionAlumno.ts
+models/DTOActualizacionProfesor.ts
 models/DTOAlumno.ts
 models/DTOEntidad.ts
 models/DTOMetadatosPaginacion.ts
@@ -16,5 +17,6 @@ models/DTOPeticionRegistroProfesor.ts
 models/DTOProfesor.ts
 models/DTORespuestaLogin.ts
 models/DTORespuestaPaginadaDTOAlumno.ts
+models/DTORespuestaPaginadaDTOProfesor.ts
 models/index.ts
 runtime.ts
