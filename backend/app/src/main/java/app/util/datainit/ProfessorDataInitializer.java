@@ -17,9 +17,11 @@ public class ProfessorDataInitializer extends BaseDataInitializer {
     public void initialize() {
         ServicioProfesor servicioProfesor = context.getBean(ServicioProfesor.class);
         
+        System.out.println("Creating " + NUM_PROFESSORS + " professors...");
+        
         for (int i = 0; i < NUM_PROFESSORS; i++) {
             String[] nombreCompleto = generateRandomNames();
-            String email = generateRandomEmail(nombreCompleto[0], nombreCompleto[1], i);
+            String email = "prof" + (i + 1) + "@academia.com";
             String dni = generateUniqueDNI(i);
             String telefono = generateRandomPhone();
             

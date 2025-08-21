@@ -2,7 +2,6 @@ package app.util.datainit;
 
 import app.dtos.DTOAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
-import app.entidades.Usuario;
 import app.servicios.ServicioAlumno;
 import org.springframework.stereotype.Component;
 
@@ -16,12 +15,13 @@ public class StudentDataInitializer extends BaseDataInitializer {
 
     @Override
     public void initialize() {
-
         ServicioAlumno servicioAlumno = context.getBean(ServicioAlumno.class);
+        
+        System.out.println("Creating " + NUM_STUDENTS + " students...");
         
         for (int i = 0; i < NUM_STUDENTS; i++) {
             String[] nombreCompleto = generateRandomNames();
-            String email = generateRandomEmail(nombreCompleto[0], nombreCompleto[1], i);
+            String email = "user" + (i + 1) + "@academia.com";
             String dni = generateUniqueDNI(i);
             String telefono = generateRandomPhone();
             
