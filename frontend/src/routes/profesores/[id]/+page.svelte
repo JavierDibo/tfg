@@ -346,7 +346,10 @@
 		if (!profesor || !canChangeStatus) return;
 
 		try {
-			const updatedProfesor = await ProfesorService.toggleAccountStatus(profesor.id!, !profesor.enabled);
+			const updatedProfesor = await ProfesorService.toggleAccountStatus(
+				profesor.id!,
+				!profesor.enabled
+			);
 			profesor = updatedProfesor;
 			successMessage = `Cuenta ${updatedProfesor.enabled ? 'habilitada' : 'deshabilitada'} correctamente`;
 			setTimeout(() => (successMessage = null), 3000);

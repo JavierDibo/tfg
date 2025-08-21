@@ -79,7 +79,68 @@ export interface DTOAlumno {
      * @memberof DTOAlumno
      */
     enabled?: boolean;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DTOAlumno
+     */
+    clasesId?: Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DTOAlumno
+     */
+    pagosId?: Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DTOAlumno
+     */
+    entregasId?: Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOAlumno
+     */
+    rol?: DTOAlumnoRolEnum;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOAlumno
+     */
+    numeroClases?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOAlumno
+     */
+    numeroPagos?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOAlumno
+     */
+    numeroEntregas?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOAlumno
+     */
+    nombreCompleto?: string;
 }
+
+
+/**
+ * @export
+ */
+export const DTOAlumnoRolEnum = {
+    Admin: 'ADMIN',
+    Profesor: 'PROFESOR',
+    Alumno: 'ALUMNO',
+    Usuario: 'USUARIO'
+} as const;
+export type DTOAlumnoRolEnum = typeof DTOAlumnoRolEnum[keyof typeof DTOAlumnoRolEnum];
+
 
 /**
  * Check if a given object implements the DTOAlumno interface.
@@ -113,6 +174,14 @@ export function DTOAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'fechaInscripcion': json['fechaInscripcion'] == null ? undefined : (new Date(json['fechaInscripcion'])),
         'matriculado': json['matriculado'] == null ? undefined : json['matriculado'],
         'enabled': json['enabled'] == null ? undefined : json['enabled'],
+        'clasesId': json['clasesId'] == null ? undefined : json['clasesId'],
+        'pagosId': json['pagosId'] == null ? undefined : json['pagosId'],
+        'entregasId': json['entregasId'] == null ? undefined : json['entregasId'],
+        'rol': json['rol'] == null ? undefined : json['rol'],
+        'numeroClases': json['numeroClases'] == null ? undefined : json['numeroClases'],
+        'numeroPagos': json['numeroPagos'] == null ? undefined : json['numeroPagos'],
+        'numeroEntregas': json['numeroEntregas'] == null ? undefined : json['numeroEntregas'],
+        'nombreCompleto': json['nombreCompleto'] == null ? undefined : json['nombreCompleto'],
     };
 }
 
@@ -137,6 +206,14 @@ export function DTOAlumnoToJSONTyped(value?: DTOAlumno | null, ignoreDiscriminat
         'fechaInscripcion': value['fechaInscripcion'] == null ? undefined : ((value['fechaInscripcion']).toISOString()),
         'matriculado': value['matriculado'],
         'enabled': value['enabled'],
+        'clasesId': value['clasesId'],
+        'pagosId': value['pagosId'],
+        'entregasId': value['entregasId'],
+        'rol': value['rol'],
+        'numeroClases': value['numeroClases'],
+        'numeroPagos': value['numeroPagos'],
+        'numeroEntregas': value['numeroEntregas'],
+        'nombreCompleto': value['nombreCompleto'],
     };
 }
 

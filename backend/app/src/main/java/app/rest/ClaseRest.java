@@ -167,6 +167,28 @@ public class ClaseRest {
     }
 
     /**
+     * Permite a un alumno inscribirse en una clase
+     * @param claseId ID de la clase
+     * @return DTOClase actualizada
+     */
+    @PostMapping("/{claseId}/inscribirse")
+    @PreAuthorize("hasRole('ALUMNO')")
+    public ResponseEntity<DTOClase> inscribirseEnClase(@PathVariable Long claseId) {
+        return ResponseEntity.ok(servicioClase.inscribirseEnClase(claseId));
+    }
+
+    /**
+     * Permite a un alumno darse de baja de una clase
+     * @param claseId ID de la clase
+     * @return DTOClase actualizada
+     */
+    @DeleteMapping("/{claseId}/darse-baja")
+    @PreAuthorize("hasRole('ALUMNO')")
+    public ResponseEntity<DTOClase> darseDeBajaDeClase(@PathVariable Long claseId) {
+        return ResponseEntity.ok(servicioClase.darseDeBajaDeClase(claseId));
+    }
+
+    /**
      * Agrega un profesor a una clase
      * @param claseId ID de la clase
      * @param profesorId ID del profesor

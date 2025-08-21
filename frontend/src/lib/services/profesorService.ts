@@ -1,4 +1,9 @@
-import { type DTOProfesor, type DTOPeticionRegistroProfesor, type DTOActualizacionProfesor, type DTORespuestaPaginadaDTOProfesor } from '$lib/generated/api';
+import {
+	type DTOProfesor,
+	type DTOPeticionRegistroProfesor,
+	type DTOActualizacionProfesor,
+	type DTORespuestaPaginadaDTOProfesor
+} from '$lib/generated/api';
 import { profesorApi } from '$lib/api';
 
 // Define the ProfesorStatistics type used in the estadisticas page
@@ -30,21 +35,24 @@ export const ProfesorService = {
 		}
 	},
 
-	async getProfesoresPaginados(filters: {
-		nombre?: string;
-		apellidos?: string;
-		email?: string;
-		usuario?: string;
-		dni?: string;
-		habilitado?: boolean;
-		claseId?: string;
-		sinClases?: boolean;
-	}, pagination: {
-		page?: number;
-		size?: number;
-		sortBy?: string;
-		sortDirection?: SortDirection;
-	}): Promise<DTORespuestaPaginadaDTOProfesor> {
+	async getProfesoresPaginados(
+		filters: {
+			nombre?: string;
+			apellidos?: string;
+			email?: string;
+			usuario?: string;
+			dni?: string;
+			habilitado?: boolean;
+			claseId?: string;
+			sinClases?: boolean;
+		},
+		pagination: {
+			page?: number;
+			size?: number;
+			sortBy?: string;
+			sortDirection?: SortDirection;
+		}
+	): Promise<DTORespuestaPaginadaDTOProfesor> {
 		try {
 			const { page, size, sortBy, sortDirection } = pagination;
 			const response = await profesorApi.obtenerProfesoresPaginados({
@@ -54,7 +62,7 @@ export const ProfesorService = {
 				sortBy,
 				sortDirection
 			});
-			
+
 			return response;
 		} catch (error) {
 			console.error('Error fetching paginated professors:', error);
@@ -76,7 +84,7 @@ export const ProfesorService = {
 				sortBy,
 				sortDirection
 			});
-			
+
 			return response;
 		} catch (error) {
 			console.error('Error fetching paginated enabled professors:', error);
@@ -93,7 +101,7 @@ export const ProfesorService = {
 			throw error;
 		}
 	},
-	
+
 	async getProfesorByUsuario(usuario: string): Promise<DTOProfesor> {
 		try {
 			const response = await profesorApi.obtenerProfesorPorUsuario({ usuario });
@@ -115,7 +123,7 @@ export const ProfesorService = {
 			throw error;
 		}
 	},
-	
+
 	async updateProfesor(id: number, updateData: DTOActualizacionProfesor): Promise<DTOProfesor> {
 		try {
 			const response = await profesorApi.actualizarProfesor({
@@ -150,13 +158,13 @@ export const ProfesorService = {
 			throw error;
 		}
 	},
-	
+
 	async getStatistics(): Promise<ProfesorStatistics> {
 		try {
 			// Get total counts from the API endpoints
 			const totalStats = await profesorApi.obtenerTotalProfesores();
 			const habilitacionStats = await profesorApi.obtenerEstadisticasHabilitacion();
-			
+
 			return {
 				totalCount: totalStats['total'] || 0,
 				activeCount: habilitacionStats['habilitados'] || 0,
@@ -167,37 +175,37 @@ export const ProfesorService = {
 			throw error;
 		}
 	},
-	
+
 	validateRegistrationData(data: DTOPeticionRegistroProfesor): string[] {
 		const errors: string[] = [];
-		
+
 		// Basic validation rules
 		if (!data.usuario || data.usuario.length < 3) {
 			errors.push('El nombre de usuario debe tener al menos 3 caracteres');
 		}
-		
+
 		if (!data.password || data.password.length < 6) {
 			errors.push('La contraseña debe tener al menos 6 caracteres');
 		}
-		
+
 		if (!data.nombre) {
 			errors.push('El nombre es obligatorio');
 		}
-		
+
 		if (!data.apellidos) {
 			errors.push('Los apellidos son obligatorios');
 		}
-		
+
 		if (!data.dni) {
 			errors.push('El DNI es obligatorio');
 		}
-		
+
 		if (!data.email) {
 			errors.push('El email es obligatorio');
 		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
 			errors.push('El formato del email no es válido');
 		}
-		
+
 		return errors;
 	}
 };

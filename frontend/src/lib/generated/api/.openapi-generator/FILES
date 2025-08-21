@@ -1,5 +1,6 @@
 apis/AlumnoRestApi.ts
 apis/AutenticacionRestApi.ts
+apis/ClaseRestApi.ts
 apis/EntidadRestApi.ts
 apis/ProfesorRestApi.ts
 apis/TestRestApi.ts
@@ -8,8 +9,13 @@ index.ts
 models/DTOActualizacionAlumno.ts
 models/DTOActualizacionProfesor.ts
 models/DTOAlumno.ts
+models/DTOClase.ts
+models/DTOCurso.ts
 models/DTOEntidad.ts
 models/DTOMetadatosPaginacion.ts
+models/DTOParametrosBusquedaClase.ts
+models/DTOPeticionCrearCurso.ts
+models/DTOPeticionCrearTaller.ts
 models/DTOPeticionLogin.ts
 models/DTOPeticionRegistro.ts
 models/DTOPeticionRegistroAlumno.ts
@@ -17,6 +23,9 @@ models/DTOPeticionRegistroProfesor.ts
 models/DTOProfesor.ts
 models/DTORespuestaLogin.ts
 models/DTORespuestaPaginadaDTOAlumno.ts
+models/DTORespuestaPaginadaDTOClase.ts
 models/DTORespuestaPaginadaDTOProfesor.ts
+models/DTOTaller.ts
+models/Material.ts
 models/index.ts
 runtime.ts

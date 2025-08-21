@@ -18,10 +18,7 @@
 {/if}
 
 {#if error}
-	<div
-		class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700"
-		transition:fade
-	>
+	<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700" transition:fade>
 		{error}
 		<button
 			on:click={() => dispatch('clearError')}

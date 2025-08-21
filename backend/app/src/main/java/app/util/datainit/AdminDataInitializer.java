@@ -2,8 +2,6 @@ package app.util.datainit;
 
 import app.entidades.Usuario;
 import app.repositorios.RepositorioUsuario;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,13 +10,15 @@ public class AdminDataInitializer extends BaseDataInitializer {
     @Override
     public void initialize() {
         RepositorioUsuario repositorioUsuario = context.getBean(RepositorioUsuario.class);
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        
+        // Initialize password encoder from base class
+        initializePasswordEncoder();
         
         // Check if admin already exists
         if (repositorioUsuario.findByUsuario("admin").isEmpty()) {
             Usuario admin = new Usuario(
                 "admin",
-                passwordEncoder.encode("admin"),
+                encodePassword("admin"), // Use the base class method for consistency
                 "Administrador",
                 "Sistema",
                 "12345678Z",
@@ -29,12 +29,12 @@ public class AdminDataInitializer extends BaseDataInitializer {
             
             try {
                 repositorioUsuario.save(admin);
-                System.out.println("Admin user created successfully");
+                System.out.println("✓ Admin user created successfully with encoded password");
             } catch (Exception e) {
-                System.err.println("Error creating admin user: " + e.getMessage());
+                System.err.println("✗ Error creating admin user: " + e.getMessage());
             }
         } else {
-            System.out.println("Admin user already exists");
+            System.out.println("ℹ Admin user already exists");
         }
     }
 }

@@ -17,6 +17,9 @@ public class ProfessorDataInitializer extends BaseDataInitializer {
     public void initialize() {
         ServicioProfesor servicioProfesor = context.getBean(ServicioProfesor.class);
         
+        // Initialize password encoder
+        initializePasswordEncoder();
+        
         System.out.println("Creating " + NUM_PROFESSORS + " professors...");
         
         for (int i = 0; i < NUM_PROFESSORS; i++) {
@@ -27,10 +30,15 @@ public class ProfessorDataInitializer extends BaseDataInitializer {
             
             // Create professor using the record constructor
             String username = "prof" + removeAccents(nombreCompleto[0]) + i;
+            
+            // Note: The service will handle password encoding internally,
+            // but we can also encode it here for consistency
+            String rawPassword = "password";
+            String encodedPassword = encodePassword(rawPassword);
                 
             DTOPeticionRegistroProfesor dto = new DTOPeticionRegistroProfesor(
                 username, // username without accents
-                "password",
+                rawPassword, // The service will encode this password
                 nombreCompleto[0],
                 nombreCompleto[1] + " " + nombreCompleto[2], // apellidos
                 dni,
@@ -42,10 +50,13 @@ public class ProfessorDataInitializer extends BaseDataInitializer {
             try {
                 DTOProfesor profesor = servicioProfesor.crearProfesor(dto);
                 createdProfessors.add(profesor);
+                System.out.println("✓ Created professor: " + username + " with encoded password");
             } catch (Exception e) {
-                System.err.println("Error creating professor: " + e.getMessage());
+                System.err.println("✗ Error creating professor: " + e.getMessage());
             }
         }
+        
+        System.out.println("✓ Professor creation completed. Total created: " + createdProfessors.size());
     }
     
     public List<DTOProfesor> getCreatedProfessors() {

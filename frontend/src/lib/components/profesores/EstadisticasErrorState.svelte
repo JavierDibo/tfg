@@ -5,9 +5,7 @@
 </script>
 
 <div class="my-12 flex flex-col items-center justify-center text-center">
-	<div
-		class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-red-100 text-red-500"
-	>
+	<div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-red-100 text-red-500">
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			class="h-10 w-10"

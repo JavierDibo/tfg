@@ -17,6 +17,9 @@ public class StudentDataInitializer extends BaseDataInitializer {
     public void initialize() {
         ServicioAlumno servicioAlumno = context.getBean(ServicioAlumno.class);
         
+        // Initialize password encoder
+        initializePasswordEncoder();
+        
         System.out.println("Creating " + NUM_STUDENTS + " students...");
         
         for (int i = 0; i < NUM_STUDENTS; i++) {
@@ -27,10 +30,15 @@ public class StudentDataInitializer extends BaseDataInitializer {
             
             // Create student using the record constructor
             String username = removeAccents(nombreCompleto[0]) + i;
+            
+            // Note: The service will handle password encoding internally,
+            // but we can also encode it here for consistency
+            String rawPassword = "password";
+            String encodedPassword = encodePassword(rawPassword);
                 
             DTOPeticionRegistroAlumno dto = new DTOPeticionRegistroAlumno(
                 username, // username without accents
-                "password",
+                rawPassword, // The service will encode this password
                 nombreCompleto[0],
                 nombreCompleto[1] + " " + nombreCompleto[2], // apellidos
                 dni,
@@ -41,10 +49,13 @@ public class StudentDataInitializer extends BaseDataInitializer {
             try {
                 DTOAlumno alumno = servicioAlumno.crearAlumno(dto);
                 createdStudents.add(alumno);
+                System.out.println("✓ Created student: " + username + " with encoded password");
             } catch (Exception e) {
-                System.err.println("Error creating student: " + e.getMessage());
+                System.err.println("✗ Error creating student: " + e.getMessage());
             }
         }
+        
+        System.out.println("✓ Student creation completed. Total created: " + createdStudents.size());
     }
     
     public List<DTOAlumno> getCreatedStudents() {

@@ -13,6 +13,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Isolation;
@@ -424,5 +426,45 @@ public class ServicioClase {
      */
     public Integer contarProfesoresEnClase(Long claseId) {
         return repositorioClase.countProfesoresByClaseId(claseId);
+    }
+
+    /**
+     * Permite a un alumno inscribirse en una clase.
+     * @param claseId ID de la clase a inscribirse.
+     * @return DTOClase actualizada.
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public DTOClase inscribirseEnClase(Long claseId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String alumnoId = authentication.getName(); // Obtiene el ID del alumno del contexto de seguridad
+
+        Clase clase = repositorioClase.findById(claseId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+
+        // Verificar si el alumno ya está inscrito
+        if (clase.getAlumnosId().contains(alumnoId)) {
+            return new DTOClase(clase); // El alumno ya está inscrito, devolver la clase sin cambios
+        }
+
+        clase.agregarAlumno(alumnoId);
+        Clase claseActualizada = repositorioClase.save(clase);
+        return new DTOClase(claseActualizada);
+    }
+
+    /**
+     * Permite a un alumno darse de baja de una clase.
+     * @param claseId ID de la clase a darse de baja.
+     * @return DTOClase actualizada.
+     */
+    public DTOClase darseDeBajaDeClase(Long claseId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String alumnoId = authentication.getName(); // Obtiene el ID del alumno del contexto de seguridad
+
+        Clase clase = repositorioClase.findById(claseId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+
+        clase.removerAlumno(alumnoId);
+        Clase claseActualizada = repositorioClase.save(clase);
+        return new DTOClase(claseActualizada);
     }
 }

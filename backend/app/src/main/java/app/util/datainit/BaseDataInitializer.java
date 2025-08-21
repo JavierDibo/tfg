@@ -2,6 +2,7 @@ package app.util.datainit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
@@ -11,8 +12,28 @@ public abstract class BaseDataInitializer {
     @Autowired
     protected ApplicationContext context;
     protected final Random random = new Random();
+    protected PasswordEncoder passwordEncoder;
 
     protected abstract void initialize();
+
+    /**
+     * Initialize the password encoder for use in data initialization
+     */
+    protected void initializePasswordEncoder() {
+        if (passwordEncoder == null) {
+            passwordEncoder = context.getBean(PasswordEncoder.class);
+        }
+    }
+
+    /**
+     * Encode a password using the configured PasswordEncoder
+     * @param rawPassword The raw password to encode
+     * @return The encoded password
+     */
+    protected String encodePassword(String rawPassword) {
+        initializePasswordEncoder();
+        return passwordEncoder.encode(rawPassword);
+    }
 
     protected String[] generateRandomNames() {
         // Names and surnames that match the pattern [a-zA-ZáéíóúÁÉÍÓÚñÑ\s]

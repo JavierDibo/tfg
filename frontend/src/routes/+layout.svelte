@@ -18,6 +18,12 @@
 							<!-- Admin Navigation -->
 							{#if authStore.isAdmin}
 								<a
+									href="/clases"
+									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+								>
+									Clases
+								</a>
+								<a
 									href="/alumnos"
 									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 								>
@@ -44,6 +50,12 @@
 								<!-- Professor Navigation -->
 							{:else if authStore.isProfesor}
 								<a
+									href="/clases"
+									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+								>
+									Mis Clases
+								</a>
+								<a
 									href="/alumnos"
 									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 								>
@@ -58,6 +70,12 @@
 								<!-- Student Navigation -->
 							{:else if authStore.isAlumno}
 								<a
+									href="/clases"
+									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+								>
+									Clases
+								</a>
+								<a
 									href="/alumnos/perfil"
 									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 								>
@@ -71,6 +89,12 @@
 								class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 							>
 								Inicio
+							</a>
+							<a
+								href="/clases"
+								class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+							>
+								Clases
 							</a>
 						{/if}
 					</div>

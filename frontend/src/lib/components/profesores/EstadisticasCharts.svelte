@@ -27,7 +27,7 @@
 				</div>
 				<!-- Center circle -->
 				<div
-					class="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-white shadow-md"
+					class="absolute top-1/2 left-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-white shadow-md"
 				>
 					<span class="text-xs text-gray-500">Activos</span>
 					<span class="text-lg font-bold text-gray-900"
