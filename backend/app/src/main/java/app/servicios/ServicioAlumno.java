@@ -2,12 +2,15 @@ package app.servicios;
 
 import app.dtos.DTOActualizacionAlumno;
 import app.dtos.DTOAlumno;
+import app.dtos.DTOClase;
 import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Alumno;
+import app.entidades.Clase;
 import app.excepciones.EntidadNoEncontradaException;
 import app.repositorios.RepositorioAlumno;
+import app.repositorios.RepositorioClase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ import java.util.List;
 public class ServicioAlumno {
 
     private final RepositorioAlumno repositorioAlumno;
+    private final RepositorioClase repositorioClase;
     private final PasswordEncoder passwordEncoder;
 
     public List<DTOAlumno> obtenerAlumnos() {
@@ -190,6 +195,112 @@ public class ServicioAlumno {
         return repositorioAlumno.count();
     }
 
+    // métodos para gestionar relaciones con clases
+    
+    /**
+     * Inscribir un alumno en una clase
+     * @param alumnoId ID del alumno
+     * @param claseId ID de la clase
+     * @return DTOAlumno actualizado
+     */
+    public DTOAlumno inscribirEnClase(Long alumnoId, Long claseId) {
+        Alumno alumno = repositorioAlumno.findById(alumnoId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + alumnoId + " no encontrado."));
+                
+        Clase clase = repositorioClase.findById(claseId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        
+        // Verificar que el alumno no esté ya inscrito en la clase
+        if (alumno.getClasesId().contains(claseId.toString())) {
+            throw new IllegalArgumentException("El alumno ya está inscrito en esta clase.");
+        }
+        
+        // Agregar la clase al alumno
+        alumno.agregarClase(claseId.toString());
+        
+        // Agregar el alumno a la clase
+        clase.agregarAlumno(alumnoId.toString());
+        
+        // Guardar cambios
+        repositorioClase.save(clase);
+        Alumno alumnoActualizado = repositorioAlumno.save(alumno);
+        
+        return new DTOAlumno(alumnoActualizado);
+    }
+    
+    /**
+     * Dar de baja a un alumno de una clase
+     * @param alumnoId ID del alumno
+     * @param claseId ID de la clase
+     * @return DTOAlumno actualizado
+     */
+    public DTOAlumno darDeBajaDeClase(Long alumnoId, Long claseId) {
+        Alumno alumno = repositorioAlumno.findById(alumnoId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + alumnoId + " no encontrado."));
+                
+        Clase clase = repositorioClase.findById(claseId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        
+        // Verificar que el alumno esté inscrito en la clase
+        if (!alumno.getClasesId().contains(claseId.toString())) {
+            throw new IllegalArgumentException("El alumno no está inscrito en esta clase.");
+        }
+        
+        // Remover la clase del alumno
+        alumno.removerClase(claseId.toString());
+        
+        // Remover el alumno de la clase
+        clase.removerAlumno(alumnoId.toString());
+        
+        // Guardar cambios
+        repositorioClase.save(clase);
+        Alumno alumnoActualizado = repositorioAlumno.save(alumno);
+        
+        return new DTOAlumno(alumnoActualizado);
+    }
+    
+    /**
+     * Obtener todas las clases en las que está inscrito un alumno
+     * @param alumnoId ID del alumno
+     * @return Lista de clases
+     */
+    public List<DTOClase> obtenerClasesPorAlumno(Long alumnoId) {
+        // Primero verificamos que el alumno existe
+        repositorioAlumno.findById(alumnoId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + alumnoId + " no encontrado."));
+        
+        // Obtenemos las clases del alumno usando el repositorio de clase
+        return repositorioClase.findByAlumnoId(alumnoId.toString())
+                .stream()
+                .map(DTOClase::new)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Verificar si un alumno está inscrito en una clase
+     * @param alumnoId ID del alumno
+     * @param claseId ID de la clase
+     * @return true si está inscrito, false en caso contrario
+     */
+    public boolean estaInscritoEnClase(Long alumnoId, Long claseId) {
+        Alumno alumno = repositorioAlumno.findById(alumnoId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + alumnoId + " no encontrado."));
+                
+        return alumno.estaInscritoEnClase(claseId.toString());
+    }
+    
+    /**
+     * Contar el número de clases en las que está inscrito un alumno
+     * @param alumnoId ID del alumno
+     * @return Número de clases
+     */
+    public int contarClasesPorAlumno(Long alumnoId) {
+        Alumno alumno = repositorioAlumno.findById(alumnoId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + alumnoId + " no encontrado."));
+                
+        return alumno.getClasesId().size();
+    }
+
     // metodos con paginación
     
     /**
@@ -287,6 +398,57 @@ public class ServicioAlumno {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         Page<Alumno> pageAlumnos = repositorioAlumno.findByMatriculadoPaged(matriculado, pageable);
+        
+        // Convertir a DTOs
+        Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
+        
+        return new DTORespuestaPaginada<>(pageDTOs);
+    }
+    
+    /**
+     * Obtiene alumnos inscritos en una clase específica con paginación
+     */
+    public DTORespuestaPaginada<DTOAlumno> obtenerAlumnosPorClasePaginados(
+            Long claseId, int page, int size, String sortBy, String sortDirection) {
+        
+        // Validar parámetros
+        if (page < 0) page = 0;
+        if (size <= 0 || size > 100) size = 20;
+        if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
+        
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (Exception e) {
+            direction = Sort.Direction.ASC;
+        }
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        // Primero verificamos que la clase existe
+        if (!repositorioClase.existsById(claseId)) {
+            throw new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada.");
+        }
+        
+        // Obtenemos los alumnos de la clase usando filtrado en memoria
+        // Nota: En un escenario real se implementaría una consulta específica
+        List<Alumno> alumnosDeClase = repositorioAlumno.findAll().stream()
+                .filter(alumno -> alumno.getClasesId() != null && 
+                                 alumno.getClasesId().contains(claseId.toString()))
+                .collect(Collectors.toList());
+        
+        // Aplicamos paginación manualmente
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), alumnosDeClase.size());
+        
+        if (start > end) {
+            start = 0;
+            end = 0;
+        }
+        
+        List<Alumno> pageContent = alumnosDeClase.subList(start, end);
+        Page<Alumno> pageAlumnos = new org.springframework.data.domain.PageImpl<>(
+            pageContent, pageable, alumnosDeClase.size());
         
         // Convertir a DTOs
         Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);

@@ -18,9 +18,7 @@ import java.util.List;
 @DiscriminatorValue("PROFESOR")
 public class Profesor extends Usuario {
     
-    // TODO: Implementar relaciones según UML:
-    // - clasesId: List<string>
-    // Por ahora se maneja como lista de strings, después se refactorizará a relaciones JPA
+    // Lista de clases que imparte el profesor
     @ElementCollection
     @CollectionTable(name = "profesor_clases", joinColumns = @JoinColumn(name = "profesor_id"))
     @Column(name = "clase_id")
@@ -51,9 +49,6 @@ public class Profesor extends Usuario {
      * @param claseId ID de la clase
      */
     public void agregarClase(String claseId) {
-        if (this.clasesId == null) {
-            this.clasesId = new ArrayList<>();
-        }
         if (!this.clasesId.contains(claseId)) {
             this.clasesId.add(claseId);
         }
@@ -64,8 +59,23 @@ public class Profesor extends Usuario {
      * @param claseId ID de la clase
      */
     public void removerClase(String claseId) {
-        if (this.clasesId != null) {
-            this.clasesId.remove(claseId);
-        }
+        this.clasesId.remove(claseId);
+    }
+    
+    /**
+     * Verifica si el profesor imparte una clase específica
+     * @param claseId ID de la clase
+     * @return true si imparte la clase, false en caso contrario
+     */
+    public boolean imparteClase(String claseId) {
+        return this.clasesId.contains(claseId);
+    }
+    
+    /**
+     * Obtiene el número de clases que imparte el profesor
+     * @return Número de clases
+     */
+    public int getNumeroClases() {
+        return this.clasesId.size();
     }
 }

@@ -1,11 +1,16 @@
 package app.servicios;
 
 import app.dtos.*;
+import app.entidades.Clase;
 import app.entidades.Profesor;
+//import app.entidades.Usuario;
 import app.excepciones.EntidadNoEncontradaException;
+import app.repositorios.RepositorioClase;
 import app.repositorios.RepositorioProfesor;
+//import app.repositorios.RepositorioUsuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -14,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Servicio para la gestión de profesores
@@ -25,6 +31,9 @@ import java.util.List;
 public class ServicioProfesor {
 
     private final RepositorioProfesor repositorioProfesor;
+    private final RepositorioClase repositorioClase;
+    // Uncomment if needed in the future
+    // private final RepositorioUsuario repositorioUsuario;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -63,7 +72,7 @@ public class ServicioProfesor {
     }
 
     /**
-     * Obtiene un profesor por su usuario
+     * Obtiene un profesor por su nombre de usuario
      * @param usuario Nombre de usuario del profesor
      * @return DTOProfesor
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
@@ -85,193 +94,169 @@ public class ServicioProfesor {
                 .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con DNI " + dni + " no encontrado."));
         return new DTOProfesor(profesor);
     }
-
+    
     /**
      * Busca profesores por nombre (contiene, ignorando mayúsculas)
      * @param nombre Nombre a buscar
-     * @return Lista de DTOProfesor
+     * @return Lista de profesores que contienen el nombre especificado
      */
     public List<DTOProfesor> buscarProfesoresPorNombre(String nombre) {
-        return repositorioProfesor.findByNombreContainingIgnoreCase(nombre)
-                .stream()
+        List<Profesor> profesores = repositorioProfesor.findByNombreContainingIgnoreCase(nombre);
+        return profesores.stream()
                 .map(DTOProfesor::new)
-                .toList();
+                .collect(Collectors.toList());
     }
-
+    
     /**
      * Busca profesores por apellidos (contiene, ignorando mayúsculas)
      * @param apellidos Apellidos a buscar
-     * @return Lista de DTOProfesor
+     * @return Lista de profesores que contienen los apellidos especificados
      */
     public List<DTOProfesor> buscarProfesoresPorApellidos(String apellidos) {
-        return repositorioProfesor.findByApellidosContainingIgnoreCase(apellidos)
-                .stream()
+        List<Profesor> profesores = repositorioProfesor.findByApellidosContainingIgnoreCase(apellidos);
+        return profesores.stream()
                 .map(DTOProfesor::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
-     * Busca profesores por parámetros múltiples usando consultas de base de datos optimizadas
+     * Busca profesores según diversos parámetros
      * @param parametros Parámetros de búsqueda
      * @return Lista de DTOProfesor
      */
     public List<DTOProfesor> buscarProfesoresPorParametros(DTOParametrosBusquedaProfesor parametros) {
-        // Si no hay parámetros, retornar todos
-        if (parametros.estaVacio()) {
+        // Si todos los parámetros son nulos, devolver todos los profesores
+        if (parametros.nombre() == null && parametros.apellidos() == null && 
+            parametros.dni() == null && parametros.email() == null) {
             return obtenerProfesores();
         }
-
-        return repositorioProfesor.findByFiltros(
-                parametros.nombre(),
-                parametros.apellidos(),
-                parametros.email(),
-                parametros.usuario(),
-                parametros.dni(),
-                parametros.habilitado(),
-                parametros.claseId(),
-                parametros.sinClases())
-                .stream()
+        
+        // Buscar por filtros básicos
+        List<Profesor> profesores = repositorioProfesor.findAll().stream()
+                .filter(p -> (parametros.nombre() == null || 
+                              p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())))
+                .filter(p -> (parametros.apellidos() == null || 
+                              p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())))
+                .filter(p -> (parametros.dni() == null || 
+                              p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())))
+                .filter(p -> (parametros.email() == null || 
+                              p.getEmail().toLowerCase().contains(parametros.email().toLowerCase())))
+                .collect(Collectors.toList());
+        
+        return profesores.stream()
                 .map(DTOProfesor::new)
                 .toList();
     }
 
     /**
-     * Busca profesores por parámetros con paginación
-     * @param parametros Parámetros de búsqueda
-     * @param page Número de página (0-indexed)
-     * @param size Tamaño de la página
-     * @param sortBy Campo por el que ordenar
-     * @param sortDirection Dirección de ordenación (ASC/DESC)
-     * @return Respuesta paginada con profesores
-     */
-    public DTORespuestaPaginada<DTOProfesor> buscarProfesoresPorParametrosPaginados(
-            DTOParametrosBusquedaProfesor parametros, int page, int size, String sortBy, String sortDirection) {
-        
-        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-        
-        Page<DTOProfesor> profesoresPage;
-        
-        if (parametros.estaVacio()) {
-            profesoresPage = repositorioProfesor.findAllOrderedById(pageable)
-                    .map(DTOProfesor::new);
-        } else {
-            profesoresPage = repositorioProfesor.findByFiltrosPaginados(
-                    parametros.nombre(),
-                    parametros.apellidos(),
-                    parametros.email(),
-                    parametros.usuario(),
-                    parametros.dni(),
-                    parametros.habilitado(),
-                    parametros.claseId(),
-                    parametros.sinClases(),
-                    pageable)
-                    .map(DTOProfesor::new);
-        }
-        
-        return new DTORespuestaPaginada<>(profesoresPage);
-    }
-
-    /**
-     * Obtiene profesores habilitados
-     * @return Lista de DTOProfesor habilitados
-     */
-    public List<DTOProfesor> obtenerProfesoresHabilitados() {
-        return repositorioProfesor.findByEnabledTrue()
-                .stream()
-                .map(DTOProfesor::new)
-                .toList();
-    }
-
-    /**
-     * Obtiene profesores habilitados con paginación
-     * @param page Número de página (0-indexed)
-     * @param size Tamaño de la página
-     * @param sortBy Campo por el que ordenar
-     * @param sortDirection Dirección de ordenación (ASC/DESC)
-     * @return Respuesta paginada con profesores habilitados
-     */
-    public DTORespuestaPaginada<DTOProfesor> obtenerProfesoresHabilitadosPaginados(
-            int page, int size, String sortBy, String sortDirection) {
-        
-        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-        
-        Page<DTOProfesor> profesoresPage = repositorioProfesor.findByEnabledTrue(pageable)
-                .map(DTOProfesor::new);
-        
-        return new DTORespuestaPaginada<>(profesoresPage);
-    }
-
-    /**
-     * Busca profesores que tienen una clase específica asignada
-     * @param claseId ID de la clase
-     * @return Lista de DTOProfesor
-     */
-    public List<DTOProfesor> obtenerProfesoresPorClase(String claseId) {
-        return repositorioProfesor.findByClaseId(claseId)
-                .stream()
-                .map(DTOProfesor::new)
-                .toList();
-    }
-
-    /**
-     * Obtiene profesores que no tienen clases asignadas
-     * @return Lista de DTOProfesor sin clases
-     */
-    public List<DTOProfesor> obtenerProfesoresSinClases() {
-        return repositorioProfesor.findProfesoresSinClases()
-                .stream()
-                .map(DTOProfesor::new)
-                .toList();
-    }
-
-    /**
-     * Crea un nuevo profesor según el UML
+     * Crea un nuevo profesor
      * @param peticion Datos del profesor a crear
-     * @return DTOProfesor del profesor creado
+     * @return DTOProfesor con los datos del profesor creado
+     * @throws IllegalArgumentException si ya existe un profesor con el mismo usuario, email o DNI
      */
     public DTOProfesor crearProfesor(DTOPeticionRegistroProfesor peticion) {
-        // Validar que no existe un profesor con el mismo usuario, email o DNI
+        // Validar que no existan duplicados
+        // Verificar usuario duplicado
         if (repositorioProfesor.findByUsuario(peticion.usuario()).isPresent()) {
             throw new IllegalArgumentException("Ya existe un profesor con el usuario: " + peticion.usuario());
         }
         
+        // Verificar email duplicado
         if (repositorioProfesor.findByEmail(peticion.email()).isPresent()) {
             throw new IllegalArgumentException("Ya existe un profesor con el email: " + peticion.email());
         }
         
+        // Verificar DNI duplicado
         if (repositorioProfesor.findByDni(peticion.dni()).isPresent()) {
             throw new IllegalArgumentException("Ya existe un profesor con el DNI: " + peticion.dni());
         }
 
         // Crear el profesor
         Profesor profesor = new Profesor(
-                peticion.usuario(),
-                passwordEncoder.encode(peticion.password()),
-                peticion.nombre(),
-                peticion.apellidos(),
-                peticion.dni(),
-                peticion.email(),
-                peticion.numeroTelefono()
+            peticion.usuario(),
+            passwordEncoder.encode(peticion.password()),
+            peticion.nombre(),
+            peticion.apellidos(),
+            peticion.dni(),
+            peticion.email(),
+            peticion.numeroTelefono()
         );
-
-        // Asignar clases si se proporcionaron
-        if (peticion.clasesId() != null && !peticion.clasesId().isEmpty()) {
-            peticion.clasesId().forEach(profesor::agregarClase);
-        }
 
         Profesor profesorGuardado = repositorioProfesor.save(profesor);
         return new DTOProfesor(profesorGuardado);
     }
 
     /**
-     * Borra un profesor por su ID según el UML
-     * @param id ID del profesor a borrar
-     * @return true si se borró exitosamente
+     * Actualiza los datos de un profesor
+     * @param id ID del profesor a actualizar
+     * @param dtoParcial Datos a actualizar
+     * @return DTOProfesor con los datos actualizados
+     * @throws EntidadNoEncontradaException si no se encuentra el profesor
+     * @throws IllegalArgumentException si se intenta actualizar a un valor duplicado
+     */
+    public DTOProfesor actualizarProfesor(Long id, DTOActualizacionProfesor dtoParcial) {
+        Profesor profesor = repositorioProfesor.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + id + " no encontrado."));
+
+        // Actualizar campos no nulos
+        if (dtoParcial.nombre() != null) {
+            profesor.setNombre(dtoParcial.nombre());
+        }
+        
+        if (dtoParcial.apellidos() != null) {
+            profesor.setApellidos(dtoParcial.apellidos());
+        }
+        
+        if (dtoParcial.email() != null) {
+            // Verificar que no exista otro profesor con ese email
+            if (!profesor.getEmail().equals(dtoParcial.email()) && 
+                repositorioProfesor.findByEmail(dtoParcial.email()).isPresent()) {
+                throw new IllegalArgumentException("Ya existe un profesor con el email: " + dtoParcial.email());
+            }
+            profesor.setEmail(dtoParcial.email());
+        }
+        
+        if (dtoParcial.dni() != null) {
+            // Verificar que no exista otro profesor con ese DNI
+            if (!profesor.getDni().equals(dtoParcial.dni()) && 
+                repositorioProfesor.findByDni(dtoParcial.dni()).isPresent()) {
+                throw new IllegalArgumentException("Ya existe un profesor con el DNI: " + dtoParcial.dni());
+            }
+            profesor.setDni(dtoParcial.dni());
+        }
+        
+        if (dtoParcial.numeroTelefono() != null) {
+            profesor.setNumeroTelefono(dtoParcial.numeroTelefono());
+        }
+
+        Profesor profesorActualizado = repositorioProfesor.save(profesor);
+        return new DTOProfesor(profesorActualizado);
+    }
+
+    /**
+     * Habilita o deshabilita un profesor
+     * @param id ID del profesor
+     * @param habilitar true para habilitar, false para deshabilitar
+     * @return DTOProfesor actualizado
+     * @throws EntidadNoEncontradaException si no se encuentra el profesor
+     */
+    public DTOProfesor habilitarDeshabilitarProfesor(Long id, boolean habilitar) {
+        Profesor profesor = repositorioProfesor.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + id + " no encontrado."));
+        
+        profesor.setEnabled(habilitar);
+        Profesor profesorActualizado = repositorioProfesor.save(profesor);
+        return new DTOProfesor(profesorActualizado);
+    }
+
+    /**
+     * Borra un profesor por su ID
+     * @param id ID del profesor
+     * @return true si el profesor fue borrado correctamente
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
     public boolean borrarProfesorPorId(Long id) {
+        // Verificar que el profesor existe antes de intentar borrarlo
         if (!repositorioProfesor.existsById(id)) {
             throw new EntidadNoEncontradaException("Profesor con ID " + id + " no encontrado.");
         }
@@ -283,31 +268,73 @@ public class ServicioProfesor {
     /**
      * Asigna una clase a un profesor
      * @param profesorId ID del profesor
-     * @param claseId ID de la clase
+     * @param claseId ID de la clase (como String)
      * @return DTOProfesor actualizado
      */
     public DTOProfesor asignarClase(Long profesorId, String claseId) {
-        Profesor profesor = repositorioProfesor.findById(profesorId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+        try {
+            Profesor profesor = repositorioProfesor.findById(profesorId)
+                    .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+            
+            Long claseIdLong = Long.parseLong(claseId);
+            Clase clase = repositorioClase.findById(claseIdLong)
+                    .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
 
-        profesor.agregarClase(claseId);
-        Profesor profesorActualizado = repositorioProfesor.save(profesor);
-        return new DTOProfesor(profesorActualizado);
+            // Verificar si el profesor ya tiene asignada la clase
+            if (profesor.getClasesId().contains(claseId)) {
+                throw new IllegalArgumentException("El profesor ya tiene asignada esta clase.");
+            }
+            
+            // Asignar la clase al profesor
+            profesor.agregarClase(claseId);
+            
+            // Asignar el profesor a la clase
+            clase.agregarProfesor(profesorId.toString());
+            
+            // Guardar los cambios
+            repositorioClase.save(clase);
+            Profesor profesorActualizado = repositorioProfesor.save(profesor);
+            
+            return new DTOProfesor(profesorActualizado);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("El ID de clase debe ser un número válido: " + e.getMessage());
+        }
     }
 
     /**
      * Remueve una clase de un profesor
      * @param profesorId ID del profesor
-     * @param claseId ID de la clase
+     * @param claseId ID de la clase (como String)
      * @return DTOProfesor actualizado
      */
     public DTOProfesor removerClase(Long profesorId, String claseId) {
-        Profesor profesor = repositorioProfesor.findById(profesorId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+        try {
+            Profesor profesor = repositorioProfesor.findById(profesorId)
+                    .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+            
+            Long claseIdLong = Long.parseLong(claseId);
+            Clase clase = repositorioClase.findById(claseIdLong)
+                    .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
 
-        profesor.removerClase(claseId);
-        Profesor profesorActualizado = repositorioProfesor.save(profesor);
-        return new DTOProfesor(profesorActualizado);
+            // Verificar si el profesor tiene asignada la clase
+            if (!profesor.getClasesId().contains(claseId)) {
+                throw new IllegalArgumentException("El profesor no tiene asignada esta clase.");
+            }
+            
+            // Remover la clase del profesor
+            profesor.removerClase(claseId);
+            
+            // Remover el profesor de la clase
+            clase.removerProfesor(profesorId.toString());
+            
+            // Guardar los cambios
+            repositorioClase.save(clase);
+            Profesor profesorActualizado = repositorioProfesor.save(profesor);
+            
+            return new DTOProfesor(profesorActualizado);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("El ID de clase debe ser un número válido: " + e.getMessage());
+        }
     }
 
     /**
@@ -316,7 +343,63 @@ public class ServicioProfesor {
      * @return Número de clases
      */
     public Integer contarClasesProfesor(Long profesorId) {
-        return repositorioProfesor.countClasesByProfesorId(profesorId);
+        Profesor profesor = repositorioProfesor.findById(profesorId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+                
+        return profesor.getClasesId().size();
+    }
+    
+    /**
+     * Obtiene profesores por clase
+     * @param claseId ID de la clase
+     * @return Lista de profesores que imparten la clase
+     */
+    public List<DTOProfesor> obtenerProfesoresPorClase(String claseId) {
+        List<Profesor> profesoresDeClase = repositorioProfesor.findByClaseId(claseId);
+        return profesoresDeClase.stream()
+                .map(DTOProfesor::new)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Obtiene profesores sin clases asignadas
+     * @return Lista de profesores sin clases
+     */
+    public List<DTOProfesor> obtenerProfesoresSinClases() {
+        List<Profesor> profesoresSinClases = repositorioProfesor.findProfesoresSinClases();
+        return profesoresSinClases.stream()
+                .map(DTOProfesor::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene todas las clases asignadas a un profesor
+     * @param profesorId ID del profesor
+     * @return Lista de clases
+     */
+    public List<DTOClase> obtenerClasesPorProfesor(Long profesorId) {
+        // Verificar que el profesor existe
+        repositorioProfesor.findById(profesorId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+                
+        // Obtener las clases del profesor
+        return repositorioClase.findByProfesorId(profesorId.toString())
+                .stream()
+                .map(DTOClase::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Verifica si un profesor imparte una clase específica
+     * @param profesorId ID del profesor
+     * @param claseId ID de la clase
+     * @return true si imparte la clase, false en caso contrario
+     */
+    public boolean imparteClase(Long profesorId, String claseId) {
+        Profesor profesor = repositorioProfesor.findById(profesorId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+                
+        return profesor.imparteClase(claseId);
     }
 
     /**
@@ -328,84 +411,223 @@ public class ServicioProfesor {
     public DTOProfesor cambiarEstadoProfesor(Long profesorId, boolean habilitado) {
         Profesor profesor = repositorioProfesor.findById(profesorId)
                 .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
-
+        
         profesor.setEnabled(habilitado);
         Profesor profesorActualizado = repositorioProfesor.save(profesor);
         return new DTOProfesor(profesorActualizado);
     }
 
+    // Métodos con paginación
+
     /**
-     * Actualiza parcialmente los datos de un profesor
-     * @param profesorId ID del profesor a actualizar
-     * @param dtoParcial DTO con los campos a actualizar
-     * @return DTOProfesor actualizado
-     * @throws EntidadNoEncontradaException si el profesor no existe
-     * @throws IllegalArgumentException si el dto está vacío o hay campos inválidos
+     * Obtiene todos los profesores con paginación
+     * @param page número de página (0-indexed)
+     * @param size tamaño de página
+     * @param sortBy campo por el que ordenar (por defecto: id)
+     * @param sortDirection dirección del ordenamiento (por defecto: ASC)
+     * @return DTORespuestaPaginada con los profesores y metadatos de paginación
      */
-    public DTOProfesor actualizarProfesor(Long profesorId, DTOActualizacionProfesor dtoParcial) {
-        if (dtoParcial == null || dtoParcial.estaVacio()) {
-            throw new IllegalArgumentException("No se proporcionaron datos para actualizar");
+    public DTORespuestaPaginada<DTOProfesor> obtenerProfesoresPaginados(
+            int page, int size, String sortBy, String sortDirection) {
+        
+        // Validar parámetros
+        if (page < 0) page = 0;
+        if (size <= 0 || size > 100) size = 20; // Máximo 100 elementos por página
+        if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
+        
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (Exception e) {
+            direction = Sort.Direction.ASC;
         }
-
-        Profesor profesor = repositorioProfesor.findById(profesorId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado"));
-
-        // Actualizar solo los campos no nulos
-        if (dtoParcial.nombre() != null) {
-            profesor.setNombre(dtoParcial.nombre());
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        // Implementar paginación manualmente
+        List<Profesor> allProfesores = repositorioProfesor.findAll(Sort.by(direction, sortBy));
+        
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), allProfesores.size());
+        
+        if (start > end) {
+            start = 0;
+            end = 0;
         }
-
-        if (dtoParcial.apellidos() != null) {
-            profesor.setApellidos(dtoParcial.apellidos());
-        }
-
-        if (dtoParcial.dni() != null) {
-            // Verificar que no existe otro profesor con el mismo DNI
-            repositorioProfesor.findByDni(dtoParcial.dni())
-                    .ifPresent(existente -> {
-                        if (!existente.getId().equals(profesorId)) {
-                            throw new IllegalArgumentException("Ya existe otro profesor con el DNI: " + dtoParcial.dni());
-                        }
-                    });
-            profesor.setDni(dtoParcial.dni());
-        }
-
-        if (dtoParcial.email() != null) {
-            // Verificar que no existe otro profesor con el mismo email
-            repositorioProfesor.findByEmail(dtoParcial.email())
-                    .ifPresent(existente -> {
-                        if (!existente.getId().equals(profesorId)) {
-                            throw new IllegalArgumentException("Ya existe otro profesor con el email: " + dtoParcial.email());
-                        }
-                    });
-            profesor.setEmail(dtoParcial.email());
-        }
-
-        if (dtoParcial.numeroTelefono() != null) {
-            profesor.setNumeroTelefono(dtoParcial.numeroTelefono());
-        }
-
-        if (dtoParcial.clasesId() != null) {
-            // Actualizar clases (reemplazar todas)
-            profesor.getClasesId().clear();
-            dtoParcial.clasesId().forEach(profesor::agregarClase);
-        }
-
-        Profesor profesorActualizado = repositorioProfesor.save(profesor);
-        return new DTOProfesor(profesorActualizado);
+        
+        List<Profesor> pageContent = allProfesores.subList(start, end);
+        Page<Profesor> pageProfesores = new PageImpl<>(pageContent, pageable, allProfesores.size());
+        
+        // Convertir a DTOs
+        Page<DTOProfesor> pageDTOs = pageProfesores.map(DTOProfesor::new);
+        
+        return new DTORespuestaPaginada<>(pageDTOs);
     }
-
+    
     /**
-     * Obtiene estadísticas del total de profesores
-     * @return total de profesores
+     * Busca profesores por parámetros con paginación
      */
-    public long contarTotalProfesores() {
-        return repositorioProfesor.count();
+    public DTORespuestaPaginada<DTOProfesor> buscarProfesoresPorParametrosPaginados(
+            DTOParametrosBusquedaProfesor parametros, int page, int size, String sortBy, String sortDirection) {
+        
+        // Validar parámetros
+        if (page < 0) page = 0;
+        if (size <= 0 || size > 100) size = 20;
+        if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
+        
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (Exception e) {
+            direction = Sort.Direction.ASC;
+        }
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        // Filtrar profesores según parámetros
+        List<Profesor> profesoresFiltrados;
+        
+        // Si todos los parámetros son nulos, obtener todos
+        if (parametros.nombre() == null && parametros.apellidos() == null && 
+            parametros.dni() == null && parametros.email() == null) {
+            profesoresFiltrados = repositorioProfesor.findAll(Sort.by(direction, sortBy));
+        } else {
+            // Filtrar según parámetros
+            profesoresFiltrados = repositorioProfesor.findAll(Sort.by(direction, sortBy))
+                .stream()
+                .filter(p -> (parametros.nombre() == null || 
+                            p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())))
+                .filter(p -> (parametros.apellidos() == null || 
+                            p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())))
+                .filter(p -> (parametros.dni() == null || 
+                            p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())))
+                .filter(p -> (parametros.email() == null || 
+                            p.getEmail().toLowerCase().contains(parametros.email().toLowerCase())))
+                .collect(Collectors.toList());
+        }
+        
+        // Aplicar paginación
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), profesoresFiltrados.size());
+        
+        if (start > end) {
+            start = 0;
+            end = 0;
+        }
+        
+        List<Profesor> pageContent = profesoresFiltrados.subList(start, end);
+        Page<Profesor> pageProfesores = new PageImpl<>(pageContent, pageable, profesoresFiltrados.size());
+        
+        // Convertir a DTOs
+        Page<DTOProfesor> pageDTOs = pageProfesores.map(DTOProfesor::new);
+        
+        return new DTORespuestaPaginada<>(pageDTOs);
+    }
+    
+    /**
+     * Obtiene profesores que imparten una clase específica con paginación
+     * @param claseId ID de la clase (como String)
+     * @param page número de página (0-indexed)
+     * @param size tamaño de página
+     * @param sortBy campo por el que ordenar
+     * @param sortDirection dirección de ordenamiento (ASC/DESC)
+     * @return DTORespuestaPaginada con los profesores que imparten la clase
+     */
+    public DTORespuestaPaginada<DTOProfesor> obtenerProfesoresPorClasePaginados(
+            String claseId, int page, int size, String sortBy, String sortDirection) {
+        
+        try {
+            // Validar parámetros
+            if (page < 0) page = 0;
+            if (size <= 0 || size > 100) size = 20;
+            if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
+            
+            Sort.Direction direction;
+            try {
+                direction = Sort.Direction.fromString(sortDirection);
+            } catch (Exception e) {
+                direction = Sort.Direction.ASC;
+            }
+            
+            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+            
+            // Verificar que la clase existe
+            Long claseIdLong = Long.parseLong(claseId);
+            if (!repositorioClase.existsById(claseIdLong)) {
+                throw new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada.");
+            }
+            
+            // Filtrar profesores por clase manualmente
+            List<Profesor> profesoresDeClase = repositorioProfesor.findAll(Sort.by(direction, sortBy))
+                .stream()
+                .filter(p -> p.getClasesId() != null && p.getClasesId().contains(claseId))
+                .collect(Collectors.toList());
+            
+            // Aplicar paginación
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), profesoresDeClase.size());
+            
+            if (start > end) {
+                start = 0;
+                end = 0;
+            }
+            
+            List<Profesor> pageContent = profesoresDeClase.subList(start, end);
+            Page<Profesor> pageProfesores = new PageImpl<>(pageContent, pageable, profesoresDeClase.size());
+            
+            // Convertir a DTOs
+            Page<DTOProfesor> pageDTOs = pageProfesores.map(DTOProfesor::new);
+            
+            return new DTORespuestaPaginada<>(pageDTOs);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("El ID de clase debe ser un número válido: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Obtiene todos los profesores habilitados
+     * @return Lista de profesores habilitados
+     */
+    public List<DTOProfesor> obtenerProfesoresHabilitados() {
+        List<Profesor> profesoresHabilitados = repositorioProfesor.findByEnabledTrue();
+        return profesoresHabilitados.stream()
+                .map(DTOProfesor::new)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Obtiene todos los profesores habilitados con paginación
+     * @param page número de página (0-indexed)
+     * @param size tamaño de página
+     * @param sortBy campo por el que ordenar (por defecto: id)
+     * @param sortDirection dirección del ordenamiento (por defecto: ASC)
+     * @return DTORespuestaPaginada con los profesores habilitados y metadatos de paginación
+     */
+    public DTORespuestaPaginada<DTOProfesor> obtenerProfesoresHabilitadosPaginados(
+            int page, int size, String sortBy, String sortDirection) {
+        
+        // Validar parámetros
+        if (page < 0) page = 0;
+        if (size <= 0 || size > 100) size = 20;
+        if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
+        
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (Exception e) {
+            direction = Sort.Direction.ASC;
+        }
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<Profesor> pageProfesores = repositorioProfesor.findByEnabledTrue(pageable);
+        Page<DTOProfesor> pageDTOs = pageProfesores.map(DTOProfesor::new);
+        
+        return new DTORespuestaPaginada<>(pageDTOs);
     }
     
     /**
      * Cuenta profesores habilitados
-     * @return número de profesores habilitados
+     * @return Número de profesores habilitados
      */
     public long contarProfesoresHabilitados() {
         return repositorioProfesor.countByEnabledTrue();
@@ -413,9 +635,16 @@ public class ServicioProfesor {
     
     /**
      * Cuenta profesores deshabilitados
-     * @return número de profesores deshabilitados
+     * @return Número de profesores deshabilitados
      */
     public long contarProfesoresDeshabilitados() {
         return repositorioProfesor.countByEnabledFalse();
+    }
+    
+    /**
+     * Cuenta el número total de profesores
+     */
+    public long contarTotalProfesores() {
+        return repositorioProfesor.count();
     }
 }

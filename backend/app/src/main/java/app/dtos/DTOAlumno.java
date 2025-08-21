@@ -1,10 +1,16 @@
 package app.dtos;
 
 import app.entidades.Alumno;
+import app.entidades.Usuario;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+/**
+ * DTO para la entidad Alumno
+ * Contiene la información del alumno sin datos sensibles
+ */
 public record DTOAlumno(
     @Positive(message = "El ID debe ser positivo")
     Long id,
@@ -36,9 +42,20 @@ public record DTOAlumno(
     
     boolean matriculado,
     
-    boolean enabled
+    boolean enabled,
+    
+    List<String> clasesId,
+    
+    List<String> pagosId,
+    
+    List<String> entregasId,
+    
+    Usuario.Rol rol
 ) {
 
+    /**
+     * Constructor que crea un DTO desde una entidad Alumno
+     */
     public DTOAlumno(Alumno alumno) {
         this(
             alumno.getId(),
@@ -50,7 +67,67 @@ public record DTOAlumno(
             alumno.getNumeroTelefono(),
             alumno.getFechaInscripcion(),
             alumno.isMatriculado(),
-            alumno.isEnabled()
+            alumno.isEnabled(),
+            alumno.getClasesId(),
+            alumno.getPagosId(),
+            alumno.getEntregasId(),
+            alumno.getRol()
         );
+    }
+    
+    /**
+     * metodo estático para crear desde entidad
+     */
+    public static DTOAlumno from(Alumno alumno) {
+        return new DTOAlumno(alumno);
+    }
+    
+    /**
+     * Obtiene el nombre completo del alumno
+     */
+    public String getNombreCompleto() {
+        return this.nombre + " " + this.apellidos;
+    }
+    
+    /**
+     * Verifica si el alumno está inscrito en alguna clase
+     */
+    public boolean tieneClases() {
+        return this.clasesId != null && !this.clasesId.isEmpty();
+    }
+    
+    /**
+     * Cuenta el número de clases en las que está inscrito
+     */
+    public int getNumeroClases() {
+        return this.clasesId != null ? this.clasesId.size() : 0;
+    }
+    
+    /**
+     * Verifica si el alumno tiene pagos registrados
+     */
+    public boolean tienePagos() {
+        return this.pagosId != null && !this.pagosId.isEmpty();
+    }
+    
+    /**
+     * Cuenta el número de pagos realizados
+     */
+    public int getNumeroPagos() {
+        return this.pagosId != null ? this.pagosId.size() : 0;
+    }
+    
+    /**
+     * Verifica si el alumno tiene entregas de ejercicios
+     */
+    public boolean tieneEntregas() {
+        return this.entregasId != null && !this.entregasId.isEmpty();
+    }
+    
+    /**
+     * Cuenta el número de entregas realizadas
+     */
+    public int getNumeroEntregas() {
+        return this.entregasId != null ? this.entregasId.size() : 0;
     }
 }

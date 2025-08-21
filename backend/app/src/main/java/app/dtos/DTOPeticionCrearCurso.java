@@ -3,9 +3,7 @@ package app.dtos;
 import app.entidades.Material;
 import app.entidades.enums.EPresencialidad;
 import app.entidades.enums.ENivel;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,7 +11,7 @@ import java.util.List;
 
 /**
  * DTO para la petición de creación de un curso
- * Extiende los datos de clase con información específica del curso
+ * Contiene los datos básicos necesarios para crear un curso
  */
 public record DTOPeticionCrearCurso(
         @NotNull
@@ -36,30 +34,46 @@ public record DTOPeticionCrearCurso(
         @NotNull
         ENivel nivel,
         
-        List<String> profesoresId,
-        List<Material> material,
-        
         @NotNull
+        @FutureOrPresent(message = "La fecha de inicio debe ser hoy o en el futuro")
         LocalDate fechaInicio,
         
         @NotNull
-        LocalDate fechaFin
+        @Future(message = "La fecha de fin debe ser en el futuro")
+        LocalDate fechaFin,
+        
+        List<String> profesoresId,
+        List<Material> material
 ) {
     
     /**
-     * Constructor por defecto con listas vacías
+     * Constructor simplificado sin listas
      */
     public DTOPeticionCrearCurso(String titulo, String descripcion, BigDecimal precio,
                                 EPresencialidad presencialidad, String imagenPortada, ENivel nivel,
                                 LocalDate fechaInicio, LocalDate fechaFin) {
         this(titulo, descripcion, precio, presencialidad, imagenPortada, nivel, 
-             List.of(), List.of(), fechaInicio, fechaFin);
+             fechaInicio, fechaFin, List.of(), List.of());
     }
     
     /**
-     * Valida que la fecha de fin sea posterior a la de inicio
+     * Verifica que la petición sea válida para crear un curso
+     * @return true si la petición es válida, false en caso contrario
      */
-    public boolean fechasValidas() {
-        return fechaFin.isAfter(fechaInicio);
+    public boolean esValido() {
+        // Verificaciones básicas de nulidad
+        if (titulo == null || titulo.isBlank() || 
+            precio == null || precio.compareTo(BigDecimal.ZERO) <= 0 ||
+            presencialidad == null || nivel == null ||
+            fechaInicio == null || fechaFin == null) {
+            return false;
+        }
+        
+        // Verificar fechas de inicio y fin
+        if (fechaInicio.isAfter(fechaFin) || fechaInicio.isBefore(LocalDate.now())) {
+            return false;
+        }
+        
+        return true;
     }
 }

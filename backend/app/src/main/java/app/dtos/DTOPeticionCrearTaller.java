@@ -15,7 +15,7 @@ import java.util.List;
 
 /**
  * DTO para la petición de creación de un taller
- * Extiende los datos de clase con información específica del taller
+ * Contiene los datos básicos necesarios para crear un taller
  */
 public record DTOPeticionCrearTaller(
         @NotNull
@@ -38,9 +38,6 @@ public record DTOPeticionCrearTaller(
         @NotNull
         ENivel nivel,
         
-        List<String> profesoresId,
-        List<Material> material,
-        
         @NotNull
         @Min(value = 1, message = "La duración debe ser al menos 1 hora")
         Integer duracionHoras,
@@ -49,16 +46,46 @@ public record DTOPeticionCrearTaller(
         LocalDate fechaRealizacion,
         
         @NotNull
-        LocalTime horaComienzo
+        LocalTime horaComienzo,
+        
+        List<String> profesoresId,
+        List<Material> material
 ) {
     
     /**
-     * Constructor por defecto con listas vacías
+     * Constructor simplificado sin listas
      */
     public DTOPeticionCrearTaller(String titulo, String descripcion, BigDecimal precio,
                                  EPresencialidad presencialidad, String imagenPortada, ENivel nivel,
                                  Integer duracionHoras, LocalDate fechaRealizacion, LocalTime horaComienzo) {
         this(titulo, descripcion, precio, presencialidad, imagenPortada, nivel, 
-             List.of(), List.of(), duracionHoras, fechaRealizacion, horaComienzo);
+             duracionHoras, fechaRealizacion, horaComienzo, List.of(), List.of());
+    }
+    
+    /**
+     * Verifica que la petición sea válida para crear un taller
+     * @return true si la petición es válida, false en caso contrario
+     */
+    public boolean esValido() {
+        // Verificaciones básicas de nulidad
+        if (titulo == null || titulo.isBlank() || 
+            precio == null || precio.compareTo(BigDecimal.ZERO) <= 0 ||
+            presencialidad == null || nivel == null ||
+            duracionHoras == null || duracionHoras < 1 ||
+            fechaRealizacion == null || horaComienzo == null) {
+            return false;
+        }
+        
+        // Verificar que la fecha de realización no sea en el pasado
+        if (fechaRealizacion.isBefore(LocalDate.now())) {
+            return false;
+        }
+        
+        // Verificar que si la fecha es hoy, la hora no sea en el pasado
+        if (fechaRealizacion.equals(LocalDate.now()) && horaComienzo.isBefore(LocalTime.now())) {
+            return false;
+        }
+        
+        return true;
     }
 }
