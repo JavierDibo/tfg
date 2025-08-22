@@ -1,259 +1,222 @@
 import type {
 	DTOClase,
-	DTOClaseConDetalles,
-	DTOClaseInscrita,
-	DTORespuestaEnrollment,
-	DTORespuestaAlumnosClase,
-	DTOPeticionEnrollment,
-	Material,
-	DTOEstadoInscripcion
+	DTOCurso,
+	DTOTaller,
+	DTOParametrosBusquedaClase,
+	DTOParametrosBusquedaClaseNivelEnum,
+	DTOParametrosBusquedaClasePresencialidadEnum,
+	DTOPeticionCrearCurso,
+	DTOPeticionCrearTaller,
+	DTORespuestaPaginadaDTOClase
 } from '$lib/generated/api';
-import { claseApi, enrollmentApi, userOperationsApi, claseManagementApi } from '$lib/api';
-import { ErrorHandler } from '$lib/utils/errorHandler';
+import { claseApi } from '$lib/api';
 
-export const ClaseService = {
-	// ==================== BASIC CRUD OPERATIONS ====================
-
+export class ClaseService {
 	/**
-	 * Get all classes
+	 * Get all classes (filtered by user role)
 	 */
-	async getAllClases(): Promise<DTOClase[]> {
+	static async getClases(): Promise<DTOClase[]> {
 		try {
 			return await claseApi.obtenerClases();
 		} catch (error) {
-			ErrorHandler.logError(error, 'getAllClases');
-			throw await ErrorHandler.parseError(error);
+			console.error('Error fetching classes:', error);
+			throw error;
 		}
-	},
+	}
 
 	/**
-	 * Get class by ID
+	 * Get a class by ID
 	 */
-	async getClaseById(id: number): Promise<DTOClase> {
+	static async getClaseById(id: number): Promise<DTOClase> {
 		try {
 			return await claseApi.obtenerClasePorId({ id });
 		} catch (error) {
-			ErrorHandler.logError(error, `getClaseById(${id})`);
-			throw await ErrorHandler.parseError(error);
+			console.error(`Error fetching class with ID ${id}:`, error);
+			throw error;
 		}
-	},
+	}
 
 	/**
-	 * Get class details for a specific student
+	 * Get a class by title
 	 */
-	async getClaseDetailsForStudent(claseId: number, alumnoId: number): Promise<DTOClaseConDetalles> {
+	static async getClaseByTitulo(titulo: string): Promise<DTOClase> {
 		try {
-			return await enrollmentApi.obtenerClaseConDetallesParaEstudiante({
-				claseId,
-				alumnoId
-			});
+			return await claseApi.obtenerClasePorTitulo({ titulo });
 		} catch (error) {
-			ErrorHandler.logError(error, `getClaseDetailsForStudent(${claseId}, ${alumnoId})`);
-			throw await ErrorHandler.parseError(error);
+			console.error(`Error fetching class with title ${titulo}:`, error);
+			throw error;
 		}
-	},
+	}
 
 	/**
-	 * Get class details for the authenticated student
+	 * Search classes with advanced filters and pagination
 	 */
-	async getClaseDetailsForMe(claseId: number): Promise<DTOClaseConDetalles> {
+	static async buscarClases(
+		params: DTOParametrosBusquedaClase
+	): Promise<DTORespuestaPaginadaDTOClase> {
 		try {
-			return await enrollmentApi.obtenerClaseConDetallesParaMi({ claseId });
+			return await claseApi.buscarClases({ dTOParametrosBusquedaClase: params });
 		} catch (error) {
-			ErrorHandler.logError(error, `getClaseDetailsForMe(${claseId})`);
-			throw await ErrorHandler.parseError(error);
+			console.error('Error searching classes:', error);
+			throw error;
 		}
-	},
-
-	/**
-	 * Get my enrolled classes (for authenticated student)
-	 */
-	async getMisClasesInscritas(): Promise<DTOClaseInscrita[]> {
-		try {
-			return await userOperationsApi.obtenerMisClasesInscritas();
-		} catch (error) {
-			ErrorHandler.logError(error, 'getMisClasesInscritas');
-			throw await ErrorHandler.parseError(error);
-		}
-	},
-
-	/**
-	 * Get my classes (for authenticated teacher)
-	 */
-	async getMisClases(): Promise<DTOClase[]> {
-		try {
-			return await userOperationsApi.obtenerMisClases();
-		} catch (error) {
-			ErrorHandler.logError(error, 'getMisClases');
-			throw await ErrorHandler.parseError(error);
-		}
-	},
-
-	/**
-	 * Get classes by student ID
-	 */
-	async getClasesByAlumno(alumnoId: string): Promise<DTOClase[]> {
-		try {
-			return await claseApi.obtenerClasesPorAlumno({ alumnoId });
-		} catch (error) {
-			ErrorHandler.logError(error, `getClasesByAlumno(${alumnoId})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	},
+	}
 
 	/**
 	 * Search classes by title
 	 */
-	async searchClasesByTitle(titulo: string): Promise<DTOClase[]> {
+	static async buscarClasesPorTitulo(titulo: string): Promise<DTOClase[]> {
 		try {
 			return await claseApi.buscarClasesPorTitulo({ titulo });
 		} catch (error) {
-			ErrorHandler.logError(error, `searchClasesByTitle("${titulo}")`);
-			throw await ErrorHandler.parseError(error);
+			console.error(`Error searching classes with title ${titulo}:`, error);
+			throw error;
 		}
-	},
-
-	// ==================== ENROLLMENT MANAGEMENT ====================
+	}
 
 	/**
-	 * Enroll a student in a class (Admin or Professor)
+	 * Get classes by student ID
 	 */
-	async enrollStudentInClass(alumnoId: number, claseId: number): Promise<DTORespuestaEnrollment> {
+	static async getClasesPorAlumno(alumnoId: string): Promise<DTOClase[]> {
 		try {
-			const enrollmentRequest: DTOPeticionEnrollment = {
-				alumnoId,
-				claseId
-			};
-			return await enrollmentApi.inscribirAlumnoEnClase({
-				dTOPeticionEnrollment: enrollmentRequest
-			});
+			return await claseApi.obtenerClasesPorAlumno({ alumnoId });
 		} catch (error) {
-			ErrorHandler.logError(error, `enrollStudentInClass(${alumnoId}, ${claseId})`);
-			throw await ErrorHandler.parseError(error);
+			console.error(`Error fetching classes for student ${alumnoId}:`, error);
+			throw error;
 		}
-	},
+	}
 
 	/**
-	 * Unenroll a student from a class (Admin or Professor)
+	 * Get classes by professor ID
 	 */
-	async unenrollStudentFromClass(
-		alumnoId: number,
-		claseId: number
-	): Promise<DTORespuestaEnrollment> {
+	static async getClasesPorProfesor(profesorId: string): Promise<DTOClase[]> {
 		try {
-			const enrollmentRequest: DTOPeticionEnrollment = {
-				alumnoId,
-				claseId
-			};
-			return await enrollmentApi.darDeBajaAlumnoDeClase({
-				dTOPeticionEnrollment: enrollmentRequest
-			});
+			return await claseApi.obtenerClasesPorProfesor({ profesorId });
 		} catch (error) {
-			ErrorHandler.logError(error, `unenrollStudentFromClass(${alumnoId}, ${claseId})`);
-			throw await ErrorHandler.parseError(error);
+			console.error(`Error fetching classes for professor ${profesorId}:`, error);
+			throw error;
 		}
-	},
+	}
 
 	/**
-	 * Self-enrollment (Student enrolls themselves)
+	 * Get enrolled classes for current student
 	 */
-	async enrollInClase(claseId: number): Promise<DTOClase> {
+	static async getMisClasesInscritas(): Promise<DTOClase[]> {
 		try {
-			return await enrollmentApi.inscribirseEnClase({ claseId });
+			// Import here to avoid circular dependency
+			const { EnrollmentService } = await import('./enrollmentService');
+			return await EnrollmentService.getMyEnrolledClasses();
 		} catch (error) {
-			ErrorHandler.logError(error, `enrollInClase(${claseId})`);
-			throw await ErrorHandler.parseError(error);
+			console.error('Error fetching enrolled classes:', error);
+			throw error;
 		}
-	},
-
-	/**
-	 * Self-unenrollment (Student unenrolls themselves)
-	 */
-	async unenrollFromClase(claseId: number): Promise<DTOClase> {
-		try {
-			console.log('ClaseService.unenrollFromClase called with claseId:', claseId);
-			const result = await enrollmentApi.darseDeBajaDeClase({ claseId });
-			console.log('ClaseService.unenrollFromClase result:', result);
-			return result;
-		} catch (error) {
-			console.error('ClaseService.unenrollFromClase error:', error);
-			ErrorHandler.logError(error, `unenrollFromClase(${claseId})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	},
-
-	/**
-	 * Check enrollment status for the authenticated student
-	 */
-	async checkMyEnrollmentStatus(claseId: number): Promise<DTOEstadoInscripcion> {
-		try {
-			return await enrollmentApi.verificarMiEstadoInscripcion({ claseId });
-		} catch (error) {
-			ErrorHandler.logError(error, `checkMyEnrollmentStatus(${claseId})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	},
-
-	// ==================== STUDENT MANAGEMENT ====================
-
-	/**
-	 * Get students in a class with pagination
-	 */
-	async getAlumnosDeClase(
-		claseId: number,
-		params: {
-			page?: number;
-			size?: number;
-			sortBy?: string;
-			sortDirection?: 'ASC' | 'DESC';
-		} = {}
-	): Promise<DTORespuestaAlumnosClase> {
-		try {
-			return await userOperationsApi.obtenerAlumnosDeClase({
-				claseId,
-				...params
-			});
-		} catch (error) {
-			ErrorHandler.logError(error, `getAlumnosDeClase(${claseId})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	},
+	}
 
 	/**
 	 * Count students in a class
 	 */
-	async contarAlumnosEnClase(claseId: number): Promise<number> {
+	static async contarAlumnosEnClase(claseId: number): Promise<number> {
 		try {
 			return await claseApi.contarAlumnosEnClase({ claseId });
 		} catch (error) {
-			ErrorHandler.logError(error, `contarAlumnosEnClase(${claseId})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	},
-
-	// ==================== MATERIAL MANAGEMENT ====================
-
-	/**
-	 * Add material to a class
-	 */
-	async addMaterialToClase(claseId: number, material: Material): Promise<DTOClase> {
-		try {
-			return await claseManagementApi.agregarMaterial({ claseId, material });
-		} catch (error) {
-			ErrorHandler.logError(error, `addMaterialToClase(${claseId})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	},
-
-	/**
-	 * Remove material from a class
-	 */
-	async removeMaterialFromClase(claseId: number, materialId: string): Promise<DTOClase> {
-		try {
-			return await claseManagementApi.removerMaterial({ claseId, materialId });
-		} catch (error) {
-			ErrorHandler.logError(error, `removeMaterialFromClase(${claseId}, ${materialId})`);
-			throw await ErrorHandler.parseError(error);
+			console.error(`Error counting students in class ${claseId}:`, error);
+			throw error;
 		}
 	}
-};
+
+	/**
+	 * Count professors in a class
+	 */
+	static async contarProfesoresEnClase(claseId: number): Promise<number> {
+		try {
+			return await claseApi.contarProfesoresEnClase({ claseId });
+		} catch (error) {
+			console.error(`Error counting professors in class ${claseId}:`, error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Create a new course
+	 */
+	static async crearCurso(dtoPeticion: DTOPeticionCrearCurso): Promise<DTOCurso> {
+		try {
+			return await claseApi.crearCurso({ dTOPeticionCrearCurso: dtoPeticion });
+		} catch (error) {
+			console.error('Error creating course:', error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Create a new workshop
+	 */
+	static async crearTaller(dtoPeticion: DTOPeticionCrearTaller): Promise<DTOTaller> {
+		try {
+			return await claseApi.crearTaller({ dTOPeticionCrearTaller: dtoPeticion });
+		} catch (error) {
+			console.error('Error creating workshop:', error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Delete a class by ID
+	 */
+	static async borrarClasePorId(id: number): Promise<void> {
+		try {
+			await claseApi.borrarClasePorId({ id });
+		} catch (error) {
+			console.error(`Error deleting class with ID ${id}:`, error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Delete a class by title
+	 */
+	static async borrarClasePorTitulo(titulo: string): Promise<void> {
+		try {
+			await claseApi.borrarClasePorTitulo({ titulo });
+		} catch (error) {
+			console.error(`Error deleting class with title ${titulo}:`, error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Get paginated classes with search and filters
+	 */
+	static async getPaginatedClases(params: {
+		page?: number;
+		size?: number;
+		titulo?: string;
+		nivel?: DTOParametrosBusquedaClaseNivelEnum;
+		presencialidad?: DTOParametrosBusquedaClasePresencialidadEnum;
+		precioMin?: number;
+		precioMax?: number;
+		sortBy?: string;
+		sortDirection?: 'ASC' | 'DESC';
+	}): Promise<DTORespuestaPaginadaDTOClase> {
+		try {
+			const searchParams: DTOParametrosBusquedaClase = {
+				pagina: params.page || 0,
+				tamanoPagina: params.size || 20,
+				ordenCampo: params.sortBy || 'titulo',
+				ordenDireccion: params.sortDirection || 'ASC'
+			};
+
+			// Add filters if provided
+			if (params.titulo) searchParams.titulo = params.titulo;
+			if (params.nivel) searchParams.nivel = params.nivel;
+			if (params.presencialidad) searchParams.presencialidad = params.presencialidad;
+			if (params.precioMin !== undefined) searchParams.precioMinimo = params.precioMin;
+			if (params.precioMax !== undefined) searchParams.precioMaximo = params.precioMax;
+
+			return await this.buscarClases(searchParams);
+		} catch (error) {
+			console.error('Error fetching paginated classes:', error);
+			throw error;
+		}
+	}
+}

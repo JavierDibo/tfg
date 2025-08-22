@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import type { DTOAlumno, DTOActualizacionAlumno, DTOClase } from '$lib/generated/api';
 	import { AlumnoService } from '$lib/services/alumnoService';
-	import { ClaseService } from '$lib/services/claseService';
+	import { EnrollmentService } from '$lib/services/enrollmentService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 
 	// Props and derived state
@@ -127,11 +127,11 @@
 
 			// Use different endpoints based on who is viewing the profile
 			if (isOwnProfile()) {
-				// Student viewing their own profile - use the dedicated endpoint
-				enrolledClasses = await ClaseService.getMisClasesInscritas();
+				// Student viewing their own profile - use the enrollment service
+				enrolledClasses = await EnrollmentService.getMyEnrolledClasses();
 			} else if (authStore.isAdmin) {
-				// Admin viewing any student's profile - use the admin endpoint
-				enrolledClasses = await AlumnoService.getClasesInscritasConDetalles(alumno.id);
+				// Admin viewing any student's profile - use the enrollment service
+				enrolledClasses = await EnrollmentService.getStudentEnrolledClasses(alumno.id);
 			}
 		} catch (err) {
 			console.error('Error loading enrolled classes:', err);
