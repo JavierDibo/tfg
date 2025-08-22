@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
+	import type { DTOClaseConDetalles } from '$lib/generated/api/models/DTOClaseConDetalles';
 	import type { DTOProfesor } from '$lib/generated/api/models/DTOProfesor';
 	import { ProfesorService } from '$lib/services/profesorService';
 
 	let { clase } = $props<{
-		clase: DTOClase;
+		clase: DTOClaseConDetalles;
 	}>();
 
 	let teachers = $state<DTOProfesor[]>([]);

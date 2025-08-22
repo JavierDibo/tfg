@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
+	import type { DTOClaseConDetalles } from '$lib/generated/api/models/DTOClaseConDetalles';
 
 	let {
 		clase,
@@ -8,7 +8,7 @@
 		showEnrollment = false,
 		loading = false
 	} = $props<{
-		clase: DTOClase;
+		clase: DTOClaseConDetalles;
 		isEnrolled: boolean;
 		onEnrollment: (enroll: boolean) => void;
 		showEnrollment?: boolean;
@@ -69,7 +69,10 @@
 					</button>
 				{:else if isEnrolled}
 					<button
-						onclick={() => onEnrollment(false)}
+						onclick={() => {
+							console.log('Desinscribirse button clicked');
+							onEnrollment(false);
+						}}
 						class="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
 					>
 						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

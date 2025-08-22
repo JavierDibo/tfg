@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
+	import type { DTOClaseConDetalles } from '$lib/generated/api/models/DTOClaseConDetalles';
 
 	let { clase, onClose, onSave } = $props<{
-		clase: DTOClase;
+		clase: DTOClaseConDetalles;
 		onClose: () => void;
-		onSave: (updatedClase: DTOClase) => void;
+		onSave: (updatedClase: DTOClaseConDetalles) => void;
 	}>();
 
 	let formData = $state({
@@ -17,7 +17,7 @@
 	});
 
 	function handleSubmit() {
-		const updatedClase: DTOClase = {
+		const updatedClase: DTOClaseConDetalles = {
 			...clase,
 			...formData
 		};

@@ -32,10 +32,18 @@ const isAlumno = $derived(user?.roles?.includes('ROLE_ALUMNO') ?? false);
 function updateUserFromToken(jwt: string) {
 	try {
 		const decoded = jwtDecode<DecodedToken>(jwt);
+		console.log('Decoded token:', decoded);
 		user = decoded;
 		token = jwt;
 		if (browser) {
 			localStorage.setItem('jwt_token', jwt);
+			// Restore the user ID from localStorage if available
+			const storedUserId = localStorage.getItem('user_id');
+			console.log('Stored user ID from localStorage:', storedUserId);
+			if (storedUserId) {
+				user.id = parseInt(storedUserId);
+				console.log('Restored user ID:', user.id);
+			}
 		}
 	} catch (error) {
 		console.error('Invalid token:', error);
@@ -71,10 +79,17 @@ function login(jwtOrResponse: string | LoginResponse) {
 			roles: [roleMapping[response.rol as keyof typeof roleMapping] || `ROLE_${response.rol}`]
 		};
 
+		console.log('Created user object:', user);
+
 		token = response.token;
 
 		if (browser) {
 			localStorage.setItem('jwt_token', token);
+			// Store the user ID separately since it's not in the JWT
+			if (response.id) {
+				localStorage.setItem('user_id', response.id.toString());
+				console.log('Stored user ID in localStorage:', response.id);
+			}
 		}
 	}
 
@@ -95,6 +110,7 @@ function logout() {
 	user = null;
 	if (browser) {
 		localStorage.removeItem('jwt_token');
+		localStorage.removeItem('user_id');
 	}
 	goto('/auth');
 }

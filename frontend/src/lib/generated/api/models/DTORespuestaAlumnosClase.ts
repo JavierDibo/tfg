@@ -15,10 +15,10 @@
 import { mapValues } from '../runtime';
 import type { DTOMetadatosPaginacion } from './DTOMetadatosPaginacion';
 import {
-	DTOMetadatosPaginacionFromJSON,
-	DTOMetadatosPaginacionFromJSONTyped,
-	DTOMetadatosPaginacionToJSON,
-	DTOMetadatosPaginacionToJSONTyped
+    DTOMetadatosPaginacionFromJSON,
+    DTOMetadatosPaginacionFromJSONTyped,
+    DTOMetadatosPaginacionToJSON,
+    DTOMetadatosPaginacionToJSONTyped,
 } from './DTOMetadatosPaginacion';
 
 /**
@@ -27,68 +27,63 @@ import {
  * @interface DTORespuestaAlumnosClase
  */
 export interface DTORespuestaAlumnosClase {
-	/**
-	 * Lista de alumnos (información completa o pública según el rol)
-	 * @type {Array<any>}
-	 * @memberof DTORespuestaAlumnosClase
-	 */
-	content?: Array<any>;
-	/**
-	 * Metadatos de paginación
-	 * @type {DTOMetadatosPaginacion}
-	 * @memberof DTORespuestaAlumnosClase
-	 */
-	page?: DTOMetadatosPaginacion;
-	/**
-	 * Tipo de información devuelta: 'COMPLETA' para admin/profesor de la clase, 'PUBLICA' para otros
-	 * @type {string}
-	 * @memberof DTORespuestaAlumnosClase
-	 */
-	tipoInformacion?: string;
+    /**
+     * Lista de alumnos (información completa o pública según el rol)
+     * @type {Array<any>}
+     * @memberof DTORespuestaAlumnosClase
+     */
+    content?: Array<any>;
+    /**
+     * Metadatos de paginación
+     * @type {DTOMetadatosPaginacion}
+     * @memberof DTORespuestaAlumnosClase
+     */
+    page?: DTOMetadatosPaginacion;
+    /**
+     * Tipo de información devuelta: 'COMPLETA' para admin/profesor de la clase, 'PUBLICA' para otros
+     * @type {string}
+     * @memberof DTORespuestaAlumnosClase
+     */
+    tipoInformacion?: string;
 }
 
 /**
  * Check if a given object implements the DTORespuestaAlumnosClase interface.
  */
-export function instanceOfDTORespuestaAlumnosClase(
-	value: object
-): value is DTORespuestaAlumnosClase {
-	return true;
+export function instanceOfDTORespuestaAlumnosClase(value: object): value is DTORespuestaAlumnosClase {
+    return true;
 }
 
 export function DTORespuestaAlumnosClaseFromJSON(json: any): DTORespuestaAlumnosClase {
-	return DTORespuestaAlumnosClaseFromJSONTyped(json, false);
+    return DTORespuestaAlumnosClaseFromJSONTyped(json, false);
 }
 
-export function DTORespuestaAlumnosClaseFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTORespuestaAlumnosClase {
-	if (json == null) {
-		return json;
-	}
-	return {
-		content: json['content'] == null ? undefined : json['content'],
-		page: json['page'] == null ? undefined : DTOMetadatosPaginacionFromJSON(json['page']),
-		tipoInformacion: json['tipoInformacion'] == null ? undefined : json['tipoInformacion']
-	};
+export function DTORespuestaAlumnosClaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTORespuestaAlumnosClase {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'content': json['content'] == null ? undefined : json['content'],
+        'page': json['page'] == null ? undefined : DTOMetadatosPaginacionFromJSON(json['page']),
+        'tipoInformacion': json['tipoInformacion'] == null ? undefined : json['tipoInformacion'],
+    };
 }
 
 export function DTORespuestaAlumnosClaseToJSON(json: any): DTORespuestaAlumnosClase {
-	return DTORespuestaAlumnosClaseToJSONTyped(json, false);
+    return DTORespuestaAlumnosClaseToJSONTyped(json, false);
 }
 
-export function DTORespuestaAlumnosClaseToJSONTyped(
-	value?: DTORespuestaAlumnosClase | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTORespuestaAlumnosClaseToJSONTyped(value?: DTORespuestaAlumnosClase | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		content: value['content'],
-		page: DTOMetadatosPaginacionToJSON(value['page']),
-		tipoInformacion: value['tipoInformacion']
-	};
+    return {
+        
+        'content': value['content'],
+        'page': DTOMetadatosPaginacionToJSON(value['page']),
+        'tipoInformacion': value['tipoInformacion'],
+    };
 }
+

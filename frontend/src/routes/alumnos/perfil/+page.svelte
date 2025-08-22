@@ -14,15 +14,44 @@
 		}
 	});
 
+	// Monitor auth store changes
+	$effect(() => {
+		console.log('Auth store changed:', {
+			isAuthenticated: authStore.isAuthenticated,
+			isAlumno: authStore.isAlumno,
+			user: authStore.user,
+			userId: authStore.user?.id
+		});
+	});
+
 	onMount(async () => {
+		console.log('Component mounted');
+		console.log('Initial auth state:', {
+			isAuthenticated: authStore.isAuthenticated,
+			isAlumno: authStore.isAlumno,
+			user: authStore.user,
+			userId: authStore.user?.id
+		});
+
 		if (!authStore.user?.usuario && !authStore.user?.sub) {
+			console.log('No user found, redirecting to home');
 			goto('/');
 			return;
 		}
 
+		console.log('Auth store user:', authStore.user);
+		console.log('User ID:', authStore.user?.id);
+
 		try {
-			// For now, we'll use the current user's ID since we don't have a getByUsuario method
-			const alumno = await AlumnoService.getAlumnoById(parseInt(authStore.user.sub));
+			// Use the user ID from the auth store
+			if (!authStore.user?.id) {
+				console.error('No user ID available');
+				console.log('Available user data:', authStore.user);
+				goto('/');
+				return;
+			}
+
+			const alumno = await AlumnoService.getAlumnoById(authStore.user.id);
 
 			// Redirect to the student's profile page
 			goto(`/alumnos/${alumno.id}`);

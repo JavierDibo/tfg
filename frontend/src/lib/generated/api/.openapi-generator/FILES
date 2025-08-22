@@ -2,6 +2,9 @@ apis/AlumnosApi.ts
 apis/AutenticacinApi.ts
 apis/ClasesApi.ts
 apis/EntidadesApi.ts
+apis/GestinDeClasesApi.ts
+apis/InscripcionesApi.ts
+apis/OperacionesDeUsuarioApi.ts
 apis/ProfesorRestApi.ts
 apis/PruebasApi.ts
 apis/index.ts

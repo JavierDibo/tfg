@@ -5,7 +5,8 @@ import type {
 	DTORespuestaEnrollment,
 	DTORespuestaAlumnosClase,
 	DTOPeticionEnrollment,
-	Material
+	Material,
+	DTOEstadoInscripcion
 } from '$lib/generated/api';
 import { claseApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
@@ -170,9 +171,25 @@ export const ClaseService = {
 	 */
 	async unenrollFromClase(claseId: number): Promise<DTOClase> {
 		try {
-			return await claseApi.darseDeBajaDeClase({ claseId });
+			console.log('ClaseService.unenrollFromClase called with claseId:', claseId);
+			const result = await claseApi.darseDeBajaDeClase({ claseId });
+			console.log('ClaseService.unenrollFromClase result:', result);
+			return result;
 		} catch (error) {
+			console.error('ClaseService.unenrollFromClase error:', error);
 			ErrorHandler.logError(error, `unenrollFromClase(${claseId})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	},
+
+	/**
+	 * Check enrollment status for the authenticated student
+	 */
+	async checkMyEnrollmentStatus(claseId: number): Promise<DTOEstadoInscripcion> {
+		try {
+			return await claseApi.verificarMiEstadoInscripcion({ claseId });
+		} catch (error) {
+			ErrorHandler.logError(error, `checkMyEnrollmentStatus(${claseId})`);
 			throw await ErrorHandler.parseError(error);
 		}
 	},

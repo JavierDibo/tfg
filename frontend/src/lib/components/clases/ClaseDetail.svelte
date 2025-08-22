@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
+	import type { DTOClaseConDetalles } from '$lib/generated/api/models/DTOClaseConDetalles';
 
 	let { clase } = $props<{
-		clase: DTOClase;
+		clase: DTOClaseConDetalles;
 	}>();
 
 	function getPresencialidadLabel(presencialidad?: string): string {

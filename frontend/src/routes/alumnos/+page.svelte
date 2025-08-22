@@ -465,10 +465,10 @@
 				<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
 					<div>
 						<p class="text-sm text-gray-700">
-							Mostrando <span class="font-medium">{currentPage * pageSize + 1}</span> a{' '}
+							Mostrando <span class="font-medium">{currentPage * pageSize + 1}</span> a
 							<span class="font-medium">
 								{Math.min((currentPage + 1) * pageSize, totalElements)}
-							</span>{' '}
+							</span>
 							de <span class="font-medium">{totalElements}</span> resultados
 						</p>
 					</div>
@@ -493,7 +493,7 @@
 									onclick={() => goToPage(pageNum)}
 									class="relative inline-flex items-center px-4 py-2 text-sm font-semibold {pageNum ===
 									currentPage
-										? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+										? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-blue-600'
 										: 'text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0'}"
 								>
 									{pageNum + 1}

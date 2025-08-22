@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
+	import type { DTOClaseConDetalles } from '$lib/generated/api/models/DTOClaseConDetalles';
 	import type { DTOAlumno } from '$lib/generated/api/models/DTOAlumno';
 	import type { DTOAlumnoPublico } from '$lib/generated/api/models/DTOAlumnoPublico';
 
@@ -8,7 +8,7 @@
 	import { authStore } from '$lib/stores/authStore.svelte';
 
 	let { clase } = $props<{
-		clase: DTOClase;
+		clase: DTOClaseConDetalles;
 	}>();
 
 	// Type for student objects that can be either full DTOAlumno or public info

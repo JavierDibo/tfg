@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
+	import type { DTOClaseConDetalles } from '$lib/generated/api/models/DTOClaseConDetalles';
 	import type { DTOAlumno } from '$lib/generated/api/models/DTOAlumno';
 	import type { DTORespuestaAlumnosClase } from '$lib/generated/api/models/DTORespuestaAlumnosClase';
 	import type { DTORespuestaEnrollment } from '$lib/generated/api/models/DTORespuestaEnrollment';
@@ -9,7 +9,7 @@
 	import AvailableStudentsModal from './AvailableStudentsModal.svelte';
 
 	let { clase } = $props<{
-		clase: DTOClase;
+		clase: DTOClaseConDetalles;
 	}>();
 
 	// State
