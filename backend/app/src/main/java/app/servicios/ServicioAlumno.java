@@ -2,8 +2,10 @@ package app.servicios;
 
 import app.dtos.DTOActualizacionAlumno;
 import app.dtos.DTOAlumno;
+import app.dtos.DTOAlumnoPublico;
 import app.dtos.DTOClase;
 import app.dtos.DTOParametrosBusquedaAlumno;
+import app.dtos.DTOPerfilAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Alumno;
@@ -55,6 +57,17 @@ public class ServicioAlumno {
         Alumno alumno = repositorioAlumno.findByUsuario(usuario)
                 .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con usuario " + usuario + " no encontrado."));
         return new DTOAlumno(alumno);
+    }
+
+    /**
+     * Obtiene el perfil del alumno (sin información sensible)
+     * @param usuario Usuario del alumno
+     * @return DTOPerfilAlumno
+     */
+    public DTOPerfilAlumno obtenerPerfilAlumnoPorUsuario(String usuario) {
+        Alumno alumno = repositorioAlumno.findByUsuario(usuario)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con usuario " + usuario + " no encontrado."));
+        return new DTOPerfilAlumno(alumno);
     }
 
     public DTOAlumno obtenerAlumnoPorDni(String dni) {
@@ -502,6 +515,97 @@ public class ServicioAlumno {
         
         // Convertir a DTOs
         Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
+        
+        return new DTORespuestaPaginada<>(pageDTOs);
+    }
+
+    /**
+     * Obtiene alumnos inscritos en una clase específica con diferentes niveles de acceso
+     * según el rol del usuario autenticado
+     * @param claseId ID de la clase
+     * @param page Número de página (0-indexed)
+     * @param size Tamaño de página
+     * @param sortBy Campo por el que ordenar
+     * @param sortDirection Dirección de ordenación (ASC/DESC)
+     * @param userRole Rol del usuario autenticado
+     * @param currentUserId ID del usuario autenticado (para verificar si es profesor de la clase)
+     * @return DTORespuestaPaginada con los alumnos de la clase según el nivel de acceso
+     */
+    public DTORespuestaPaginada<?> obtenerAlumnosPorClaseConNivelAcceso(
+            Long claseId, int page, int size, String sortBy, String sortDirection, 
+            String userRole, Long currentUserId) {
+        
+        // Validar parámetros
+        if (page < 0) page = 0;
+        if (size <= 0 || size > 100) size = 20;
+        if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
+        
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (Exception e) {
+            direction = Sort.Direction.ASC;
+        }
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        // Primero verificamos que la clase existe
+        if (!repositorioClase.existsById(claseId)) {
+            throw new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada.");
+        }
+        
+        // Verificar acceso según el rol
+        if ("ALUMNO".equals(userRole)) {
+            // Para estudiantes, verificar que estén inscritos en la clase
+            Alumno alumno = repositorioAlumno.findById(currentUserId)
+                    .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + currentUserId + " no encontrado."));
+            
+            if (!alumno.estaInscritoEnClase(claseId.toString())) {
+                throw new RuntimeException("No tienes permisos para acceder a esta clase. Debes estar inscrito.");
+            }
+        }
+        
+        // Obtenemos los alumnos de la clase usando filtrado en memoria
+        List<Alumno> alumnosDeClase = repositorioAlumno.findAll().stream()
+                .filter(alumno -> alumno.getClasesId() != null && 
+                                 alumno.getClasesId().contains(claseId.toString()))
+                .collect(Collectors.toList());
+        
+        // Aplicamos paginación manualmente
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), alumnosDeClase.size());
+        
+        if (start > end) {
+            start = 0;
+            end = 0;
+        }
+        
+        List<Alumno> pageContent = alumnosDeClase.subList(start, end);
+        Page<Alumno> pageAlumnos = new org.springframework.data.domain.PageImpl<>(
+            pageContent, pageable, alumnosDeClase.size());
+        
+        // Convertir a DTOs según el nivel de acceso
+        Page<?> pageDTOs;
+        
+        if ("ADMIN".equals(userRole)) {
+            // Admin: ve toda la información
+            pageDTOs = pageAlumnos.map(DTOAlumno::new);
+        } else if ("PROFESOR".equals(userRole)) {
+            // Profesor: verificar si es profesor de esta clase específica
+            Clase clase = repositorioClase.findById(claseId)
+                    .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+            
+            if (clase.getProfesoresId().contains(currentUserId.toString())) {
+                // Es profesor de esta clase: ve toda la información
+                pageDTOs = pageAlumnos.map(DTOAlumno::new);
+            } else {
+                // No es profesor de esta clase: solo información pública
+                pageDTOs = pageAlumnos.map(DTOAlumnoPublico::new);
+            }
+        } else {
+            // Alumno: solo información pública
+            pageDTOs = pageAlumnos.map(DTOAlumnoPublico::new);
+        }
         
         return new DTORespuestaPaginada<>(pageDTOs);
     }

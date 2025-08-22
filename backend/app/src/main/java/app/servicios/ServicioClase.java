@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Isolation;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
@@ -787,5 +788,99 @@ public class ServicioClase {
         clase.removerAlumno(alumnoId);
         Clase claseActualizada = repositorioClase.save(clase);
         return new DTOClase(claseActualizada);
+    }
+
+    // ===== NUEVOS MÉTODOS PARA ESTUDIANTES =====
+
+    /**
+     * Obtiene las clases en las que está inscrito un estudiante con información detallada del profesor
+     * @param alumnoId ID del estudiante
+     * @return Lista de DTOClaseInscrita con información del profesor
+     */
+    public List<DTOClaseInscrita> obtenerClasesInscritasConDetalles(Long alumnoId) {
+        List<Clase> clases = repositorioClase.findByAlumnoId(alumnoId.toString());
+        
+        return clases.stream()
+                .map(clase -> {
+                    // Obtener el primer profesor de la clase (profesor principal)
+                    DTOProfesor profesor = null;
+                    if (!clase.getProfesoresId().isEmpty()) {
+                        try {
+                            Long profesorId = Long.parseLong(clase.getProfesoresId().get(0));
+                            Profesor profesorEntity = repositorioProfesor.findById(profesorId)
+                                    .orElse(null);
+                            if (profesorEntity != null) {
+                                profesor = new DTOProfesor(profesorEntity);
+                            }
+                        } catch (NumberFormatException e) {
+                            // Si no se puede parsear el ID, continuar sin profesor
+                        }
+                    }
+                    
+                    // Por ahora, usamos la fecha actual como fecha de inscripción
+                    // En una implementación real, esto debería venir de una tabla de enrollments
+                    LocalDateTime fechaInscripcion = LocalDateTime.now();
+                    
+                    return new DTOClaseInscrita(clase, profesor, fechaInscripcion);
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Verifica si un estudiante está inscrito en una clase específica
+     * @param alumnoId ID del estudiante
+     * @param claseId ID de la clase
+     * @return DTOEstadoInscripcion con el estado de inscripción
+     */
+    public DTOEstadoInscripcion verificarEstadoInscripcion(Long alumnoId, Long claseId) {
+        Clase clase = repositorioClase.findById(claseId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        
+        boolean isEnrolled = clase.getAlumnosId().contains(alumnoId.toString());
+        
+        if (isEnrolled) {
+            // Por ahora, usamos la fecha actual como fecha de inscripción
+            // En una implementación real, esto debería venir de una tabla de enrollments
+            LocalDateTime fechaInscripcion = LocalDateTime.now();
+            return DTOEstadoInscripcion.enrolled(alumnoId, claseId, fechaInscripcion);
+        } else {
+            return DTOEstadoInscripcion.notEnrolled(alumnoId, claseId);
+        }
+    }
+
+    /**
+     * Obtiene información detallada de una clase para un estudiante específico
+     * @param claseId ID de la clase
+     * @param alumnoId ID del estudiante
+     * @return DTOClaseConDetalles con información completa
+     */
+    public DTOClaseConDetalles obtenerClaseConDetallesParaEstudiante(Long claseId, Long alumnoId) {
+        Clase clase = repositorioClase.findById(claseId)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        
+        // Obtener el primer profesor de la clase (profesor principal)
+        DTOProfesor profesor = null;
+        if (!clase.getProfesoresId().isEmpty()) {
+            try {
+                Long profesorId = Long.parseLong(clase.getProfesoresId().get(0));
+                Profesor profesorEntity = repositorioProfesor.findById(profesorId)
+                        .orElse(null);
+                if (profesorEntity != null) {
+                    profesor = new DTOProfesor(profesorEntity);
+                }
+            } catch (NumberFormatException e) {
+                // Si no se puede parsear el ID, continuar sin profesor
+            }
+        }
+        
+        // Verificar si el estudiante está inscrito
+        boolean isEnrolled = clase.getAlumnosId().contains(alumnoId.toString());
+        LocalDateTime fechaInscripcion = isEnrolled ? LocalDateTime.now() : null;
+        
+        // Contar alumnos y profesores
+        int alumnosCount = clase.getAlumnosId().size();
+        int profesoresCount = clase.getProfesoresId().size();
+        
+        return new DTOClaseConDetalles(clase, profesor, isEnrolled, fechaInscripcion, alumnosCount, profesoresCount);
     }
 }

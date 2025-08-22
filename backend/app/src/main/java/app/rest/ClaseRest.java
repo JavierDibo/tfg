@@ -2,6 +2,9 @@ package app.rest;
 
 import app.dtos.*;
 import app.dtos.DTOAlumno;
+import app.dtos.DTOClaseConDetalles;
+import app.dtos.DTOClaseInscrita;
+import app.dtos.DTOEstadoInscripcion;
 import app.dtos.DTOPeticionEnrollment;
 import app.dtos.DTORespuestaEnrollment;
 import app.entidades.Material;
@@ -360,6 +363,17 @@ public class ClaseRest {
     }
 
     /**
+     * Obtiene las clases en las que está inscrito el estudiante autenticado
+     * @return Lista de DTOClaseInscrita del estudiante actual
+     */
+    @GetMapping("/mis-clases-inscritas")
+    @PreAuthorize("hasRole('ALUMNO')")
+    public ResponseEntity<List<DTOClaseInscrita>> obtenerMisClasesInscritas() {
+        Long alumnoId = securityUtils.getCurrentUserId();
+        return ResponseEntity.ok(servicioClase.obtenerClasesInscritasConDetalles(alumnoId));
+    }
+
+    /**
      * Obtiene el número de alumnos en una clase
      * @param claseId ID de la clase
      * @return Número de alumnos
@@ -379,15 +393,20 @@ public class ClaseRest {
      * @return DTORespuestaPaginada con los alumnos de la clase
      */
     @GetMapping("/{claseId}/alumnos")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosDeClase(
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
+    public ResponseEntity<DTORespuestaPaginada<?>> obtenerAlumnosDeClase(
             @PathVariable Long claseId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDirection) {
-        return ResponseEntity.ok(servicioAlumno.obtenerAlumnosPorClasePaginados(
-            claseId, page, size, sortBy, sortDirection));
+        
+        // Obtener información del usuario autenticado
+        String userRole = securityUtils.getCurrentUser().getRol().name();
+        Long currentUserId = securityUtils.getCurrentUserId();
+        
+        return ResponseEntity.ok(servicioAlumno.obtenerAlumnosPorClaseConNivelAcceso(
+            claseId, page, size, sortBy, sortDirection, userRole, currentUserId));
     }
 
     /**
@@ -398,5 +417,73 @@ public class ClaseRest {
     @GetMapping("/{claseId}/profesores/contar")
     public ResponseEntity<Integer> contarProfesoresEnClase(@PathVariable Long claseId) {
         return ResponseEntity.ok(servicioClase.contarProfesoresEnClase(claseId));
+    }
+
+    // ===== NUEVOS ENDPOINTS PARA ESTUDIANTES =====
+
+    /**
+     * Verifica si un estudiante está inscrito en una clase específica
+     * GET /api/clases/{claseId}/enrollment-status/{alumnoId}
+     * @param claseId ID de la clase
+     * @param alumnoId ID del estudiante
+     * @return DTOEstadoInscripcion con el estado de inscripción
+     */
+    @GetMapping("/{claseId}/enrollment-status/{alumnoId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #alumnoId == authentication.principal.id)")
+    public ResponseEntity<DTOEstadoInscripcion> verificarEstadoInscripcion(
+            @PathVariable Long claseId,
+            @PathVariable Long alumnoId) {
+        
+        DTOEstadoInscripcion estado = servicioClase.verificarEstadoInscripcion(alumnoId, claseId);
+        return ResponseEntity.ok(estado);
+    }
+
+    /**
+     * Verifica si el estudiante autenticado está inscrito en una clase específica
+     * GET /api/clases/{claseId}/enrollment-status
+     * @param claseId ID de la clase
+     * @return DTOEstadoInscripcion con el estado de inscripción
+     */
+    @GetMapping("/{claseId}/enrollment-status")
+    @PreAuthorize("hasRole('ALUMNO')")
+    public ResponseEntity<DTOEstadoInscripcion> verificarMiEstadoInscripcion(
+            @PathVariable Long claseId) {
+        
+        Long alumnoId = securityUtils.getCurrentUserId();
+        DTOEstadoInscripcion estado = servicioClase.verificarEstadoInscripcion(alumnoId, claseId);
+        return ResponseEntity.ok(estado);
+    }
+
+    /**
+     * Obtiene información detallada de una clase para un estudiante específico
+     * GET /api/clases/{claseId}/details-for-student/{alumnoId}
+     * @param claseId ID de la clase
+     * @param alumnoId ID del estudiante
+     * @return DTOClaseConDetalles con información completa
+     */
+    @GetMapping("/{claseId}/details-for-student/{alumnoId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #alumnoId == authentication.principal.id)")
+    public ResponseEntity<DTOClaseConDetalles> obtenerClaseConDetallesParaEstudiante(
+            @PathVariable Long claseId,
+            @PathVariable Long alumnoId) {
+        
+        DTOClaseConDetalles detalles = servicioClase.obtenerClaseConDetallesParaEstudiante(claseId, alumnoId);
+        return ResponseEntity.ok(detalles);
+    }
+
+    /**
+     * Obtiene información detallada de una clase para el estudiante autenticado
+     * GET /api/clases/{claseId}/details-for-me
+     * @param claseId ID de la clase
+     * @return DTOClaseConDetalles con información completa
+     */
+    @GetMapping("/{claseId}/details-for-me")
+    @PreAuthorize("hasRole('ALUMNO')")
+    public ResponseEntity<DTOClaseConDetalles> obtenerClaseConDetallesParaMi(
+            @PathVariable Long claseId) {
+        
+        Long alumnoId = securityUtils.getCurrentUserId();
+        DTOClaseConDetalles detalles = servicioClase.obtenerClaseConDetallesParaEstudiante(claseId, alumnoId);
+        return ResponseEntity.ok(detalles);
     }
 }

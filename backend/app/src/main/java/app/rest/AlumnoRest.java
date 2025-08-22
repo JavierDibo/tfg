@@ -2,10 +2,14 @@ package app.rest;
 
 import app.dtos.DTOActualizacionAlumno;
 import app.dtos.DTOAlumno;
+import app.dtos.DTOClaseInscrita;
 import app.dtos.DTOParametrosBusquedaAlumno;
+import app.dtos.DTOPerfilAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
 import app.dtos.DTORespuestaPaginada;
 import app.servicios.ServicioAlumno;
+import app.servicios.ServicioClase;
+import app.util.SecurityUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -27,6 +31,8 @@ import java.util.Map;
 public class AlumnoRest {
 
     private final ServicioAlumno servicioAlumno;
+    private final ServicioClase servicioClase;
+    private final SecurityUtils securityUtils;
 
     // Endpoint con paginación (recomendado)
     @GetMapping("/paged")
@@ -246,5 +252,35 @@ public class AlumnoRest {
             "no_matriculados", servicioAlumno.contarAlumnosNoMatriculados()
         );
         return new ResponseEntity<>(estadisticas, HttpStatus.OK);
+    }
+
+    // ===== NUEVOS ENDPOINTS PARA ESTUDIANTES =====
+
+    /**
+     * Obtiene las clases en las que está inscrito un estudiante con información detallada del profesor
+     * GET /api/alumnos/{alumnoId}/clases
+     * @param alumnoId ID del estudiante
+     * @return Lista de DTOClaseInscrita con información del profesor
+     */
+    @GetMapping("/{alumnoId}/clases")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #alumnoId == authentication.principal.id)")
+    public ResponseEntity<List<DTOClaseInscrita>> obtenerClasesInscritasConDetalles(
+            @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long alumnoId) {
+        
+        List<DTOClaseInscrita> clases = servicioClase.obtenerClasesInscritasConDetalles(alumnoId);
+        return new ResponseEntity<>(clases, HttpStatus.OK);
+    }
+
+    /**
+     * Obtiene el perfil del estudiante autenticado (sin información sensible)
+     * GET /api/alumnos/mi-perfil
+     * @return DTOPerfilAlumno del estudiante actual
+     */
+    @GetMapping("/mi-perfil")
+    @PreAuthorize("hasRole('ALUMNO')")
+    public ResponseEntity<DTOPerfilAlumno> obtenerMiPerfil() {
+        String usuario = securityUtils.getCurrentUsername();
+        DTOPerfilAlumno perfil = servicioAlumno.obtenerPerfilAlumnoPorUsuario(usuario);
+        return new ResponseEntity<>(perfil, HttpStatus.OK);
     }
 }
