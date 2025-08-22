@@ -9,7 +9,7 @@
 	import ClaseDetail from '$lib/components/clases/ClaseDetail.svelte';
 	import ClaseMaterials from '$lib/components/clases/ClaseMaterials.svelte';
 	import ClaseEnrollment from '$lib/components/clases/ClaseEnrollment.svelte';
-	import ClaseStudents from '$lib/components/clases/ClaseStudents.svelte';
+	import ClaseStudentManagement from '$lib/components/clases/ClaseStudentManagement.svelte';
 	import ClaseEditModal from '$lib/components/clases/ClaseEditModal.svelte';
 	import MaterialAddModal from '$lib/components/clases/MaterialAddModal.svelte';
 
@@ -209,7 +209,7 @@
 				/>
 
 				{#if canEdit()}
-					<ClaseStudents {clase} />
+					<ClaseStudentManagement {clase} />
 				{/if}
 
 				{#if canEdit()}

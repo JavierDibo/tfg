@@ -64,6 +64,25 @@ export class AlumnoService {
 		}
 	}
 
+	/**
+	 * Get available students for enrollment (enabled and matriculated)
+	 */
+	static async getAvailableStudents(
+		params: {
+			page?: number;
+			size?: number;
+			sortBy?: string;
+			sortDirection?: 'ASC' | 'DESC';
+		} = {}
+	): Promise<DTORespuestaPaginadaDTOAlumno> {
+		try {
+			return await alumnoApi.obtenerAlumnosDisponibles(params);
+		} catch (error) {
+			console.error('Error fetching available students:', error);
+			throw this.handleApiError(error);
+		}
+	}
+
 	// ==================== CRUD Operations ====================
 
 	/**

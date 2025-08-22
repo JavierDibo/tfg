@@ -3,7 +3,9 @@ import {
 	type DTOParametrosBusquedaClase,
 	type DTORespuestaPaginadaDTOClase,
 	type DTORespuestaPaginadaDTOAlumno,
-	type Material
+	type Material,
+	type DTOPeticionEnrollment,
+	type DTORespuestaEnrollment
 } from '$lib/generated/api';
 import { claseApi } from '$lib/api';
 
@@ -99,7 +101,7 @@ export const ClaseService = {
 		}
 	},
 
-	// Get enrolled students in a class with pagination
+	// Get students in a class with pagination
 	async getAlumnosDeClase(
 		claseId: number,
 		pagination: {
@@ -114,7 +116,7 @@ export const ClaseService = {
 			const response = await claseApi.obtenerAlumnosDeClase({
 				claseId,
 				page: page || 0,
-				size: size || 10,
+				size: size || 20,
 				sortBy: sortBy || 'id',
 				sortDirection: sortDirection || 'ASC'
 			});
@@ -124,6 +126,55 @@ export const ClaseService = {
 			throw error;
 		}
 	},
+
+	// Count students in a class
+	async contarAlumnosEnClase(claseId: number): Promise<number> {
+		try {
+			const response = await claseApi.contarAlumnosEnClase({ claseId });
+			return response;
+		} catch (error) {
+			console.error(`Error counting students for class ${claseId}:`, error);
+			throw error;
+		}
+	},
+
+	// ==================== ENROLLMENT MANAGEMENT ====================
+
+	// General enrollment (Admin or Professor who teaches the class)
+	async enrollStudentInClass(alumnoId: number, claseId: number): Promise<DTORespuestaEnrollment> {
+		try {
+			const enrollmentRequest: DTOPeticionEnrollment = {
+				alumnoId,
+				claseId
+			};
+			const response = await claseApi.inscribirAlumnoEnClase({
+				dTOPeticionEnrollment: enrollmentRequest
+			});
+			return response;
+		} catch (error) {
+			console.error(`Error enrolling student ${alumnoId} in class ${claseId}:`, error);
+			throw error;
+		}
+	},
+
+	// General unenrollment (Admin or Professor who teaches the class)
+	async unenrollStudentFromClass(alumnoId: number, claseId: number): Promise<DTORespuestaEnrollment> {
+		try {
+			const enrollmentRequest: DTOPeticionEnrollment = {
+				alumnoId,
+				claseId
+			};
+			const response = await claseApi.darDeBajaAlumnoDeClase({
+				dTOPeticionEnrollment: enrollmentRequest
+			});
+			return response;
+		} catch (error) {
+			console.error(`Error unenrolling student ${alumnoId} from class ${claseId}:`, error);
+			throw error;
+		}
+	},
+
+	// ==================== EXISTING METHODS ====================
 
 	async addAlumnoToClase(claseId: number, alumnoId: string): Promise<void> {
 		try {
