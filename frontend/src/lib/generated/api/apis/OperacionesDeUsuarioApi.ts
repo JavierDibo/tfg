@@ -12,196 +12,233 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
 import type {
-  DTOAlumnoPublico,
-  DTOClase,
-  DTOClaseInscrita,
-  DTORespuestaAlumnosClase,
+	DTOAlumnoPublico,
+	DTOClase,
+	DTOClaseInscrita,
+	DTORespuestaAlumnosClase
 } from '../models/index';
 import {
-    DTOAlumnoPublicoFromJSON,
-    DTOAlumnoPublicoToJSON,
-    DTOClaseFromJSON,
-    DTOClaseToJSON,
-    DTOClaseInscritaFromJSON,
-    DTOClaseInscritaToJSON,
-    DTORespuestaAlumnosClaseFromJSON,
-    DTORespuestaAlumnosClaseToJSON,
+	DTOAlumnoPublicoFromJSON,
+	DTOAlumnoPublicoToJSON,
+	DTOClaseFromJSON,
+	DTOClaseToJSON,
+	DTOClaseInscritaFromJSON,
+	DTOClaseInscritaToJSON,
+	DTORespuestaAlumnosClaseFromJSON,
+	DTORespuestaAlumnosClaseToJSON
 } from '../models/index';
 
 export interface ObtenerAlumnosDeClaseRequest {
-    claseId: number;
-    page?: number;
-    size?: number;
-    sortBy?: string;
-    sortDirection?: string;
+	claseId: number;
+	page?: number;
+	size?: number;
+	sortBy?: string;
+	sortDirection?: string;
 }
 
 export interface ObtenerAlumnosPublicosDeClaseRequest {
-    claseId: number;
+	claseId: number;
 }
 
 /**
- * 
+ *
  */
 export class OperacionesDeUsuarioApi extends runtime.BaseAPI {
+	/**
+	 * Obtiene la lista de alumnos inscritos en una clase específica. El nivel de detalle de la información depende del rol del usuario: - ADMIN: información completa de todos los alumnos - PROFESOR: información completa si es profesor de la clase, información pública si no - ALUMNO: solo información pública de los alumnos
+	 * Obtener alumnos de una clase
+	 */
+	async obtenerAlumnosDeClaseRaw(
+		requestParameters: ObtenerAlumnosDeClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTORespuestaAlumnosClase>> {
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling obtenerAlumnosDeClase().'
+			);
+		}
 
-    /**
-     * Obtiene la lista de alumnos inscritos en una clase específica. El nivel de detalle de la información depende del rol del usuario: - ADMIN: información completa de todos los alumnos - PROFESOR: información completa si es profesor de la clase, información pública si no - ALUMNO: solo información pública de los alumnos
-     * Obtener alumnos de una clase
-     */
-    async obtenerAlumnosDeClaseRaw(requestParameters: ObtenerAlumnosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaAlumnosClase>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling obtenerAlumnosDeClase().'
-            );
-        }
+		const queryParameters: any = {};
 
-        const queryParameters: any = {};
+		if (requestParameters['page'] != null) {
+			queryParameters['page'] = requestParameters['page'];
+		}
 
-        if (requestParameters['page'] != null) {
-            queryParameters['page'] = requestParameters['page'];
-        }
+		if (requestParameters['size'] != null) {
+			queryParameters['size'] = requestParameters['size'];
+		}
 
-        if (requestParameters['size'] != null) {
-            queryParameters['size'] = requestParameters['size'];
-        }
+		if (requestParameters['sortBy'] != null) {
+			queryParameters['sortBy'] = requestParameters['sortBy'];
+		}
 
-        if (requestParameters['sortBy'] != null) {
-            queryParameters['sortBy'] = requestParameters['sortBy'];
-        }
+		if (requestParameters['sortDirection'] != null) {
+			queryParameters['sortDirection'] = requestParameters['sortDirection'];
+		}
 
-        if (requestParameters['sortDirection'] != null) {
-            queryParameters['sortDirection'] = requestParameters['sortDirection'];
-        }
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		let urlPath = `/api/my/classes/{claseId}/students`;
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
 
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
-        let urlPath = `/api/my/classes/{claseId}/students`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTORespuestaAlumnosClaseFromJSON(jsonValue)
+		);
+	}
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
+	/**
+	 * Obtiene la lista de alumnos inscritos en una clase específica. El nivel de detalle de la información depende del rol del usuario: - ADMIN: información completa de todos los alumnos - PROFESOR: información completa si es profesor de la clase, información pública si no - ALUMNO: solo información pública de los alumnos
+	 * Obtener alumnos de una clase
+	 */
+	async obtenerAlumnosDeClase(
+		requestParameters: ObtenerAlumnosDeClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTORespuestaAlumnosClase> {
+		const response = await this.obtenerAlumnosDeClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaAlumnosClaseFromJSON(jsonValue));
-    }
+	/**
+	 * Obtiene la lista de alumnos inscritos en una clase con solo información pública (nombre y apellidos). Este endpoint siempre devuelve información pública independientemente del rol del usuario.
+	 * Obtener información pública de alumnos de una clase
+	 */
+	async obtenerAlumnosPublicosDeClaseRaw(
+		requestParameters: ObtenerAlumnosPublicosDeClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOAlumnoPublico>> {
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling obtenerAlumnosPublicosDeClase().'
+			);
+		}
 
-    /**
-     * Obtiene la lista de alumnos inscritos en una clase específica. El nivel de detalle de la información depende del rol del usuario: - ADMIN: información completa de todos los alumnos - PROFESOR: información completa si es profesor de la clase, información pública si no - ALUMNO: solo información pública de los alumnos
-     * Obtener alumnos de una clase
-     */
-    async obtenerAlumnosDeClase(requestParameters: ObtenerAlumnosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaAlumnosClase> {
-        const response = await this.obtenerAlumnosDeClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
+		const queryParameters: any = {};
 
-    /**
-     * Obtiene la lista de alumnos inscritos en una clase con solo información pública (nombre y apellidos). Este endpoint siempre devuelve información pública independientemente del rol del usuario.
-     * Obtener información pública de alumnos de una clase
-     */
-    async obtenerAlumnosPublicosDeClaseRaw(requestParameters: ObtenerAlumnosPublicosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumnoPublico>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling obtenerAlumnosPublicosDeClase().'
-            );
-        }
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        const queryParameters: any = {};
+		let urlPath = `/api/my/classes/{claseId}/students/public`;
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTOAlumnoPublicoFromJSON(jsonValue)
+		);
+	}
 
-        let urlPath = `/api/my/classes/{claseId}/students/public`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
+	/**
+	 * Obtiene la lista de alumnos inscritos en una clase con solo información pública (nombre y apellidos). Este endpoint siempre devuelve información pública independientemente del rol del usuario.
+	 * Obtener información pública de alumnos de una clase
+	 */
+	async obtenerAlumnosPublicosDeClase(
+		requestParameters: ObtenerAlumnosPublicosDeClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOAlumnoPublico> {
+		const response = await this.obtenerAlumnosPublicosDeClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
+	/**
+	 * Obtiene las clases del profesor autenticado
+	 * Obtener mis clases
+	 */
+	async obtenerMisClasesRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<Array<DTOClase>>> {
+		const queryParameters: any = {};
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOAlumnoPublicoFromJSON(jsonValue));
-    }
+		const headerParameters: runtime.HTTPHeaders = {};
 
-    /**
-     * Obtiene la lista de alumnos inscritos en una clase con solo información pública (nombre y apellidos). Este endpoint siempre devuelve información pública independientemente del rol del usuario.
-     * Obtener información pública de alumnos de una clase
-     */
-    async obtenerAlumnosPublicosDeClase(requestParameters: ObtenerAlumnosPublicosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumnoPublico> {
-        const response = await this.obtenerAlumnosPublicosDeClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
+		let urlPath = `/api/my/classes`;
 
-    /**
-     * Obtiene las clases del profesor autenticado
-     * Obtener mis clases
-     */
-    async obtenerMisClasesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOClase>>> {
-        const queryParameters: any = {};
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOClaseFromJSON));
+	}
 
+	/**
+	 * Obtiene las clases del profesor autenticado
+	 * Obtener mis clases
+	 */
+	async obtenerMisClases(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<Array<DTOClase>> {
+		const response = await this.obtenerMisClasesRaw(initOverrides);
+		return await response.value();
+	}
 
-        let urlPath = `/api/my/classes`;
+	/**
+	 * Obtiene las clases en las que está inscrito el estudiante autenticado
+	 * Obtener mis clases inscritas
+	 */
+	async obtenerMisClasesInscritasRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<Array<DTOClaseInscrita>>> {
+		const queryParameters: any = {};
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOClaseFromJSON));
-    }
+		let urlPath = `/api/my/enrolled-classes`;
 
-    /**
-     * Obtiene las clases del profesor autenticado
-     * Obtener mis clases
-     */
-    async obtenerMisClases(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOClase>> {
-        const response = await this.obtenerMisClasesRaw(initOverrides);
-        return await response.value();
-    }
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
-    /**
-     * Obtiene las clases en las que está inscrito el estudiante autenticado
-     * Obtener mis clases inscritas
-     */
-    async obtenerMisClasesInscritasRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOClaseInscrita>>> {
-        const queryParameters: any = {};
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			jsonValue.map(DTOClaseInscritaFromJSON)
+		);
+	}
 
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/my/enrolled-classes`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOClaseInscritaFromJSON));
-    }
-
-    /**
-     * Obtiene las clases en las que está inscrito el estudiante autenticado
-     * Obtener mis clases inscritas
-     */
-    async obtenerMisClasesInscritas(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOClaseInscrita>> {
-        const response = await this.obtenerMisClasesInscritasRaw(initOverrides);
-        return await response.value();
-    }
-
+	/**
+	 * Obtiene las clases en las que está inscrito el estudiante autenticado
+	 * Obtener mis clases inscritas
+	 */
+	async obtenerMisClasesInscritas(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<Array<DTOClaseInscrita>> {
+		const response = await this.obtenerMisClasesInscritasRaw(initOverrides);
+		return await response.value();
+	}
 }

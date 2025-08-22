@@ -19,57 +19,60 @@ import { mapValues } from '../runtime';
  * @interface DTOPeticionLogin
  */
 export interface DTOPeticionLogin {
-    /**
-     * Nombre de usuario
-     * @type {string}
-     * @memberof DTOPeticionLogin
-     */
-    username: string;
-    /**
-     * Contraseña del usuario
-     * @type {string}
-     * @memberof DTOPeticionLogin
-     */
-    password: string;
+	/**
+	 * Nombre de usuario
+	 * @type {string}
+	 * @memberof DTOPeticionLogin
+	 */
+	username: string;
+	/**
+	 * Contraseña del usuario
+	 * @type {string}
+	 * @memberof DTOPeticionLogin
+	 */
+	password: string;
 }
 
 /**
  * Check if a given object implements the DTOPeticionLogin interface.
  */
 export function instanceOfDTOPeticionLogin(value: object): value is DTOPeticionLogin {
-    if (!('username' in value) || value['username'] === undefined) return false;
-    if (!('password' in value) || value['password'] === undefined) return false;
-    return true;
+	if (!('username' in value) || value['username'] === undefined) return false;
+	if (!('password' in value) || value['password'] === undefined) return false;
+	return true;
 }
 
 export function DTOPeticionLoginFromJSON(json: any): DTOPeticionLogin {
-    return DTOPeticionLoginFromJSONTyped(json, false);
+	return DTOPeticionLoginFromJSONTyped(json, false);
 }
 
-export function DTOPeticionLoginFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOPeticionLogin {
-    if (json == null) {
-        return json;
-    }
-    return {
-        
-        'username': json['username'],
-        'password': json['password'],
-    };
+export function DTOPeticionLoginFromJSONTyped(
+	json: any,
+	ignoreDiscriminator: boolean
+): DTOPeticionLogin {
+	if (json == null) {
+		return json;
+	}
+	return {
+		username: json['username'],
+		password: json['password']
+	};
 }
 
 export function DTOPeticionLoginToJSON(json: any): DTOPeticionLogin {
-    return DTOPeticionLoginToJSONTyped(json, false);
+	return DTOPeticionLoginToJSONTyped(json, false);
 }
 
-export function DTOPeticionLoginToJSONTyped(value?: DTOPeticionLogin | null, ignoreDiscriminator: boolean = false): any {
-    if (value == null) {
-        return value;
-    }
+export function DTOPeticionLoginToJSONTyped(
+	value?: DTOPeticionLogin | null,
+	ignoreDiscriminator: boolean = false
+): any {
+	if (value == null) {
+		return value;
+	}
 
-    return {
-        
-        'username': value['username'],
-        'password': value['password'],
-    };
+	return {
+		username: value['username'],
+		password: value['password']
+	};
 }
-

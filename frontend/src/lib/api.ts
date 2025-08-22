@@ -5,6 +5,9 @@ import {
 	AlumnosApi,
 	ProfesorRestApi,
 	ClasesApi,
+	InscripcionesApi,
+	OperacionesDeUsuarioApi,
+	GestinDeClasesApi,
 	type Middleware
 } from './generated/api';
 import { authStore } from './stores/authStore.svelte';
@@ -39,3 +42,6 @@ export const autenticacionApi = new AutenticacinApi(config);
 export const alumnoApi = new AlumnosApi(config);
 export const profesorApi = new ProfesorRestApi(config);
 export const claseApi = new ClasesApi(config);
+export const enrollmentApi = new InscripcionesApi(config);
+export const userOperationsApi = new OperacionesDeUsuarioApi(config);
+export const claseManagementApi = new GestinDeClasesApi(config);

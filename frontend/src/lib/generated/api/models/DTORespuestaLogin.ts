@@ -19,111 +19,114 @@ import { mapValues } from '../runtime';
  * @interface DTORespuestaLogin
  */
 export interface DTORespuestaLogin {
-    /**
-     * Token JWT para autenticación
-     * @type {string}
-     * @memberof DTORespuestaLogin
-     */
-    token: string;
-    /**
-     * Tipo de token
-     * @type {string}
-     * @memberof DTORespuestaLogin
-     */
-    type: string;
-    /**
-     * ID del usuario autenticado
-     * @type {number}
-     * @memberof DTORespuestaLogin
-     */
-    id: number;
-    /**
-     * Nombre de usuario
-     * @type {string}
-     * @memberof DTORespuestaLogin
-     */
-    username: string;
-    /**
-     * Email del usuario
-     * @type {string}
-     * @memberof DTORespuestaLogin
-     */
-    email: string;
-    /**
-     * Nombre del usuario
-     * @type {string}
-     * @memberof DTORespuestaLogin
-     */
-    nombre: string;
-    /**
-     * Apellidos del usuario
-     * @type {string}
-     * @memberof DTORespuestaLogin
-     */
-    apellidos: string;
-    /**
-     * Rol del usuario
-     * @type {string}
-     * @memberof DTORespuestaLogin
-     */
-    rol: string;
+	/**
+	 * Token JWT para autenticación
+	 * @type {string}
+	 * @memberof DTORespuestaLogin
+	 */
+	token: string;
+	/**
+	 * Tipo de token
+	 * @type {string}
+	 * @memberof DTORespuestaLogin
+	 */
+	type: string;
+	/**
+	 * ID del usuario autenticado
+	 * @type {number}
+	 * @memberof DTORespuestaLogin
+	 */
+	id: number;
+	/**
+	 * Nombre de usuario
+	 * @type {string}
+	 * @memberof DTORespuestaLogin
+	 */
+	username: string;
+	/**
+	 * Email del usuario
+	 * @type {string}
+	 * @memberof DTORespuestaLogin
+	 */
+	email: string;
+	/**
+	 * Nombre del usuario
+	 * @type {string}
+	 * @memberof DTORespuestaLogin
+	 */
+	nombre: string;
+	/**
+	 * Apellidos del usuario
+	 * @type {string}
+	 * @memberof DTORespuestaLogin
+	 */
+	apellidos: string;
+	/**
+	 * Rol del usuario
+	 * @type {string}
+	 * @memberof DTORespuestaLogin
+	 */
+	rol: string;
 }
 
 /**
  * Check if a given object implements the DTORespuestaLogin interface.
  */
 export function instanceOfDTORespuestaLogin(value: object): value is DTORespuestaLogin {
-    if (!('token' in value) || value['token'] === undefined) return false;
-    if (!('type' in value) || value['type'] === undefined) return false;
-    if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('username' in value) || value['username'] === undefined) return false;
-    if (!('email' in value) || value['email'] === undefined) return false;
-    if (!('nombre' in value) || value['nombre'] === undefined) return false;
-    if (!('apellidos' in value) || value['apellidos'] === undefined) return false;
-    if (!('rol' in value) || value['rol'] === undefined) return false;
-    return true;
+	if (!('token' in value) || value['token'] === undefined) return false;
+	if (!('type' in value) || value['type'] === undefined) return false;
+	if (!('id' in value) || value['id'] === undefined) return false;
+	if (!('username' in value) || value['username'] === undefined) return false;
+	if (!('email' in value) || value['email'] === undefined) return false;
+	if (!('nombre' in value) || value['nombre'] === undefined) return false;
+	if (!('apellidos' in value) || value['apellidos'] === undefined) return false;
+	if (!('rol' in value) || value['rol'] === undefined) return false;
+	return true;
 }
 
 export function DTORespuestaLoginFromJSON(json: any): DTORespuestaLogin {
-    return DTORespuestaLoginFromJSONTyped(json, false);
+	return DTORespuestaLoginFromJSONTyped(json, false);
 }
 
-export function DTORespuestaLoginFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTORespuestaLogin {
-    if (json == null) {
-        return json;
-    }
-    return {
-        
-        'token': json['token'],
-        'type': json['type'],
-        'id': json['id'],
-        'username': json['username'],
-        'email': json['email'],
-        'nombre': json['nombre'],
-        'apellidos': json['apellidos'],
-        'rol': json['rol'],
-    };
+export function DTORespuestaLoginFromJSONTyped(
+	json: any,
+	ignoreDiscriminator: boolean
+): DTORespuestaLogin {
+	if (json == null) {
+		return json;
+	}
+	return {
+		token: json['token'],
+		type: json['type'],
+		id: json['id'],
+		username: json['username'],
+		email: json['email'],
+		nombre: json['nombre'],
+		apellidos: json['apellidos'],
+		rol: json['rol']
+	};
 }
 
 export function DTORespuestaLoginToJSON(json: any): DTORespuestaLogin {
-    return DTORespuestaLoginToJSONTyped(json, false);
+	return DTORespuestaLoginToJSONTyped(json, false);
 }
 
-export function DTORespuestaLoginToJSONTyped(value?: DTORespuestaLogin | null, ignoreDiscriminator: boolean = false): any {
-    if (value == null) {
-        return value;
-    }
+export function DTORespuestaLoginToJSONTyped(
+	value?: DTORespuestaLogin | null,
+	ignoreDiscriminator: boolean = false
+): any {
+	if (value == null) {
+		return value;
+	}
 
-    return {
-        
-        'token': value['token'],
-        'type': value['type'],
-        'id': value['id'],
-        'username': value['username'],
-        'email': value['email'],
-        'nombre': value['nombre'],
-        'apellidos': value['apellidos'],
-        'rol': value['rol'],
-    };
+	return {
+		token: value['token'],
+		type: value['type'],
+		id: value['id'],
+		username: value['username'],
+		email: value['email'],
+		nombre: value['nombre'],
+		apellidos: value['apellidos'],
+		rol: value['rol']
+	};
 }
-

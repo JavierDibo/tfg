@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 apis/AlumnosApi.ts
 apis/AutenticacinApi.ts
 apis/ClasesApi.ts

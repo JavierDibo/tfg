@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { ClaseRestApi } from '$lib/generated/api/apis/ClaseRestApi';
+	import { claseApi } from '$lib/api';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import type { DTOPeticionCrearCurso } from '$lib/generated/api/models/DTOPeticionCrearCurso';
 	import type { DTOPeticionCrearTaller } from '$lib/generated/api/models/DTOPeticionCrearTaller';
@@ -28,9 +28,6 @@
 		fechaRealizacion: new Date(),
 		horaComienzo: '10:00'
 	});
-
-	// API instance
-	const claseApi = new ClaseRestApi();
 
 	// Check if user can create classes
 	if (!authStore.isProfesor && !authStore.isAdmin) {

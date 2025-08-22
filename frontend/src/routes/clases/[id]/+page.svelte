@@ -219,7 +219,11 @@
 				<div class="space-y-6">
 					<!-- Enrollment section (only for students) -->
 					{#if canEnroll()}
-						{console.log('Rendering ClaseEnrollment with:', { clase, isEnrolled: isEnrolled(), enrollmentLoading })}
+						{console.log('Rendering ClaseEnrollment with:', {
+							clase,
+							isEnrolled: isEnrolled(),
+							enrollmentLoading
+						})}
 						<ClaseEnrollment
 							{clase}
 							isEnrolled={isEnrolled()}

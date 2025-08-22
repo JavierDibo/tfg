@@ -8,7 +8,7 @@ import type {
 	Material,
 	DTOEstadoInscripcion
 } from '$lib/generated/api';
-import { claseApi } from '$lib/api';
+import { claseApi, enrollmentApi, userOperationsApi, claseManagementApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
 
 export const ClaseService = {
@@ -43,7 +43,7 @@ export const ClaseService = {
 	 */
 	async getClaseDetailsForStudent(claseId: number, alumnoId: number): Promise<DTOClaseConDetalles> {
 		try {
-			return await claseApi.obtenerClaseConDetallesParaEstudiante({
+			return await enrollmentApi.obtenerClaseConDetallesParaEstudiante({
 				claseId,
 				alumnoId
 			});
@@ -58,7 +58,7 @@ export const ClaseService = {
 	 */
 	async getClaseDetailsForMe(claseId: number): Promise<DTOClaseConDetalles> {
 		try {
-			return await claseApi.obtenerClaseConDetallesParaMi({ claseId });
+			return await enrollmentApi.obtenerClaseConDetallesParaMi({ claseId });
 		} catch (error) {
 			ErrorHandler.logError(error, `getClaseDetailsForMe(${claseId})`);
 			throw await ErrorHandler.parseError(error);
@@ -70,7 +70,7 @@ export const ClaseService = {
 	 */
 	async getMisClasesInscritas(): Promise<DTOClaseInscrita[]> {
 		try {
-			return await claseApi.obtenerMisClasesInscritas();
+			return await userOperationsApi.obtenerMisClasesInscritas();
 		} catch (error) {
 			ErrorHandler.logError(error, 'getMisClasesInscritas');
 			throw await ErrorHandler.parseError(error);
@@ -82,7 +82,7 @@ export const ClaseService = {
 	 */
 	async getMisClases(): Promise<DTOClase[]> {
 		try {
-			return await claseApi.obtenerMisClases();
+			return await userOperationsApi.obtenerMisClases();
 		} catch (error) {
 			ErrorHandler.logError(error, 'getMisClases');
 			throw await ErrorHandler.parseError(error);
@@ -124,7 +124,7 @@ export const ClaseService = {
 				alumnoId,
 				claseId
 			};
-			return await claseApi.inscribirAlumnoEnClase({
+			return await enrollmentApi.inscribirAlumnoEnClase({
 				dTOPeticionEnrollment: enrollmentRequest
 			});
 		} catch (error) {
@@ -145,7 +145,7 @@ export const ClaseService = {
 				alumnoId,
 				claseId
 			};
-			return await claseApi.darDeBajaAlumnoDeClase({
+			return await enrollmentApi.darDeBajaAlumnoDeClase({
 				dTOPeticionEnrollment: enrollmentRequest
 			});
 		} catch (error) {
@@ -159,7 +159,7 @@ export const ClaseService = {
 	 */
 	async enrollInClase(claseId: number): Promise<DTOClase> {
 		try {
-			return await claseApi.inscribirseEnClase({ claseId });
+			return await enrollmentApi.inscribirseEnClase({ claseId });
 		} catch (error) {
 			ErrorHandler.logError(error, `enrollInClase(${claseId})`);
 			throw await ErrorHandler.parseError(error);
@@ -172,7 +172,7 @@ export const ClaseService = {
 	async unenrollFromClase(claseId: number): Promise<DTOClase> {
 		try {
 			console.log('ClaseService.unenrollFromClase called with claseId:', claseId);
-			const result = await claseApi.darseDeBajaDeClase({ claseId });
+			const result = await enrollmentApi.darseDeBajaDeClase({ claseId });
 			console.log('ClaseService.unenrollFromClase result:', result);
 			return result;
 		} catch (error) {
@@ -187,7 +187,7 @@ export const ClaseService = {
 	 */
 	async checkMyEnrollmentStatus(claseId: number): Promise<DTOEstadoInscripcion> {
 		try {
-			return await claseApi.verificarMiEstadoInscripcion({ claseId });
+			return await enrollmentApi.verificarMiEstadoInscripcion({ claseId });
 		} catch (error) {
 			ErrorHandler.logError(error, `checkMyEnrollmentStatus(${claseId})`);
 			throw await ErrorHandler.parseError(error);
@@ -209,7 +209,7 @@ export const ClaseService = {
 		} = {}
 	): Promise<DTORespuestaAlumnosClase> {
 		try {
-			return await claseApi.obtenerAlumnosDeClase({
+			return await userOperationsApi.obtenerAlumnosDeClase({
 				claseId,
 				...params
 			});
@@ -238,7 +238,7 @@ export const ClaseService = {
 	 */
 	async addMaterialToClase(claseId: number, material: Material): Promise<DTOClase> {
 		try {
-			return await claseApi.agregarMaterial({ claseId, material });
+			return await claseManagementApi.agregarMaterial({ claseId, material });
 		} catch (error) {
 			ErrorHandler.logError(error, `addMaterialToClase(${claseId})`);
 			throw await ErrorHandler.parseError(error);
@@ -250,7 +250,7 @@ export const ClaseService = {
 	 */
 	async removeMaterialFromClase(claseId: number, materialId: string): Promise<DTOClase> {
 		try {
-			return await claseApi.removerMaterial({ claseId, materialId });
+			return await claseManagementApi.removerMaterial({ claseId, materialId });
 		} catch (error) {
 			ErrorHandler.logError(error, `removeMaterialFromClase(${claseId}, ${materialId})`);
 			throw await ErrorHandler.parseError(error);
