@@ -326,13 +326,13 @@ class ProfesorRestTest {
     }
 
     @Test
-    @DisplayName("PUT /api/profesores/{id}/estado debe cambiar estado correctamente")
+    @DisplayName("PATCH /api/profesores/{id}/estado debe cambiar estado correctamente")
     void testCambiarEstadoProfesor() throws Exception {
         when(servicioProfesor.cambiarEstadoProfesor(1L, false)).thenReturn(dtoProfesor3);
 
         Map<String, Boolean> estado = Map.of("habilitado", false);
 
-        mockMvc.perform(put("/api/profesores/1/estado")
+        mockMvc.perform(patch("/api/profesores/1/estado")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(estado)))
                 .andExpect(status().isOk())
@@ -343,11 +343,11 @@ class ProfesorRestTest {
     }
 
     @Test
-    @DisplayName("PUT /api/profesores/{id}/estado debe validar campo habilitado")
+    @DisplayName("PATCH /api/profesores/{id}/estado debe validar campo habilitado")
     void testCambiarEstadoProfesorSinCampo() throws Exception {
         Map<String, String> estadoInvalido = Map.of("otroCampo", "valor");
 
-        mockMvc.perform(put("/api/profesores/1/estado")
+        mockMvc.perform(patch("/api/profesores/1/estado")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(estadoInvalido)))
                 .andExpect(status().isInternalServerError());

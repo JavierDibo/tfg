@@ -4,8 +4,10 @@ import app.dtos.DTOProfesor;
 import app.dtos.DTOPeticionRegistroProfesor;
 import app.dtos.DTOParametrosBusquedaProfesor;
 import app.entidades.Profesor;
+import app.entidades.Curso;
 import app.excepciones.EntidadNoEncontradaException;
 import app.repositorios.RepositorioProfesor;
+import app.repositorios.RepositorioClase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +36,9 @@ class ServicioProfesorTest {
     private RepositorioProfesor repositorioProfesor;
 
     @Mock
+    private RepositorioClase repositorioClase;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
@@ -51,8 +56,8 @@ class ServicioProfesorTest {
         profesor1 = new Profesor("profesor1", "password1", "María", "García", "12345678Z", "maria@ejemplo.com", "123456789");
         profesor1.setId(1L);
         profesor1.setEnabled(true);
-        profesor1.agregarClase("clase1");
-        profesor1.agregarClase("clase2");
+        profesor1.agregarClase("1");
+        profesor1.agregarClase("2");
 
         profesor2 = new Profesor("profesor2", "password2", "Juan", "Pérez", "87654321Y", "juan@ejemplo.com", "987654321");
         profesor2.setId(2L);
@@ -61,7 +66,7 @@ class ServicioProfesorTest {
         profesor3 = new Profesor("profesor3", "password3", "Ana", "López", "11223344X", "ana@ejemplo.com", "555666777");
         profesor3.setId(3L);
         profesor3.setEnabled(false);
-        profesor3.agregarClase("clase3");
+        profesor3.agregarClase("3");
 
         // Create DTOs with fixed timestamp to avoid comparison issues
         dtoProfesor1 = new DTOProfesor(profesor1.getId(), profesor1.getUsuario(), profesor1.getNombre(), 
@@ -322,9 +327,8 @@ class ServicioProfesorTest {
     void testBuscarProfesoresPorParametrosConFiltros() {
         DTOParametrosBusquedaProfesor parametros = new DTOParametrosBusquedaProfesor(
                 "María", null, null, null, null, null, null, null);
-        List<Profesor> profesoresFiltrados = Arrays.asList(profesor1);
-        when(repositorioProfesor.findByFiltros("María", null, null, null, null, null, null, null))
-                .thenReturn(profesoresFiltrados);
+        List<Profesor> todosLosProfesores = Arrays.asList(profesor1, profesor2, profesor3);
+        when(repositorioProfesor.findAll()).thenReturn(todosLosProfesores);
 
         List<DTOProfesor> resultado = servicioProfesor.buscarProfesoresPorParametros(parametros);
 
@@ -341,7 +345,7 @@ class ServicioProfesorTest {
         assertEquals(dtoProfesor1.rol(), resultadoProfesor.rol());
         assertEquals(dtoProfesor1.enabled(), resultadoProfesor.enabled());
         assertEquals(dtoProfesor1.clasesId(), resultadoProfesor.clasesId());
-        verify(repositorioProfesor).findByFiltros("María", null, null, null, null, null, null, null);
+        verify(repositorioProfesor).findAll();
     }
 
     @Test
@@ -361,9 +365,9 @@ class ServicioProfesorTest {
     @DisplayName("obtenerProfesoresPorClase debe retornar profesores de la clase")
     void testObtenerProfesoresPorClase() {
         List<Profesor> profesoresDeClase = Arrays.asList(profesor1);
-        when(repositorioProfesor.findByClaseId("clase1")).thenReturn(profesoresDeClase);
+        when(repositorioProfesor.findByClaseId("1")).thenReturn(profesoresDeClase);
 
-        List<DTOProfesor> resultado = servicioProfesor.obtenerProfesoresPorClase("clase1");
+        List<DTOProfesor> resultado = servicioProfesor.obtenerProfesoresPorClase("1");
 
         assertEquals(1, resultado.size());
         // Compare individual fields instead of the whole DTO due to timestamp differences
@@ -378,7 +382,7 @@ class ServicioProfesorTest {
         assertEquals(dtoProfesor1.rol(), resultadoProfesor.rol());
         assertEquals(dtoProfesor1.enabled(), resultadoProfesor.enabled());
         assertEquals(dtoProfesor1.clasesId(), resultadoProfesor.clasesId());
-        verify(repositorioProfesor).findByClaseId("clase1");
+        verify(repositorioProfesor).findByClaseId("1");
     }
 
     @Test
@@ -546,8 +550,10 @@ class ServicioProfesorTest {
             Profesor savedProfesor = invocation.getArgument(0);
             return savedProfesor;
         });
+        when(repositorioClase.findById(3L)).thenReturn(Optional.of(new Curso()));
+        when(repositorioClase.save(any(Curso.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        DTOProfesor resultado = servicioProfesor.asignarClase(1L, "clase3");
+        DTOProfesor resultado = servicioProfesor.asignarClase(1L, "3");
 
         assertNotNull(resultado);
         verify(repositorioProfesor).findById(1L);
@@ -560,7 +566,7 @@ class ServicioProfesorTest {
         when(repositorioProfesor.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(EntidadNoEncontradaException.class, () -> {
-            servicioProfesor.asignarClase(999L, "clase3");
+            servicioProfesor.asignarClase(999L, "3");
         });
         verify(repositorioProfesor).findById(999L);
         verify(repositorioProfesor, never()).save(any());
@@ -574,8 +580,10 @@ class ServicioProfesorTest {
             Profesor savedProfesor = invocation.getArgument(0);
             return savedProfesor;
         });
+        when(repositorioClase.findById(1L)).thenReturn(Optional.of(new Curso()));
+        when(repositorioClase.save(any(Curso.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        DTOProfesor resultado = servicioProfesor.removerClase(1L, "clase1");
+        DTOProfesor resultado = servicioProfesor.removerClase(1L, "1");
 
         assertNotNull(resultado);
         verify(repositorioProfesor).findById(1L);
@@ -588,7 +596,7 @@ class ServicioProfesorTest {
         when(repositorioProfesor.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(EntidadNoEncontradaException.class, () -> {
-            servicioProfesor.removerClase(999L, "clase1");
+            servicioProfesor.removerClase(999L, "1");
         });
         verify(repositorioProfesor).findById(999L);
         verify(repositorioProfesor, never()).save(any());
@@ -597,12 +605,12 @@ class ServicioProfesorTest {
     @Test
     @DisplayName("contarClasesProfesor debe retornar número correcto de clases")
     void testContarClasesProfesor() {
-        when(repositorioProfesor.countClasesByProfesorId(1L)).thenReturn(2);
+        when(repositorioProfesor.findById(1L)).thenReturn(Optional.of(profesor1));
 
         Integer resultado = servicioProfesor.contarClasesProfesor(1L);
 
         assertEquals(2, resultado);
-        verify(repositorioProfesor).countClasesByProfesorId(1L);
+        verify(repositorioProfesor).findById(1L);
     }
 
     @Test

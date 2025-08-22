@@ -5,70 +5,90 @@
 	import type { DTORespuestaPaginadaDTOAlumno } from '$lib/generated/api/models/DTORespuestaPaginadaDTOAlumno';
 	import { ClaseService } from '$lib/services/claseService';
 
-	let { clase } = $props<{
-		clase: DTOClase;
+	let { clases } = $props<{
+		clases: DTOClase[];
 	}>();
 
 	// State
-	let alumnos = $state<DTOAlumno[]>([]);
+	let allAlumnos = $state<Array<{ alumno: DTOAlumno; clase: DTOClase }>>([]);
 	let loading = $state(false);
 	let error = $state<string | null>(null);
-	let currentPage = $state(1);
-	let totalPages = $state(1);
-	let totalElements = $state(0);
-	let pageSize = $state(10);
 
-	// Load students for the class
-	async function loadAlumnos() {
-		if (!clase?.id) return;
+	// Load all students from all classes
+	async function loadAllAlumnos() {
+		if (!clases || clases.length === 0) return;
 
 		try {
 			loading = true;
 			error = null;
+			allAlumnos = [];
 
-			const response: DTORespuestaPaginadaDTOAlumno = await ClaseService.getAlumnosDeClase(
-				clase.id,
-				{
-					page: currentPage - 1, // API uses 0-based pagination
-					size: pageSize,
-					sortBy: 'nombre',
-					sortDirection: 'ASC'
+			// Load students from each class
+			for (const clase of clases) {
+				try {
+					const response: DTORespuestaPaginadaDTOAlumno = await ClaseService.getAlumnosDeClase(
+						clase.id,
+						{
+							page: 0,
+							size: 100, // Get all students from each class
+							sortBy: 'nombre',
+							sortDirection: 'ASC'
+						}
+					);
+
+					if (response.content) {
+						// Add class information to each student
+						const alumnosWithClass = response.content.map(alumno => ({
+							alumno,
+							clase
+						}));
+						allAlumnos = [...allAlumnos, ...alumnosWithClass];
+					}
+				} catch (err) {
+					console.error(`Error loading students for class ${clase.id}:`, err);
+					// Continue with other classes even if one fails
 				}
-			);
+			}
 
-			alumnos = response.content || [];
-			totalElements = response.page?.totalElements || 0;
-			totalPages = response.page?.totalPages || 1;
+			// Remove duplicates (same student in multiple classes)
+			const uniqueAlumnos = new Map();
+			allAlumnos.forEach(({ alumno, clase }) => {
+				if (!uniqueAlumnos.has(alumno.id)) {
+					uniqueAlumnos.set(alumno.id, { alumno, clases: [clase] });
+				} else {
+					uniqueAlumnos.get(alumno.id).clases.push(clase);
+				}
+			});
+
+			allAlumnos = Array.from(uniqueAlumnos.values()).map(({ alumno, clases }) => ({
+				alumno,
+				clase: clases[0] // Use first class for display
+			}));
+
 		} catch (err) {
-			console.error('Error loading students:', err);
+			console.error('Error loading all students:', err);
 			error = 'Error al cargar los alumnos';
 		} finally {
 			loading = false;
 		}
 	}
 
-	// Handle page change
-	function handlePageChange(page: number) {
-		currentPage = page;
-		loadAlumnos();
-	}
-
-	// Reload when class changes
+	// Reload when classes change
 	$effect(() => {
-		if (clase?.id) {
-			loadAlumnos();
+		if (clases && clases.length > 0) {
+			loadAllAlumnos();
 		}
 	});
 
 	onMount(() => {
-		if (clase?.id) {
-			loadAlumnos();
+		if (clases && clases.length > 0) {
+			loadAllAlumnos();
 		}
 	});
 </script>
 
 <div class="rounded-lg bg-white p-6 shadow">
-	<h3 class="mb-4 text-lg font-medium text-gray-900">Alumnos Inscritos</h3>
+	<h3 class="mb-4 text-lg font-medium text-gray-900">Mis Alumnos</h3>
 
 	{#if loading}
 		<div class="flex h-32 items-center justify-center">
@@ -92,9 +112,9 @@
 				</div>
 			</div>
 		</div>
-	{:else if alumnos.length > 0}
+	{:else if allAlumnos.length > 0}
 		<div class="space-y-3">
-			{#each alumnos as alumno}
+			{#each allAlumnos as { alumno, clase }}
 				<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
 					<div class="flex items-center">
 						<div class="flex-shrink-0">
@@ -119,6 +139,7 @@
 								{alumno.nombre} {alumno.apellidos}
 							</p>
 							<p class="text-xs text-gray-500">{alumno.email}</p>
+							<p class="text-xs text-blue-600">Clase: {clase.titulo}</p>
 						</div>
 					</div>
 					<div class="flex items-center space-x-2">
@@ -132,40 +153,11 @@
 			{/each}
 		</div>
 
-		<!-- Pagination -->
-		{#if totalPages > 1}
-			<div class="mt-4 border-t border-gray-200 pt-4">
-				<div class="flex items-center justify-between">
-					<div class="text-sm text-gray-700">
-						Mostrando {((currentPage - 1) * pageSize) + 1} a {Math.min(currentPage * pageSize, totalElements)} de {totalElements} alumnos
-					</div>
-					<div class="flex space-x-2">
-						{#if currentPage > 1}
-							<button
-								onclick={() => handlePageChange(currentPage - 1)}
-								class="rounded bg-gray-50 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100"
-							>
-								Anterior
-							</button>
-						{/if}
-						{#if currentPage < totalPages}
-							<button
-								onclick={() => handlePageChange(currentPage + 1)}
-								class="rounded bg-gray-50 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100"
-							>
-								Siguiente
-							</button>
-						{/if}
-					</div>
-				</div>
-			</div>
-		{:else}
-			<div class="mt-4 border-t border-gray-200 pt-4">
-				<p class="text-sm text-gray-600">
-					Total de alumnos inscritos: <span class="font-medium">{totalElements}</span>
-				</p>
-			</div>
-		{/if}
+		<div class="mt-4 border-t border-gray-200 pt-4">
+			<p class="text-sm text-gray-600">
+				Total de alumnos únicos: <span class="font-medium">{allAlumnos.length}</span>
+			</p>
+		</div>
 	{:else}
 		<div class="py-8 text-center">
 			<svg
@@ -182,7 +174,7 @@
 				/>
 			</svg>
 			<h3 class="mt-2 text-sm font-medium text-gray-900">No hay alumnos inscritos</h3>
-			<p class="mt-1 text-sm text-gray-500">Aún no se han inscrito alumnos en esta clase.</p>
+			<p class="mt-1 text-sm text-gray-500">Aún no se han inscrito alumnos en tus clases.</p>
 		</div>
 	{/if}
 </div>

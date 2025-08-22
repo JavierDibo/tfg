@@ -5,7 +5,10 @@ import app.dtos.DTOProfesor;
 import app.dtos.DTOPeticionRegistroProfesor;
 import app.dtos.DTOParametrosBusquedaProfesor;
 import app.dtos.DTORespuestaPaginada;
+import app.dtos.DTOPeticionEnrollment;
+import app.dtos.DTORespuestaEnrollment;
 import app.servicios.ServicioProfesor;
+import app.servicios.ServicioClase;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -31,6 +34,7 @@ import java.util.Map;
 public class ProfesorRest {
 
     private final ServicioProfesor servicioProfesor;
+    private final ServicioClase servicioClase;
 
     /**
      * Obtiene todos los profesores paginados o busca con parámetros
@@ -417,5 +421,71 @@ public class ProfesorRest {
     @GetMapping("/test")
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("Controlador ProfesorRest funcionando correctamente");
+    }
+
+    // ===== ENDPOINTS PARA GESTIÓN DE ALUMNOS EN CLASES =====
+
+    /**
+     * Endpoint para que un profesor inscriba un alumno en una de sus clases
+     * POST /api/profesores/{profesorId}/clases/{claseId}/alumnos
+     * @param profesorId ID del profesor
+     * @param claseId ID de la clase
+     * @param peticion DTO con los datos de la inscripción
+     * @return DTORespuestaEnrollment con el resultado de la operación
+     */
+    @PostMapping("/{profesorId}/clases/{claseId}/alumnos")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESOR') and #profesorId == authentication.principal.id)")
+    public ResponseEntity<DTORespuestaEnrollment> inscribirAlumnoEnMiClase(
+            @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long profesorId,
+            @PathVariable String claseId,
+            @Valid @RequestBody DTOPeticionEnrollment peticion) {
+        
+        // Verificar que el profesor está intentando inscribir en su propia clase
+        if (!peticion.claseId().toString().equals(claseId)) {
+            return ResponseEntity.badRequest().body(
+                DTORespuestaEnrollment.failure(peticion.alumnoId(), peticion.claseId(), 
+                    "El ID de la clase en la URL no coincide con el de la petición", "ENROLLMENT")
+            );
+        }
+        
+        DTORespuestaEnrollment respuesta = servicioClase.inscribirAlumnoEnClase(peticion);
+        
+        if (respuesta.success()) {
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.badRequest().body(respuesta);
+        }
+    }
+
+    /**
+     * Endpoint para que un profesor dé de baja un alumno de una de sus clases
+     * DELETE /api/profesores/{profesorId}/clases/{claseId}/alumnos
+     * @param profesorId ID del profesor
+     * @param claseId ID de la clase
+     * @param peticion DTO con los datos de la baja
+     * @return DTORespuestaEnrollment con el resultado de la operación
+     */
+    @DeleteMapping("/{profesorId}/clases/{claseId}/alumnos")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESOR') and #profesorId == authentication.principal.id)")
+    public ResponseEntity<DTORespuestaEnrollment> darDeBajaAlumnoDeMiClase(
+            @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long profesorId,
+            @PathVariable String claseId,
+            @Valid @RequestBody DTOPeticionEnrollment peticion) {
+        
+        // Verificar que el profesor está intentando dar de baja de su propia clase
+        if (!peticion.claseId().toString().equals(claseId)) {
+            return ResponseEntity.badRequest().body(
+                DTORespuestaEnrollment.failure(peticion.alumnoId(), peticion.claseId(), 
+                    "El ID de la clase en la URL no coincide con el de la petición", "UNENROLLMENT")
+            );
+        }
+        
+        DTORespuestaEnrollment respuesta = servicioClase.darDeBajaAlumnoDeClase(peticion);
+        
+        if (respuesta.success()) {
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.badRequest().body(respuesta);
+        }
     }
 }

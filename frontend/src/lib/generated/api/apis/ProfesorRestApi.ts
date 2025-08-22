@@ -16,17 +16,23 @@
 import * as runtime from '../runtime';
 import type {
   DTOActualizacionProfesor,
+  DTOPeticionEnrollment,
   DTOPeticionRegistroProfesor,
   DTOProfesor,
+  DTORespuestaEnrollment,
   DTORespuestaPaginadaDTOProfesor,
 } from '../models/index';
 import {
     DTOActualizacionProfesorFromJSON,
     DTOActualizacionProfesorToJSON,
+    DTOPeticionEnrollmentFromJSON,
+    DTOPeticionEnrollmentToJSON,
     DTOPeticionRegistroProfesorFromJSON,
     DTOPeticionRegistroProfesorToJSON,
     DTOProfesorFromJSON,
     DTOProfesorToJSON,
+    DTORespuestaEnrollmentFromJSON,
+    DTORespuestaEnrollmentToJSON,
     DTORespuestaPaginadaDTOProfesorFromJSON,
     DTORespuestaPaginadaDTOProfesorToJSON,
 } from '../models/index';
@@ -64,6 +70,18 @@ export interface ContarClasesProfesorRequest {
 
 export interface CrearProfesorRequest {
     dTOPeticionRegistroProfesor: DTOPeticionRegistroProfesor;
+}
+
+export interface DarDeBajaAlumnoDeMiClaseRequest {
+    profesorId: number;
+    claseId: string;
+    dTOPeticionEnrollment: DTOPeticionEnrollment;
+}
+
+export interface InscribirAlumnoEnMiClaseRequest {
+    profesorId: number;
+    claseId: string;
+    dTOPeticionEnrollment: DTOPeticionEnrollment;
 }
 
 export interface ObtenerProfesorPorDniRequest {
@@ -438,6 +456,112 @@ export class ProfesorRestApi extends runtime.BaseAPI {
      */
     async crearProfesor(requestParameters: CrearProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
         const response = await this.crearProfesorRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async darDeBajaAlumnoDeMiClaseRaw(requestParameters: DarDeBajaAlumnoDeMiClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
+        if (requestParameters['profesorId'] == null) {
+            throw new runtime.RequiredError(
+                'profesorId',
+                'Required parameter "profesorId" was null or undefined when calling darDeBajaAlumnoDeMiClase().'
+            );
+        }
+
+        if (requestParameters['claseId'] == null) {
+            throw new runtime.RequiredError(
+                'claseId',
+                'Required parameter "claseId" was null or undefined when calling darDeBajaAlumnoDeMiClase().'
+            );
+        }
+
+        if (requestParameters['dTOPeticionEnrollment'] == null) {
+            throw new runtime.RequiredError(
+                'dTOPeticionEnrollment',
+                'Required parameter "dTOPeticionEnrollment" was null or undefined when calling darDeBajaAlumnoDeMiClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/profesores/{profesorId}/clases/{claseId}/alumnos`;
+        urlPath = urlPath.replace(`{${"profesorId"}}`, encodeURIComponent(String(requestParameters['profesorId'])));
+        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaEnrollmentFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async darDeBajaAlumnoDeMiClase(requestParameters: DarDeBajaAlumnoDeMiClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaEnrollment> {
+        const response = await this.darDeBajaAlumnoDeMiClaseRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async inscribirAlumnoEnMiClaseRaw(requestParameters: InscribirAlumnoEnMiClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
+        if (requestParameters['profesorId'] == null) {
+            throw new runtime.RequiredError(
+                'profesorId',
+                'Required parameter "profesorId" was null or undefined when calling inscribirAlumnoEnMiClase().'
+            );
+        }
+
+        if (requestParameters['claseId'] == null) {
+            throw new runtime.RequiredError(
+                'claseId',
+                'Required parameter "claseId" was null or undefined when calling inscribirAlumnoEnMiClase().'
+            );
+        }
+
+        if (requestParameters['dTOPeticionEnrollment'] == null) {
+            throw new runtime.RequiredError(
+                'dTOPeticionEnrollment',
+                'Required parameter "dTOPeticionEnrollment" was null or undefined when calling inscribirAlumnoEnMiClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/profesores/{profesorId}/clases/{claseId}/alumnos`;
+        urlPath = urlPath.replace(`{${"profesorId"}}`, encodeURIComponent(String(requestParameters['profesorId'])));
+        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaEnrollmentFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async inscribirAlumnoEnMiClase(requestParameters: InscribirAlumnoEnMiClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaEnrollment> {
+        const response = await this.inscribirAlumnoEnMiClaseRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

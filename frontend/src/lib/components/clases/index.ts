@@ -9,3 +9,6 @@ export { default as ClaseEnrollment } from './ClaseEnrollment.svelte';
 export { default as ClaseStudents } from './ClaseStudents.svelte';
 export { default as ClaseEditModal } from './ClaseEditModal.svelte';
 export { default as MaterialAddModal } from './MaterialAddModal.svelte';
+export { default as MisClasesDataTable } from './MisClasesDataTable.svelte';
+export { default as MisClasesProfesorDataTable } from './MisClasesProfesorDataTable.svelte';
+export { default as MisAlumnos } from './MisAlumnos.svelte';

@@ -51,6 +51,29 @@ public class AlumnoRest {
         return new ResponseEntity<>(respuesta, HttpStatus.OK);
     }
 
+    /**
+     * Endpoint para que los profesores obtengan todos los alumnos disponibles para inscribir
+     * @param page Número de página (0-indexed)
+     * @param size Tamaño de página
+     * @param sortBy Campo por el que ordenar
+     * @param sortDirection Dirección de ordenación (ASC/DESC)
+     * @return Lista paginada de todos los alumnos disponibles
+     */
+    @GetMapping("/disponibles")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosDisponibles(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "50") @Min(1) int size,
+            @RequestParam(defaultValue = "nombre") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        
+        // Obtener todos los alumnos habilitados y matriculados
+        DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.obtenerAlumnosDisponiblesPaginados(
+            page, size, sortBy, sortDirection);
+        
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
     // Endpoint sin paginación (mantenido por compatibilidad - DEPRECATED)
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")

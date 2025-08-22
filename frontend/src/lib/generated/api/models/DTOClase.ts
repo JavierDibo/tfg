@@ -104,7 +104,7 @@ export interface DTOClase {
      * @type {number}
      * @memberof DTOClase
      */
-    numeroEjercicios?: number;
+    numeroAlumnos?: number;
     /**
      * 
      * @type {number}
@@ -122,7 +122,7 @@ export interface DTOClase {
      * @type {number}
      * @memberof DTOClase
      */
-    numeroAlumnos?: number;
+    numeroEjercicios?: number;
 }
 
 
@@ -175,10 +175,10 @@ export function DTOClaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'ejerciciosId': json['ejerciciosId'] == null ? undefined : json['ejerciciosId'],
         'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(MaterialFromJSON)),
         'tipoClase': json['tipoClase'] == null ? undefined : json['tipoClase'],
-        'numeroEjercicios': json['numeroEjercicios'] == null ? undefined : json['numeroEjercicios'],
+        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
         'numeroMateriales': json['numeroMateriales'] == null ? undefined : json['numeroMateriales'],
         'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
-        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
+        'numeroEjercicios': json['numeroEjercicios'] == null ? undefined : json['numeroEjercicios'],
     };
 }
 
@@ -205,10 +205,10 @@ export function DTOClaseToJSONTyped(value?: DTOClase | null, ignoreDiscriminator
         'ejerciciosId': value['ejerciciosId'],
         'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(MaterialToJSON)),
         'tipoClase': value['tipoClase'],
-        'numeroEjercicios': value['numeroEjercicios'],
+        'numeroAlumnos': value['numeroAlumnos'],
         'numeroMateriales': value['numeroMateriales'],
         'numeroProfesores': value['numeroProfesores'],
-        'numeroAlumnos': value['numeroAlumnos'],
+        'numeroEjercicios': value['numeroEjercicios'],
     };
 }
 

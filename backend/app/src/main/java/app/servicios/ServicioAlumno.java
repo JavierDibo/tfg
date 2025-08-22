@@ -455,4 +455,54 @@ public class ServicioAlumno {
         
         return new DTORespuestaPaginada<>(pageDTOs);
     }
+
+    /**
+     * Obtiene alumnos disponibles (habilitados y matriculados) con paginación
+     * @param page Número de página (0-indexed)
+     * @param size Tamaño de página
+     * @param sortBy Campo por el que ordenar
+     * @param sortDirection Dirección de ordenación (ASC/DESC)
+     * @return DTORespuestaPaginada con los alumnos disponibles
+     */
+    public DTORespuestaPaginada<DTOAlumno> obtenerAlumnosDisponiblesPaginados(
+            int page, int size, String sortBy, String sortDirection) {
+        
+        // Validar parámetros
+        if (page < 0) page = 0;
+        if (size <= 0 || size > 100) size = 20;
+        if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
+        
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(sortDirection);
+        } catch (Exception e) {
+            direction = Sort.Direction.ASC;
+        }
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        // Obtener solo alumnos habilitados y matriculados
+        // Nota: En un escenario real se implementaría una consulta específica en el repositorio
+        List<Alumno> alumnosDisponibles = repositorioAlumno.findAll().stream()
+                .filter(alumno -> alumno.isEnabled() && alumno.isMatriculado())
+                .collect(Collectors.toList());
+        
+        // Aplicar paginación manualmente
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), alumnosDisponibles.size());
+        
+        if (start > end) {
+            start = 0;
+            end = 0;
+        }
+        
+        List<Alumno> pageContent = alumnosDisponibles.subList(start, end);
+        Page<Alumno> pageAlumnos = new org.springframework.data.domain.PageImpl<>(
+            pageContent, pageable, alumnosDisponibles.size());
+        
+        // Convertir a DTOs
+        Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
+        
+        return new DTORespuestaPaginada<>(pageDTOs);
+    }
 }

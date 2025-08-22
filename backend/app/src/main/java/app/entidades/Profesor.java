@@ -24,6 +24,17 @@ public class Profesor extends Usuario {
     @Column(name = "clase_id")
     private List<String> clasesId = new ArrayList<>();
     
+    /**
+     * Obtiene la lista de clases del profesor, inicializando si es null
+     * @return Lista de clases
+     */
+    public List<String> getClasesId() {
+        if (this.clasesId == null) {
+            this.clasesId = new ArrayList<>();
+        }
+        return this.clasesId;
+    }
+    
     public Profesor() {
         super();
         this.setRol(Rol.PROFESOR);
@@ -49,6 +60,9 @@ public class Profesor extends Usuario {
      * @param claseId ID de la clase
      */
     public void agregarClase(String claseId) {
+        if (this.clasesId == null) {
+            this.clasesId = new ArrayList<>();
+        }
         if (!this.clasesId.contains(claseId)) {
             this.clasesId.add(claseId);
         }
@@ -59,7 +73,9 @@ public class Profesor extends Usuario {
      * @param claseId ID de la clase
      */
     public void removerClase(String claseId) {
-        this.clasesId.remove(claseId);
+        if (this.clasesId != null) {
+            this.clasesId.remove(claseId);
+        }
     }
     
     /**
@@ -68,7 +84,7 @@ public class Profesor extends Usuario {
      * @return true si imparte la clase, false en caso contrario
      */
     public boolean imparteClase(String claseId) {
-        return this.clasesId.contains(claseId);
+        return this.clasesId != null && this.clasesId.contains(claseId);
     }
     
     /**
@@ -76,6 +92,6 @@ public class Profesor extends Usuario {
      * @return Número de clases
      */
     public int getNumeroClases() {
-        return this.clasesId.size();
+        return this.clasesId != null ? this.clasesId.size() : 0;
     }
 }

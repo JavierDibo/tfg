@@ -1,8 +1,13 @@
 package app.rest;
 
 import app.dtos.*;
+import app.dtos.DTOAlumno;
+import app.dtos.DTOPeticionEnrollment;
+import app.dtos.DTORespuestaEnrollment;
 import app.entidades.Material;
 import app.servicios.ServicioClase;
+import app.servicios.ServicioAlumno;
+import app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,24 +27,29 @@ import java.util.List;
 public class ClaseRest {
 
     private final ServicioClase servicioClase;
+    private final ServicioAlumno servicioAlumno;
+    private final SecurityUtils securityUtils;
 
     /**
-     * Obtiene todas las clases
-     * @return Lista de DTOClase
+     * Obtiene clases según el rol del usuario autenticado:
+     * - ADMIN: todas las clases
+     * - PROFESOR: solo las clases que imparte
+     * - ALUMNO: todas las clases (catálogo)
+     * @return Lista de DTOClase filtrada según el rol
      */
     @GetMapping
     public ResponseEntity<List<DTOClase>> obtenerClases() {
-        return ResponseEntity.ok(servicioClase.obtenerClases());
+        return ResponseEntity.ok(servicioClase.obtenerClasesSegunRol());
     }
 
     /**
-     * Obtiene una clase por su ID
-     * @param id ID de la clase
-     * @return DTOClase
+     * Busca clases por título según el rol del usuario autenticado
+     * @param titulo Título de la clase a buscar
+     * @return Lista de DTOClase filtrada según el rol
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<DTOClase> obtenerClasePorId(@PathVariable Long id) {
-        return ResponseEntity.ok(servicioClase.obtenerClasePorId(id));
+    @GetMapping("/buscar")
+    public ResponseEntity<List<DTOClase>> buscarClasesPorTitulo(@RequestParam String titulo) {
+        return ResponseEntity.ok(servicioClase.buscarClasesPorTituloSegunRol(titulo));
     }
 
     /**
@@ -50,6 +60,16 @@ public class ClaseRest {
     @GetMapping("/titulo/{titulo}")
     public ResponseEntity<DTOClase> obtenerClasePorTitulo(@PathVariable String titulo) {
         return ResponseEntity.ok(servicioClase.obtenerClasePorTitulo(titulo));
+    }
+
+    /**
+     * Obtiene una clase por su ID
+     * @param id ID de la clase
+     * @return DTOClase
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<DTOClase> obtenerClasePorId(@PathVariable Long id) {
+        return ResponseEntity.ok(servicioClase.obtenerClasePorId(id));
     }
 
     /**
@@ -128,14 +148,14 @@ public class ClaseRest {
     }
 
     /**
-     * Busca clases con paginación y filtros
+     * Busca clases con paginación y filtros según el rol del usuario autenticado
      * @param parametros Parámetros de búsqueda
-     * @return DTORespuestaPaginada con las clases encontradas
+     * @return DTORespuestaPaginada con las clases encontradas filtradas según el rol
      */
     @PostMapping("/buscar")
     public ResponseEntity<DTORespuestaPaginada<DTOClase>> buscarClases(
             @Valid @RequestBody DTOParametrosBusquedaClase parametros) {
-        return ResponseEntity.ok(servicioClase.buscarClases(parametros));
+        return ResponseEntity.ok(servicioClase.buscarClasesSegunRol(parametros));
     }
 
     /**
@@ -153,6 +173,24 @@ public class ClaseRest {
     }
 
     /**
+     * Endpoint específico para que los profesores inscriban alumnos en sus clases
+     * @param peticion DTO con los datos de la inscripción
+     * @return DTORespuestaEnrollment con el resultado de la operación
+     */
+    @PostMapping("/enrollment")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    public ResponseEntity<DTORespuestaEnrollment> inscribirAlumnoEnClase(
+            @Valid @RequestBody DTOPeticionEnrollment peticion) {
+        DTORespuestaEnrollment respuesta = servicioClase.inscribirAlumnoEnClase(peticion);
+        
+        if (respuesta.success()) {
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.badRequest().body(respuesta);
+        }
+    }
+
+    /**
      * Remueve un alumno de una clase
      * @param claseId ID de la clase
      * @param alumnoId ID del alumno
@@ -164,6 +202,24 @@ public class ClaseRest {
             @PathVariable Long claseId,
             @PathVariable String alumnoId) {
         return ResponseEntity.ok(servicioClase.removerAlumno(claseId, alumnoId));
+    }
+
+    /**
+     * Endpoint específico para que los profesores den de baja alumnos de sus clases
+     * @param peticion DTO con los datos de la baja
+     * @return DTORespuestaEnrollment con el resultado de la operación
+     */
+    @DeleteMapping("/enrollment")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    public ResponseEntity<DTORespuestaEnrollment> darDeBajaAlumnoDeClase(
+            @Valid @RequestBody DTOPeticionEnrollment peticion) {
+        DTORespuestaEnrollment respuesta = servicioClase.darDeBajaAlumnoDeClase(peticion);
+        
+        if (respuesta.success()) {
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.badRequest().body(respuesta);
+        }
     }
 
     /**
@@ -293,6 +349,17 @@ public class ClaseRest {
     }
 
     /**
+     * Obtiene las clases del profesor autenticado
+     * @return Lista de DTOClase del profesor actual
+     */
+    @GetMapping("/mis-clases")
+    @PreAuthorize("hasRole('PROFESOR')")
+    public ResponseEntity<List<DTOClase>> obtenerMisClases() {
+        String profesorId = securityUtils.getCurrentUserId().toString();
+        return ResponseEntity.ok(servicioClase.obtenerClasesPorProfesor(profesorId));
+    }
+
+    /**
      * Obtiene el número de alumnos en una clase
      * @param claseId ID de la clase
      * @return Número de alumnos
@@ -300,6 +367,27 @@ public class ClaseRest {
     @GetMapping("/{claseId}/alumnos/contar")
     public ResponseEntity<Integer> contarAlumnosEnClase(@PathVariable Long claseId) {
         return ResponseEntity.ok(servicioClase.contarAlumnosEnClase(claseId));
+    }
+
+    /**
+     * Obtiene la lista de alumnos inscritos en una clase con paginación
+     * @param claseId ID de la clase
+     * @param page Número de página (0-indexed)
+     * @param size Tamaño de página
+     * @param sortBy Campo por el que ordenar
+     * @param sortDirection Dirección de ordenación (ASC/DESC)
+     * @return DTORespuestaPaginada con los alumnos de la clase
+     */
+    @GetMapping("/{claseId}/alumnos")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosDeClase(
+            @PathVariable Long claseId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        return ResponseEntity.ok(servicioAlumno.obtenerAlumnosPorClasePaginados(
+            claseId, page, size, sortBy, sortDirection));
     }
 
     /**

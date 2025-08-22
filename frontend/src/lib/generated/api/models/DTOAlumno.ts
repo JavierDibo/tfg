@@ -108,13 +108,13 @@ export interface DTOAlumno {
      * @type {number}
      * @memberof DTOAlumno
      */
-    numeroClases?: number;
+    numeroPagos?: number;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof DTOAlumno
      */
-    numeroPagos?: number;
+    nombreCompleto?: string;
     /**
      * 
      * @type {number}
@@ -123,10 +123,10 @@ export interface DTOAlumno {
     numeroEntregas?: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOAlumno
      */
-    nombreCompleto?: string;
+    numeroClases?: number;
 }
 
 
@@ -178,10 +178,10 @@ export function DTOAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'pagosId': json['pagosId'] == null ? undefined : json['pagosId'],
         'entregasId': json['entregasId'] == null ? undefined : json['entregasId'],
         'rol': json['rol'] == null ? undefined : json['rol'],
-        'numeroClases': json['numeroClases'] == null ? undefined : json['numeroClases'],
         'numeroPagos': json['numeroPagos'] == null ? undefined : json['numeroPagos'],
-        'numeroEntregas': json['numeroEntregas'] == null ? undefined : json['numeroEntregas'],
         'nombreCompleto': json['nombreCompleto'] == null ? undefined : json['nombreCompleto'],
+        'numeroEntregas': json['numeroEntregas'] == null ? undefined : json['numeroEntregas'],
+        'numeroClases': json['numeroClases'] == null ? undefined : json['numeroClases'],
     };
 }
 
@@ -210,10 +210,10 @@ export function DTOAlumnoToJSONTyped(value?: DTOAlumno | null, ignoreDiscriminat
         'pagosId': value['pagosId'],
         'entregasId': value['entregasId'],
         'rol': value['rol'],
-        'numeroClases': value['numeroClases'],
         'numeroPagos': value['numeroPagos'],
-        'numeroEntregas': value['numeroEntregas'],
         'nombreCompleto': value['nombreCompleto'],
+        'numeroEntregas': value['numeroEntregas'],
+        'numeroClases': value['numeroClases'],
     };
 }
 

@@ -116,25 +116,25 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
-    porcentajeProgreso?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
     duracionEnSemanas?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOCurso
      */
-    numeroProfesores?: number;
+    porcentajeProgreso?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOCurso
      */
     numeroAlumnos?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOCurso
+     */
+    numeroProfesores?: number;
 }
 
 
@@ -189,10 +189,10 @@ export function DTOCursoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'fechaInicio': json['fechaInicio'] == null ? undefined : (new Date(json['fechaInicio'])),
         'fechaFin': json['fechaFin'] == null ? undefined : (new Date(json['fechaFin'])),
         'duracionEnDias': json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
-        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
         'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
-        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
+        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
         'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
+        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
     };
 }
 
@@ -221,10 +221,10 @@ export function DTOCursoToJSONTyped(value?: DTOCurso | null, ignoreDiscriminator
         'fechaInicio': value['fechaInicio'] == null ? undefined : ((value['fechaInicio']).toISOString().substring(0,10)),
         'fechaFin': value['fechaFin'] == null ? undefined : ((value['fechaFin']).toISOString().substring(0,10)),
         'duracionEnDias': value['duracionEnDias'],
-        'porcentajeProgreso': value['porcentajeProgreso'],
         'duracionEnSemanas': value['duracionEnSemanas'],
-        'numeroProfesores': value['numeroProfesores'],
+        'porcentajeProgreso': value['porcentajeProgreso'],
         'numeroAlumnos': value['numeroAlumnos'],
+        'numeroProfesores': value['numeroProfesores'],
     };
 }
 

@@ -20,7 +20,26 @@ public class StudentDataInitializer extends BaseDataInitializer {
         // Initialize password encoder
         initializePasswordEncoder();
         
-        System.out.println("Creating " + NUM_STUDENTS + " students...");
+        System.out.println("Creating hardcoded student and " + NUM_STUDENTS + " additional students...");
+        
+        // Create hardcoded student first
+        DTOPeticionRegistroAlumno hardcodedStudent = new DTOPeticionRegistroAlumno(
+            "estudiante", // username
+            "password", // password
+            "Estudiante",
+            "Demo Apellido",
+            generateUniqueDNI(NUM_STUDENTS),
+            "estudiante@academia.com",
+            "600000000"
+        );
+        
+        try {
+            DTOAlumno alumno = servicioAlumno.crearAlumno(hardcodedStudent);
+            createdStudents.add(alumno);
+            System.out.println("✓ Created hardcoded student: estudiante with password: password");
+        } catch (Exception e) {
+            System.err.println("✗ Error creating hardcoded student: " + e.getMessage());
+        }
         
         for (int i = 0; i < NUM_STUDENTS; i++) {
             String[] nombreCompleto = generateRandomNames();

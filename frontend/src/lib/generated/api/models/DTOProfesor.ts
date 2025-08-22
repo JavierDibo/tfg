@@ -87,16 +87,16 @@ export interface DTOProfesor {
     fechaCreacion?: Date;
     /**
      * 
-     * @type {number}
-     * @memberof DTOProfesor
-     */
-    numeroClases?: number;
-    /**
-     * 
      * @type {string}
      * @memberof DTOProfesor
      */
     nombreCompleto?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOProfesor
+     */
+    numeroClases?: number;
 }
 
 
@@ -140,8 +140,8 @@ export function DTOProfesorFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'enabled': json['enabled'] == null ? undefined : json['enabled'],
         'clasesId': json['clasesId'] == null ? undefined : json['clasesId'],
         'fechaCreacion': json['fechaCreacion'] == null ? undefined : (new Date(json['fechaCreacion'])),
-        'numeroClases': json['numeroClases'] == null ? undefined : json['numeroClases'],
         'nombreCompleto': json['nombreCompleto'] == null ? undefined : json['nombreCompleto'],
+        'numeroClases': json['numeroClases'] == null ? undefined : json['numeroClases'],
     };
 }
 
@@ -167,8 +167,8 @@ export function DTOProfesorToJSONTyped(value?: DTOProfesor | null, ignoreDiscrim
         'enabled': value['enabled'],
         'clasesId': value['clasesId'],
         'fechaCreacion': value['fechaCreacion'] == null ? undefined : ((value['fechaCreacion']).toISOString()),
-        'numeroClases': value['numeroClases'],
         'nombreCompleto': value['nombreCompleto'],
+        'numeroClases': value['numeroClases'],
     };
 }
 

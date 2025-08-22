@@ -183,9 +183,11 @@ class ProfesorTest {
     void testClasesIdConValoresNulos() {
         // Establecer clasesId como null
         profesor.setClasesId(null);
-        assertNull(profesor.getClasesId());
+        // El getter debe inicializar la lista si es null
+        assertNotNull(profesor.getClasesId());
+        assertTrue(profesor.getClasesId().isEmpty());
         
-        // Agregar clase cuando clasesId es null debe funcionar
+        // Agregar clase cuando clasesId era null debe funcionar
         profesor.agregarClase("clase123");
         assertNotNull(profesor.getClasesId());
         assertTrue(profesor.getClasesId().contains("clase123"));

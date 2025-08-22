@@ -20,6 +20,9 @@ import type {
   DTOParametrosBusquedaClase,
   DTOPeticionCrearCurso,
   DTOPeticionCrearTaller,
+  DTOPeticionEnrollment,
+  DTORespuestaEnrollment,
+  DTORespuestaPaginadaDTOAlumno,
   DTORespuestaPaginadaDTOClase,
   DTOTaller,
   Material,
@@ -35,6 +38,12 @@ import {
     DTOPeticionCrearCursoToJSON,
     DTOPeticionCrearTallerFromJSON,
     DTOPeticionCrearTallerToJSON,
+    DTOPeticionEnrollmentFromJSON,
+    DTOPeticionEnrollmentToJSON,
+    DTORespuestaEnrollmentFromJSON,
+    DTORespuestaEnrollmentToJSON,
+    DTORespuestaPaginadaDTOAlumnoFromJSON,
+    DTORespuestaPaginadaDTOAlumnoToJSON,
     DTORespuestaPaginadaDTOClaseFromJSON,
     DTORespuestaPaginadaDTOClaseToJSON,
     DTOTallerFromJSON,
@@ -75,6 +84,10 @@ export interface BuscarClasesRequest {
     dTOParametrosBusquedaClase: DTOParametrosBusquedaClase;
 }
 
+export interface BuscarClasesPorTituloRequest {
+    titulo: string;
+}
+
 export interface ContarAlumnosEnClaseRequest {
     claseId: number;
 }
@@ -91,12 +104,28 @@ export interface CrearTallerRequest {
     dTOPeticionCrearTaller: DTOPeticionCrearTaller;
 }
 
+export interface DarDeBajaAlumnoDeClaseRequest {
+    dTOPeticionEnrollment: DTOPeticionEnrollment;
+}
+
 export interface DarseDeBajaDeClaseRequest {
     claseId: number;
 }
 
+export interface InscribirAlumnoEnClaseRequest {
+    dTOPeticionEnrollment: DTOPeticionEnrollment;
+}
+
 export interface InscribirseEnClaseRequest {
     claseId: number;
+}
+
+export interface ObtenerAlumnosDeClaseRequest {
+    claseId: number;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
 }
 
 export interface ObtenerClasePorIdRequest {
@@ -421,6 +450,44 @@ export class ClaseRestApi extends runtime.BaseAPI {
 
     /**
      */
+    async buscarClasesPorTituloRaw(requestParameters: BuscarClasesPorTituloRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOClase>>> {
+        if (requestParameters['titulo'] == null) {
+            throw new runtime.RequiredError(
+                'titulo',
+                'Required parameter "titulo" was null or undefined when calling buscarClasesPorTitulo().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['titulo'] != null) {
+            queryParameters['titulo'] = requestParameters['titulo'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/buscar`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOClaseFromJSON));
+    }
+
+    /**
+     */
+    async buscarClasesPorTitulo(requestParameters: BuscarClasesPorTituloRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOClase>> {
+        const response = await this.buscarClasesPorTituloRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
     async contarAlumnosEnClaseRaw(requestParameters: ContarAlumnosEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<number>> {
         if (requestParameters['claseId'] == null) {
             throw new runtime.RequiredError(
@@ -573,6 +640,43 @@ export class ClaseRestApi extends runtime.BaseAPI {
 
     /**
      */
+    async darDeBajaAlumnoDeClaseRaw(requestParameters: DarDeBajaAlumnoDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
+        if (requestParameters['dTOPeticionEnrollment'] == null) {
+            throw new runtime.RequiredError(
+                'dTOPeticionEnrollment',
+                'Required parameter "dTOPeticionEnrollment" was null or undefined when calling darDeBajaAlumnoDeClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/clases/enrollment`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaEnrollmentFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async darDeBajaAlumnoDeClase(requestParameters: DarDeBajaAlumnoDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaEnrollment> {
+        const response = await this.darDeBajaAlumnoDeClaseRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
     async darseDeBajaDeClaseRaw(requestParameters: DarseDeBajaDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
         if (requestParameters['claseId'] == null) {
             throw new runtime.RequiredError(
@@ -608,6 +712,43 @@ export class ClaseRestApi extends runtime.BaseAPI {
 
     /**
      */
+    async inscribirAlumnoEnClaseRaw(requestParameters: InscribirAlumnoEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
+        if (requestParameters['dTOPeticionEnrollment'] == null) {
+            throw new runtime.RequiredError(
+                'dTOPeticionEnrollment',
+                'Required parameter "dTOPeticionEnrollment" was null or undefined when calling inscribirAlumnoEnClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/clases/enrollment`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaEnrollmentFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async inscribirAlumnoEnClase(requestParameters: InscribirAlumnoEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaEnrollment> {
+        const response = await this.inscribirAlumnoEnClaseRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
     async inscribirseEnClaseRaw(requestParameters: InscribirseEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
         if (requestParameters['claseId'] == null) {
             throw new runtime.RequiredError(
@@ -638,6 +779,57 @@ export class ClaseRestApi extends runtime.BaseAPI {
      */
     async inscribirseEnClase(requestParameters: InscribirseEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
         const response = await this.inscribirseEnClaseRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async obtenerAlumnosDeClaseRaw(requestParameters: ObtenerAlumnosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOAlumno>> {
+        if (requestParameters['claseId'] == null) {
+            throw new runtime.RequiredError(
+                'claseId',
+                'Required parameter "claseId" was null or undefined when calling obtenerAlumnosDeClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/{claseId}/alumnos`;
+        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaDTOAlumnoFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async obtenerAlumnosDeClase(requestParameters: ObtenerAlumnosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginadaDTOAlumno> {
+        const response = await this.obtenerAlumnosDeClaseRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -805,6 +997,33 @@ export class ClaseRestApi extends runtime.BaseAPI {
      */
     async obtenerClasesPorProfesor(requestParameters: ObtenerClasesPorProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOClase>> {
         const response = await this.obtenerClasesPorProfesorRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async obtenerMisClasesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOClase>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/mis-clases`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOClaseFromJSON));
+    }
+
+    /**
+     */
+    async obtenerMisClases(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOClase>> {
+        const response = await this.obtenerMisClasesRaw(initOverrides);
         return await response.value();
     }
 

@@ -20,7 +20,27 @@ public class ProfessorDataInitializer extends BaseDataInitializer {
         // Initialize password encoder
         initializePasswordEncoder();
         
-        System.out.println("Creating " + NUM_PROFESSORS + " professors...");
+        System.out.println("Creating hardcoded professor and " + NUM_PROFESSORS + " additional professors...");
+        
+        // Create hardcoded professor first
+        DTOPeticionRegistroProfesor hardcodedProfessor = new DTOPeticionRegistroProfesor(
+            "profesor", // username
+            "password", // password
+            "Profesor",
+            "Demo Apellido",
+            generateUniqueDNI(NUM_PROFESSORS),
+            "profesor@academia.com",
+            "600000001",
+            null // clasesId (null for now)
+        );
+        
+        try {
+            DTOProfesor profesor = servicioProfesor.crearProfesor(hardcodedProfessor);
+            createdProfessors.add(profesor);
+            System.out.println("✓ Created hardcoded professor: profesor with password: password");
+        } catch (Exception e) {
+            System.err.println("✗ Error creating hardcoded professor: " + e.getMessage());
+        }
         
         for (int i = 0; i < NUM_PROFESSORS; i++) {
             String[] nombreCompleto = generateRandomNames();

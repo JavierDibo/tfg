@@ -78,6 +78,13 @@ export interface ObtenerAlumnosRequest {
     matriculado?: boolean;
 }
 
+export interface ObtenerAlumnosDisponiblesRequest {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
+}
+
 export interface ObtenerAlumnosMatriculadosPaginadosRequest {
     page?: number;
     size?: number;
@@ -502,6 +509,49 @@ export class AlumnoRestApi extends runtime.BaseAPI {
      */
     async obtenerAlumnos(requestParameters: ObtenerAlumnosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOAlumno>> {
         const response = await this.obtenerAlumnosRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async obtenerAlumnosDisponiblesRaw(requestParameters: ObtenerAlumnosDisponiblesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOAlumno>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/alumnos/disponibles`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaDTOAlumnoFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async obtenerAlumnosDisponibles(requestParameters: ObtenerAlumnosDisponiblesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginadaDTOAlumno> {
+        const response = await this.obtenerAlumnosDisponiblesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

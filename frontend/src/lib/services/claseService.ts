@@ -2,6 +2,7 @@ import {
 	type DTOClase,
 	type DTOParametrosBusquedaClase,
 	type DTORespuestaPaginadaDTOClase,
+	type DTORespuestaPaginadaDTOAlumno,
 	type Material
 } from '$lib/generated/api';
 import { claseApi } from '$lib/api';
@@ -61,6 +62,65 @@ export const ClaseService = {
 			return response;
 		} catch (error) {
 			console.error('Error fetching paginated classes:', error);
+			throw error;
+		}
+	},
+
+	// Get classes by student (enrolled classes)
+	async getClasesByAlumno(alumnoId: string): Promise<DTOClase[]> {
+		try {
+			const response = await claseApi.obtenerClasesPorAlumno({ alumnoId });
+			return response;
+		} catch (error) {
+			console.error(`Error fetching classes for student ${alumnoId}:`, error);
+			throw error;
+		}
+	},
+
+	// Get classes by teacher (classes they teach)
+	async getClasesByProfesor(profesorId: string): Promise<DTOClase[]> {
+		try {
+			const response = await claseApi.obtenerClasesPorProfesor({ profesorId });
+			return response;
+		} catch (error) {
+			console.error(`Error fetching classes for teacher ${profesorId}:`, error);
+			throw error;
+		}
+	},
+
+	// Get teacher's classes using the new mis-clases endpoint
+	async getMisClases(): Promise<DTOClase[]> {
+		try {
+			const response = await claseApi.obtenerMisClases();
+			return response;
+		} catch (error) {
+			console.error('Error fetching my classes:', error);
+			throw error;
+		}
+	},
+
+	// Get enrolled students in a class with pagination
+	async getAlumnosDeClase(
+		claseId: number,
+		pagination: {
+			page?: number;
+			size?: number;
+			sortBy?: string;
+			sortDirection?: SortDirection;
+		} = {}
+	): Promise<DTORespuestaPaginadaDTOAlumno> {
+		try {
+			const { page, size, sortBy, sortDirection } = pagination;
+			const response = await claseApi.obtenerAlumnosDeClase({
+				claseId,
+				page: page || 0,
+				size: size || 10,
+				sortBy: sortBy || 'id',
+				sortDirection: sortDirection || 'ASC'
+			});
+			return response;
+		} catch (error) {
+			console.error(`Error fetching students for class ${claseId}:`, error);
 			throw error;
 		}
 	},
@@ -163,6 +223,17 @@ export const ClaseService = {
 			return response;
 		} catch (error) {
 			console.error(`Error unenrolling from class ${claseId}:`, error);
+			throw error;
+		}
+	},
+
+	// Simple search by title
+	async searchClasesByTitle(titulo: string): Promise<DTOClase[]> {
+		try {
+			const response = await claseApi.buscarClasesPorTitulo({ titulo });
+			return response;
+		} catch (error) {
+			console.error(`Error searching classes by title "${titulo}":`, error);
 			throw error;
 		}
 	}

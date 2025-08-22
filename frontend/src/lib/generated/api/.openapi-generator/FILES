@@ -16,11 +16,13 @@ models/DTOMetadatosPaginacion.ts
 models/DTOParametrosBusquedaClase.ts
 models/DTOPeticionCrearCurso.ts
 models/DTOPeticionCrearTaller.ts
+models/DTOPeticionEnrollment.ts
 models/DTOPeticionLogin.ts
 models/DTOPeticionRegistro.ts
 models/DTOPeticionRegistroAlumno.ts
 models/DTOPeticionRegistroProfesor.ts
 models/DTOProfesor.ts
+models/DTORespuestaEnrollment.ts
 models/DTORespuestaLogin.ts
 models/DTORespuestaPaginadaDTOAlumno.ts
 models/DTORespuestaPaginadaDTOClase.ts
