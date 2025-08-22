@@ -7,6 +7,7 @@ import app.dtos.DTOParametrosBusquedaProfesor;
 import app.dtos.DTORespuestaPaginada;
 import app.dtos.DTOPeticionEnrollment;
 import app.dtos.DTORespuestaEnrollment;
+import app.excepciones.ResourceNotFoundException;
 import app.servicios.ServicioProfesor;
 import app.servicios.ServicioClase;
 import jakarta.validation.Valid;

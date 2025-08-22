@@ -80,7 +80,7 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
         // Count students per course
         for (DTOCurso course : courses) {
             try {
-                int studentCount = servicioAlumno.obtenerAlumnosPorClasePaginados(course.id(), 0, 1000, "id", "ASC").content().size();
+                int studentCount = servicioAlumno.obtenerAlumnosPorClasePaginados(course.id(), 0, 1000, "id", "ASC").contenido().size();
                 System.out.println("Course: " + course.titulo() + " - Students: " + studentCount);
             } catch (Exception e) {
                 System.err.println("Error getting students for course " + course.titulo() + ": " + e.getMessage());

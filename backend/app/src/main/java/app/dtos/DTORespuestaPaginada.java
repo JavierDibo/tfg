@@ -62,4 +62,19 @@ public record DTORespuestaPaginada<T>(
                 direccionOrden
         );
     }
+    
+    public static <T> DTORespuestaPaginada<T> fromPage(org.springframework.data.domain.Page<T> page, String ordenadoPor, String direccionOrden) {
+        return new DTORespuestaPaginada<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.isFirst(),
+                page.isLast(),
+                page.hasContent(),
+                ordenadoPor,
+                direccionOrden
+        );
+    }
 }

@@ -378,10 +378,10 @@ class ServicioAlumnoTest {
         DTORespuestaPaginada<DTOAlumno> resultado = servicioAlumno.obtenerAlumnosPaginados(0, 2, "id", "ASC");
 
         assertNotNull(resultado);
-        assertEquals(2, resultado.content().size());
-        assertEquals(3, resultado.page().totalElements());
-        assertEquals(0, resultado.page().number());
-        assertEquals(2, resultado.page().size());
+        assertEquals(2, resultado.contenido().size());
+        assertEquals(3, resultado.totalElementos());
+        assertEquals(0, resultado.numeroPagina());
+        assertEquals(2, resultado.tamanoPagina());
         verify(repositorioAlumno).findAllPaged(any(Pageable.class));
     }
 
@@ -397,8 +397,8 @@ class ServicioAlumnoTest {
         DTORespuestaPaginada<DTOAlumno> resultado = servicioAlumno.buscarAlumnosPorParametrosPaginados(parametros, 0, 1, "id", "ASC");
 
         assertNotNull(resultado);
-        assertEquals(1, resultado.content().size());
-        assertEquals(1, resultado.page().totalElements());
+        assertEquals(1, resultado.contenido().size());
+        assertEquals(1, resultado.totalElementos());
         verify(repositorioAlumno).findByFiltrosPaged(anyString(), any(), any(), any(), any(), any(Pageable.class));
     }
 
@@ -413,8 +413,8 @@ class ServicioAlumnoTest {
         DTORespuestaPaginada<DTOAlumno> resultado = servicioAlumno.obtenerAlumnosPorMatriculadoPaginados(true, 0, 2, "id", "ASC");
 
         assertNotNull(resultado);
-        assertEquals(2, resultado.content().size());
-        assertEquals(2, resultado.page().totalElements());
+        assertEquals(2, resultado.contenido().size());
+        assertEquals(2, resultado.totalElementos());
         verify(repositorioAlumno).findByMatriculadoPaged(any(Boolean.class), any(Pageable.class));
     }
 }

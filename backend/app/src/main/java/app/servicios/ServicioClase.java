@@ -3,14 +3,17 @@ package app.servicios;
 import app.dtos.*;
 import app.dtos.DTOPeticionEnrollment;
 import app.dtos.DTORespuestaEnrollment;
+import app.entidades.Alumno;
 import app.entidades.Clase;
 import app.entidades.Curso;
 import app.entidades.Material;
 import app.entidades.Taller;
 import app.entidades.Profesor;
 import app.excepciones.EntidadNoEncontradaException;
+import app.repositorios.RepositorioAlumno;
 import app.repositorios.RepositorioClase;
 import app.repositorios.RepositorioProfesor;
+import app.util.ExceptionUtils;
 import app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -42,6 +45,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class ServicioClase {
 
+    private final RepositorioAlumno repositorioAlumno;
     private final RepositorioClase repositorioClase;
     private final RepositorioProfesor repositorioProfesor;
     private final SecurityUtils securityUtils;
@@ -159,7 +163,7 @@ public class ServicioClase {
             );
             
             Page<DTOClase> page = convertirListaAPagina(clasesFiltradas, pageable);
-            return new DTORespuestaPaginada<>(page);
+            return DTORespuestaPaginada.fromPage(page, parametros.ordenCampo(), parametros.ordenDireccion());
         } else {
             // Los alumnos pueden buscar en todas las clases
             return buscarClases(parametros);
@@ -173,12 +177,12 @@ public class ServicioClase {
      * @throws EntidadNoEncontradaException si no se encuentra la clase o no tiene acceso
      */
     public DTOClase obtenerClasePorId(Long id) {
-        Clase clase = repositorioClase.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + id + " no encontrada."));
+        Clase clase = repositorioClase.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", id);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para acceder a esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a esta clase");
         }
         
         return new DTOClase(clase);
@@ -209,12 +213,12 @@ public class ServicioClase {
      * @throws EntidadNoEncontradaException si no se encuentra la clase o no tiene acceso
      */
     public DTOClase obtenerClasePorTitulo(String titulo) {
-        Clase clase = repositorioClase.findByTitulo(titulo)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con título '" + titulo + "' no encontrada."));
+        Clase clase = repositorioClase.findByTitulo(titulo).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "título", titulo);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para acceder a esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a esta clase");
         }
         
         return new DTOClase(clase);
@@ -399,7 +403,7 @@ public class ServicioClase {
         }
         
         // Construir respuesta paginada usando el constructor que acepta un Page
-        return new DTORespuestaPaginada<>(resultado.map(clase -> new DTOClase(clase)));
+        return DTORespuestaPaginada.fromPage(resultado.map(clase -> new DTOClase(clase)), "id", "ASC");
     }
 
     /**
@@ -422,12 +426,12 @@ public class ServicioClase {
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public DTOClase agregarAlumno(Long claseId, String alumnoId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para modificar esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
         // Verificar si el alumno ya está en la clase para evitar duplicados
@@ -449,17 +453,12 @@ public class ServicioClase {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public DTORespuestaEnrollment inscribirAlumnoEnClase(DTOPeticionEnrollment peticion) {
         try {
-            Clase clase = repositorioClase.findById(peticion.claseId())
-                    .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + peticion.claseId() + " no encontrada."));
+            Clase clase = repositorioClase.findById(peticion.claseId()).orElse(null);
+            ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", peticion.claseId());
             
             // Verificar que el profesor actual puede modificar esta clase
             if (!puedeAccederAClase(clase)) {
-                return DTORespuestaEnrollment.failure(
-                    peticion.alumnoId(), 
-                    peticion.claseId(), 
-                    "No tienes permisos para modificar esta clase", 
-                    "ENROLLMENT"
-                );
+                ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
             }
             
             // Verificar si el alumno ya está en la clase
@@ -501,12 +500,12 @@ public class ServicioClase {
      * @return DTOClase actualizada
      */
     public DTOClase removerAlumno(Long claseId, String alumnoId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para modificar esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
         clase.removerAlumno(alumnoId);
@@ -522,17 +521,12 @@ public class ServicioClase {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public DTORespuestaEnrollment darDeBajaAlumnoDeClase(DTOPeticionEnrollment peticion) {
         try {
-            Clase clase = repositorioClase.findById(peticion.claseId())
-                    .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + peticion.claseId() + " no encontrada."));
+            Clase clase = repositorioClase.findById(peticion.claseId()).orElse(null);
+            ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", peticion.claseId());
             
             // Verificar que el profesor actual puede modificar esta clase
             if (!puedeAccederAClase(clase)) {
-                return DTORespuestaEnrollment.failure(
-                    peticion.alumnoId(), 
-                    peticion.claseId(), 
-                    "No tienes permisos para modificar esta clase", 
-                    "UNENROLLMENT"
-                );
+                ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
             }
             
             // Verificar si el alumno está en la clase
@@ -575,12 +569,12 @@ public class ServicioClase {
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public DTOClase agregarProfesor(Long claseId, String profesorId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para modificar esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
         // Verificar si el profesor ya está en la clase para evitar duplicados
@@ -601,12 +595,12 @@ public class ServicioClase {
      * @return DTOClase actualizada
      */
     public DTOClase removerProfesor(Long claseId, String profesorId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para modificar esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
         clase.removerProfesor(profesorId);
@@ -621,12 +615,12 @@ public class ServicioClase {
      * @return DTOClase actualizada
      */
     public DTOClase agregarEjercicio(Long claseId, String ejercicioId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para modificar esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
         clase.agregarEjercicio(ejercicioId);
@@ -641,12 +635,12 @@ public class ServicioClase {
      * @return DTOClase actualizada
      */
     public DTOClase removerEjercicio(Long claseId, String ejercicioId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para modificar esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
         clase.removerEjercicio(ejercicioId);
@@ -661,12 +655,12 @@ public class ServicioClase {
      * @return DTOClase actualizada
      */
     public DTOClase agregarMaterial(Long claseId, Material material) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para modificar esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
         clase.agregarMaterial(material);
@@ -681,12 +675,12 @@ public class ServicioClase {
      * @return DTOClase actualizada
      */
     public DTOClase removerMaterial(Long claseId, String materialId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para modificar esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
         clase.removerMaterial(materialId);
@@ -722,12 +716,12 @@ public class ServicioClase {
      * @return Número de alumnos
      */
     public Integer contarAlumnosEnClase(Long claseId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para acceder a esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a esta clase");
         }
         
         return repositorioClase.countAlumnosByClaseId(claseId);
@@ -739,12 +733,12 @@ public class ServicioClase {
      * @return Número de profesores
      */
     public Integer contarProfesoresEnClase(Long claseId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if (!puedeAccederAClase(clase)) {
-            throw new RuntimeException("No tienes permisos para acceder a esta clase");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a esta clase");
         }
         
         return repositorioClase.countProfesoresByClaseId(claseId);
@@ -760,8 +754,8 @@ public class ServicioClase {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String alumnoId = authentication.getName(); // Obtiene el ID del alumno del contexto de seguridad
 
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
         // Verificar si el alumno ya está inscrito
         if (clase.getAlumnosId().contains(alumnoId)) {
@@ -778,14 +772,37 @@ public class ServicioClase {
      * @param claseId ID de la clase a darse de baja.
      * @return DTOClase actualizada.
      */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public DTOClase darseDeBajaDeClase(Long claseId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String alumnoId = authentication.getName(); // Obtiene el ID del alumno del contexto de seguridad
 
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
+        // Verificar si el alumno está inscrito en la clase
+        if (!clase.getAlumnosId().contains(alumnoId)) {
+            return new DTOClase(clase); // El alumno no está inscrito, devolver la clase sin cambios
+        }
+
+        // Remover el alumno de la clase
         clase.removerAlumno(alumnoId);
+        
+        // También remover la clase del alumno (actualizar la relación bidireccional)
+        try {
+            Long alumnoIdLong = Long.parseLong(alumnoId);
+            Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
+            
+            alumno.removerClase(claseId.toString());
+            repositorioAlumno.save(alumno);
+        } catch (NumberFormatException e) {
+            // Si no se puede parsear el ID del alumno, continuar solo con la clase
+            // Esto puede suceder si el ID del alumno no es un número válido
+        } catch (Exception e) {
+            // Log the error but continue with the class update
+        }
+        
         Clase claseActualizada = repositorioClase.save(clase);
         return new DTOClase(claseActualizada);
     }
@@ -833,8 +850,8 @@ public class ServicioClase {
      * @return DTOEstadoInscripcion con el estado de inscripción
      */
     public DTOEstadoInscripcion verificarEstadoInscripcion(Long alumnoId, Long claseId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         boolean isEnrolled = clase.getAlumnosId().contains(alumnoId.toString());
         
@@ -855,8 +872,8 @@ public class ServicioClase {
      * @return DTOClaseConDetalles con información completa
      */
     public DTOClaseConDetalles obtenerClaseConDetallesParaEstudiante(Long claseId, Long alumnoId) {
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Obtener el primer profesor de la clase (profesor principal)
         DTOProfesor profesor = null;
@@ -882,5 +899,28 @@ public class ServicioClase {
         int profesoresCount = clase.getProfesoresId().size();
         
         return new DTOClaseConDetalles(clase, profesor, isEnrolled, fechaInscripcion, alumnosCount, profesoresCount);
+    }
+
+    /**
+     * Obtiene información pública de los alumnos de una clase
+     * @param claseId ID de la clase
+     * @return Lista de DTOAlumnoPublico con información pública de los alumnos
+     */
+    public List<DTOAlumnoPublico> obtenerAlumnosPublicosDeClase(Long claseId) {
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
+        
+        return clase.getAlumnosId().stream()
+                .map(alumnoId -> {
+                    try {
+                        Long id = Long.parseLong(alumnoId);
+                        Alumno alumno = repositorioAlumno.findById(id).orElse(null);
+                        return alumno != null ? new DTOAlumnoPublico(alumno) : null;
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                })
+                .filter(dto -> dto != null)
+                .collect(Collectors.toList());
     }
 }

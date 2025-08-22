@@ -7,6 +7,7 @@ import app.entidades.Profesor;
 import app.excepciones.EntidadNoEncontradaException;
 import app.repositorios.RepositorioClase;
 import app.repositorios.RepositorioProfesor;
+import app.util.ExceptionUtils;
 //import app.repositorios.RepositorioUsuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -54,8 +55,8 @@ public class ServicioProfesor {
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
     public DTOProfesor obtenerProfesorPorId(Long id) {
-        Profesor profesor = repositorioProfesor.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + id + " no encontrado."));
+        Profesor profesor = repositorioProfesor.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
         return new DTOProfesor(profesor);
     }
 
@@ -66,8 +67,8 @@ public class ServicioProfesor {
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
     public DTOProfesor obtenerProfesorPorEmail(String email) {
-        Profesor profesor = repositorioProfesor.findByEmail(email)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con email " + email + " no encontrado."));
+        Profesor profesor = repositorioProfesor.findByEmail(email).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "email", email);
         return new DTOProfesor(profesor);
     }
 
@@ -78,8 +79,8 @@ public class ServicioProfesor {
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
     public DTOProfesor obtenerProfesorPorUsuario(String usuario) {
-        Profesor profesor = repositorioProfesor.findByUsuario(usuario)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con usuario " + usuario + " no encontrado."));
+        Profesor profesor = repositorioProfesor.findByUsuario(usuario).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "usuario", usuario);
         return new DTOProfesor(profesor);
     }
 
@@ -90,8 +91,8 @@ public class ServicioProfesor {
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
     public DTOProfesor obtenerProfesorPorDni(String dni) {
-        Profesor profesor = repositorioProfesor.findByDni(dni)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con DNI " + dni + " no encontrado."));
+        Profesor profesor = repositorioProfesor.findByDni(dni).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "DNI", dni);
         return new DTOProfesor(profesor);
     }
     
@@ -195,8 +196,8 @@ public class ServicioProfesor {
      * @throws IllegalArgumentException si se intenta actualizar a un valor duplicado
      */
     public DTOProfesor actualizarProfesor(Long id, DTOActualizacionProfesor dtoParcial) {
-        Profesor profesor = repositorioProfesor.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + id + " no encontrado."));
+        Profesor profesor = repositorioProfesor.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
 
         // Actualizar campos no nulos
         if (dtoParcial.nombre() != null) {
@@ -241,8 +242,8 @@ public class ServicioProfesor {
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
     public DTOProfesor habilitarDeshabilitarProfesor(Long id, boolean habilitar) {
-        Profesor profesor = repositorioProfesor.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + id + " no encontrado."));
+        Profesor profesor = repositorioProfesor.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
         
         profesor.setEnabled(habilitar);
         Profesor profesorActualizado = repositorioProfesor.save(profesor);
@@ -257,9 +258,8 @@ public class ServicioProfesor {
      */
     public boolean borrarProfesorPorId(Long id) {
         // Verificar que el profesor existe antes de intentar borrarlo
-        if (!repositorioProfesor.existsById(id)) {
-            throw new EntidadNoEncontradaException("Profesor con ID " + id + " no encontrado.");
-        }
+        Profesor profesor = repositorioProfesor.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
 
         repositorioProfesor.deleteById(id);
         return true;
@@ -273,12 +273,12 @@ public class ServicioProfesor {
      */
     public DTOProfesor asignarClase(Long profesorId, String claseId) {
         try {
-            Profesor profesor = repositorioProfesor.findById(profesorId)
-                    .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+            Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
+            ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
             
             Long claseIdLong = Long.parseLong(claseId);
-            Clase clase = repositorioClase.findById(claseIdLong)
-                    .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+            Clase clase = repositorioClase.findById(claseIdLong).orElse(null);
+            ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
             // Verificar si el profesor ya tiene asignada la clase
             if (profesor.getClasesId().contains(claseId)) {
@@ -309,12 +309,12 @@ public class ServicioProfesor {
      */
     public DTOProfesor removerClase(Long profesorId, String claseId) {
         try {
-            Profesor profesor = repositorioProfesor.findById(profesorId)
-                    .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+            Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
+            ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
             
             Long claseIdLong = Long.parseLong(claseId);
-            Clase clase = repositorioClase.findById(claseIdLong)
-                    .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+            Clase clase = repositorioClase.findById(claseIdLong).orElse(null);
+            ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
             // Verificar si el profesor tiene asignada la clase
             if (!profesor.getClasesId().contains(claseId)) {
@@ -343,8 +343,8 @@ public class ServicioProfesor {
      * @return Número de clases
      */
     public Integer contarClasesProfesor(Long profesorId) {
-        Profesor profesor = repositorioProfesor.findById(profesorId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+        Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
                 
         return profesor.getClasesId().size();
     }
@@ -379,8 +379,8 @@ public class ServicioProfesor {
      */
     public List<DTOClase> obtenerClasesPorProfesor(Long profesorId) {
         // Verificar que el profesor existe
-        repositorioProfesor.findById(profesorId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+        Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
                 
         // Obtener las clases del profesor
         return repositorioClase.findByProfesorId(profesorId.toString())
@@ -396,8 +396,8 @@ public class ServicioProfesor {
      * @return true si imparte la clase, false en caso contrario
      */
     public boolean imparteClase(Long profesorId, String claseId) {
-        Profesor profesor = repositorioProfesor.findById(profesorId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+        Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
                 
         return profesor.imparteClase(claseId);
     }
@@ -409,8 +409,8 @@ public class ServicioProfesor {
      * @return DTOProfesor actualizado
      */
     public DTOProfesor cambiarEstadoProfesor(Long profesorId, boolean habilitado) {
-        Profesor profesor = repositorioProfesor.findById(profesorId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Profesor con ID " + profesorId + " no encontrado."));
+        Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
         
         profesor.setEnabled(habilitado);
         Profesor profesorActualizado = repositorioProfesor.save(profesor);
@@ -461,7 +461,7 @@ public class ServicioProfesor {
         // Convertir a DTOs
         Page<DTOProfesor> pageDTOs = pageProfesores.map(DTOProfesor::new);
         
-        return new DTORespuestaPaginada<>(pageDTOs);
+        return DTORespuestaPaginada.fromPage(pageDTOs, sortBy, sortDirection);
     }
     
     /**
@@ -521,7 +521,7 @@ public class ServicioProfesor {
         // Convertir a DTOs
         Page<DTOProfesor> pageDTOs = pageProfesores.map(DTOProfesor::new);
         
-        return new DTORespuestaPaginada<>(pageDTOs);
+        return DTORespuestaPaginada.fromPage(pageDTOs, sortBy, sortDirection);
     }
     
     /**
@@ -553,9 +553,8 @@ public class ServicioProfesor {
             
             // Verificar que la clase existe
             Long claseIdLong = Long.parseLong(claseId);
-            if (!repositorioClase.existsById(claseIdLong)) {
-                throw new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada.");
-            }
+            Clase clase = repositorioClase.findById(claseIdLong).orElse(null);
+            ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
             
             // Filtrar profesores por clase manualmente
             List<Profesor> profesoresDeClase = repositorioProfesor.findAll(Sort.by(direction, sortBy))
@@ -578,7 +577,7 @@ public class ServicioProfesor {
             // Convertir a DTOs
             Page<DTOProfesor> pageDTOs = pageProfesores.map(DTOProfesor::new);
             
-            return new DTORespuestaPaginada<>(pageDTOs);
+            return DTORespuestaPaginada.fromPage(pageDTOs, sortBy, sortDirection);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("El ID de clase debe ser un número válido: " + e.getMessage());
         }
@@ -622,7 +621,7 @@ public class ServicioProfesor {
         Page<Profesor> pageProfesores = repositorioProfesor.findByEnabledTrue(pageable);
         Page<DTOProfesor> pageDTOs = pageProfesores.map(DTOProfesor::new);
         
-        return new DTORespuestaPaginada<>(pageDTOs);
+        return DTORespuestaPaginada.fromPage(pageDTOs, sortBy, sortDirection);
     }
     
     /**

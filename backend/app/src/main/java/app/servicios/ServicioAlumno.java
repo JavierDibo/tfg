@@ -14,6 +14,7 @@ import app.entidades.Clase;
 import app.excepciones.EntidadNoEncontradaException;
 import app.repositorios.RepositorioAlumno;
 import app.repositorios.RepositorioClase;
+import app.util.ExceptionUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,20 +44,20 @@ public class ServicioAlumno {
     }
 
     public DTOAlumno obtenerAlumnoPorId(Long id) {
-        Alumno alumno = repositorioAlumno.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + id + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
         return new DTOAlumno(alumno);
     }
 
     public DTOAlumno obtenerAlumnoPorEmail(String email) {
-        Alumno alumno = repositorioAlumno.findByEmail(email)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con email " + email + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findByEmail(email).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "email", email);
         return new DTOAlumno(alumno);
     }
 
     public DTOAlumno obtenerAlumnoPorUsuario(String usuario) {
-        Alumno alumno = repositorioAlumno.findByUsuario(usuario)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con usuario " + usuario + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findByUsuario(usuario).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "usuario", usuario);
         return new DTOAlumno(alumno);
     }
 
@@ -66,14 +67,14 @@ public class ServicioAlumno {
      * @return DTOPerfilAlumno
      */
     public DTOPerfilAlumno obtenerPerfilAlumnoPorUsuario(String usuario) {
-        Alumno alumno = repositorioAlumno.findByUsuario(usuario)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con usuario " + usuario + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findByUsuario(usuario).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "usuario", usuario);
         return new DTOPerfilAlumno(alumno);
     }
 
     public DTOAlumno obtenerAlumnoPorDni(String dni) {
-        Alumno alumno = repositorioAlumno.findByDni(dni)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con DNI " + dni + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findByDni(dni).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "DNI", dni);
         return new DTOAlumno(alumno);
     }
 
@@ -105,15 +106,15 @@ public class ServicioAlumno {
     public DTOAlumno crearAlumno(DTOPeticionRegistroAlumno peticion) {
         // Validar que no existan duplicados
         if (repositorioAlumno.existsByUsuario(peticion.usuario())) {
-            throw new IllegalArgumentException("Ya existe un alumno con el usuario: " + peticion.usuario());
+            ExceptionUtils.throwValidationError("Ya existe un alumno con el usuario: " + peticion.usuario());
         }
         
         if (repositorioAlumno.existsByEmail(peticion.email())) {
-            throw new IllegalArgumentException("Ya existe un alumno con el email: " + peticion.email());
+            ExceptionUtils.throwValidationError("Ya existe un alumno con el email: " + peticion.email());
         }
         
         if (repositorioAlumno.existsByDni(peticion.dni())) {
-            throw new IllegalArgumentException("Ya existe un alumno con el DNI: " + peticion.dni());
+            ExceptionUtils.throwValidationError("Ya existe un alumno con el DNI: " + peticion.dni());
         }
 
         // Crear el alumno
@@ -132,8 +133,8 @@ public class ServicioAlumno {
     }
 
     public DTOAlumno actualizarAlumno(Long id, DTOActualizacionAlumno dtoParcial) {
-        Alumno alumno = repositorioAlumno.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + id + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
 
         // Actualizar campos no nulos
         if (dtoParcial.nombre() != null) {
@@ -148,7 +149,7 @@ public class ServicioAlumno {
             // Verificar que no exista otro alumno con ese email
             if (!alumno.getEmail().equals(dtoParcial.email()) && 
                 repositorioAlumno.existsByEmail(dtoParcial.email())) {
-                throw new IllegalArgumentException("Ya existe un alumno con el email: " + dtoParcial.email());
+                ExceptionUtils.throwValidationError("Ya existe un alumno con el email: " + dtoParcial.email());
             }
             alumno.setEmail(dtoParcial.email());
         }
@@ -157,7 +158,7 @@ public class ServicioAlumno {
             // Verificar que no exista otro alumno con ese DNI
             if (!alumno.getDni().equals(dtoParcial.dni()) && 
                 repositorioAlumno.existsByDni(dtoParcial.dni())) {
-                throw new IllegalArgumentException("Ya existe un alumno con el DNI: " + dtoParcial.dni());
+                ExceptionUtils.throwValidationError("Ya existe un alumno con el DNI: " + dtoParcial.dni());
             }
             alumno.setDni(dtoParcial.dni());
         }
@@ -171,8 +172,8 @@ public class ServicioAlumno {
     }
 
     public DTOAlumno cambiarEstadoMatricula(Long id, boolean matriculado) {
-        Alumno alumno = repositorioAlumno.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + id + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
         
         alumno.setMatriculado(matriculado);
         Alumno alumnoActualizado = repositorioAlumno.save(alumno);
@@ -180,8 +181,8 @@ public class ServicioAlumno {
     }
 
     public DTOAlumno habilitarDeshabilitarAlumno(Long id, boolean habilitar) {
-        Alumno alumno = repositorioAlumno.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + id + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
         
         alumno.setEnabled(habilitar);
         Alumno alumnoActualizado = repositorioAlumno.save(alumno);
@@ -189,8 +190,8 @@ public class ServicioAlumno {
     }
 
     public DTOAlumno borrarAlumnoPorId(Long id) {
-        Alumno alumno = repositorioAlumno.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + id + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
         
         repositorioAlumno.deleteById(id);
         return new DTOAlumno(alumno);
@@ -218,11 +219,11 @@ public class ServicioAlumno {
      * @return DTOAlumno actualizado
      */
     public DTOAlumno inscribirEnClase(Long alumnoId, Long claseId) {
-        Alumno alumno = repositorioAlumno.findById(alumnoId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + alumnoId + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
                 
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar que el alumno no esté ya inscrito en la clase
         if (alumno.getClasesId().contains(claseId.toString())) {
@@ -249,11 +250,11 @@ public class ServicioAlumno {
      * @return DTOAlumno actualizado
      */
     public DTOAlumno darDeBajaDeClase(Long alumnoId, Long claseId) {
-        Alumno alumno = repositorioAlumno.findById(alumnoId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + alumnoId + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
                 
-        Clase clase = repositorioClase.findById(claseId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar que el alumno esté inscrito en la clase
         if (!alumno.getClasesId().contains(claseId.toString())) {
@@ -280,8 +281,8 @@ public class ServicioAlumno {
      */
     public List<DTOClase> obtenerClasesPorAlumno(Long alumnoId) {
         // Primero verificamos que el alumno existe
-        repositorioAlumno.findById(alumnoId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + alumnoId + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
         
         // Obtenemos las clases del alumno usando el repositorio de clase
         return repositorioClase.findByAlumnoId(alumnoId.toString())
@@ -297,8 +298,8 @@ public class ServicioAlumno {
      * @return true si está inscrito, false en caso contrario
      */
     public boolean estaInscritoEnClase(Long alumnoId, Long claseId) {
-        Alumno alumno = repositorioAlumno.findById(alumnoId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + alumnoId + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
                 
         return alumno.estaInscritoEnClase(claseId.toString());
     }
@@ -309,8 +310,8 @@ public class ServicioAlumno {
      * @return Número de clases
      */
     public int contarClasesPorAlumno(Long alumnoId) {
-        Alumno alumno = repositorioAlumno.findById(alumnoId)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + alumnoId + " no encontrado."));
+        Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
                 
         return alumno.getClasesId().size();
     }
@@ -346,7 +347,7 @@ public class ServicioAlumno {
         // Convertir a DTOs
         Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
         
-        return new DTORespuestaPaginada<>(pageDTOs);
+        return DTORespuestaPaginada.fromPage(pageDTOs, sortBy, sortDirection);
     }
     
     /**
@@ -389,7 +390,7 @@ public class ServicioAlumno {
         // Convertir a DTOs
         Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
         
-        return new DTORespuestaPaginada<>(pageDTOs);
+        return DTORespuestaPaginada.fromPage(pageDTOs, sortBy, sortDirection);
     }
     
     /**
@@ -416,7 +417,7 @@ public class ServicioAlumno {
         // Convertir a DTOs
         Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
         
-        return new DTORespuestaPaginada<>(pageDTOs);
+        return DTORespuestaPaginada.fromPage(pageDTOs, sortBy, sortDirection);
     }
     
     /**
@@ -440,9 +441,8 @@ public class ServicioAlumno {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
         // Primero verificamos que la clase existe
-        if (!repositorioClase.existsById(claseId)) {
-            throw new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada.");
-        }
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Obtenemos los alumnos de la clase usando filtrado en memoria
         // Nota: En un escenario real se implementaría una consulta específica
@@ -467,7 +467,7 @@ public class ServicioAlumno {
         // Convertir a DTOs
         Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
         
-        return new DTORespuestaPaginada<>(pageDTOs);
+        return DTORespuestaPaginada.fromPage(pageDTOs, sortBy, sortDirection);
     }
 
     /**
@@ -517,7 +517,7 @@ public class ServicioAlumno {
         // Convertir a DTOs
         Page<DTOAlumno> pageDTOs = pageAlumnos.map(DTOAlumno::new);
         
-        return new DTORespuestaPaginada<>(pageDTOs);
+        return DTORespuestaPaginada.fromPage(pageDTOs, sortBy, sortDirection);
     }
 
     /**
@@ -551,18 +551,17 @@ public class ServicioAlumno {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
         // Primero verificamos que la clase existe
-        if (!repositorioClase.existsById(claseId)) {
-            throw new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada.");
-        }
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar acceso según el rol
         if ("ALUMNO".equals(userRole)) {
             // Para estudiantes, verificar que estén inscritos en la clase
-            Alumno alumno = repositorioAlumno.findById(currentUserId)
-                    .orElseThrow(() -> new EntidadNoEncontradaException("Alumno con ID " + currentUserId + " no encontrado."));
+            Alumno alumno = repositorioAlumno.findById(currentUserId).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", currentUserId);
             
             if (!alumno.estaInscritoEnClase(claseId.toString())) {
-                throw new RuntimeException("No tienes permisos para acceder a esta clase. Debes estar inscrito.");
+                ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a esta clase. Debes estar inscrito.");
             }
         }
         
@@ -595,8 +594,7 @@ public class ServicioAlumno {
             tipoInformacion = DTORespuestaAlumnosClase.TIPO_COMPLETA;
         } else if ("PROFESOR".equals(userRole)) {
             // Profesor: verificar si es profesor de esta clase específica
-            Clase clase = repositorioClase.findById(claseId)
-                    .orElseThrow(() -> new EntidadNoEncontradaException("Clase con ID " + claseId + " no encontrada."));
+            // La clase ya fue verificada arriba, podemos usarla directamente
             
             if (clase.getProfesoresId().contains(currentUserId.toString())) {
                 // Es profesor de esta clase: ve toda la información

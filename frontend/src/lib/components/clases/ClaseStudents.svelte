@@ -2,7 +2,8 @@
 	import { goto } from '$app/navigation';
 	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
 	import type { DTOAlumno } from '$lib/generated/api/models/DTOAlumno';
-	import type { DTORespuestaPaginadaObject } from '$lib/generated/api/models/DTORespuestaPaginadaObject';
+	import type { DTOAlumnoPublico } from '$lib/generated/api/models/DTOAlumnoPublico';
+
 	import { ClaseService } from '$lib/services/claseService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 
@@ -11,7 +12,7 @@
 	}>();
 
 	// Type for student objects that can be either full DTOAlumno or public info
-	type StudentInfo = DTOAlumno | { nombre: string; apellidos: string };
+	type StudentInfo = DTOAlumno | DTOAlumnoPublico;
 	let students = $state<StudentInfo[]>([]);
 
 	// Type guard to check if student has full information
@@ -84,7 +85,7 @@
 		return authStore.isAdmin || authStore.isProfesor;
 	}
 
-		// Handle unenrolling a student
+	// Handle unenrolling a student
 	async function handleUnenrollStudent(student: StudentInfo) {
 		if (!clase?.id || !hasFullInfo(student) || !student.id || !canManageEnrollments()) return;
 
@@ -93,7 +94,7 @@
 			error = null;
 
 			await ClaseService.unenrollStudentFromClass(student.id, clase.id);
-			
+
 			// Reload the students list
 			await loadStudents();
 		} catch (err) {
@@ -138,7 +139,7 @@
 		</div>
 	{:else}
 		<div class="space-y-3">
-			{#each students as student (student.id)}
+			{#each students as student (hasFullInfo(student) ? student.id : `${student.nombre}-${student.apellidos}`)}
 				<div class="flex items-center justify-between rounded-lg border p-3 hover:bg-gray-50">
 					<div class="flex items-center space-x-3">
 						<div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
@@ -151,7 +152,7 @@
 								{student.nombre}
 								{student.apellidos}
 							</h4>
-							{#if canSeeStudentDetails()}
+							{#if canSeeStudentDetails() && hasFullInfo(student)}
 								<p class="text-sm text-gray-600">{student.email}</p>
 								<p class="text-xs text-gray-500">@{student.usuario}</p>
 							{:else}
@@ -160,15 +161,15 @@
 						</div>
 					</div>
 					<div class="flex items-center space-x-2">
-						{#if canSeeProfileButton()}
+						{#if canSeeProfileButton() && hasFullInfo(student)}
 							<button
-								onclick={() => goToStudentProfile(student.id!)}
+								onclick={() => goToStudentProfile(student)}
 								class="rounded-md bg-green-50 px-3 py-1 text-sm text-green-600 hover:bg-green-100 hover:text-green-900"
 							>
 								Ver Perfil
 							</button>
 						{/if}
-						{#if canManageEnrollments()}
+						{#if canManageEnrollments() && hasFullInfo(student)}
 							<button
 								onclick={() => handleUnenrollStudent(student)}
 								disabled={unenrollingStudentId === student.id}

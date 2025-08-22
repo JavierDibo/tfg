@@ -41,11 +41,11 @@
 			});
 
 			// Filter out students already enrolled in this class
-			availableStudents = (response.content || []).filter(
-				(student) => !enrolledStudentIds.includes(student.id)
+			availableStudents = (response.contenido || []).filter(
+				(student: DTOAlumno) => !enrolledStudentIds.includes(student.id)
 			);
-			totalElements = response.page?.totalElements || 0;
-			totalPages = response.page?.totalPages || 1;
+			totalElements = response.totalElementos || 0;
+			totalPages = response.totalPaginas || 1;
 		} catch (err) {
 			console.error('Error loading available students:', err);
 			error = 'Error al cargar los alumnos disponibles';

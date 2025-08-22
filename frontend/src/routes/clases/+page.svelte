@@ -80,7 +80,7 @@
 			let response: DTOClase[];
 
 			if (authStore.isAlumno) {
-				response = await ClaseService.getClasesByAlumno(authStore.user.sub);
+				response = await ClaseService.getMisClasesInscritas();
 				// Update enrolled class IDs for enrollment status tracking
 				// enrolledClassIds = new Set(response.map((clase) => clase.id!));
 			} else if (authStore.isProfesor) {

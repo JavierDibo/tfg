@@ -1,10 +1,10 @@
 import {
 	Configuration,
-	EntidadRestApi,
-	AutenticacionRestApi,
-	AlumnoRestApi,
+	EntidadesApi,
+	AutenticacinApi,
+	AlumnosApi,
 	ProfesorRestApi,
-	ClaseRestApi,
+	ClasesApi,
 	type Middleware
 } from './generated/api';
 import { authStore } from './stores/authStore.svelte';
@@ -34,8 +34,8 @@ const config = new Configuration({
 });
 
 // Create pre-configured API clients
-export const entidadApi = new EntidadRestApi(config);
-export const autenticacionApi = new AutenticacionRestApi(config);
-export const alumnoApi = new AlumnoRestApi(config);
+export const entidadApi = new EntidadesApi(config);
+export const autenticacionApi = new AutenticacinApi(config);
+export const alumnoApi = new AlumnosApi(config);
 export const profesorApi = new ProfesorRestApi(config);
-export const claseApi = new ClaseRestApi(config);
+export const claseApi = new ClasesApi(config);

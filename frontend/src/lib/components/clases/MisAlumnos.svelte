@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
 	import type { DTOAlumno } from '$lib/generated/api/models/DTOAlumno';
-	import type { DTORespuestaPaginadaDTOAlumno } from '$lib/generated/api/models/DTORespuestaPaginadaDTOAlumno';
+	import type { DTORespuestaAlumnosClase } from '$lib/generated/api/models/DTORespuestaAlumnosClase';
 	import { ClaseService } from '$lib/services/claseService';
 
 	let { clases } = $props<{
@@ -26,7 +26,7 @@
 			// Load students from each class
 			for (const clase of clases) {
 				try {
-					const response: DTORespuestaPaginadaDTOAlumno = await ClaseService.getAlumnosDeClase(
+					const response: DTORespuestaAlumnosClase = await ClaseService.getAlumnosDeClase(
 						clase.id,
 						{
 							page: 0,
@@ -38,7 +38,7 @@
 
 					if (response.content) {
 						// Add class information to each student
-						const alumnosWithClass = response.content.map((alumno) => ({
+						const alumnosWithClass = response.content.map((alumno: DTOAlumno) => ({
 							alumno,
 							clase
 						}));

@@ -2,6 +2,7 @@ package app.rest;
 
 import app.dtos.DTOEntidad;
 import app.dtos.DTOParametrosBusqueda;
+import app.excepciones.ResourceNotFoundException;
 import app.servicios.ServicioEntidad;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -93,9 +94,10 @@ public class EntidadRest {
             @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") int id) {
         System.out.println("Obteniendo la entidad con ID: " + id);
         DTOEntidad dtoEntidad = servicioEntidad.obtenerEntidadPorId(id);
-
-        if (dtoEntidad == null)
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        
+        if (dtoEntidad == null) {
+            throw new ResourceNotFoundException("Entidad", "ID", id);
+        }
 
         return new ResponseEntity<>(dtoEntidad, HttpStatus.OK);
     }

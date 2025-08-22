@@ -5,6 +5,7 @@ import app.dtos.DTOEntidad;
 import app.dtos.DTOParametrosBusqueda;
 import app.entidades.Entidad;
 import app.repositorios.RepositorioEntidad;
+import app.util.ExceptionUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +27,8 @@ public class ServicioEntidad {
     }
 
     public DTOEntidad obtenerEntidadPorId(int id) {
-        Entidad entidad = repositorioEntidad.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Entidad con ID " + id + " no encontrada."));
+        Entidad entidad = repositorioEntidad.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(entidad, "Entidad", "ID", id);
         return new DTOEntidad(entidad);
     }
 
@@ -65,8 +66,8 @@ public class ServicioEntidad {
     }
 
     public DTOEntidad actualizarEntidad(int id, DTOEntidad dtoParcial) {
-        Entidad entidad = repositorioEntidad.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Entidad con ID " + id + " no encontrada."));
+        Entidad entidad = repositorioEntidad.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(entidad, "Entidad", "ID", id);
 
         if (dtoParcial.info() != null) {
             entidad.setInfo(dtoParcial.info());
@@ -89,8 +90,8 @@ public class ServicioEntidad {
     }
 
     public DTOEntidad borrarEntidadPorId(int id) {
-        Entidad entidad = repositorioEntidad.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Entidad con ID " + id + " no encontrada."));
+        Entidad entidad = repositorioEntidad.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(entidad, "Entidad", "ID", id);
         repositorioEntidad.deleteById(id);
         return new DTOEntidad(entidad);
     }

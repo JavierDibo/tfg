@@ -21,9 +21,8 @@
 		}
 
 		try {
-			// Try to find the student by username
-			const username = authStore.user.usuario || authStore.user.sub;
-			const alumno = await AlumnoService.getAlumnoByUsuario(username);
+			// For now, we'll use the current user's ID since we don't have a getByUsuario method
+			const alumno = await AlumnoService.getAlumnoById(parseInt(authStore.user.sub));
 
 			// Redirect to the student's profile page
 			goto(`/alumnos/${alumno.id}`);

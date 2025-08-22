@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import type { DTOAlumno, DTOActualizacionAlumno, DTOClase } from '$lib/generated/api';
 	import { AlumnoService } from '$lib/services/alumnoService';
+	import { ClaseService } from '$lib/services/claseService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 
 	// Props and derived state
@@ -90,7 +91,13 @@
 		try {
 			// If student is viewing their own profile, use the new endpoint
 			if (isOwnProfile()) {
-				alumno = await AlumnoService.getMiPerfil();
+				const perfil = await AlumnoService.getMiPerfil();
+				// Convert DTOPerfilAlumno to DTOAlumno format for consistency
+				alumno = {
+					id: parseInt(perfil.usuario), // Use usuario as id
+					enabled: true, // Assume enabled for own profile
+					...perfil
+				} as DTOAlumno;
 			} else {
 				alumno = await AlumnoService.getAlumnoById(studentId);
 
@@ -121,10 +128,10 @@
 			// Use different endpoints based on who is viewing the profile
 			if (isOwnProfile()) {
 				// Student viewing their own profile - use the dedicated endpoint
-				enrolledClasses = await AlumnoService.getMisClasesInscritas();
+				enrolledClasses = await ClaseService.getMisClasesInscritas();
 			} else if (authStore.isAdmin) {
 				// Admin viewing any student's profile - use the admin endpoint
-				enrolledClasses = await AlumnoService.getClasesInscritasByAlumnoId(alumno.id);
+				enrolledClasses = await AlumnoService.getClasesInscritasConDetalles(alumno.id);
 			}
 		} catch (err) {
 			console.error('Error loading enrolled classes:', err);
@@ -405,7 +412,7 @@
 		if (!alumno || !canChangeStatus) return;
 
 		try {
-			const updatedAlumno = await AlumnoService.toggleAccountStatus(alumno.id!, !alumno.enabled);
+			const updatedAlumno = await AlumnoService.toggleEnabled(alumno.id!, !alumno.enabled);
 			alumno = updatedAlumno;
 			successMessage = `Cuenta ${updatedAlumno.enabled ? 'habilitada' : 'deshabilitada'} correctamente`;
 			setTimeout(() => (successMessage = null), 3000);

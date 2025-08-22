@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
 	import type { DTOAlumno } from '$lib/generated/api/models/DTOAlumno';
-	import type { DTORespuestaPaginadaDTOAlumno } from '$lib/generated/api/models/DTORespuestaPaginadaDTOAlumno';
+	import type { DTORespuestaAlumnosClase } from '$lib/generated/api/models/DTORespuestaAlumnosClase';
 	import type { DTORespuestaEnrollment } from '$lib/generated/api/models/DTORespuestaEnrollment';
 	import { ClaseService } from '$lib/services/claseService';
 	import { authStore } from '$lib/stores/authStore.svelte';
@@ -37,15 +37,12 @@
 			loading = true;
 			error = null;
 
-			const response: DTORespuestaPaginadaDTOAlumno = await ClaseService.getAlumnosDeClase(
-				clase.id,
-				{
-					page: currentPage - 1, // API uses 0-based pagination
-					size: pageSize,
-					sortBy: 'nombre',
-					sortDirection: 'ASC'
-				}
-			);
+			const response: DTORespuestaAlumnosClase = await ClaseService.getAlumnosDeClase(clase.id, {
+				page: currentPage - 1, // API uses 0-based pagination
+				size: pageSize,
+				sortBy: 'nombre',
+				sortDirection: 'ASC'
+			});
 
 			enrolledStudents = response.content || [];
 			totalElements = response.page?.totalElements || 0;

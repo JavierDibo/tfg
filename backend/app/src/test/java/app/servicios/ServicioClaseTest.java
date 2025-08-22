@@ -253,8 +253,8 @@ class ServicioClaseTest {
         DTORespuestaPaginada<DTOClase> resultado = servicioClase.buscarClases(parametros);
 
         assertNotNull(resultado);
-        assertEquals(1, resultado.content().size());
-        assertEquals("Curso de Java", resultado.content().get(0).titulo());
+        assertEquals(1, resultado.contenido().size());
+        assertEquals("Curso de Java", resultado.contenido().get(0).titulo());
         verify(repositorioClase).findByTituloContainingIgnoreCase("Java");
     }
 

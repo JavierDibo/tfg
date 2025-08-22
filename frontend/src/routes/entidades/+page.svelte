@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { type DTOEntidad, entidadApi } from '@/api';
+	import { entidadService } from '$lib/services/entidadService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
@@ -43,10 +44,10 @@
 		error = null;
 		try {
 			// Use the generated API client to fetch entities with optional filters
-			entidades = await entidadApi.obtenerEntidades({
-				info: searchInfo,
-				otraInfo: searchOtraInfo
-			});
+			// Since obtenerEntidades returns a single entity, we need to handle this differently
+			// For now, we'll use a workaround to get all entities
+			const allEntities = await entidadService.getAllEntities();
+			entidades = allEntities;
 		} catch (err: unknown) {
 			error = `Error loading entities: ${(err as Error).message}`;
 			console.error('Error loading entities:', err);

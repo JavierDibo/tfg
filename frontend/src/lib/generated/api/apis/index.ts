@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
-export * from './AlumnoRestApi';
-export * from './AutenticacionRestApi';
-export * from './ClaseRestApi';
-export * from './EntidadRestApi';
+export * from './AlumnosApi';
+export * from './AutenticacinApi';
+export * from './ClasesApi';
+export * from './EntidadesApi';
 export * from './ProfesorRestApi';
-export * from './TestRestApi';
+export * from './PruebasApi';

@@ -34,8 +34,27 @@
 		errors = [];
 		fieldErrors = {};
 
-		// Client-side validation using the service
-		const validationErrors = AlumnoService.validateRegistrationData(formData);
+		// Client-side validation - basic checks
+		const validationErrors: string[] = [];
+
+		if (!formData.usuario || formData.usuario.length < 3) {
+			validationErrors.push('El usuario debe tener al menos 3 caracteres');
+		}
+		if (!formData.password || formData.password.length < 6) {
+			validationErrors.push('La contraseña debe tener al menos 6 caracteres');
+		}
+		if (!formData.nombre || formData.nombre.length < 2) {
+			validationErrors.push('El nombre es obligatorio');
+		}
+		if (!formData.apellidos || formData.apellidos.length < 2) {
+			validationErrors.push('Los apellidos son obligatorios');
+		}
+		if (!formData.dni || formData.dni.length < 5) {
+			validationErrors.push('El DNI es obligatorio');
+		}
+		if (!formData.email || !formData.email.includes('@')) {
+			validationErrors.push('El email debe ser válido');
+		}
 
 		if (validationErrors.length > 0) {
 			errors = validationErrors;

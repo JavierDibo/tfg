@@ -26,6 +26,7 @@ import java.time.LocalTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -291,11 +292,11 @@ class ClaseRestIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "alumno123", roles = "ALUMNO")
     @DisplayName("DELETE /api/clases/{claseId}/darse-baja debe permitir darse de baja de clase")
     void testDarseDeBajaDeClase() throws Exception {
-        // Primero crear una clase e inscribirse
+        // Primero crear una clase como admin
         String response = mockMvc.perform(post("/api/clases/cursos")
+                .with(user("admin").roles("ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(peticionCrearCurso)))
                 .andExpect(status().isCreated())
@@ -303,11 +304,14 @@ class ClaseRestIntegrationTest {
 
         String id = objectMapper.readTree(response).get("id").asText();
 
-        mockMvc.perform(post("/api/clases/" + id + "/inscribirse"))
+        // Inscribirse como estudiante
+        mockMvc.perform(post("/api/clases/" + id + "/inscribirse")
+                .with(user("alumno123").roles("ALUMNO")))
                 .andExpect(status().isOk());
 
-        // Darse de baja
-        mockMvc.perform(delete("/api/clases/" + id + "/darse-baja"))
+        // Darse de baja como estudiante
+        mockMvc.perform(delete("/api/clases/" + id + "/darse-baja")
+                .with(user("alumno123").roles("ALUMNO")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.alumnosId").isArray())

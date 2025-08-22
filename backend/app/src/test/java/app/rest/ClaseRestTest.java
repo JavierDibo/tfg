@@ -88,7 +88,7 @@ class ClaseRestTest {
             org.springframework.data.domain.PageRequest.of(0, 10), 
             1
         );
-        DTORespuestaPaginada<DTOClase> expectedResponse = new DTORespuestaPaginada<>(mockPage);
+        DTORespuestaPaginada<DTOClase> expectedResponse = DTORespuestaPaginada.fromPage(mockPage, "titulo", "ASC");
         when(servicioClase.buscarClasesSegunRol(parametros)).thenReturn(expectedResponse);
 
         // When

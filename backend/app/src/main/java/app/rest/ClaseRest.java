@@ -1,7 +1,6 @@
 package app.rest;
 
 import app.dtos.*;
-import app.dtos.DTOAlumno;
 import app.dtos.DTOAlumnoPublico;
 import app.dtos.DTOClaseConDetalles;
 import app.dtos.DTOClaseInscrita;
@@ -10,6 +9,7 @@ import app.dtos.DTOPeticionEnrollment;
 import app.dtos.DTORespuestaEnrollment;
 import app.dtos.DTORespuestaAlumnosClase;
 import app.entidades.Material;
+import app.excepciones.ResourceNotFoundException;
 import app.servicios.ServicioClase;
 import app.servicios.ServicioAlumno;
 import app.util.SecurityUtils;
@@ -82,7 +82,11 @@ public class ClaseRest {
      */
     @GetMapping("/{id}")
     public ResponseEntity<DTOClase> obtenerClasePorId(@PathVariable Long id) {
-        return ResponseEntity.ok(servicioClase.obtenerClasePorId(id));
+        DTOClase clase = servicioClase.obtenerClasePorId(id);
+        if (clase == null) {
+            throw new ResourceNotFoundException("Clase", "ID", id);
+        }
+        return ResponseEntity.ok(clase);
     }
 
     /**
@@ -520,5 +524,38 @@ public class ClaseRest {
         Long alumnoId = securityUtils.getCurrentUserId();
         DTOClaseConDetalles detalles = servicioClase.obtenerClaseConDetallesParaEstudiante(claseId, alumnoId);
         return ResponseEntity.ok(detalles);
+    }
+
+    /**
+     * Obtiene información pública de los alumnos de una clase
+     * GET /api/clases/{claseId}/alumnos-publicos
+     * @param claseId ID de la clase
+     * @return Lista de DTOAlumnoPublico con información pública de los alumnos
+     */
+    @GetMapping("/{claseId}/alumnos-publicos")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
+    @Operation(
+        summary = "Obtener información pública de alumnos de una clase",
+        description = "Obtiene la lista de alumnos inscritos en una clase con solo información pública (nombre y apellidos). " +
+                     "Este endpoint siempre devuelve información pública independientemente del rol del usuario."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista de alumnos públicos obtenida exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumnoPublico.class)
+            )
+        ),
+        @ApiResponse(responseCode = "403", description = "No autorizado"),
+        @ApiResponse(responseCode = "404", description = "Clase no encontrada")
+    })
+    public ResponseEntity<List<DTOAlumnoPublico>> obtenerAlumnosPublicosDeClase(
+            @Parameter(description = "ID de la clase", example = "1")
+            @PathVariable Long claseId) {
+        
+        List<DTOAlumnoPublico> alumnosPublicos = servicioClase.obtenerAlumnosPublicosDeClase(claseId);
+        return ResponseEntity.ok(alumnosPublicos);
     }
 }

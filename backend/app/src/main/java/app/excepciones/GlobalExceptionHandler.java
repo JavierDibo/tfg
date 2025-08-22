@@ -1,20 +1,26 @@
 package app.excepciones;
 
+import app.dtos.ErrorResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -25,12 +31,49 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Maneja validaciones de @RequestBody con @Valid
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handlemetodoArgumentNotValid(
-        MethodArgumentNotValidException ex, WebRequest request) {
+    // Custom API Exceptions
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApiException(ApiException ex, WebRequest request) {
+        log.warn("API Exception: {} - {}", ex.getErrorCode(), ex.getMessage());
         
-        log.warn("Error de validación en @RequestBody: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(ex.getStatus().value())
+                .error(ex.getStatus().getReasonPhrase())
+                .message(ex.getUserMessage())
+                .errorCode(ex.getErrorCode())
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    // Validation Exceptions
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex, WebRequest request) {
+        log.warn("Validation Exception: {}", ex.getMessage());
+        
+        ErrorResponse.ErrorResponseBuilder builder = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(ex.getStatus().value())
+                .error(ex.getStatus().getReasonPhrase())
+                .message(ex.getUserMessage())
+                .errorCode(ex.getErrorCode())
+                .path(getPath(request));
+        
+        if (ex.getFieldErrors() != null) {
+            builder.fieldErrors(ex.getFieldErrors());
+        }
+        
+        return new ResponseEntity<>(builder.build(), ex.getStatus());
+    }
+
+    // MethodArgumentNotValidException - @Valid validation errors
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex, WebRequest request) {
+        
+        log.warn("Validation error in request body: {}", ex.getMessage());
         
         Map<String, String> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
@@ -38,26 +81,28 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toMap(
                     error -> error.getField(),
                     error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Valor inválido",
-                    (existing, replacement) -> existing // En caso de duplicados, mantener el primero
+                    (existing, replacement) -> existing
                 ));
         
-        Map<String, Object> errorDetails = new HashMap<>();
-        errorDetails.put("timestamp", LocalDateTime.now());
-        errorDetails.put("status", HttpStatus.BAD_REQUEST.value());
-        errorDetails.put("error", "Errores de Validación");
-        errorDetails.put("message", "Los datos enviados contienen errores");
-        errorDetails.put("fieldErrors", fieldErrors);
-        errorDetails.put("path", request.getDescription(false).replace("uri=", ""));
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message("Los datos enviados contienen errores")
+                .errorCode("VALIDATION_ERROR")
+                .fieldErrors(fieldErrors)
+                .path(getPath(request))
+                .build();
         
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // Maneja validaciones de @PathVariable y @RequestParam
+    // ConstraintViolationException - @PathVariable and @RequestParam validation
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleConstraintViolation(
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
             ConstraintViolationException ex, WebRequest request) {
         
-        log.warn("Error de validación en parámetros: {}", ex.getMessage());
+        log.warn("Parameter validation error: {}", ex.getMessage());
         
         Map<String, String> violations = ex.getConstraintViolations()
                 .stream()
@@ -67,171 +112,152 @@ public class GlobalExceptionHandler {
                     (existing, replacement) -> existing
                 ));
         
-        Map<String, Object> errorDetails = new HashMap<>();
-        errorDetails.put("timestamp", LocalDateTime.now());
-        errorDetails.put("status", HttpStatus.BAD_REQUEST.value());
-        errorDetails.put("error", "Parámetros Inválidos");
-        errorDetails.put("message", "Los parámetros enviados son inválidos");
-        errorDetails.put("violations", violations);
-        errorDetails.put("path", request.getDescription(false).replace("uri=", ""));
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message("Los parámetros enviados son inválidos")
+                .errorCode("PARAMETER_VALIDATION_ERROR")
+                .violations(violations)
+                .path(getPath(request))
+                .build();
         
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    private String getPropertyName(ConstraintViolation<?> violation) {
-        String propertyPath = violation.getPropertyPath().toString();
-        // Extraer solo el nombre del parámetro (ej: "obtenerEntidadPorId.id" -> "id")
-        return propertyPath.contains(".") ? 
-               propertyPath.substring(propertyPath.lastIndexOf('.') + 1) : 
-               propertyPath;
+    // MethodArgumentTypeMismatchException - Type conversion errors (like "NaN" to Long)
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(
+            MethodArgumentTypeMismatchException ex, WebRequest request) {
+        
+        log.warn("Type mismatch error: {} - {}", ex.getName(), ex.getValue());
+        
+        String message = String.format("El parámetro '%s' con valor '%s' no es válido", 
+                ex.getName(), ex.getValue());
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(message)
+                .errorCode("TYPE_MISMATCH_ERROR")
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(EntidadNoEncontradaException.class)
-    public ResponseEntity<Map<String, Object>> handleEntidadNoEncontrada(
-            EntidadNoEncontradaException ex, WebRequest request) {
-
-        log.warn("Entidad no encontrada: {}", ex.getMessage());
-
-        Map<String, Object> errorDetails = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", HttpStatus.NOT_FOUND.value(),
-                "error", "Entidad no encontrada",
-                "message", ex.getMessage(),
-                "path", request.getDescription(false).replace("uri=", "")
-        );
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    // Resource Not Found Exceptions
+    @ExceptionHandler({EntidadNoEncontradaException.class, AlumnoNoEncontradoException.class})
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(Exception ex, WebRequest request) {
+        log.warn("Resource not found: {}", ex.getMessage());
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message(ex.getMessage())
+                .errorCode("RESOURCE_NOT_FOUND")
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
+    // NoHandlerFoundException and NoResourceFoundException - 404 errors
+    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
+    public ResponseEntity<ErrorResponse> handleNoHandlerFound(Exception ex, WebRequest request) {
+        log.warn("No handler found for request: {}", getPath(request));
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message("El endpoint solicitado no existe")
+                .errorCode("ENDPOINT_NOT_FOUND")
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    // Security/Authentication Exceptions
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> handleBadCredentials(
-            BadCredentialsException ex, WebRequest request) {
-
-        log.warn("Intento de login fallido: {}", ex.getMessage());
-
-        Map<String, Object> errorDetails = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", HttpStatus.UNAUTHORIZED.value(),
-                "error", "Autenticación fallida",
-                "message", "Usuario o password incorrectos",
-                "path", request.getDescription(false).replace("uri=", "")
-        );
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(DisabledException.class)
-    public ResponseEntity<Map<String, Object>> handleAccountDisabled(
-            DisabledException ex, WebRequest request) {
-
-        log.warn("Intento de login con cuenta deshabilitada: {}", ex.getMessage());
-
-        Map<String, Object> errorDetails = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", HttpStatus.FORBIDDEN.value(),
-                "error", "Cuenta deshabilitada",
-                "message", "Tu cuenta está deshabilitada. Contacta con el administrador para más información.",
-                "path", request.getDescription(false).replace("uri=", "")
-        );
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
-    }
-
-    @ExceptionHandler(LockedException.class)
-    public ResponseEntity<Map<String, Object>> handleAccountLocked(
-            LockedException ex, WebRequest request) {
-
-        log.warn("Intento de login con cuenta bloqueada: {}", ex.getMessage());
-
-        Map<String, Object> errorDetails = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", HttpStatus.FORBIDDEN.value(),
-                "error", "Cuenta bloqueada",
-                "message", "Tu cuenta está bloqueada. Contacta con el administrador.",
-                "path", request.getDescription(false).replace("uri=", "")
-        );
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
-    }
-
-    @ExceptionHandler(AccountExpiredException.class)
-    public ResponseEntity<Map<String, Object>> handleAccountExpired(
-            AccountExpiredException ex, WebRequest request) {
-
-        log.warn("Intento de login con cuenta expirada: {}", ex.getMessage());
-
-        Map<String, Object> errorDetails = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", HttpStatus.FORBIDDEN.value(),
-                "error", "Cuenta expirada",
-                "message", "Tu cuenta ha expirado. Contacta con el administrador.",
-                "path", request.getDescription(false).replace("uri=", "")
-        );
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
-    }
-
-    @ExceptionHandler(CredentialsExpiredException.class)
-    public ResponseEntity<Map<String, Object>> handleCredentialsExpired(
-            CredentialsExpiredException ex, WebRequest request) {
-
-        log.warn("Intento de login con credenciales expiradas: {}", ex.getMessage());
-
-        Map<String, Object> errorDetails = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", HttpStatus.FORBIDDEN.value(),
-                "error", "Credenciales expiradas",
-                "message", "Tu password ha expirado. Debes cambiarla.",
-                "path", request.getDescription(false).replace("uri=", "")
-        );
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
-    }
-
-    @ExceptionHandler(AlumnoNoEncontradoException.class)
-    public ResponseEntity<Map<String, Object>> handleAlumnoNoEncontrado(
-            AlumnoNoEncontradoException ex, WebRequest request) {
-
-        log.warn("Alumno no encontrado: {}", ex.getMessage());
-
-        Map<String, Object> errorDetails = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", HttpStatus.NOT_FOUND.value(),
-                "error", "Alumno no encontrado",
-                "message", ex.getMessage(),
-                "path", request.getDescription(false).replace("uri=", "")
-        );
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(
-            IllegalArgumentException ex, WebRequest request) {
-
-        log.warn("Argumento inválido: {}", ex.getMessage());
-
-        Map<String, Object> errorDetails = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", HttpStatus.BAD_REQUEST.value(),
-                "error", "Datos inválidos",
-                "message", ex.getMessage(),
-                "path", request.getDescription(false).replace("uri=", "")
-        );
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(
-            DataIntegrityViolationException ex, WebRequest request) {
-
-        log.warn("Violación de integridad de datos: {}", ex.getMessage());
-
-        String userMessage = "Ya existe un registro con los datos proporcionados";
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
+        log.warn("Authentication failed: {}", ex.getMessage());
         
-        // Detectar el tipo específico de violación de constraint
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .message("Usuario o contraseña incorrectos")
+                .errorCode("AUTHENTICATION_FAILED")
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler({DisabledException.class, LockedException.class, AccountExpiredException.class, CredentialsExpiredException.class})
+    public ResponseEntity<ErrorResponse> handleAccountIssues(Exception ex, WebRequest request) {
+        log.warn("Account issue: {}", ex.getMessage());
+        
+        String message;
+        String errorCode;
+        
+        if (ex instanceof DisabledException) {
+            message = "Tu cuenta está deshabilitada. Contacta con el administrador.";
+            errorCode = "ACCOUNT_DISABLED";
+        } else if (ex instanceof LockedException) {
+            message = "Tu cuenta está bloqueada. Contacta con el administrador.";
+            errorCode = "ACCOUNT_LOCKED";
+        } else if (ex instanceof AccountExpiredException) {
+            message = "Tu cuenta ha expirado. Contacta con el administrador.";
+            errorCode = "ACCOUNT_EXPIRED";
+        } else {
+            message = "Tu contraseña ha expirado. Debes cambiarla.";
+            errorCode = "CREDENTIALS_EXPIRED";
+        }
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+                .message(message)
+                .errorCode(errorCode)
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
+    // Authorization Exceptions
+    @ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
+    public ResponseEntity<ErrorResponse> handleAccessDenied(Exception ex, WebRequest request) {
+        log.warn("Access denied: {}", ex.getMessage());
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+                .message("No tienes permisos para realizar esta acción")
+                .errorCode("ACCESS_DENIED")
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
+    // Data Integrity Violation
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, WebRequest request) {
+        
+        log.warn("Data integrity violation: {}", ex.getMessage());
+        
+        String userMessage = "Ya existe un registro con los datos proporcionados";
         String exceptionMessage = ex.getMessage();
+        
         if (exceptionMessage != null) {
             if (exceptionMessage.contains("usuarios_dni_key")) {
                 userMessage = "Ya existe un usuario con este DNI";
@@ -243,32 +269,63 @@ public class GlobalExceptionHandler {
                 userMessage = "Ya existe un registro con estos datos únicos";
             }
         }
-
-        Map<String, Object> errorDetails = Map.of(
-                "timestamp", LocalDateTime.now(),
-                "status", HttpStatus.CONFLICT.value(),
-                "error", "Datos duplicados",
-                "message", userMessage,
-                "path", request.getDescription(false).replace("uri=", "")
-        );
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error(HttpStatus.CONFLICT.getReasonPhrase())
+                .message(userMessage)
+                .errorCode("DUPLICATE_DATA")
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
-    
+
+    // IllegalArgumentException
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
+        log.warn("Illegal argument: {}", ex.getMessage());
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(ex.getMessage())
+                .errorCode("INVALID_ARGUMENT")
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    // Generic Exception Handler - Last resort
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneral(
-            Exception ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, WebRequest request) {
+        // Only log the error message, not the full stack trace for cleaner logs
+        log.error("Unexpected error: {} - {}", ex.getClass().getSimpleName(), ex.getMessage());
         
-        log.error("Error interno del servidor: {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message("Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde.")
+                .errorCode("INTERNAL_SERVER_ERROR")
+                .path(getPath(request))
+                .build();
         
-        Map<String, Object> errorDetails = Map.of(
-            "timestamp", LocalDateTime.now(),
-            "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "error", "Error Interno del Servidor",
-            "message", "Ha ocurrido un error inesperado",
-            "path", request.getDescription(false).replace("uri=", "")
-        );
-        
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // Helper methods
+    private String getPropertyName(ConstraintViolation<?> violation) {
+        String propertyPath = violation.getPropertyPath().toString();
+        return propertyPath.contains(".") ? 
+               propertyPath.substring(propertyPath.lastIndexOf('.') + 1) : 
+               propertyPath;
+    }
+
+    private String getPath(WebRequest request) {
+        return request.getDescription(false).replace("uri=", "");
     }
 } 
