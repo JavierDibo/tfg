@@ -5,9 +5,13 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 
-	// Check authentication on component mount
+	// Check authentication and permissions on component mount
 	if (browser && !authStore.isAuthenticated) {
 		goto('/auth');
+	}
+
+	if (browser && !authStore.isAdmin) {
+		goto('/');
 	}
 
 	// State variables
@@ -28,7 +32,7 @@
 
 	// Load all entities on component mount
 	onMount(() => {
-		if (authStore.isAuthenticated) {
+		if (authStore.isAuthenticated && authStore.isAdmin) {
 			loadEntities();
 		}
 	});

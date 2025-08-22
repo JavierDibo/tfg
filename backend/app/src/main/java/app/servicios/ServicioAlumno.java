@@ -8,6 +8,7 @@ import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPerfilAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
 import app.dtos.DTORespuestaPaginada;
+import app.dtos.DTORespuestaAlumnosClase;
 import app.entidades.Alumno;
 import app.entidades.Clase;
 import app.excepciones.EntidadNoEncontradaException;
@@ -529,9 +530,9 @@ public class ServicioAlumno {
      * @param sortDirection Dirección de ordenación (ASC/DESC)
      * @param userRole Rol del usuario autenticado
      * @param currentUserId ID del usuario autenticado (para verificar si es profesor de la clase)
-     * @return DTORespuestaPaginada con los alumnos de la clase según el nivel de acceso
+     * @return DTORespuestaAlumnosClase con los alumnos de la clase según el nivel de acceso
      */
-    public DTORespuestaPaginada<?> obtenerAlumnosPorClaseConNivelAcceso(
+    public DTORespuestaAlumnosClase obtenerAlumnosPorClaseConNivelAcceso(
             Long claseId, int page, int size, String sortBy, String sortDirection, 
             String userRole, Long currentUserId) {
         
@@ -586,10 +587,12 @@ public class ServicioAlumno {
         
         // Convertir a DTOs según el nivel de acceso
         Page<?> pageDTOs;
+        String tipoInformacion;
         
         if ("ADMIN".equals(userRole)) {
             // Admin: ve toda la información
             pageDTOs = pageAlumnos.map(DTOAlumno::new);
+            tipoInformacion = DTORespuestaAlumnosClase.TIPO_COMPLETA;
         } else if ("PROFESOR".equals(userRole)) {
             // Profesor: verificar si es profesor de esta clase específica
             Clase clase = repositorioClase.findById(claseId)
@@ -598,15 +601,18 @@ public class ServicioAlumno {
             if (clase.getProfesoresId().contains(currentUserId.toString())) {
                 // Es profesor de esta clase: ve toda la información
                 pageDTOs = pageAlumnos.map(DTOAlumno::new);
+                tipoInformacion = DTORespuestaAlumnosClase.TIPO_COMPLETA;
             } else {
                 // No es profesor de esta clase: solo información pública
                 pageDTOs = pageAlumnos.map(DTOAlumnoPublico::new);
+                tipoInformacion = DTORespuestaAlumnosClase.TIPO_PUBLICA;
             }
         } else {
             // Alumno: solo información pública
             pageDTOs = pageAlumnos.map(DTOAlumnoPublico::new);
+            tipoInformacion = DTORespuestaAlumnosClase.TIPO_PUBLICA;
         }
         
-        return new DTORespuestaPaginada<>(pageDTOs);
+        return new DTORespuestaAlumnosClase(pageDTOs, tipoInformacion);
     }
 }

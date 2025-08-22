@@ -10,6 +10,8 @@
 	import ClaseMaterials from '$lib/components/clases/ClaseMaterials.svelte';
 	import ClaseEnrollment from '$lib/components/clases/ClaseEnrollment.svelte';
 	import ClaseStudentManagement from '$lib/components/clases/ClaseStudentManagement.svelte';
+	import ClaseTeachers from '$lib/components/clases/ClaseTeachers.svelte';
+	import ClaseStudents from '$lib/components/clases/ClaseStudents.svelte';
 	import ClaseEditModal from '$lib/components/clases/ClaseEditModal.svelte';
 	import MaterialAddModal from '$lib/components/clases/MaterialAddModal.svelte';
 
@@ -40,8 +42,14 @@
 			loading = true;
 			error = null;
 
-			const response = await ClaseService.getClaseById(claseId);
-			clase = response;
+			// If student is viewing the class, use the enhanced endpoint with enrollment status
+			if (authStore.isAlumno) {
+				const response = await ClaseService.getClaseDetailsForMe(claseId);
+				clase = response;
+			} else {
+				const response = await ClaseService.getClaseById(claseId);
+				clase = response;
+			}
 		} catch (err) {
 			console.error('Error loading class:', err);
 			error = 'Error al cargar la clase';
@@ -207,6 +215,10 @@
 					showEnrollment={authStore.isAlumno}
 					loading={enrollmentLoading}
 				/>
+
+				<ClaseTeachers {clase} />
+
+				<ClaseStudents {clase} />
 
 				{#if canEdit()}
 					<ClaseStudentManagement {clase} />

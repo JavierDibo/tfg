@@ -1,13 +1,17 @@
 /* tslint:disable */
-
+/* eslint-disable */
 export * from './DTOActualizacionAlumno';
 export * from './DTOActualizacionProfesor';
 export * from './DTOAlumno';
 export * from './DTOClase';
+export * from './DTOClaseConDetalles';
+export * from './DTOClaseInscrita';
 export * from './DTOCurso';
 export * from './DTOEntidad';
+export * from './DTOEstadoInscripcion';
 export * from './DTOMetadatosPaginacion';
 export * from './DTOParametrosBusquedaClase';
+export * from './DTOPerfilAlumno';
 export * from './DTOPeticionCrearCurso';
 export * from './DTOPeticionCrearTaller';
 export * from './DTOPeticionEnrollment';
@@ -21,5 +25,6 @@ export * from './DTORespuestaLogin';
 export * from './DTORespuestaPaginadaDTOAlumno';
 export * from './DTORespuestaPaginadaDTOClase';
 export * from './DTORespuestaPaginadaDTOProfesor';
+export * from './DTORespuestaPaginadaObject';
 export * from './DTOTaller';
 export * from './Material';

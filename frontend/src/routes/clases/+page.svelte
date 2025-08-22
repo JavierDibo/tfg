@@ -26,6 +26,8 @@
 	let pageSize = $state(10);
 	let enrollmentLoading = $state<number | null>(null); // Track which class is being enrolled/unenrolled
 	let activeTab = $state<'all' | 'my'>(authStore.isProfesor ? 'my' : 'all');
+	// Track which classes student is enrolled in (for future use)
+	// let enrolledClassIds = $state<Set<number>>(new Set());
 
 	// Check authentication and permissions
 	$effect(() => {
@@ -79,6 +81,8 @@
 
 			if (authStore.isAlumno) {
 				response = await ClaseService.getClasesByAlumno(authStore.user.sub);
+				// Update enrolled class IDs for enrollment status tracking
+				// enrolledClassIds = new Set(response.map((clase) => clase.id!));
 			} else if (authStore.isProfesor) {
 				// Use the new mis-clases endpoint for teachers
 				response = await ClaseService.getMisClases();
@@ -149,6 +153,8 @@
 
 	// Check if user is enrolled in a class
 	function isEnrolled(clase: DTOClase): boolean {
+		// For now, use the existing logic
+		// In the future, we could use the new enrollment status endpoint
 		return (
 			authStore.isAlumno &&
 			!!authStore.user?.sub &&

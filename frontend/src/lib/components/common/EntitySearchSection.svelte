@@ -30,7 +30,12 @@
 	}>();
 
 	// Local state for input values to prevent focus loss
-	let localFilters = $derived({ ...currentFilters });
+	let localFilters = $state({ ...currentFilters });
+
+	// Update localFilters when currentFilters changes, but preserve object reference for binding
+	$effect(() => {
+		Object.assign(localFilters, currentFilters);
+	});
 
 	// Debounced search
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;

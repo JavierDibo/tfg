@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import type { DTOAlumno, DTOActualizacionAlumno } from '$lib/generated/api';
+	import type { DTOAlumno, DTOActualizacionAlumno, DTOClase } from '$lib/generated/api';
 	import { AlumnoService } from '$lib/services/alumnoService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 
@@ -17,6 +17,8 @@
 	let saving = $state(false);
 	let error = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
+	let enrolledClasses = $state<DTOClase[]>([]);
+	let loadingClasses = $state(false);
 
 	// Edit form state
 	let editForm: DTOActualizacionAlumno = $state({});
@@ -40,6 +42,15 @@
 
 	const canChangeStatus = $derived(() => authStore.isAdmin);
 
+	// Check if current user is viewing their own profile
+	const isOwnProfile = $derived(() => {
+		if (!alumno || !authStore.user) return false;
+		return authStore.user.usuario === alumno.usuario || authStore.user.sub === alumno.usuario;
+	});
+
+	// Check if user can see sensitive information (admin only)
+	const canSeeSensitiveInfo = $derived(() => authStore.isAdmin);
+
 	// Check authentication
 	$effect(() => {
 		if (!authStore.isAuthenticated) {
@@ -60,6 +71,13 @@
 		loadAlumno();
 	});
 
+	// Load enrolled classes if viewing own profile or if admin is viewing any profile
+	$effect(() => {
+		if (alumno && (isOwnProfile() || authStore.isAdmin)) {
+			loadEnrolledClasses();
+		}
+	});
+
 	async function loadAlumno() {
 		if (!studentId || isNaN(studentId)) {
 			error = 'ID de alumno inválido';
@@ -70,22 +88,48 @@
 		error = null;
 
 		try {
-			alumno = await AlumnoService.getAlumnoById(studentId);
+			// If student is viewing their own profile, use the new endpoint
+			if (isOwnProfile()) {
+				alumno = await AlumnoService.getMiPerfil();
+			} else {
+				alumno = await AlumnoService.getAlumnoById(studentId);
 
-			// Check if current user can access this profile
-			if (!authStore.isAdmin && !authStore.isProfesor) {
-				if (
-					!authStore.isAlumno ||
-					(authStore.user?.usuario !== alumno.usuario && authStore.user?.sub !== alumno.usuario)
-				) {
-					error = 'No tienes permisos para ver este perfil';
-					return;
+				// Check if current user can access this profile
+				if (!authStore.isAdmin && !authStore.isProfesor) {
+					if (
+						!authStore.isAlumno ||
+						(authStore.user?.usuario !== alumno.usuario && authStore.user?.sub !== alumno.usuario)
+					) {
+						error = 'No tienes permisos para ver este perfil';
+						return;
+					}
 				}
 			}
 		} catch (err) {
 			error = `Error al cargar el alumno: ${err}`;
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function loadEnrolledClasses() {
+		if (!alumno?.id) return;
+
+		try {
+			loadingClasses = true;
+
+			// Use different endpoints based on who is viewing the profile
+			if (isOwnProfile()) {
+				// Student viewing their own profile - use the dedicated endpoint
+				enrolledClasses = await AlumnoService.getMisClasesInscritas();
+			} else if (authStore.isAdmin) {
+				// Admin viewing any student's profile - use the admin endpoint
+				enrolledClasses = await AlumnoService.getClasesInscritasByAlumnoId(alumno.id);
+			}
+		} catch (err) {
+			console.error('Error loading enrolled classes:', err);
+		} finally {
+			loadingClasses = false;
 		}
 	}
 
@@ -778,6 +822,79 @@
 						</div>
 					{/if}
 				</div>
+
+				<!-- Enrolled Classes Section (for own profile or admin viewing any profile) -->
+				{#if isOwnProfile() || authStore.isAdmin}
+					<div class="rounded-lg bg-white p-6 shadow-md">
+						<h3 class="mb-4 text-lg font-semibold text-gray-900">
+							{#if isOwnProfile()}
+								Mis Clases Inscritas
+							{:else}
+								Clases Inscritas
+							{/if}
+						</h3>
+
+						{#if loadingClasses}
+							<div class="py-4 text-center">
+								<div
+									class="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"
+								></div>
+								<p class="mt-2 text-sm text-gray-600">Cargando clases...</p>
+							</div>
+						{:else if enrolledClasses.length === 0}
+							<div class="py-4 text-center">
+								<p class="text-gray-500">
+									{#if isOwnProfile()}
+										No estás inscrito en ninguna clase
+									{:else}
+										El alumno no está inscrito en ninguna clase
+									{/if}
+								</p>
+								{#if isOwnProfile()}
+									<button
+										onclick={() => goto('/clases')}
+										class="mt-2 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+									>
+										Explorar Clases
+									</button>
+								{/if}
+							</div>
+						{:else}
+							<div class="space-y-3">
+								{#each enrolledClasses as clase (clase.id)}
+									<div
+										class="flex items-center justify-between rounded-lg border p-3 hover:bg-gray-50"
+									>
+										<div class="flex-1">
+											<h4 class="font-medium text-gray-900">{clase.titulo}</h4>
+											<p class="text-sm text-gray-600">{clase.descripcion}</p>
+											<div class="mt-1 flex items-center gap-4 text-xs text-gray-500">
+												<span class="flex items-center">
+													<span class="mr-1">💰</span>
+													{clase.precio}€
+												</span>
+												<span class="flex items-center">
+													<span class="mr-1">📚</span>
+													{clase.nivel}
+												</span>
+												<span class="flex items-center">
+													<span class="mr-1">📍</span>
+													{clase.presencialidad}
+												</span>
+											</div>
+										</div>
+										<button
+											onclick={() => goto(`/clases/${clase.id}`)}
+											class="rounded-md bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
+										>
+											Ver Detalles
+										</button>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/if}
 			</div>
 
 			<!-- Action Panel -->
@@ -812,30 +929,41 @@
 					<h3 class="mb-4 text-lg font-semibold text-gray-900">Información Rápida</h3>
 
 					<div class="space-y-3">
-						<div class="flex justify-between">
-							<span class="text-sm text-gray-600">ID del Alumno:</span>
-							<span class="text-sm font-medium text-gray-900">#{alumno.id}</span>
-						</div>
+						{#if canSeeSensitiveInfo()}
+							<div class="flex justify-between">
+								<span class="text-sm text-gray-600">ID del Alumno:</span>
+								<span class="text-sm font-medium text-gray-900">#{alumno.id}</span>
+							</div>
+
+							<div class="flex justify-between">
+								<span class="text-sm text-gray-600">Estado:</span>
+								<span
+									class="text-sm font-medium {alumno.enabled ? 'text-green-600' : 'text-red-600'}"
+								>
+									{alumno.enabled ? 'Activo' : 'Inactivo'}
+								</span>
+							</div>
+						{/if}
 
 						<div class="flex justify-between">
-							<span class="text-sm text-gray-600">Estado:</span>
-							<span
-								class="text-sm font-medium {alumno.enabled ? 'text-green-600' : 'text-red-600'}"
-							>
-								{alumno.enabled ? 'Activo' : 'Inactivo'}
-							</span>
-						</div>
-
-						<div class="flex justify-between">
-							<span class="text-sm text-gray-600">Matrícula:</span>
+							<span class="text-sm text-gray-600">Estado de Matrícula:</span>
 							<span
 								class="text-sm font-medium {alumno.matriculado
 									? 'text-green-600'
 									: 'text-yellow-600'}"
 							>
-								{alumno.matriculado ? 'Sí' : 'No'}
+								{alumno.matriculado ? 'Matriculado' : 'No Matriculado'}
 							</span>
 						</div>
+
+						{#if isOwnProfile()}
+							<div class="flex justify-between">
+								<span class="text-sm text-gray-600">Clases Inscritas:</span>
+								<span class="text-sm font-medium text-blue-600">
+									{alumno.clasesId?.length || 0} clases
+								</span>
+							</div>
+						{/if}
 					</div>
 				</div>
 

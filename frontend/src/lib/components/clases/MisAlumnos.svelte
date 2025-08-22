@@ -113,7 +113,7 @@
 		</div>
 	{:else if allAlumnos.length > 0}
 		<div class="space-y-3">
-			{#each allAlumnos as { alumno, clase } (alumno.id)}
+			{#each allAlumnos as { alumno, clase } (`${alumno.id}-${clase.id}`)}
 				<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
 					<div class="flex items-center">
 						<div class="flex-shrink-0">

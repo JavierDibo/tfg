@@ -163,14 +163,52 @@ export const ProfesorService = {
 
 	async getStatistics(): Promise<ProfesorStatistics> {
 		try {
-			// Get total counts from the API endpoints
-			const totalStats = await profesorApi.obtenerTotalProfesores();
-			const habilitacionStats = await profesorApi.obtenerEstadisticasHabilitacion();
+			let totalCount = 0;
+			let activeCount = 0;
+			let inactiveCount = 0;
+
+			// Try to get total count, but handle gracefully if endpoint doesn't exist
+			try {
+				const totalStats = await profesorApi.obtenerTotalProfesores();
+				totalCount = totalStats['total'] || 0;
+			} catch (totalError) {
+				console.warn('Total professors endpoint not available, using fallback:', totalError);
+				// Fallback: get all professors and count them
+				try {
+					const allProfesores = await this.getAllProfesores({});
+					totalCount = allProfesores.length;
+				} catch (fallbackError) {
+					console.error('Fallback for total count also failed:', fallbackError);
+					totalCount = 0;
+				}
+			}
+
+			// Try to get habilitacion statistics
+			try {
+				const habilitacionStats = await profesorApi.obtenerEstadisticasHabilitacion();
+				activeCount = habilitacionStats['habilitados'] || 0;
+				inactiveCount = habilitacionStats['noHabilitados'] || 0;
+			} catch (habilitacionError) {
+				console.warn(
+					'Habilitacion statistics endpoint not available, using fallback:',
+					habilitacionError
+				);
+				// Fallback: count enabled/disabled from all professors
+				try {
+					const allProfesores = await this.getAllProfesores({});
+					activeCount = allProfesores.filter((p) => p.enabled).length;
+					inactiveCount = allProfesores.filter((p) => !p.enabled).length;
+				} catch (fallbackError) {
+					console.error('Fallback for habilitacion count also failed:', fallbackError);
+					activeCount = 0;
+					inactiveCount = 0;
+				}
+			}
 
 			return {
-				totalCount: totalStats['total'] || 0,
-				activeCount: habilitacionStats['habilitados'] || 0,
-				inactiveCount: habilitacionStats['noHabilitados'] || 0,
+				totalCount,
+				activeCount,
+				inactiveCount,
 				newThisMonth: 0, // TODO: Implement when API provides this data
 				newThisYear: 0 // TODO: Implement when API provides this data
 			};

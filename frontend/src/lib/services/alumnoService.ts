@@ -2,7 +2,9 @@ import type {
 	DTOAlumno,
 	DTOPeticionRegistroAlumno,
 	DTOActualizacionAlumno,
-	DTORespuestaPaginadaDTOAlumno
+	DTORespuestaPaginadaDTOAlumno,
+	DTOPerfilAlumno,
+	DTOClaseInscrita
 } from '$lib/generated/api';
 import { alumnoApi } from '$lib/api';
 
@@ -141,6 +143,47 @@ export class AlumnoService {
 			return response;
 		} catch (error) {
 			console.error('Error fetching alumno by ID:', error);
+			throw this.handleApiError(error);
+		}
+	}
+
+	/**
+	 * Get student's own profile (without sensitive information)
+	 */
+	static async getMiPerfil(): Promise<DTOPerfilAlumno> {
+		try {
+			const response = await alumnoApi.obtenerMiPerfil();
+			return response;
+		} catch (error) {
+			console.error('Error fetching student profile:', error);
+			throw this.handleApiError(error);
+		}
+	}
+
+	/**
+	 * Get student's enrolled classes with teacher details (uses ClaseRestApi)
+	 */
+	static async getMisClasesInscritas(): Promise<DTOClaseInscrita[]> {
+		try {
+			// This method is in ClaseRestApi, we'll need to import it from there
+			const { claseApi } = await import('$lib/api');
+			const response = await claseApi.obtenerMisClasesInscritas();
+			return response;
+		} catch (error) {
+			console.error('Error fetching enrolled classes:', error);
+			throw this.handleApiError(error);
+		}
+	}
+
+	/**
+	 * Get student's enrolled classes by student ID (for admin/professor use)
+	 */
+	static async getClasesInscritasByAlumnoId(alumnoId: number): Promise<DTOClaseInscrita[]> {
+		try {
+			const response = await alumnoApi.obtenerClasesInscritasConDetalles({ alumnoId });
+			return response;
+		} catch (error) {
+			console.error(`Error fetching enrolled classes for student ${alumnoId}:`, error);
 			throw this.handleApiError(error);
 		}
 	}

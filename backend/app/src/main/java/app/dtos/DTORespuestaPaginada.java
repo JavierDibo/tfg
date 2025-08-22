@@ -1,50 +1,65 @@
 package app.dtos;
 
-import org.springframework.data.domain.Page;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
-/**
- * DTO para respuestas paginadas que incluye tanto el contenido como los metadatos de paginación.
- * Sigue las mejores prácticas de REST API según Spring Boot.
- * 
- * @param <T> El tipo de contenido de la página
- */
+@Schema(description = "Respuesta paginada genérica")
 public record DTORespuestaPaginada<T>(
-    List<T> content,           // Contenido de la página actual
-    DTOMetadatosPaginacion page // Metadatos de paginación
-) {
+    @Schema(description = "Lista de elementos de la página actual", required = true)
+    List<T> contenido,
     
-    /**
-     * Constructor que convierte un Page de Spring Data en DTORespuestaPaginada
-     */
-    public DTORespuestaPaginada(Page<T> page) {
-        this(
-            page.getContent(),
-            new DTOMetadatosPaginacion(
-                page.getNumber(),           // página actual (0-indexed)
-                page.getSize(),             // tamaño de página
-                page.getTotalElements(),    // total de elementos
-                page.getTotalPages(),       // total de páginas
-                page.isFirst(),             // es la primera página
-                page.isLast(),              // es la última página
-                page.hasNext(),             // tiene página siguiente
-                page.hasPrevious()          // tiene página anterior
-            )
+    @Schema(description = "Número de página actual (0-indexed)", example = "0", required = true)
+    int numeroPagina,
+    
+    @Schema(description = "Tamaño de la página", example = "20", required = true)
+    int tamanoPagina,
+    
+    @Schema(description = "Número total de elementos", example = "150", required = true)
+    long totalElementos,
+    
+    @Schema(description = "Número total de páginas", example = "8", required = true)
+    int totalPaginas,
+    
+    @Schema(description = "Indica si es la primera página", example = "true", required = true)
+    boolean esPrimera,
+    
+    @Schema(description = "Indica si es la última página", example = "false", required = true)
+    boolean esUltima,
+    
+    @Schema(description = "Indica si la página tiene contenido", example = "true", required = true)
+    boolean tieneContenido,
+    
+    @Schema(description = "Campo por el que está ordenado", example = "id", required = true)
+    String ordenadoPor,
+    
+    @Schema(description = "Dirección de ordenación", example = "ASC", required = true)
+    String direccionOrden
+) {
+    public static <T> DTORespuestaPaginada<T> of(
+            List<T> contenido,
+            int numeroPagina,
+            int tamanoPagina,
+            long totalElementos,
+            String ordenadoPor,
+            String direccionOrden) {
+        
+        int totalPaginas = (int) Math.ceil((double) totalElementos / tamanoPagina);
+        boolean esPrimera = numeroPagina == 0;
+        boolean esUltima = numeroPagina >= totalPaginas - 1;
+        boolean tieneContenido = !contenido.isEmpty();
+        
+        return new DTORespuestaPaginada<>(
+                contenido,
+                numeroPagina,
+                tamanoPagina,
+                totalElementos,
+                totalPaginas,
+                esPrimera,
+                esUltima,
+                tieneContenido,
+                ordenadoPor,
+                direccionOrden
         );
     }
-    
-    /**
-     * Record para los metadatos de paginación siguiendo las convenciones de Spring Boot
-     */
-    public record DTOMetadatosPaginacion(
-        int number,                    // Número de página actual (0-indexed)
-        int size,                      // Tamaño de la página
-        long totalElements,            // Total de elementos en todas las páginas
-        int totalPages,                // Total de páginas
-        boolean first,                 // Indica si es la primera página
-        boolean last,                  // Indica si es la última página
-        boolean hasNext,               // Indica si hay página siguiente
-        boolean hasPrevious            // Indica si hay página anterior
-    ) {}
 }

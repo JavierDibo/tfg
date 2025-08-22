@@ -5,7 +5,9 @@ import {
 	type DTORespuestaPaginadaDTOAlumno,
 	type Material,
 	type DTOPeticionEnrollment,
-	type DTORespuestaEnrollment
+	type DTORespuestaEnrollment,
+	type DTOClaseConDetalles,
+	type DTOEstadoInscripcion
 } from '$lib/generated/api';
 import { claseApi } from '$lib/api';
 
@@ -101,6 +103,45 @@ export const ClaseService = {
 		}
 	},
 
+	// Get class details with enrollment status for current student
+	async getClaseDetailsForMe(claseId: number): Promise<DTOClaseConDetalles> {
+		try {
+			const response = await claseApi.obtenerClaseConDetallesParaMi({ claseId });
+			return response;
+		} catch (error) {
+			console.error(`Error fetching class details for student, class ${claseId}:`, error);
+			throw error;
+		}
+	},
+
+	// Check enrollment status for current student
+	async getEnrollmentStatus(claseId: number): Promise<DTOEstadoInscripcion> {
+		try {
+			const response = await claseApi.verificarMiEstadoInscripcion({ claseId });
+			return response;
+		} catch (error) {
+			console.error(`Error checking enrollment status for class ${claseId}:`, error);
+			throw error;
+		}
+	},
+
+	// Check enrollment status for specific student (admin/professor use)
+	async getEnrollmentStatusForStudent(
+		claseId: number,
+		alumnoId: number
+	): Promise<DTOEstadoInscripcion> {
+		try {
+			const response = await claseApi.verificarEstadoInscripcion({ claseId, alumnoId });
+			return response;
+		} catch (error) {
+			console.error(
+				`Error checking enrollment status for student ${alumnoId} in class ${claseId}:`,
+				error
+			);
+			throw error;
+		}
+	},
+
 	// Get students in a class with pagination
 	async getAlumnosDeClase(
 		claseId: number,
@@ -110,7 +151,7 @@ export const ClaseService = {
 			sortBy?: string;
 			sortDirection?: SortDirection;
 		} = {}
-	): Promise<DTORespuestaPaginadaDTOAlumno> {
+	): Promise<DTORespuestaPaginadaObject> {
 		try {
 			const { page, size, sortBy, sortDirection } = pagination;
 			const response = await claseApi.obtenerAlumnosDeClase({

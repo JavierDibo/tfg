@@ -10,6 +10,13 @@ import app.dtos.DTORespuestaPaginada;
 import app.servicios.ServicioAlumno;
 import app.servicios.ServicioClase;
 import app.util.SecurityUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -28,6 +35,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @CrossOrigin(origins = {"http://localhost:8080", "http://localhost:5173"})
 @Validated
+@Tag(name = "Alumnos", description = "API para gestión de alumnos")
 public class AlumnoRest {
 
     private final ServicioAlumno servicioAlumno;
@@ -37,15 +45,42 @@ public class AlumnoRest {
     // Endpoint con paginación (recomendado)
     @GetMapping("/paged")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @Operation(
+        summary = "Obtener alumnos paginados",
+        description = "Obtiene una lista paginada de alumnos con filtros opcionales (requiere rol ADMIN o PROFESOR)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista paginada de alumnos obtenida exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTORespuestaPaginada.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Se requiere rol ADMIN o PROFESOR"
+        )
+    })
     public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosPaginados(
+            @Parameter(description = "Nombre del alumno para filtrar", required = false)
             @RequestParam(required = false) @Size(max = 100) String nombre,
+            @Parameter(description = "Apellidos del alumno para filtrar", required = false)
             @RequestParam(required = false) @Size(max = 100) String apellidos,
+            @Parameter(description = "DNI del alumno para filtrar", required = false)
             @RequestParam(required = false) @Size(max = 20) String dni,
+            @Parameter(description = "Email del alumno para filtrar", required = false)
             @RequestParam(required = false) String email,
+            @Parameter(description = "Estado de matriculación para filtrar", required = false)
             @RequestParam(required = false) Boolean matriculado,
+            @Parameter(description = "Número de página (0-indexed)", required = false)
             @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "Tamaño de página", required = false)
             @RequestParam(defaultValue = "20") @Min(1) int size,
+            @Parameter(description = "Campo por el que ordenar", required = false)
             @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Dirección de ordenación (ASC/DESC)", required = false)
             @RequestParam(defaultValue = "ASC") String sortDirection) {
         
         DTOParametrosBusquedaAlumno parametros = new DTOParametrosBusquedaAlumno(
@@ -67,10 +102,32 @@ public class AlumnoRest {
      */
     @GetMapping("/disponibles")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @Operation(
+        summary = "Obtener alumnos disponibles",
+        description = "Obtiene una lista paginada de alumnos habilitados y matriculados para inscripción (requiere rol ADMIN o PROFESOR)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista paginada de alumnos disponibles obtenida exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTORespuestaPaginada.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Se requiere rol ADMIN o PROFESOR"
+        )
+    })
     public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosDisponibles(
+            @Parameter(description = "Número de página (0-indexed)", required = false)
             @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "Tamaño de página", required = false)
             @RequestParam(defaultValue = "50") @Min(1) int size,
+            @Parameter(description = "Campo por el que ordenar", required = false)
             @RequestParam(defaultValue = "nombre") String sortBy,
+            @Parameter(description = "Dirección de ordenación (ASC/DESC)", required = false)
             @RequestParam(defaultValue = "ASC") String sortDirection) {
         
         // Obtener todos los alumnos habilitados y matriculados
@@ -84,11 +141,34 @@ public class AlumnoRest {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Deprecated(since = "1.1", forRemoval = true)
+    @Operation(
+        summary = "Obtener alumnos (DEPRECATED)",
+        description = "Obtiene una lista de alumnos con filtros opcionales sin paginación (DEPRECATED - usar /paged)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista de alumnos obtenida exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumno.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Se requiere rol ADMIN o PROFESOR"
+        )
+    })
     public ResponseEntity<List<DTOAlumno>> obtenerAlumnos(
+            @Parameter(description = "Nombre del alumno para filtrar", required = false)
             @RequestParam(required = false) @Size(max = 100) String nombre,
+            @Parameter(description = "Apellidos del alumno para filtrar", required = false)
             @RequestParam(required = false) @Size(max = 100) String apellidos,
+            @Parameter(description = "DNI del alumno para filtrar", required = false)
             @RequestParam(required = false) @Size(max = 20) String dni,
+            @Parameter(description = "Email del alumno para filtrar", required = false)
             @RequestParam(required = false) String email,
+            @Parameter(description = "Estado de matriculación para filtrar", required = false)
             @RequestParam(required = false) Boolean matriculado) {
         
         DTOParametrosBusquedaAlumno parametros = new DTOParametrosBusquedaAlumno(
@@ -100,7 +180,30 @@ public class AlumnoRest {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #id == authentication.principal.id)")
+    @Operation(
+        summary = "Obtener alumno por ID",
+        description = "Obtiene un alumno específico por su ID. Los alumnos solo pueden ver su propio perfil."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Alumno encontrado exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumno.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Alumno no encontrado"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - No autorizado para ver este alumno"
+        )
+    })
     public ResponseEntity<DTOAlumno> obtenerAlumnoPorId(
+            @Parameter(description = "ID del alumno", required = true)
             @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id) {
         
         DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoPorId(id);
@@ -109,7 +212,30 @@ public class AlumnoRest {
 
     @GetMapping("/usuario/{usuario}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #usuario == authentication.principal.username)")
+    @Operation(
+        summary = "Obtener alumno por usuario",
+        description = "Obtiene un alumno específico por su nombre de usuario. Los alumnos solo pueden ver su propio perfil."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Alumno encontrado exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumno.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Alumno no encontrado"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - No autorizado para ver este alumno"
+        )
+    })
     public ResponseEntity<DTOAlumno> obtenerAlumnoPorUsuario(
+            @Parameter(description = "Nombre de usuario del alumno", required = true)
             @PathVariable @Size(max = 50) String usuario) {
         
         DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoPorUsuario(usuario);
@@ -118,7 +244,30 @@ public class AlumnoRest {
 
     @GetMapping("/email/{email}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+        summary = "Obtener alumno por email",
+        description = "Obtiene un alumno específico por su email (requiere rol ADMIN)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Alumno encontrado exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumno.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Alumno no encontrado"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Se requiere rol ADMIN"
+        )
+    })
     public ResponseEntity<DTOAlumno> obtenerAlumnoPorEmail(
+            @Parameter(description = "Email del alumno", required = true)
             @PathVariable String email) {
         
         DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoPorEmail(email);
@@ -127,7 +276,30 @@ public class AlumnoRest {
 
     @GetMapping("/dni/{dni}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+        summary = "Obtener alumno por DNI",
+        description = "Obtiene un alumno específico por su DNI (requiere rol ADMIN)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Alumno encontrado exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumno.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Alumno no encontrado"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Se requiere rol ADMIN"
+        )
+    })
     public ResponseEntity<DTOAlumno> obtenerAlumnoPorDni(
+            @Parameter(description = "DNI del alumno", required = true)
             @PathVariable @Size(max = 20) String dni) {
         
         DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoPorDni(dni);
@@ -136,10 +308,32 @@ public class AlumnoRest {
 
     @GetMapping("/matriculados/paged")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @Operation(
+        summary = "Obtener alumnos matriculados paginados",
+        description = "Obtiene una lista paginada de alumnos matriculados (requiere rol ADMIN o PROFESOR)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista paginada de alumnos matriculados obtenida exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTORespuestaPaginada.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Acceso denegado - Se requiere rol ADMIN o PROFESOR"
+        )
+    })
     public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosMatriculadosPaginados(
+            @Parameter(description = "Número de página (0-indexed)", required = false)
             @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "Tamaño de página", required = false)
             @RequestParam(defaultValue = "20") @Min(1) int size,
+            @Parameter(description = "Campo por el que ordenar", required = false)
             @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Dirección de ordenación (ASC/DESC)", required = false)
             @RequestParam(defaultValue = "ASC") String sortDirection) {
         
         DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.obtenerAlumnosPorMatriculadoPaginados(

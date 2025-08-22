@@ -16,115 +16,103 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface DTOAlumno
+ * @interface DTOPerfilAlumno
  */
-export interface DTOAlumno {
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOAlumno
-     */
-    id?: number;
+export interface DTOPerfilAlumno {
     /**
      * 
      * @type {string}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     usuario: string;
     /**
      * 
      * @type {string}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     nombre: string;
     /**
      * 
      * @type {string}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     apellidos: string;
     /**
      * 
      * @type {string}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     dni: string;
     /**
      * 
      * @type {string}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     email: string;
     /**
      * 
      * @type {string}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     numeroTelefono?: string;
     /**
      * 
      * @type {Date}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     fechaInscripcion?: Date;
     /**
      * 
      * @type {boolean}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     matriculado?: boolean;
     /**
      * 
-     * @type {boolean}
-     * @memberof DTOAlumno
-     */
-    enabled?: boolean;
-    /**
-     * 
      * @type {Array<string>}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     clasesId?: Array<string>;
     /**
      * 
      * @type {Array<string>}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     pagosId?: Array<string>;
     /**
      * 
      * @type {Array<string>}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     entregasId?: Array<string>;
     /**
      * 
      * @type {string}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
-    rol?: DTOAlumnoRolEnum;
+    rol?: DTOPerfilAlumnoRolEnum;
     /**
      * 
      * @type {number}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     numeroClases?: number;
     /**
      * 
      * @type {string}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     nombreCompleto?: string;
     /**
      * 
      * @type {number}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     numeroPagos?: number;
     /**
      * 
      * @type {number}
-     * @memberof DTOAlumno
+     * @memberof DTOPerfilAlumno
      */
     numeroEntregas?: number;
 }
@@ -133,19 +121,19 @@ export interface DTOAlumno {
 /**
  * @export
  */
-export const DTOAlumnoRolEnum = {
+export const DTOPerfilAlumnoRolEnum = {
     Admin: 'ADMIN',
     Profesor: 'PROFESOR',
     Alumno: 'ALUMNO',
     Usuario: 'USUARIO'
 } as const;
-export type DTOAlumnoRolEnum = typeof DTOAlumnoRolEnum[keyof typeof DTOAlumnoRolEnum];
+export type DTOPerfilAlumnoRolEnum = typeof DTOPerfilAlumnoRolEnum[keyof typeof DTOPerfilAlumnoRolEnum];
 
 
 /**
- * Check if a given object implements the DTOAlumno interface.
+ * Check if a given object implements the DTOPerfilAlumno interface.
  */
-export function instanceOfDTOAlumno(value: object): value is DTOAlumno {
+export function instanceOfDTOPerfilAlumno(value: object): value is DTOPerfilAlumno {
     if (!('usuario' in value) || value['usuario'] === undefined) return false;
     if (!('nombre' in value) || value['nombre'] === undefined) return false;
     if (!('apellidos' in value) || value['apellidos'] === undefined) return false;
@@ -154,17 +142,16 @@ export function instanceOfDTOAlumno(value: object): value is DTOAlumno {
     return true;
 }
 
-export function DTOAlumnoFromJSON(json: any): DTOAlumno {
-    return DTOAlumnoFromJSONTyped(json, false);
+export function DTOPerfilAlumnoFromJSON(json: any): DTOPerfilAlumno {
+    return DTOPerfilAlumnoFromJSONTyped(json, false);
 }
 
-export function DTOAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOAlumno {
+export function DTOPerfilAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOPerfilAlumno {
     if (json == null) {
         return json;
     }
     return {
         
-        'id': json['id'] == null ? undefined : json['id'],
         'usuario': json['usuario'],
         'nombre': json['nombre'],
         'apellidos': json['apellidos'],
@@ -173,7 +160,6 @@ export function DTOAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'numeroTelefono': json['numeroTelefono'] == null ? undefined : json['numeroTelefono'],
         'fechaInscripcion': json['fechaInscripcion'] == null ? undefined : (new Date(json['fechaInscripcion'])),
         'matriculado': json['matriculado'] == null ? undefined : json['matriculado'],
-        'enabled': json['enabled'] == null ? undefined : json['enabled'],
         'clasesId': json['clasesId'] == null ? undefined : json['clasesId'],
         'pagosId': json['pagosId'] == null ? undefined : json['pagosId'],
         'entregasId': json['entregasId'] == null ? undefined : json['entregasId'],
@@ -185,18 +171,17 @@ export function DTOAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     };
 }
 
-export function DTOAlumnoToJSON(json: any): DTOAlumno {
-    return DTOAlumnoToJSONTyped(json, false);
+export function DTOPerfilAlumnoToJSON(json: any): DTOPerfilAlumno {
+    return DTOPerfilAlumnoToJSONTyped(json, false);
 }
 
-export function DTOAlumnoToJSONTyped(value?: DTOAlumno | null, ignoreDiscriminator: boolean = false): any {
+export function DTOPerfilAlumnoToJSONTyped(value?: DTOPerfilAlumno | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
 
     return {
         
-        'id': value['id'],
         'usuario': value['usuario'],
         'nombre': value['nombre'],
         'apellidos': value['apellidos'],
@@ -205,7 +190,6 @@ export function DTOAlumnoToJSONTyped(value?: DTOAlumno | null, ignoreDiscriminat
         'numeroTelefono': value['numeroTelefono'],
         'fechaInscripcion': value['fechaInscripcion'] == null ? undefined : ((value['fechaInscripcion']).toISOString()),
         'matriculado': value['matriculado'],
-        'enabled': value['enabled'],
         'clasesId': value['clasesId'],
         'pagosId': value['pagosId'],
         'entregasId': value['entregasId'],

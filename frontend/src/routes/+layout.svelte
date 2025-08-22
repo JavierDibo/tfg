@@ -33,13 +33,19 @@
 									href="/alumnos/estadisticas"
 									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 								>
-									Estadísticas
+									Estadísticas Alumnos
 								</a>
 								<a
 									href="/profesores"
 									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 								>
 									Profesores
+								</a>
+								<a
+									href="/profesores/estadisticas"
+									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+								>
+									Estadísticas Profesores
 								</a>
 								<a
 									href="/entidades"
@@ -62,10 +68,16 @@
 									Mis Alumnos
 								</a>
 								<a
-									href="/alumnos/estadisticas"
+									href="/profesores/estadisticas"
 									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 								>
 									Estadísticas
+								</a>
+								<a
+									href="/profesores/perfil"
+									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+								>
+									Mi Perfil
 								</a>
 								<!-- Student Navigation -->
 							{:else if authStore.isAlumno}

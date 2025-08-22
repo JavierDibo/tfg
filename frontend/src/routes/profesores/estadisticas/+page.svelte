@@ -26,7 +26,7 @@
 			return;
 		}
 
-		if (!authStore.isAdmin) {
+		if (!authStore.isAdmin && !authStore.isProfesor) {
 			goto('/');
 			return;
 		}
