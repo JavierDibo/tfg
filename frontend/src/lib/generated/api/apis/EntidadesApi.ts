@@ -12,279 +12,317 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  DTOEntidad,
-} from '../models/index';
-import {
-    DTOEntidadFromJSON,
-    DTOEntidadToJSON,
-} from '../models/index';
+import type { DTOEntidad } from '../models/index';
+import { DTOEntidadFromJSON, DTOEntidadToJSON } from '../models/index';
 
 export interface ActualizarEntidadRequest {
-    id: number;
-    dTOEntidad: DTOEntidad;
+	id: number;
+	dTOEntidad: DTOEntidad;
 }
 
 export interface BorrarEntidadPorIdRequest {
-    id: number;
+	id: number;
 }
 
 export interface CrearEntidadRequest {
-    dTOEntidad: DTOEntidad;
+	dTOEntidad: DTOEntidad;
 }
 
 export interface ObtenerEntidadPorIdRequest {
-    id: number;
+	id: number;
 }
 
 export interface ObtenerEntidadesRequest {
-    info?: string;
-    otraInfo?: string;
+	info?: string;
+	otraInfo?: string;
 }
 
 /**
- * 
+ *
  */
 export class EntidadesApi extends runtime.BaseAPI {
+	/**
+	 * Actualiza parcialmente una entidad existente
+	 * Actualizar entidad
+	 */
+	async actualizarEntidadRaw(
+		requestParameters: ActualizarEntidadRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOEntidad>> {
+		if (requestParameters['id'] == null) {
+			throw new runtime.RequiredError(
+				'id',
+				'Required parameter "id" was null or undefined when calling actualizarEntidad().'
+			);
+		}
 
-    /**
-     * Actualiza parcialmente una entidad existente
-     * Actualizar entidad
-     */
-    async actualizarEntidadRaw(requestParameters: ActualizarEntidadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntidad>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling actualizarEntidad().'
-            );
-        }
+		if (requestParameters['dTOEntidad'] == null) {
+			throw new runtime.RequiredError(
+				'dTOEntidad',
+				'Required parameter "dTOEntidad" was null or undefined when calling actualizarEntidad().'
+			);
+		}
 
-        if (requestParameters['dTOEntidad'] == null) {
-            throw new runtime.RequiredError(
-                'dTOEntidad',
-                'Required parameter "dTOEntidad" was null or undefined when calling actualizarEntidad().'
-            );
-        }
+		const queryParameters: any = {};
 
-        const queryParameters: any = {};
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		headerParameters['Content-Type'] = 'application/json';
 
-        headerParameters['Content-Type'] = 'application/json';
+		let urlPath = `/api/entidades/{id}`;
+		urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
 
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'PATCH',
+				headers: headerParameters,
+				query: queryParameters,
+				body: DTOEntidadToJSON(requestParameters['dTOEntidad'])
+			},
+			initOverrides
+		);
 
-        let urlPath = `/api/entidades/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
+	}
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'PATCH',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOEntidadToJSON(requestParameters['dTOEntidad']),
-        }, initOverrides);
+	/**
+	 * Actualiza parcialmente una entidad existente
+	 * Actualizar entidad
+	 */
+	async actualizarEntidad(
+		requestParameters: ActualizarEntidadRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOEntidad> {
+		const response = await this.actualizarEntidadRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
-    }
+	/**
+	 * Elimina una entidad específica por su identificador
+	 * Borrar entidad por ID
+	 */
+	async borrarEntidadPorIdRaw(
+		requestParameters: BorrarEntidadPorIdRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOEntidad>> {
+		if (requestParameters['id'] == null) {
+			throw new runtime.RequiredError(
+				'id',
+				'Required parameter "id" was null or undefined when calling borrarEntidadPorId().'
+			);
+		}
 
-    /**
-     * Actualiza parcialmente una entidad existente
-     * Actualizar entidad
-     */
-    async actualizarEntidad(requestParameters: ActualizarEntidadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntidad> {
-        const response = await this.actualizarEntidadRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
+		const queryParameters: any = {};
 
-    /**
-     * Elimina una entidad específica por su identificador
-     * Borrar entidad por ID
-     */
-    async borrarEntidadPorIdRaw(requestParameters: BorrarEntidadPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntidad>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling borrarEntidadPorId().'
-            );
-        }
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        const queryParameters: any = {};
+		let urlPath = `/api/entidades/{id}`;
+		urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'DELETE',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
+	}
 
-        let urlPath = `/api/entidades/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+	/**
+	 * Elimina una entidad específica por su identificador
+	 * Borrar entidad por ID
+	 */
+	async borrarEntidadPorId(
+		requestParameters: BorrarEntidadPorIdRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOEntidad> {
+		const response = await this.borrarEntidadPorIdRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
+	/**
+	 * Elimina todas las entidades del sistema (requiere rol ADMIN)
+	 * Borrar todas las entidades
+	 */
+	async borrarTodasLasEntidadesRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOEntidad>> {
+		const queryParameters: any = {};
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
-    }
+		const headerParameters: runtime.HTTPHeaders = {};
 
-    /**
-     * Elimina una entidad específica por su identificador
-     * Borrar entidad por ID
-     */
-    async borrarEntidadPorId(requestParameters: BorrarEntidadPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntidad> {
-        const response = await this.borrarEntidadPorIdRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
+		let urlPath = `/api/entidades`;
 
-    /**
-     * Elimina todas las entidades del sistema (requiere rol ADMIN)
-     * Borrar todas las entidades
-     */
-    async borrarTodasLasEntidadesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntidad>> {
-        const queryParameters: any = {};
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'DELETE',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
+	}
 
+	/**
+	 * Elimina todas las entidades del sistema (requiere rol ADMIN)
+	 * Borrar todas las entidades
+	 */
+	async borrarTodasLasEntidades(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOEntidad> {
+		const response = await this.borrarTodasLasEntidadesRaw(initOverrides);
+		return await response.value();
+	}
 
-        let urlPath = `/api/entidades`;
+	/**
+	 * Crea una nueva entidad en el sistema
+	 * Crear nueva entidad
+	 */
+	async crearEntidadRaw(
+		requestParameters: CrearEntidadRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOEntidad>> {
+		if (requestParameters['dTOEntidad'] == null) {
+			throw new runtime.RequiredError(
+				'dTOEntidad',
+				'Required parameter "dTOEntidad" was null or undefined when calling crearEntidad().'
+			);
+		}
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
+		const queryParameters: any = {};
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
-    }
+		const headerParameters: runtime.HTTPHeaders = {};
 
-    /**
-     * Elimina todas las entidades del sistema (requiere rol ADMIN)
-     * Borrar todas las entidades
-     */
-    async borrarTodasLasEntidades(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntidad> {
-        const response = await this.borrarTodasLasEntidadesRaw(initOverrides);
-        return await response.value();
-    }
+		headerParameters['Content-Type'] = 'application/json';
 
-    /**
-     * Crea una nueva entidad en el sistema
-     * Crear nueva entidad
-     */
-    async crearEntidadRaw(requestParameters: CrearEntidadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntidad>> {
-        if (requestParameters['dTOEntidad'] == null) {
-            throw new runtime.RequiredError(
-                'dTOEntidad',
-                'Required parameter "dTOEntidad" was null or undefined when calling crearEntidad().'
-            );
-        }
+		let urlPath = `/api/entidades`;
 
-        const queryParameters: any = {};
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'POST',
+				headers: headerParameters,
+				query: queryParameters,
+				body: DTOEntidadToJSON(requestParameters['dTOEntidad'])
+			},
+			initOverrides
+		);
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
+	}
 
-        headerParameters['Content-Type'] = 'application/json';
+	/**
+	 * Crea una nueva entidad en el sistema
+	 * Crear nueva entidad
+	 */
+	async crearEntidad(
+		requestParameters: CrearEntidadRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOEntidad> {
+		const response = await this.crearEntidadRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
 
+	/**
+	 * Obtiene una entidad específica por su identificador
+	 * Obtener entidad por ID
+	 */
+	async obtenerEntidadPorIdRaw(
+		requestParameters: ObtenerEntidadPorIdRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOEntidad>> {
+		if (requestParameters['id'] == null) {
+			throw new runtime.RequiredError(
+				'id',
+				'Required parameter "id" was null or undefined when calling obtenerEntidadPorId().'
+			);
+		}
 
-        let urlPath = `/api/entidades`;
+		const queryParameters: any = {};
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOEntidadToJSON(requestParameters['dTOEntidad']),
-        }, initOverrides);
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
-    }
+		let urlPath = `/api/entidades/{id}`;
+		urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
 
-    /**
-     * Crea una nueva entidad en el sistema
-     * Crear nueva entidad
-     */
-    async crearEntidad(requestParameters: CrearEntidadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntidad> {
-        const response = await this.crearEntidadRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
-    /**
-     * Obtiene una entidad específica por su identificador
-     * Obtener entidad por ID
-     */
-    async obtenerEntidadPorIdRaw(requestParameters: ObtenerEntidadPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntidad>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling obtenerEntidadPorId().'
-            );
-        }
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
+	}
 
-        const queryParameters: any = {};
+	/**
+	 * Obtiene una entidad específica por su identificador
+	 * Obtener entidad por ID
+	 */
+	async obtenerEntidadPorId(
+		requestParameters: ObtenerEntidadPorIdRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOEntidad> {
+		const response = await this.obtenerEntidadPorIdRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
 
-        const headerParameters: runtime.HTTPHeaders = {};
+	/**
+	 * Obtiene todas las entidades o las filtra por parámetros de búsqueda
+	 * Obtener entidades
+	 */
+	async obtenerEntidadesRaw(
+		requestParameters: ObtenerEntidadesRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOEntidad>> {
+		const queryParameters: any = {};
 
+		if (requestParameters['info'] != null) {
+			queryParameters['info'] = requestParameters['info'];
+		}
 
-        let urlPath = `/api/entidades/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+		if (requestParameters['otraInfo'] != null) {
+			queryParameters['otraInfo'] = requestParameters['otraInfo'];
+		}
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
-    }
+		let urlPath = `/api/entidades`;
 
-    /**
-     * Obtiene una entidad específica por su identificador
-     * Obtener entidad por ID
-     */
-    async obtenerEntidadPorId(requestParameters: ObtenerEntidadPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntidad> {
-        const response = await this.obtenerEntidadPorIdRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
-    /**
-     * Obtiene todas las entidades o las filtra por parámetros de búsqueda
-     * Obtener entidades
-     */
-    async obtenerEntidadesRaw(requestParameters: ObtenerEntidadesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntidad>> {
-        const queryParameters: any = {};
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
+	}
 
-        if (requestParameters['info'] != null) {
-            queryParameters['info'] = requestParameters['info'];
-        }
-
-        if (requestParameters['otraInfo'] != null) {
-            queryParameters['otraInfo'] = requestParameters['otraInfo'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/entidades`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntidadFromJSON(jsonValue));
-    }
-
-    /**
-     * Obtiene todas las entidades o las filtra por parámetros de búsqueda
-     * Obtener entidades
-     */
-    async obtenerEntidades(requestParameters: ObtenerEntidadesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntidad> {
-        const response = await this.obtenerEntidadesRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
+	/**
+	 * Obtiene todas las entidades o las filtra por parámetros de búsqueda
+	 * Obtener entidades
+	 */
+	async obtenerEntidades(
+		requestParameters: ObtenerEntidadesRequest = {},
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOEntidad> {
+		const response = await this.obtenerEntidadesRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
 }

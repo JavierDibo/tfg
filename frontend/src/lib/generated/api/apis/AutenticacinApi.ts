@@ -12,150 +12,167 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
-import type {
-  DTOPeticionLogin,
-  DTOPeticionRegistro,
-  DTORespuestaLogin,
-} from '../models/index';
+import type { DTOPeticionLogin, DTOPeticionRegistro, DTORespuestaLogin } from '../models/index';
 import {
-    DTOPeticionLoginFromJSON,
-    DTOPeticionLoginToJSON,
-    DTOPeticionRegistroFromJSON,
-    DTOPeticionRegistroToJSON,
-    DTORespuestaLoginFromJSON,
-    DTORespuestaLoginToJSON,
+	DTOPeticionLoginFromJSON,
+	DTOPeticionLoginToJSON,
+	DTOPeticionRegistroFromJSON,
+	DTOPeticionRegistroToJSON,
+	DTORespuestaLoginFromJSON,
+	DTORespuestaLoginToJSON
 } from '../models/index';
 
 export interface LoginRequest {
-    dTOPeticionLogin: DTOPeticionLogin;
+	dTOPeticionLogin: DTOPeticionLogin;
 }
 
 export interface RegistroRequest {
-    dTOPeticionRegistro: DTOPeticionRegistro;
+	dTOPeticionRegistro: DTOPeticionRegistro;
 }
 
 /**
- * 
+ *
  */
 export class AutenticacinApi extends runtime.BaseAPI {
+	/**
+	 * Autentica un usuario con sus credenciales y devuelve un token JWT
+	 * Iniciar sesión
+	 */
+	async loginRaw(
+		requestParameters: LoginRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTORespuestaLogin>> {
+		if (requestParameters['dTOPeticionLogin'] == null) {
+			throw new runtime.RequiredError(
+				'dTOPeticionLogin',
+				'Required parameter "dTOPeticionLogin" was null or undefined when calling login().'
+			);
+		}
 
-    /**
-     * Autentica un usuario con sus credenciales y devuelve un token JWT
-     * Iniciar sesión
-     */
-    async loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaLogin>> {
-        if (requestParameters['dTOPeticionLogin'] == null) {
-            throw new runtime.RequiredError(
-                'dTOPeticionLogin',
-                'Required parameter "dTOPeticionLogin" was null or undefined when calling login().'
-            );
-        }
+		const queryParameters: any = {};
 
-        const queryParameters: any = {};
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		headerParameters['Content-Type'] = 'application/json';
 
-        headerParameters['Content-Type'] = 'application/json';
+		let urlPath = `/api/auth/login`;
 
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'POST',
+				headers: headerParameters,
+				query: queryParameters,
+				body: DTOPeticionLoginToJSON(requestParameters['dTOPeticionLogin'])
+			},
+			initOverrides
+		);
 
-        let urlPath = `/api/auth/login`;
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTORespuestaLoginFromJSON(jsonValue)
+		);
+	}
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOPeticionLoginToJSON(requestParameters['dTOPeticionLogin']),
-        }, initOverrides);
+	/**
+	 * Autentica un usuario con sus credenciales y devuelve un token JWT
+	 * Iniciar sesión
+	 */
+	async login(
+		requestParameters: LoginRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTORespuestaLogin> {
+		const response = await this.loginRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaLoginFromJSON(jsonValue));
-    }
+	/**
+	 * Crea una nueva cuenta de usuario y devuelve un token JWT
+	 * Registrar nuevo usuario
+	 */
+	async registroRaw(
+		requestParameters: RegistroRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTORespuestaLogin>> {
+		if (requestParameters['dTOPeticionRegistro'] == null) {
+			throw new runtime.RequiredError(
+				'dTOPeticionRegistro',
+				'Required parameter "dTOPeticionRegistro" was null or undefined when calling registro().'
+			);
+		}
 
-    /**
-     * Autentica un usuario con sus credenciales y devuelve un token JWT
-     * Iniciar sesión
-     */
-    async login(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaLogin> {
-        const response = await this.loginRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
+		const queryParameters: any = {};
 
-    /**
-     * Crea una nueva cuenta de usuario y devuelve un token JWT
-     * Registrar nuevo usuario
-     */
-    async registroRaw(requestParameters: RegistroRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaLogin>> {
-        if (requestParameters['dTOPeticionRegistro'] == null) {
-            throw new runtime.RequiredError(
-                'dTOPeticionRegistro',
-                'Required parameter "dTOPeticionRegistro" was null or undefined when calling registro().'
-            );
-        }
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        const queryParameters: any = {};
+		headerParameters['Content-Type'] = 'application/json';
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		let urlPath = `/api/auth/registro`;
 
-        headerParameters['Content-Type'] = 'application/json';
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'POST',
+				headers: headerParameters,
+				query: queryParameters,
+				body: DTOPeticionRegistroToJSON(requestParameters['dTOPeticionRegistro'])
+			},
+			initOverrides
+		);
 
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTORespuestaLoginFromJSON(jsonValue)
+		);
+	}
 
-        let urlPath = `/api/auth/registro`;
+	/**
+	 * Crea una nueva cuenta de usuario y devuelve un token JWT
+	 * Registrar nuevo usuario
+	 */
+	async registro(
+		requestParameters: RegistroRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTORespuestaLogin> {
+		const response = await this.registroRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOPeticionRegistroToJSON(requestParameters['dTOPeticionRegistro']),
-        }, initOverrides);
+	/**
+	 * Endpoint de prueba para verificar que la autenticación funciona correctamente
+	 * Probar autenticación
+	 */
+	async test1Raw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<string>> {
+		const queryParameters: any = {};
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaLoginFromJSON(jsonValue));
-    }
+		const headerParameters: runtime.HTTPHeaders = {};
 
-    /**
-     * Crea una nueva cuenta de usuario y devuelve un token JWT
-     * Registrar nuevo usuario
-     */
-    async registro(requestParameters: RegistroRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaLogin> {
-        const response = await this.registroRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
+		let urlPath = `/api/auth/test`;
 
-    /**
-     * Endpoint de prueba para verificar que la autenticación funciona correctamente
-     * Probar autenticación
-     */
-    async test1Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const queryParameters: any = {};
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		if (this.isJsonMime(response.headers.get('content-type'))) {
+			return new runtime.JSONApiResponse<string>(response);
+		} else {
+			return new runtime.TextApiResponse(response) as any;
+		}
+	}
 
-
-        let urlPath = `/api/auth/test`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
-
-    /**
-     * Endpoint de prueba para verificar que la autenticación funciona correctamente
-     * Probar autenticación
-     */
-    async test1(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.test1Raw(initOverrides);
-        return await response.value();
-    }
-
+	/**
+	 * Endpoint de prueba para verificar que la autenticación funciona correctamente
+	 * Probar autenticación
+	 */
+	async test1(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+		const response = await this.test1Raw(initOverrides);
+		return await response.value();
+	}
 }

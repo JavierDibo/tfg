@@ -15,215 +15,222 @@
 import { mapValues } from '../runtime';
 import type { Material } from './Material';
 import {
-    MaterialFromJSON,
-    MaterialFromJSONTyped,
-    MaterialToJSON,
-    MaterialToJSONTyped,
+	MaterialFromJSON,
+	MaterialFromJSONTyped,
+	MaterialToJSON,
+	MaterialToJSONTyped
 } from './Material';
 import type { DTOProfesor } from './DTOProfesor';
 import {
-    DTOProfesorFromJSON,
-    DTOProfesorFromJSONTyped,
-    DTOProfesorToJSON,
-    DTOProfesorToJSONTyped,
+	DTOProfesorFromJSON,
+	DTOProfesorFromJSONTyped,
+	DTOProfesorToJSON,
+	DTOProfesorToJSONTyped
 } from './DTOProfesor';
 
 /**
- * 
+ *
  * @export
  * @interface DTOClaseConDetalles
  */
 export interface DTOClaseConDetalles {
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOClaseConDetalles
-     */
-    id?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOClaseConDetalles
-     */
-    titulo?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOClaseConDetalles
-     */
-    descripcion?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOClaseConDetalles
-     */
-    precio?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOClaseConDetalles
-     */
-    presencialidad?: DTOClaseConDetallesPresencialidadEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOClaseConDetalles
-     */
-    imagenPortada?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOClaseConDetalles
-     */
-    nivel?: DTOClaseConDetallesNivelEnum;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof DTOClaseConDetalles
-     */
-    alumnosId?: Array<string>;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof DTOClaseConDetalles
-     */
-    profesoresId?: Array<string>;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof DTOClaseConDetalles
-     */
-    ejerciciosId?: Array<string>;
-    /**
-     * 
-     * @type {Array<Material>}
-     * @memberof DTOClaseConDetalles
-     */
-    material?: Array<Material>;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOClaseConDetalles
-     */
-    tipoClase?: string;
-    /**
-     * 
-     * @type {DTOProfesor}
-     * @memberof DTOClaseConDetalles
-     */
-    profesor?: DTOProfesor;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DTOClaseConDetalles
-     */
-    isEnrolled?: boolean;
-    /**
-     * 
-     * @type {Date}
-     * @memberof DTOClaseConDetalles
-     */
-    fechaInscripcion?: Date;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOClaseConDetalles
-     */
-    alumnosCount?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOClaseConDetalles
-     */
-    profesoresCount?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOClaseConDetalles
+	 */
+	id?: number;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOClaseConDetalles
+	 */
+	titulo?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOClaseConDetalles
+	 */
+	descripcion?: string;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOClaseConDetalles
+	 */
+	precio?: number;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOClaseConDetalles
+	 */
+	presencialidad?: DTOClaseConDetallesPresencialidadEnum;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOClaseConDetalles
+	 */
+	imagenPortada?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOClaseConDetalles
+	 */
+	nivel?: DTOClaseConDetallesNivelEnum;
+	/**
+	 *
+	 * @type {Array<string>}
+	 * @memberof DTOClaseConDetalles
+	 */
+	alumnosId?: Array<string>;
+	/**
+	 *
+	 * @type {Array<string>}
+	 * @memberof DTOClaseConDetalles
+	 */
+	profesoresId?: Array<string>;
+	/**
+	 *
+	 * @type {Array<string>}
+	 * @memberof DTOClaseConDetalles
+	 */
+	ejerciciosId?: Array<string>;
+	/**
+	 *
+	 * @type {Array<Material>}
+	 * @memberof DTOClaseConDetalles
+	 */
+	material?: Array<Material>;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOClaseConDetalles
+	 */
+	tipoClase?: string;
+	/**
+	 *
+	 * @type {DTOProfesor}
+	 * @memberof DTOClaseConDetalles
+	 */
+	profesor?: DTOProfesor;
+	/**
+	 *
+	 * @type {boolean}
+	 * @memberof DTOClaseConDetalles
+	 */
+	isEnrolled?: boolean;
+	/**
+	 *
+	 * @type {Date}
+	 * @memberof DTOClaseConDetalles
+	 */
+	fechaInscripcion?: Date;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOClaseConDetalles
+	 */
+	alumnosCount?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOClaseConDetalles
+	 */
+	profesoresCount?: number;
 }
-
 
 /**
  * @export
  */
 export const DTOClaseConDetallesPresencialidadEnum = {
-    Online: 'ONLINE',
-    Presencial: 'PRESENCIAL'
+	Online: 'ONLINE',
+	Presencial: 'PRESENCIAL'
 } as const;
-export type DTOClaseConDetallesPresencialidadEnum = typeof DTOClaseConDetallesPresencialidadEnum[keyof typeof DTOClaseConDetallesPresencialidadEnum];
+export type DTOClaseConDetallesPresencialidadEnum =
+	(typeof DTOClaseConDetallesPresencialidadEnum)[keyof typeof DTOClaseConDetallesPresencialidadEnum];
 
 /**
  * @export
  */
 export const DTOClaseConDetallesNivelEnum = {
-    Principiante: 'PRINCIPIANTE',
-    Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
+	Principiante: 'PRINCIPIANTE',
+	Intermedio: 'INTERMEDIO',
+	Avanzado: 'AVANZADO'
 } as const;
-export type DTOClaseConDetallesNivelEnum = typeof DTOClaseConDetallesNivelEnum[keyof typeof DTOClaseConDetallesNivelEnum];
-
+export type DTOClaseConDetallesNivelEnum =
+	(typeof DTOClaseConDetallesNivelEnum)[keyof typeof DTOClaseConDetallesNivelEnum];
 
 /**
  * Check if a given object implements the DTOClaseConDetalles interface.
  */
 export function instanceOfDTOClaseConDetalles(value: object): value is DTOClaseConDetalles {
-    return true;
+	return true;
 }
 
 export function DTOClaseConDetallesFromJSON(json: any): DTOClaseConDetalles {
-    return DTOClaseConDetallesFromJSONTyped(json, false);
+	return DTOClaseConDetallesFromJSONTyped(json, false);
 }
 
-export function DTOClaseConDetallesFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOClaseConDetalles {
-    if (json == null) {
-        return json;
-    }
-    return {
-        
-        'id': json['id'] == null ? undefined : json['id'],
-        'titulo': json['titulo'] == null ? undefined : json['titulo'],
-        'descripcion': json['descripcion'] == null ? undefined : json['descripcion'],
-        'precio': json['precio'] == null ? undefined : json['precio'],
-        'presencialidad': json['presencialidad'] == null ? undefined : json['presencialidad'],
-        'imagenPortada': json['imagenPortada'] == null ? undefined : json['imagenPortada'],
-        'nivel': json['nivel'] == null ? undefined : json['nivel'],
-        'alumnosId': json['alumnosId'] == null ? undefined : json['alumnosId'],
-        'profesoresId': json['profesoresId'] == null ? undefined : json['profesoresId'],
-        'ejerciciosId': json['ejerciciosId'] == null ? undefined : json['ejerciciosId'],
-        'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(MaterialFromJSON)),
-        'tipoClase': json['tipoClase'] == null ? undefined : json['tipoClase'],
-        'profesor': json['profesor'] == null ? undefined : DTOProfesorFromJSON(json['profesor']),
-        'isEnrolled': json['isEnrolled'] == null ? undefined : json['isEnrolled'],
-        'fechaInscripcion': json['fechaInscripcion'] == null ? undefined : (new Date(json['fechaInscripcion'])),
-        'alumnosCount': json['alumnosCount'] == null ? undefined : json['alumnosCount'],
-        'profesoresCount': json['profesoresCount'] == null ? undefined : json['profesoresCount'],
-    };
+export function DTOClaseConDetallesFromJSONTyped(
+	json: any,
+	ignoreDiscriminator: boolean
+): DTOClaseConDetalles {
+	if (json == null) {
+		return json;
+	}
+	return {
+		id: json['id'] == null ? undefined : json['id'],
+		titulo: json['titulo'] == null ? undefined : json['titulo'],
+		descripcion: json['descripcion'] == null ? undefined : json['descripcion'],
+		precio: json['precio'] == null ? undefined : json['precio'],
+		presencialidad: json['presencialidad'] == null ? undefined : json['presencialidad'],
+		imagenPortada: json['imagenPortada'] == null ? undefined : json['imagenPortada'],
+		nivel: json['nivel'] == null ? undefined : json['nivel'],
+		alumnosId: json['alumnosId'] == null ? undefined : json['alumnosId'],
+		profesoresId: json['profesoresId'] == null ? undefined : json['profesoresId'],
+		ejerciciosId: json['ejerciciosId'] == null ? undefined : json['ejerciciosId'],
+		material:
+			json['material'] == null ? undefined : (json['material'] as Array<any>).map(MaterialFromJSON),
+		tipoClase: json['tipoClase'] == null ? undefined : json['tipoClase'],
+		profesor: json['profesor'] == null ? undefined : DTOProfesorFromJSON(json['profesor']),
+		isEnrolled: json['isEnrolled'] == null ? undefined : json['isEnrolled'],
+		fechaInscripcion:
+			json['fechaInscripcion'] == null ? undefined : new Date(json['fechaInscripcion']),
+		alumnosCount: json['alumnosCount'] == null ? undefined : json['alumnosCount'],
+		profesoresCount: json['profesoresCount'] == null ? undefined : json['profesoresCount']
+	};
 }
 
 export function DTOClaseConDetallesToJSON(json: any): DTOClaseConDetalles {
-    return DTOClaseConDetallesToJSONTyped(json, false);
+	return DTOClaseConDetallesToJSONTyped(json, false);
 }
 
-export function DTOClaseConDetallesToJSONTyped(value?: DTOClaseConDetalles | null, ignoreDiscriminator: boolean = false): any {
-    if (value == null) {
-        return value;
-    }
+export function DTOClaseConDetallesToJSONTyped(
+	value?: DTOClaseConDetalles | null,
+	ignoreDiscriminator: boolean = false
+): any {
+	if (value == null) {
+		return value;
+	}
 
-    return {
-        
-        'id': value['id'],
-        'titulo': value['titulo'],
-        'descripcion': value['descripcion'],
-        'precio': value['precio'],
-        'presencialidad': value['presencialidad'],
-        'imagenPortada': value['imagenPortada'],
-        'nivel': value['nivel'],
-        'alumnosId': value['alumnosId'],
-        'profesoresId': value['profesoresId'],
-        'ejerciciosId': value['ejerciciosId'],
-        'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(MaterialToJSON)),
-        'tipoClase': value['tipoClase'],
-        'profesor': DTOProfesorToJSON(value['profesor']),
-        'isEnrolled': value['isEnrolled'],
-        'fechaInscripcion': value['fechaInscripcion'] == null ? undefined : ((value['fechaInscripcion']).toISOString()),
-        'alumnosCount': value['alumnosCount'],
-        'profesoresCount': value['profesoresCount'],
-    };
+	return {
+		id: value['id'],
+		titulo: value['titulo'],
+		descripcion: value['descripcion'],
+		precio: value['precio'],
+		presencialidad: value['presencialidad'],
+		imagenPortada: value['imagenPortada'],
+		nivel: value['nivel'],
+		alumnosId: value['alumnosId'],
+		profesoresId: value['profesoresId'],
+		ejerciciosId: value['ejerciciosId'],
+		material:
+			value['material'] == null ? undefined : (value['material'] as Array<any>).map(MaterialToJSON),
+		tipoClase: value['tipoClase'],
+		profesor: DTOProfesorToJSON(value['profesor']),
+		isEnrolled: value['isEnrolled'],
+		fechaInscripcion:
+			value['fechaInscripcion'] == null ? undefined : value['fechaInscripcion'].toISOString(),
+		alumnosCount: value['alumnosCount'],
+		profesoresCount: value['profesoresCount']
+	};
 }
-

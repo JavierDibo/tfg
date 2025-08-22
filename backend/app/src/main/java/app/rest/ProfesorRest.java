@@ -100,11 +100,11 @@ public class ProfesorRest {
                 nombre, apellidos, email, null, null, habilitado, null, null);
         
         if (parametros.estaVacio()) {
-            System.out.println("Obteniendo todos los profesores");
+            // System.out.println("Obteniendo todos los profesores");
             List<DTOProfesor> profesores = servicioProfesor.obtenerProfesores();
             return new ResponseEntity<>(profesores, HttpStatus.OK);
         } else {
-            System.out.println("Buscando profesores con parámetros: " + parametros);
+            // System.out.println("Buscando profesores con parámetros: " + parametros);
             List<DTOProfesor> profesores = servicioProfesor.buscarProfesoresPorParametros(parametros);
             return new ResponseEntity<>(profesores, HttpStatus.OK);
         }
@@ -119,7 +119,7 @@ public class ProfesorRest {
     @GetMapping("/{id}")
     public ResponseEntity<DTOProfesor> obtenerProfesorPorId(
             @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id) {
-        System.out.println("Obteniendo profesor con ID: " + id);
+        // System.out.println("Obteniendo profesor con ID: " + id);
         DTOProfesor profesor = servicioProfesor.obtenerProfesorPorId(id);
         return new ResponseEntity<>(profesor, HttpStatus.OK);
     }
@@ -364,7 +364,7 @@ public class ProfesorRest {
             throw new IllegalArgumentException("Debe proporcionar el campo 'habilitado'");
         }
         
-        System.out.println("Cambiando estado del profesor " + id + " a: " + habilitado);
+        // System.out.println("Cambiando estado del profesor " + id + " a: " + habilitado);
         DTOProfesor profesorActualizado = servicioProfesor.cambiarEstadoProfesor(id, habilitado);
         return new ResponseEntity<>(profesorActualizado, HttpStatus.OK);
     }
@@ -382,7 +382,7 @@ public class ProfesorRest {
             @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id,
             @Valid @RequestBody DTOActualizacionProfesor dtoParcial) {
         
-        System.out.println("Actualizando profesor con ID: " + id);
+        // System.out.println("Actualizando profesor con ID: " + id);
         DTOProfesor profesorActualizado = servicioProfesor.actualizarProfesor(id, dtoParcial);
         return new ResponseEntity<>(profesorActualizado, HttpStatus.OK);
     }

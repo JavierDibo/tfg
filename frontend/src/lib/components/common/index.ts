@@ -16,5 +16,8 @@ export { default as EntityDeleteModal } from './EntityDeleteModal.svelte';
 // Reusable message component for displaying success and error notifications
 export { default as EntityMessages } from './EntityMessages.svelte';
 
+// Error display component for showing detailed error information
+export { default as ErrorDisplay } from './ErrorDisplay.svelte';
+
 // Re-export all types for easier imports
 export * from './types';

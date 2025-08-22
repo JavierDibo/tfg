@@ -5,6 +5,7 @@ import {
 	type DTORespuestaPaginadaDTOProfesor
 } from '$lib/generated/api';
 import { profesorApi } from '$lib/api';
+import { ErrorHandler } from '$lib/utils/errorHandler';
 
 // Define the ProfesorStatistics type used in the estadisticas page
 export interface ProfesorStatistics {
@@ -32,8 +33,8 @@ export const ProfesorService = {
 			const response = await profesorApi.obtenerProfesores(filters);
 			return response;
 		} catch (error) {
-			console.error('Error fetching professors:', error);
-			throw error;
+			ErrorHandler.logError(error, 'getAllProfesores');
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -67,8 +68,8 @@ export const ProfesorService = {
 
 			return response;
 		} catch (error) {
-			console.error('Error fetching paginated professors:', error);
-			throw error;
+			ErrorHandler.logError(error, 'getProfesoresPaginados');
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -89,8 +90,8 @@ export const ProfesorService = {
 
 			return response;
 		} catch (error) {
-			console.error('Error fetching paginated enabled professors:', error);
-			throw error;
+			ErrorHandler.logError(error, 'getProfesoresHabilitadosPaginados');
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -99,8 +100,8 @@ export const ProfesorService = {
 			const response = await profesorApi.obtenerProfesorPorId({ id });
 			return response;
 		} catch (error) {
-			console.error(`Error fetching professor with id ${id}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `getProfesorById(${id})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -109,8 +110,8 @@ export const ProfesorService = {
 			const response = await profesorApi.obtenerProfesorPorUsuario({ usuario });
 			return response;
 		} catch (error) {
-			console.error(`Error fetching professor with username ${usuario}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `getProfesorByUsuario(${usuario})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -121,8 +122,8 @@ export const ProfesorService = {
 			});
 			return response;
 		} catch (error) {
-			console.error('Error creating professor:', error);
-			throw error;
+			ErrorHandler.logError(error, 'createProfesor');
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -134,8 +135,8 @@ export const ProfesorService = {
 			});
 			return response;
 		} catch (error) {
-			console.error(`Error updating professor with id ${id}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `updateProfesor(${id})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -143,8 +144,8 @@ export const ProfesorService = {
 		try {
 			await profesorApi.borrarProfesorPorId({ id });
 		} catch (error) {
-			console.error(`Error deleting professor with id ${id}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `deleteProfesor(${id})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -156,8 +157,8 @@ export const ProfesorService = {
 			});
 			return response;
 		} catch (error) {
-			console.error(`Error changing account status for professor with id ${id}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `toggleAccountStatus(${id}, ${habilitado})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 

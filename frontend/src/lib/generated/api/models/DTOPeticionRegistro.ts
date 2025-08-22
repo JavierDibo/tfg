@@ -19,84 +19,87 @@ import { mapValues } from '../runtime';
  * @interface DTOPeticionRegistro
  */
 export interface DTOPeticionRegistro {
-    /**
-     * Nombre de usuario único
-     * @type {string}
-     * @memberof DTOPeticionRegistro
-     */
-    username: string;
-    /**
-     * Contraseña del usuario
-     * @type {string}
-     * @memberof DTOPeticionRegistro
-     */
-    password: string;
-    /**
-     * Email del usuario
-     * @type {string}
-     * @memberof DTOPeticionRegistro
-     */
-    email: string;
-    /**
-     * Nombre del usuario
-     * @type {string}
-     * @memberof DTOPeticionRegistro
-     */
-    nombre: string;
-    /**
-     * Apellidos del usuario
-     * @type {string}
-     * @memberof DTOPeticionRegistro
-     */
-    apellidos: string;
+	/**
+	 * Nombre de usuario único
+	 * @type {string}
+	 * @memberof DTOPeticionRegistro
+	 */
+	username: string;
+	/**
+	 * Contraseña del usuario
+	 * @type {string}
+	 * @memberof DTOPeticionRegistro
+	 */
+	password: string;
+	/**
+	 * Email del usuario
+	 * @type {string}
+	 * @memberof DTOPeticionRegistro
+	 */
+	email: string;
+	/**
+	 * Nombre del usuario
+	 * @type {string}
+	 * @memberof DTOPeticionRegistro
+	 */
+	nombre: string;
+	/**
+	 * Apellidos del usuario
+	 * @type {string}
+	 * @memberof DTOPeticionRegistro
+	 */
+	apellidos: string;
 }
 
 /**
  * Check if a given object implements the DTOPeticionRegistro interface.
  */
 export function instanceOfDTOPeticionRegistro(value: object): value is DTOPeticionRegistro {
-    if (!('username' in value) || value['username'] === undefined) return false;
-    if (!('password' in value) || value['password'] === undefined) return false;
-    if (!('email' in value) || value['email'] === undefined) return false;
-    if (!('nombre' in value) || value['nombre'] === undefined) return false;
-    if (!('apellidos' in value) || value['apellidos'] === undefined) return false;
-    return true;
+	if (!('username' in value) || value['username'] === undefined) return false;
+	if (!('password' in value) || value['password'] === undefined) return false;
+	if (!('email' in value) || value['email'] === undefined) return false;
+	if (!('nombre' in value) || value['nombre'] === undefined) return false;
+	if (!('apellidos' in value) || value['apellidos'] === undefined) return false;
+	return true;
 }
 
 export function DTOPeticionRegistroFromJSON(json: any): DTOPeticionRegistro {
-    return DTOPeticionRegistroFromJSONTyped(json, false);
+	return DTOPeticionRegistroFromJSONTyped(json, false);
 }
 
-export function DTOPeticionRegistroFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOPeticionRegistro {
-    if (json == null) {
-        return json;
-    }
-    return {
-        
-        'username': json['username'],
-        'password': json['password'],
-        'email': json['email'],
-        'nombre': json['nombre'],
-        'apellidos': json['apellidos'],
-    };
+export function DTOPeticionRegistroFromJSONTyped(
+	json: any,
+	ignoreDiscriminator: boolean
+): DTOPeticionRegistro {
+	if (json == null) {
+		return json;
+	}
+	return {
+		username: json['username'],
+		password: json['password'],
+		email: json['email'],
+		nombre: json['nombre'],
+		apellidos: json['apellidos']
+	};
 }
 
 export function DTOPeticionRegistroToJSON(json: any): DTOPeticionRegistro {
-    return DTOPeticionRegistroToJSONTyped(json, false);
+	return DTOPeticionRegistroToJSONTyped(json, false);
 }
 
-export function DTOPeticionRegistroToJSONTyped(value?: DTOPeticionRegistro | null, ignoreDiscriminator: boolean = false): any {
-    if (value == null) {
-        return value;
-    }
+export function DTOPeticionRegistroToJSONTyped(
+	value?: DTOPeticionRegistro | null,
+	ignoreDiscriminator: boolean = false
+): any {
+	if (value == null) {
+		return value;
+	}
 
-    return {
-        
-        'username': value['username'],
-        'password': value['password'],
-        'email': value['email'],
-        'nombre': value['nombre'],
-        'apellidos': value['apellidos'],
-    };
+	return {
+		username: value['username'],
+		password: value['password'],
+		email: value['email'],
+		nombre: value['nombre'],
+		apellidos: value['apellidos']
+	};
 }
-

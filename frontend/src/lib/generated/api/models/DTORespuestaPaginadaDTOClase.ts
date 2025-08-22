@@ -15,10 +15,10 @@
 import { mapValues } from '../runtime';
 import type { DTOClase } from './DTOClase';
 import {
-    DTOClaseFromJSON,
-    DTOClaseFromJSONTyped,
-    DTOClaseToJSON,
-    DTOClaseToJSONTyped,
+	DTOClaseFromJSON,
+	DTOClaseFromJSONTyped,
+	DTOClaseToJSON,
+	DTOClaseToJSONTyped
 } from './DTOClase';
 
 /**
@@ -27,129 +27,134 @@ import {
  * @interface DTORespuestaPaginadaDTOClase
  */
 export interface DTORespuestaPaginadaDTOClase {
-    /**
-     * Lista de elementos de la página actual
-     * @type {Array<DTOClase>}
-     * @memberof DTORespuestaPaginadaDTOClase
-     */
-    contenido: Array<DTOClase>;
-    /**
-     * Número de página actual (0-indexed)
-     * @type {number}
-     * @memberof DTORespuestaPaginadaDTOClase
-     */
-    numeroPagina: number;
-    /**
-     * Tamaño de la página
-     * @type {number}
-     * @memberof DTORespuestaPaginadaDTOClase
-     */
-    tamanoPagina: number;
-    /**
-     * Número total de elementos
-     * @type {number}
-     * @memberof DTORespuestaPaginadaDTOClase
-     */
-    totalElementos: number;
-    /**
-     * Número total de páginas
-     * @type {number}
-     * @memberof DTORespuestaPaginadaDTOClase
-     */
-    totalPaginas: number;
-    /**
-     * Indica si es la primera página
-     * @type {boolean}
-     * @memberof DTORespuestaPaginadaDTOClase
-     */
-    esPrimera: boolean;
-    /**
-     * Indica si es la última página
-     * @type {boolean}
-     * @memberof DTORespuestaPaginadaDTOClase
-     */
-    esUltima: boolean;
-    /**
-     * Indica si la página tiene contenido
-     * @type {boolean}
-     * @memberof DTORespuestaPaginadaDTOClase
-     */
-    tieneContenido: boolean;
-    /**
-     * Campo por el que está ordenado
-     * @type {string}
-     * @memberof DTORespuestaPaginadaDTOClase
-     */
-    ordenadoPor: string;
-    /**
-     * Dirección de ordenación
-     * @type {string}
-     * @memberof DTORespuestaPaginadaDTOClase
-     */
-    direccionOrden: string;
+	/**
+	 * Lista de elementos de la página actual
+	 * @type {Array<DTOClase>}
+	 * @memberof DTORespuestaPaginadaDTOClase
+	 */
+	contenido: Array<DTOClase>;
+	/**
+	 * Número de página actual (0-indexed)
+	 * @type {number}
+	 * @memberof DTORespuestaPaginadaDTOClase
+	 */
+	numeroPagina: number;
+	/**
+	 * Tamaño de la página
+	 * @type {number}
+	 * @memberof DTORespuestaPaginadaDTOClase
+	 */
+	tamanoPagina: number;
+	/**
+	 * Número total de elementos
+	 * @type {number}
+	 * @memberof DTORespuestaPaginadaDTOClase
+	 */
+	totalElementos: number;
+	/**
+	 * Número total de páginas
+	 * @type {number}
+	 * @memberof DTORespuestaPaginadaDTOClase
+	 */
+	totalPaginas: number;
+	/**
+	 * Indica si es la primera página
+	 * @type {boolean}
+	 * @memberof DTORespuestaPaginadaDTOClase
+	 */
+	esPrimera: boolean;
+	/**
+	 * Indica si es la última página
+	 * @type {boolean}
+	 * @memberof DTORespuestaPaginadaDTOClase
+	 */
+	esUltima: boolean;
+	/**
+	 * Indica si la página tiene contenido
+	 * @type {boolean}
+	 * @memberof DTORespuestaPaginadaDTOClase
+	 */
+	tieneContenido: boolean;
+	/**
+	 * Campo por el que está ordenado
+	 * @type {string}
+	 * @memberof DTORespuestaPaginadaDTOClase
+	 */
+	ordenadoPor: string;
+	/**
+	 * Dirección de ordenación
+	 * @type {string}
+	 * @memberof DTORespuestaPaginadaDTOClase
+	 */
+	direccionOrden: string;
 }
 
 /**
  * Check if a given object implements the DTORespuestaPaginadaDTOClase interface.
  */
-export function instanceOfDTORespuestaPaginadaDTOClase(value: object): value is DTORespuestaPaginadaDTOClase {
-    if (!('contenido' in value) || value['contenido'] === undefined) return false;
-    if (!('numeroPagina' in value) || value['numeroPagina'] === undefined) return false;
-    if (!('tamanoPagina' in value) || value['tamanoPagina'] === undefined) return false;
-    if (!('totalElementos' in value) || value['totalElementos'] === undefined) return false;
-    if (!('totalPaginas' in value) || value['totalPaginas'] === undefined) return false;
-    if (!('esPrimera' in value) || value['esPrimera'] === undefined) return false;
-    if (!('esUltima' in value) || value['esUltima'] === undefined) return false;
-    if (!('tieneContenido' in value) || value['tieneContenido'] === undefined) return false;
-    if (!('ordenadoPor' in value) || value['ordenadoPor'] === undefined) return false;
-    if (!('direccionOrden' in value) || value['direccionOrden'] === undefined) return false;
-    return true;
+export function instanceOfDTORespuestaPaginadaDTOClase(
+	value: object
+): value is DTORespuestaPaginadaDTOClase {
+	if (!('contenido' in value) || value['contenido'] === undefined) return false;
+	if (!('numeroPagina' in value) || value['numeroPagina'] === undefined) return false;
+	if (!('tamanoPagina' in value) || value['tamanoPagina'] === undefined) return false;
+	if (!('totalElementos' in value) || value['totalElementos'] === undefined) return false;
+	if (!('totalPaginas' in value) || value['totalPaginas'] === undefined) return false;
+	if (!('esPrimera' in value) || value['esPrimera'] === undefined) return false;
+	if (!('esUltima' in value) || value['esUltima'] === undefined) return false;
+	if (!('tieneContenido' in value) || value['tieneContenido'] === undefined) return false;
+	if (!('ordenadoPor' in value) || value['ordenadoPor'] === undefined) return false;
+	if (!('direccionOrden' in value) || value['direccionOrden'] === undefined) return false;
+	return true;
 }
 
 export function DTORespuestaPaginadaDTOClaseFromJSON(json: any): DTORespuestaPaginadaDTOClase {
-    return DTORespuestaPaginadaDTOClaseFromJSONTyped(json, false);
+	return DTORespuestaPaginadaDTOClaseFromJSONTyped(json, false);
 }
 
-export function DTORespuestaPaginadaDTOClaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTORespuestaPaginadaDTOClase {
-    if (json == null) {
-        return json;
-    }
-    return {
-        
-        'contenido': ((json['contenido'] as Array<any>).map(DTOClaseFromJSON)),
-        'numeroPagina': json['numeroPagina'],
-        'tamanoPagina': json['tamanoPagina'],
-        'totalElementos': json['totalElementos'],
-        'totalPaginas': json['totalPaginas'],
-        'esPrimera': json['esPrimera'],
-        'esUltima': json['esUltima'],
-        'tieneContenido': json['tieneContenido'],
-        'ordenadoPor': json['ordenadoPor'],
-        'direccionOrden': json['direccionOrden'],
-    };
+export function DTORespuestaPaginadaDTOClaseFromJSONTyped(
+	json: any,
+	ignoreDiscriminator: boolean
+): DTORespuestaPaginadaDTOClase {
+	if (json == null) {
+		return json;
+	}
+	return {
+		contenido: (json['contenido'] as Array<any>).map(DTOClaseFromJSON),
+		numeroPagina: json['numeroPagina'],
+		tamanoPagina: json['tamanoPagina'],
+		totalElementos: json['totalElementos'],
+		totalPaginas: json['totalPaginas'],
+		esPrimera: json['esPrimera'],
+		esUltima: json['esUltima'],
+		tieneContenido: json['tieneContenido'],
+		ordenadoPor: json['ordenadoPor'],
+		direccionOrden: json['direccionOrden']
+	};
 }
 
 export function DTORespuestaPaginadaDTOClaseToJSON(json: any): DTORespuestaPaginadaDTOClase {
-    return DTORespuestaPaginadaDTOClaseToJSONTyped(json, false);
+	return DTORespuestaPaginadaDTOClaseToJSONTyped(json, false);
 }
 
-export function DTORespuestaPaginadaDTOClaseToJSONTyped(value?: DTORespuestaPaginadaDTOClase | null, ignoreDiscriminator: boolean = false): any {
-    if (value == null) {
-        return value;
-    }
+export function DTORespuestaPaginadaDTOClaseToJSONTyped(
+	value?: DTORespuestaPaginadaDTOClase | null,
+	ignoreDiscriminator: boolean = false
+): any {
+	if (value == null) {
+		return value;
+	}
 
-    return {
-        
-        'contenido': ((value['contenido'] as Array<any>).map(DTOClaseToJSON)),
-        'numeroPagina': value['numeroPagina'],
-        'tamanoPagina': value['tamanoPagina'],
-        'totalElementos': value['totalElementos'],
-        'totalPaginas': value['totalPaginas'],
-        'esPrimera': value['esPrimera'],
-        'esUltima': value['esUltima'],
-        'tieneContenido': value['tieneContenido'],
-        'ordenadoPor': value['ordenadoPor'],
-        'direccionOrden': value['direccionOrden'],
-    };
+	return {
+		contenido: (value['contenido'] as Array<any>).map(DTOClaseToJSON),
+		numeroPagina: value['numeroPagina'],
+		tamanoPagina: value['tamanoPagina'],
+		totalElementos: value['totalElementos'],
+		totalPaginas: value['totalPaginas'],
+		esPrimera: value['esPrimera'],
+		esUltima: value['esUltima'],
+		tieneContenido: value['tieneContenido'],
+		ordenadoPor: value['ordenadoPor'],
+		direccionOrden: value['direccionOrden']
+	};
 }
-

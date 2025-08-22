@@ -6,6 +6,8 @@
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
 	import type { Material } from '$lib/generated/api/models/Material';
+	import type { ErrorInfo } from '$lib/utils/errorHandler';
+	import { ErrorHandler } from '$lib/utils/errorHandler';
 	import ClaseDetail from '$lib/components/clases/ClaseDetail.svelte';
 	import ClaseMaterials from '$lib/components/clases/ClaseMaterials.svelte';
 	import ClaseEnrollment from '$lib/components/clases/ClaseEnrollment.svelte';
@@ -14,6 +16,7 @@
 	import ClaseStudents from '$lib/components/clases/ClaseStudents.svelte';
 	import ClaseEditModal from '$lib/components/clases/ClaseEditModal.svelte';
 	import MaterialAddModal from '$lib/components/clases/MaterialAddModal.svelte';
+	import ErrorDisplay from '$lib/components/common/ErrorDisplay.svelte';
 
 	// No props needed
 
@@ -23,7 +26,7 @@
 	// State
 	let clase = $state<DTOClase | null>(null);
 	let loading = $state(true);
-	let error = $state<string | null>(null);
+	let error = $state<ErrorInfo | null>(null);
 	let showEditModal = $state(false);
 	let showMaterialModal = $state(false);
 	let enrollmentLoading = $state(false);
@@ -51,8 +54,7 @@
 				clase = response;
 			}
 		} catch (err) {
-			console.error('Error loading class:', err);
-			error = 'Error al cargar la clase';
+			error = await ErrorHandler.parseError(err);
 		} finally {
 			loading = false;
 		}
@@ -61,7 +63,10 @@
 	// Handle enrollment/disenrollment
 	async function handleEnrollment(enroll: boolean) {
 		if (!authStore.isAlumno || !authStore.user?.sub) {
-			error = 'Debes estar autenticado como alumno para inscribirte';
+			error = {
+				message: 'Debes estar autenticado como alumno para inscribirte',
+				type: 'error'
+			};
 			return;
 		}
 
@@ -74,8 +79,7 @@
 			}
 			await loadClase(); // Reload to update enrollment status
 		} catch (err) {
-			console.error('Error handling enrollment:', err);
-			error = enroll ? 'Error al inscribirse en la clase' : 'Error al desinscribirse de la clase';
+			error = await ErrorHandler.parseError(err);
 		} finally {
 			enrollmentLoading = false;
 		}
@@ -88,8 +92,7 @@
 			await loadClase();
 			showEditModal = false;
 		} catch (err) {
-			console.error('Error updating class:', err);
-			error = 'Error al actualizar la clase';
+			error = await ErrorHandler.parseError(err);
 		}
 	}
 
@@ -102,8 +105,7 @@
 			await loadClase(); // Reload to update materials
 			showMaterialModal = false;
 		} catch (err) {
-			console.error('Error adding material:', err);
-			error = 'Error al agregar el material';
+			error = await ErrorHandler.parseError(err);
 		}
 	}
 
@@ -115,8 +117,7 @@
 			await ClaseService.removeMaterialFromClase(clase.id, materialId);
 			await loadClase(); // Reload to update materials
 		} catch (err) {
-			console.error('Error removing material:', err);
-			error = 'Error al eliminar el material';
+			error = await ErrorHandler.parseError(err);
 		}
 	}
 
@@ -158,23 +159,7 @@
 			<div class="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
 		</div>
 	{:else if error}
-		<div class="rounded-md border border-red-200 bg-red-50 p-4">
-			<div class="flex">
-				<div class="flex-shrink-0">
-					<svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-						<path
-							fill-rule="evenodd"
-							d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-							clip-rule="evenodd"
-						/>
-					</svg>
-				</div>
-				<div class="ml-3">
-					<h3 class="text-sm font-medium text-red-800">Error</h3>
-					<div class="mt-2 text-sm text-red-700">{error}</div>
-				</div>
-			</div>
-		</div>
+		<ErrorDisplay {error} onRetry={loadClase} onDismiss={() => (error = null)} />
 	{:else if clase}
 		<div class="mb-6">
 			<button

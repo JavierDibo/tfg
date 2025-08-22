@@ -7,6 +7,7 @@ import type {
 	DTOClaseInscrita
 } from '$lib/generated/api';
 import { alumnoApi } from '$lib/api';
+import { ErrorHandler } from '$lib/utils/errorHandler';
 
 export class AlumnoService {
 	// ==================== BASIC CRUD OPERATIONS ====================
@@ -30,8 +31,8 @@ export class AlumnoService {
 		try {
 			return await alumnoApi.obtenerAlumnosPaginados(params);
 		} catch (error) {
-			console.error('Error fetching paginated alumnos:', error);
-			throw this.handleApiError(error);
+			ErrorHandler.logError(error, 'getPaginatedAlumnos');
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
@@ -49,8 +50,8 @@ export class AlumnoService {
 		try {
 			return await alumnoApi.obtenerAlumnosDisponibles(params);
 		} catch (error) {
-			console.error('Error fetching available students:', error);
-			throw this.handleApiError(error);
+			ErrorHandler.logError(error, 'getAvailableStudents');
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
@@ -61,8 +62,8 @@ export class AlumnoService {
 		try {
 			return await alumnoApi.obtenerAlumnoPorId({ id });
 		} catch (error) {
-			console.error('Error fetching alumno by ID:', error);
-			throw this.handleApiError(error);
+			ErrorHandler.logError(error, `getAlumnoById(${id})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
@@ -75,8 +76,8 @@ export class AlumnoService {
 				dTOPeticionRegistroAlumno: alumnoData
 			});
 		} catch (error) {
-			console.error('Error creating alumno:', error);
-			throw this.handleApiError(error);
+			ErrorHandler.logError(error, 'createAlumno');
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
@@ -90,8 +91,8 @@ export class AlumnoService {
 				dTOActualizacionAlumno: alumnoData
 			});
 		} catch (error) {
-			console.error('Error updating alumno:', error);
-			throw this.handleApiError(error);
+			ErrorHandler.logError(error, `updateAlumno(${id})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
@@ -102,8 +103,8 @@ export class AlumnoService {
 		try {
 			await alumnoApi.borrarAlumnoPorId({ id });
 		} catch (error) {
-			console.error('Error deleting alumno:', error);
-			throw this.handleApiError(error);
+			ErrorHandler.logError(error, `deleteAlumno(${id})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
@@ -117,8 +118,8 @@ export class AlumnoService {
 				requestBody: { matriculado }
 			});
 		} catch (error) {
-			console.error('Error changing enrollment status:', error);
-			throw this.handleApiError(error);
+			ErrorHandler.logError(error, `changeEnrollmentStatus(${id}, ${matriculado})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
@@ -132,8 +133,8 @@ export class AlumnoService {
 				requestBody: { enabled }
 			});
 		} catch (error) {
-			console.error('Error toggling student enabled status:', error);
-			throw this.handleApiError(error);
+			ErrorHandler.logError(error, `toggleEnabled(${id}, ${enabled})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
@@ -146,8 +147,8 @@ export class AlumnoService {
 		try {
 			return await alumnoApi.obtenerMiPerfil();
 		} catch (error) {
-			console.error('Error fetching my profile:', error);
-			throw this.handleApiError(error);
+			ErrorHandler.logError(error, 'getMiPerfil');
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
@@ -158,26 +159,8 @@ export class AlumnoService {
 		try {
 			return await alumnoApi.obtenerClasesInscritasConDetalles({ alumnoId });
 		} catch (error) {
-			console.error('Error fetching enrolled classes with details:', error);
-			throw this.handleApiError(error);
+			ErrorHandler.logError(error, `getClasesInscritasConDetalles(${alumnoId})`);
+			throw await ErrorHandler.parseError(error);
 		}
-	}
-
-	// ==================== UTILITY METHODS ====================
-
-	/**
-	 * Handle API errors consistently
-	 */
-	private static handleApiError(error: unknown): Error {
-		if (error && typeof error === 'object' && 'response' in error) {
-			const response = (error as { response: { data?: { message?: string } } }).response;
-			if (response?.data?.message) {
-				return new Error(response.data.message);
-			}
-		}
-		if (error && typeof error === 'object' && 'message' in error) {
-			return new Error((error as { message: string }).message);
-		}
-		return new Error('An unexpected error occurred');
 	}
 }

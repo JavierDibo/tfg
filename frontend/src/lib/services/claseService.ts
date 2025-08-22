@@ -8,6 +8,7 @@ import type {
 	Material
 } from '$lib/generated/api';
 import { claseApi } from '$lib/api';
+import { ErrorHandler } from '$lib/utils/errorHandler';
 
 export const ClaseService = {
 	// ==================== BASIC CRUD OPERATIONS ====================
@@ -19,8 +20,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.obtenerClases();
 		} catch (error) {
-			console.error('Error fetching all classes:', error);
-			throw error;
+			ErrorHandler.logError(error, 'getAllClases');
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -31,8 +32,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.obtenerClasePorId({ id });
 		} catch (error) {
-			console.error(`Error fetching class ${id}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `getClaseById(${id})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -46,11 +47,8 @@ export const ClaseService = {
 				alumnoId
 			});
 		} catch (error) {
-			console.error(
-				`Error fetching class details for student ${alumnoId} in class ${claseId}:`,
-				error
-			);
-			throw error;
+			ErrorHandler.logError(error, `getClaseDetailsForStudent(${claseId}, ${alumnoId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -61,8 +59,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.obtenerClaseConDetallesParaMi({ claseId });
 		} catch (error) {
-			console.error(`Error fetching class details for me in class ${claseId}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `getClaseDetailsForMe(${claseId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -73,8 +71,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.obtenerMisClasesInscritas();
 		} catch (error) {
-			console.error('Error fetching my enrolled classes:', error);
-			throw error;
+			ErrorHandler.logError(error, 'getMisClasesInscritas');
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -85,8 +83,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.obtenerMisClases();
 		} catch (error) {
-			console.error('Error fetching my classes:', error);
-			throw error;
+			ErrorHandler.logError(error, 'getMisClases');
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -97,8 +95,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.obtenerClasesPorAlumno({ alumnoId });
 		} catch (error) {
-			console.error(`Error fetching classes for student ${alumnoId}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `getClasesByAlumno(${alumnoId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -109,8 +107,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.buscarClasesPorTitulo({ titulo });
 		} catch (error) {
-			console.error(`Error searching classes by title "${titulo}":`, error);
-			throw error;
+			ErrorHandler.logError(error, `searchClasesByTitle("${titulo}")`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -129,8 +127,8 @@ export const ClaseService = {
 				dTOPeticionEnrollment: enrollmentRequest
 			});
 		} catch (error) {
-			console.error(`Error enrolling student ${alumnoId} in class ${claseId}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `enrollStudentInClass(${alumnoId}, ${claseId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -150,8 +148,8 @@ export const ClaseService = {
 				dTOPeticionEnrollment: enrollmentRequest
 			});
 		} catch (error) {
-			console.error(`Error unenrolling student ${alumnoId} from class ${claseId}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `unenrollStudentFromClass(${alumnoId}, ${claseId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -162,8 +160,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.inscribirseEnClase({ claseId });
 		} catch (error) {
-			console.error(`Error self-enrolling in class ${claseId}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `enrollInClase(${claseId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -174,8 +172,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.darseDeBajaDeClase({ claseId });
 		} catch (error) {
-			console.error(`Error self-unenrolling from class ${claseId}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `unenrollFromClase(${claseId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -199,8 +197,8 @@ export const ClaseService = {
 				...params
 			});
 		} catch (error) {
-			console.error(`Error fetching students for class ${claseId}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `getAlumnosDeClase(${claseId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -211,8 +209,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.contarAlumnosEnClase({ claseId });
 		} catch (error) {
-			console.error(`Error counting students for class ${claseId}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `contarAlumnosEnClase(${claseId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -225,8 +223,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.agregarMaterial({ claseId, material });
 		} catch (error) {
-			console.error(`Error adding material to class ${claseId}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `addMaterialToClase(${claseId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	},
 
@@ -237,8 +235,8 @@ export const ClaseService = {
 		try {
 			return await claseApi.removerMaterial({ claseId, materialId });
 		} catch (error) {
-			console.error(`Error removing material ${materialId} from class ${claseId}:`, error);
-			throw error;
+			ErrorHandler.logError(error, `removeMaterialFromClase(${claseId}, ${materialId})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 };
