@@ -5,7 +5,6 @@ import type {
 	DTORespuestaPaginadaDTOAlumno
 } from '$lib/generated/api';
 import { alumnoApi } from '$lib/api';
-import type { PaginatedAlumnosResponse } from '$lib/types/pagination';
 
 // Search parameters interface
 export interface AlumnoSearchParams {
@@ -283,7 +282,7 @@ export class AlumnoService {
 			const response = await alumnoApi.obtenerTotalAlumnos();
 			// Backend returns {"total": 123}
 			if (typeof response === 'object' && response !== null) {
-				return (response as any).total || 0;
+				return (response as { total?: number }).total || 0;
 			}
 			return typeof response === 'number' ? response : 0;
 		} catch (error) {
@@ -303,7 +302,11 @@ export class AlumnoService {
 			const response = await alumnoApi.obtenerEstadisticasMatriculas();
 			// Backend returns {"matriculados": 50, "no_matriculados": 30}
 			if (typeof response === 'object' && response !== null) {
-				const responseObj = response as any;
+				const responseObj = response as {
+					matriculados?: number;
+					no_matriculados?: number;
+					noMatriculados?: number;
+				};
 				return {
 					matriculados: responseObj.matriculados || 0,
 					noMatriculados: responseObj.no_matriculados || responseObj.noMatriculados || 0
@@ -352,7 +355,7 @@ export class AlumnoService {
 		}
 
 		// Password validation
-		if (!data.contraseña || data.contraseña.length < 6) {
+		if (!data.password || data.password.length < 6) {
 			errors.push('La contraseña debe tener al menos 6 caracteres');
 		}
 
@@ -378,13 +381,8 @@ export class AlumnoService {
 		}
 
 		// Phone validation (optional)
-		if (data.telefono && data.telefono.length > 15) {
+		if (data.numeroTelefono && data.numeroTelefono.length > 15) {
 			errors.push('El número de teléfono no puede superar 15 caracteres');
-		}
-
-		// Address validation (optional)
-		if (data.direccion && data.direccion.length > 200) {
-			errors.push('La dirección no puede superar 200 caracteres');
 		}
 
 		return errors;
@@ -395,11 +393,12 @@ export class AlumnoService {
 	/**
 	 * Handle API errors and return user-friendly messages
 	 */
-	private static handleApiError(error: any): Error {
-		if (error?.response) {
+	private static handleApiError(error: unknown): Error {
+		if (error && typeof error === 'object' && 'response' in error) {
 			// HTTP error with response
-			const status = error.response.status;
-			const data = error.response.data;
+			const response = (error as any).response;
+			const status = response.status;
+			const data = response.data;
 
 			switch (status) {
 				case 400:
@@ -417,9 +416,9 @@ export class AlumnoService {
 				default:
 					return new Error(data?.message || `Error: ${status}`);
 			}
-		} else if (error?.message) {
+		} else if (error && typeof error === 'object' && 'message' in error) {
 			// Network or other errors
-			return new Error(error.message);
+			return new Error((error as any).message);
 		} else {
 			// Unknown error
 			return new Error('Error desconocido');

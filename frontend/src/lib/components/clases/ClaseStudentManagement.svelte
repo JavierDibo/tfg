@@ -5,7 +5,6 @@
 	import type { DTORespuestaPaginadaDTOAlumno } from '$lib/generated/api/models/DTORespuestaPaginadaDTOAlumno';
 	import type { DTORespuestaEnrollment } from '$lib/generated/api/models/DTORespuestaEnrollment';
 	import { ClaseService } from '$lib/services/claseService';
-	import { AlumnoService } from '$lib/services/alumnoService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import AvailableStudentsModal from './AvailableStudentsModal.svelte';
 
@@ -15,7 +14,6 @@
 
 	// State
 	let enrolledStudents = $state<DTOAlumno[]>([]);
-	let availableStudents = $state<DTOAlumno[]>([]);
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let success = $state<string | null>(null);
@@ -23,12 +21,6 @@
 	let totalPages = $state(1);
 	let totalElements = $state(0);
 	let pageSize = $state(10);
-
-	// Available students state
-	let availableStudentsPage = $state(1);
-	let availableStudentsTotalPages = $state(1);
-	let availableStudentsTotalElements = $state(0);
-	let loadingAvailable = $state(false);
 
 	// Modal state
 	let showEnrollModal = $state(false);
@@ -66,46 +58,13 @@
 		}
 	}
 
-	// Load available students for enrollment
-	async function loadAvailableStudents() {
-		if (!clase?.id) return;
-
-		try {
-			loadingAvailable = true;
-
-			const response: DTORespuestaPaginadaDTOAlumno = await AlumnoService.getAvailableStudents({
-				page: availableStudentsPage - 1, // API uses 0-based pagination
-				size: 20,
-				sortBy: 'nombre',
-				sortDirection: 'ASC'
-			});
-
-			// Filter out students already enrolled in this class
-			const enrolledStudentIds = enrolledStudents.map(s => s.id);
-			availableStudents = (response.content || []).filter(
-				student => !enrolledStudentIds.includes(student.id)
-			);
-			availableStudentsTotalElements = response.page?.totalElements || 0;
-			availableStudentsTotalPages = response.page?.totalPages || 1;
-		} catch (err) {
-			console.error('Error loading available students:', err);
-			error = 'Error al cargar los alumnos disponibles';
-		} finally {
-			loadingAvailable = false;
-		}
-	}
-
 	// Handle page change for enrolled students
 	function handlePageChange(page: number) {
 		currentPage = page;
 		loadEnrolledStudents();
 	}
 
-	// Handle page change for available students
-	function handleAvailableStudentsPageChange(page: number) {
-		availableStudentsPage = page;
-		loadAvailableStudents();
-	}
+	// Removed unused handleAvailableStudentsPageChange function
 
 	// Enroll a student in the class
 	async function enrollStudent(student: DTOAlumno) {
@@ -125,10 +84,9 @@
 				success = `Alumno ${response.nombreAlumno} inscrito exitosamente en ${response.tituloClase}`;
 				showEnrollModal = false;
 				selectedStudent = null;
-				
-				// Reload both lists
+
+				// Reload enrolled students list
 				await loadEnrolledStudents();
-				await loadAvailableStudents();
 			} else {
 				error = response.message || 'Error al inscribir al alumno';
 			}
@@ -163,10 +121,9 @@
 				success = `Alumno ${response.nombreAlumno} desinscrito exitosamente de ${response.tituloClase}`;
 				showUnenrollModal = false;
 				selectedStudent = null;
-				
-				// Reload both lists
+
+				// Reload enrolled students list
 				await loadEnrolledStudents();
-				await loadAvailableStudents();
 			} else {
 				error = response.message || 'Error al desinscribir al alumno';
 			}
@@ -178,11 +135,7 @@
 		}
 	}
 
-	// Open enroll modal
-	function openEnrollModal(student: DTOAlumno) {
-		selectedStudent = student;
-		showEnrollModal = true;
-	}
+	// Removed unused openEnrollModal function
 
 	// Open unenroll modal
 	function openUnenrollModal(student: DTOAlumno) {
@@ -207,21 +160,21 @@
 
 	// Check if user can manage enrollments
 	const canManageEnrollments = $derived(
-		authStore.isAdmin || (authStore.isProfesor && clase?.profesores?.some((p: any) => p.id === authStore.user?.id))
+		authStore.isAdmin ||
+			(authStore.isProfesor &&
+				clase?.profesores?.some((p: { id: string | number }) => p.id === authStore.user?.id))
 	);
 
 	// Reload when class changes
 	$effect(() => {
 		if (clase?.id) {
 			loadEnrolledStudents();
-			loadAvailableStudents();
 		}
 	});
 
 	onMount(() => {
 		if (clase?.id) {
 			loadEnrolledStudents();
-			loadAvailableStudents();
 		}
 	});
 </script>
@@ -294,7 +247,7 @@
 			</div>
 		{:else if enrolledStudents.length > 0}
 			<div class="space-y-3">
-				{#each enrolledStudents as alumno}
+				{#each enrolledStudents as alumno (alumno.id)}
 					<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
 						<div class="flex items-center">
 							<div class="flex-shrink-0">
@@ -316,7 +269,8 @@
 							</div>
 							<div class="ml-3">
 								<p class="text-sm font-medium text-gray-900">
-									{alumno.nombre} {alumno.apellidos}
+									{alumno.nombre}
+									{alumno.apellidos}
 								</p>
 								<p class="text-xs text-gray-500">{alumno.email}</p>
 							</div>
@@ -332,6 +286,7 @@
 									onclick={() => openUnenrollModal(alumno)}
 									class="rounded bg-red-50 p-1 text-red-600 hover:bg-red-100"
 									title="Desinscribir alumno"
+									aria-label="Desinscribir alumno {alumno.nombre} {alumno.apellidos}"
 								>
 									<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path
@@ -353,7 +308,10 @@
 				<div class="mt-4 border-t border-gray-200 pt-4">
 					<div class="flex items-center justify-between">
 						<div class="text-sm text-gray-700">
-							Mostrando {((currentPage - 1) * pageSize) + 1} a {Math.min(currentPage * pageSize, totalElements)} de {totalElements} alumnos
+							Mostrando {(currentPage - 1) * pageSize + 1} a {Math.min(
+								currentPage * pageSize,
+								totalElements
+							)} de {totalElements} alumnos
 						</div>
 						<div class="flex space-x-2">
 							{#if currentPage > 1}
@@ -406,14 +364,25 @@
 	<!-- Available Students Modal -->
 	{#if showEnrollModal && selectedStudent}
 		<div class="fixed inset-0 z-50 overflow-y-auto">
-			<div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-				<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+			<div
+				class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0"
+			>
+				<div class="bg-opacity-75 fixed inset-0 bg-gray-500 transition-opacity"></div>
 
-				<div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+				<div
+					class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle"
+				>
 					<div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
 						<div class="sm:flex sm:items-start">
-							<div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-								<svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<div
+								class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10"
+							>
+								<svg
+									class="h-6 w-6 text-blue-600"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -422,11 +391,14 @@
 									/>
 								</svg>
 							</div>
-							<div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-								<h3 class="text-lg font-medium leading-6 text-gray-900">Inscribir Alumno</h3>
+							<div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+								<h3 class="text-lg leading-6 font-medium text-gray-900">Inscribir Alumno</h3>
 								<div class="mt-2">
 									<p class="text-sm text-gray-500">
-										¿Estás seguro de que quieres inscribir a <strong>{selectedStudent.nombre} {selectedStudent.apellidos}</strong> en la clase <strong>{clase.titulo}</strong>?
+										¿Estás seguro de que quieres inscribir a <strong
+											>{selectedStudent.nombre} {selectedStudent.apellidos}</strong
+										>
+										en la clase <strong>{clase.titulo}</strong>?
 									</p>
 								</div>
 							</div>
@@ -437,12 +409,23 @@
 							type="button"
 							onclick={() => selectedStudent && enrollStudent(selectedStudent)}
 							disabled={processingEnrollment}
-							class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+							class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
 						>
 							{#if processingEnrollment}
 								<svg class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+									<circle
+										class="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										stroke-width="4"
+									></circle>
+									<path
+										class="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									></path>
 								</svg>
 								Procesando...
 							{:else}
@@ -453,7 +436,7 @@
 							type="button"
 							onclick={closeModals}
 							disabled={processingEnrollment}
-							class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+							class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
 						>
 							Cancelar
 						</button>
@@ -466,14 +449,25 @@
 	<!-- Unenroll Student Modal -->
 	{#if showUnenrollModal && selectedStudent}
 		<div class="fixed inset-0 z-50 overflow-y-auto">
-			<div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-				<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+			<div
+				class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0"
+			>
+				<div class="bg-opacity-75 fixed inset-0 bg-gray-500 transition-opacity"></div>
 
-				<div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+				<div
+					class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle"
+				>
 					<div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
 						<div class="sm:flex sm:items-start">
-							<div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-								<svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<div
+								class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10"
+							>
+								<svg
+									class="h-6 w-6 text-red-600"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -482,11 +476,14 @@
 									/>
 								</svg>
 							</div>
-							<div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-								<h3 class="text-lg font-medium leading-6 text-gray-900">Desinscribir Alumno</h3>
+							<div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+								<h3 class="text-lg leading-6 font-medium text-gray-900">Desinscribir Alumno</h3>
 								<div class="mt-2">
 									<p class="text-sm text-gray-500">
-										¿Estás seguro de que quieres desinscribir a <strong>{selectedStudent.nombre} {selectedStudent.apellidos}</strong> de la clase <strong>{clase.titulo}</strong>?
+										¿Estás seguro de que quieres desinscribir a <strong
+											>{selectedStudent.nombre} {selectedStudent.apellidos}</strong
+										>
+										de la clase <strong>{clase.titulo}</strong>?
 									</p>
 								</div>
 							</div>
@@ -497,12 +494,23 @@
 							type="button"
 							onclick={() => selectedStudent && unenrollStudent(selectedStudent)}
 							disabled={processingEnrollment}
-							class="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+							class="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
 						>
 							{#if processingEnrollment}
 								<svg class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+									<circle
+										class="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										stroke-width="4"
+									></circle>
+									<path
+										class="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									></path>
 								</svg>
 								Procesando...
 							{:else}
@@ -513,7 +521,7 @@
 							type="button"
 							onclick={closeModals}
 							disabled={processingEnrollment}
-							class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+							class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
 						>
 							Cancelar
 						</button>
@@ -527,9 +535,11 @@
 	{#if showAvailableStudentsModal}
 		<AvailableStudentsModal
 			claseId={clase.id}
-			enrolledStudentIds={enrolledStudents.map(s => s.id).filter((id): id is number => id !== undefined)}
+			enrolledStudentIds={enrolledStudents
+				.map((s) => s.id)
+				.filter((id): id is number => id !== undefined)}
 			onEnrollStudent={handleEnrollFromModal}
-			onClose={() => showAvailableStudentsModal = false}
+			onClose={() => (showAvailableStudentsModal = false)}
 		/>
 	{/if}
 </div>

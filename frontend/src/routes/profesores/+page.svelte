@@ -7,8 +7,7 @@
 	import type { PageData } from './$types';
 	import {
 		getPageDisplayInfo,
-		type PaginatedData,
-		type PageDisplayInfo
+		type PaginatedData
 	} from '$lib/types/pagination';
 	import {
 		EntityDataTable,
@@ -384,7 +383,7 @@
 			key: 'fechaCreacion',
 			header: 'Fecha de Creación',
 			sortable: true,
-			formatter: (date) => formatDate(date)
+			formatter: (date) => formatDate(date as string | Date | undefined)
 		}
 	];
 

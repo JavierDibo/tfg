@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { DTOAlumno } from '$lib/generated/models';
+	import type { DTOAlumno } from '$lib/generated/api';
 
 	export let alumnos: DTOAlumno[];
 	export let isLoading: boolean;
@@ -22,9 +22,7 @@
 		dispatch('view', alumno);
 	}
 
-	function formatDate(dateString: string) {
-		return new Date(dateString).toLocaleDateString('es-ES');
-	}
+	// Removed unused formatDate function
 </script>
 
 <div class="overflow-hidden bg-white shadow sm:rounded-md">
@@ -83,7 +81,7 @@
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-gray-200 bg-white">
-						{#each alumnos as alumno}
+						{#each alumnos as alumno (alumno.id)}
 							<tr class="hover:bg-gray-50">
 								<td class="px-6 py-4 whitespace-nowrap">
 									<div class="flex items-center">
@@ -104,18 +102,16 @@
 								</td>
 								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">{alumno.email}</td>
 								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900"
-									>{alumno.telefono || '-'}</td
+									>{alumno.numeroTelefono || '-'}</td
 								>
-								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900"
-									>{alumno.entidad?.nombre || '-'}</td
-								>
+								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">-</td>
 								<td class="px-6 py-4 whitespace-nowrap">
 									<span
-										class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {alumno.activo
+										class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {alumno.enabled
 											? 'bg-green-100 text-green-800'
 											: 'bg-red-100 text-red-800'}"
 									>
-										{alumno.activo ? 'Activo' : 'Inactivo'}
+										{alumno.enabled ? 'Activo' : 'Inactivo'}
 									</span>
 								</td>
 								<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">

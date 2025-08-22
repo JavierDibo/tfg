@@ -7,14 +7,12 @@
 	// Form state
 	let formData: DTOPeticionRegistroAlumno = $state({
 		usuario: '',
-		contraseña: '',
+		password: '',
 		nombre: '',
 		apellidos: '',
 		dni: '',
 		email: '',
-		telefono: '',
-		direccion: '',
-		fechaNacimiento: ''
+		numeroTelefono: ''
 	});
 
 	// UI state
@@ -45,8 +43,8 @@
 		}
 
 		// Additional custom validations
-		if (formData.telefono && !/^\+?[\d\s-()]+$/.test(formData.telefono)) {
-			fieldErrors.telefono = 'El formato del teléfono no es válido';
+		if (formData.numeroTelefono && !/^\+?[\d\s-()]+$/.test(formData.numeroTelefono)) {
+			fieldErrors.numeroTelefono = 'El formato del teléfono no es válido';
 			return false;
 		}
 
@@ -67,18 +65,19 @@
 
 			// Redirect to the new student's profile
 			goto(`/alumnos/${newAlumno.id}?created=true`);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			loading = false;
 
 			// Handle specific field errors from backend
-			if (error.message.includes('usuario')) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			if (errorMessage.includes('usuario')) {
 				fieldErrors.usuario = 'El nombre de usuario ya existe';
-			} else if (error.message.includes('email')) {
+			} else if (errorMessage.includes('email')) {
 				fieldErrors.email = 'El email ya está registrado';
-			} else if (error.message.includes('dni')) {
+			} else if (errorMessage.includes('dni')) {
 				fieldErrors.dni = 'El DNI ya está registrado';
 			} else {
-				errors = [error.message];
+				errors = [errorMessage];
 			}
 		}
 	}
@@ -86,14 +85,12 @@
 	function resetForm() {
 		formData = {
 			usuario: '',
-			contraseña: '',
+			password: '',
 			nombre: '',
 			apellidos: '',
 			dni: '',
 			email: '',
-			telefono: '',
-			direccion: '',
-			fechaNacimiento: ''
+			numeroTelefono: ''
 		};
 		errors = [];
 		fieldErrors = {};
@@ -109,9 +106,9 @@
 					fieldErrors.usuario = 'El usuario debe tener entre 3 y 50 caracteres';
 				}
 				break;
-			case 'contraseña':
+			case 'password':
 				if (value && value.length < 6) {
-					fieldErrors.contraseña = 'La contraseña debe tener al menos 6 caracteres';
+					fieldErrors.password = 'La contraseña debe tener al menos 6 caracteres';
 				}
 				break;
 			case 'email':
@@ -134,14 +131,9 @@
 					fieldErrors.apellidos = 'Los apellidos no pueden superar 100 caracteres';
 				}
 				break;
-			case 'telefono':
+			case 'numeroTelefono':
 				if (value && value.length > 15) {
-					fieldErrors.telefono = 'El teléfono no puede superar 15 caracteres';
-				}
-				break;
-			case 'direccion':
-				if (value && value.length > 200) {
-					fieldErrors.direccion = 'La dirección no puede superar 200 caracteres';
+					fieldErrors.numeroTelefono = 'El teléfono no puede superar 15 caracteres';
 				}
 				break;
 		}
@@ -161,7 +153,7 @@
 	{#if errors.length > 0}
 		<div class="mb-6 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
 			<ul class="list-inside list-disc">
-				{#each errors as error}
+				{#each errors as error (error)}
 					<li>{error}</li>
 				{/each}
 			</ul>
@@ -211,10 +203,10 @@
 						<input
 							id="contraseña"
 							type={showPassword ? 'text' : 'password'}
-							bind:value={formData.contraseña}
-							oninput={(e) => validateField('contraseña', (e.target as HTMLInputElement).value)}
+							bind:value={formData.password}
+							oninput={(e) => validateField('password', (e.target as HTMLInputElement).value)}
 							required
-							class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.contraseña
+							class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.password
 								? 'border-red-500'
 								: ''}"
 							placeholder="Mínimo 6 caracteres"
@@ -227,8 +219,8 @@
 							{showPassword ? '🙈' : '👁️'}
 						</button>
 					</div>
-					{#if fieldErrors.contraseña}
-						<p class="mt-1 text-xs text-red-500">{fieldErrors.contraseña}</p>
+					{#if fieldErrors.password}
+						<p class="mt-1 text-xs text-red-500">{fieldErrors.password}</p>
 					{/if}
 				</div>
 			</div>
@@ -334,54 +326,18 @@
 					<input
 						id="telefono"
 						type="tel"
-						bind:value={formData.telefono}
-						oninput={(e) => validateField('telefono', (e.target as HTMLInputElement).value)}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.telefono
+						bind:value={formData.numeroTelefono}
+						oninput={(e) => validateField('numeroTelefono', (e.target as HTMLInputElement).value)}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.numeroTelefono
 							? 'border-red-500'
 							: ''}"
 						placeholder="+34 XXX XXX XXX (opcional)"
 					/>
-					{#if fieldErrors.telefono}
-						<p class="mt-1 text-xs text-red-500">{fieldErrors.telefono}</p>
+					{#if fieldErrors.numeroTelefono}
+						<p class="mt-1 text-xs text-red-500">{fieldErrors.numeroTelefono}</p>
 					{/if}
 					<p class="mt-1 text-xs text-gray-500">Campo opcional</p>
 				</div>
-
-				<!-- Birth Date -->
-				<div>
-					<label for="fechaNacimiento" class="mb-1 block text-sm font-medium text-gray-700">
-						Fecha de Nacimiento
-					</label>
-					<input
-						id="fechaNacimiento"
-						type="date"
-						bind:value={formData.fechaNacimiento}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-						placeholder="YYYY-MM-DD (opcional)"
-					/>
-					<p class="mt-1 text-xs text-gray-500">Campo opcional</p>
-				</div>
-			</div>
-
-			<!-- Address -->
-			<div class="mt-4">
-				<label for="direccion" class="mb-1 block text-sm font-medium text-gray-700">
-					Dirección
-				</label>
-				<textarea
-					id="direccion"
-					bind:value={formData.direccion}
-					oninput={(e) => validateField('direccion', (e.target as HTMLTextAreaElement).value)}
-					rows="3"
-					class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.direccion
-						? 'border-red-500'
-						: ''}"
-					placeholder="Dirección completa del alumno (opcional)"
-				></textarea>
-				{#if fieldErrors.direccion}
-					<p class="mt-1 text-xs text-red-500">{fieldErrors.direccion}</p>
-				{/if}
-				<p class="mt-1 text-xs text-gray-500">Campo opcional</p>
 			</div>
 		</div>
 

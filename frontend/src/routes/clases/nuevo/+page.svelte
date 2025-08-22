@@ -159,8 +159,15 @@
 
 			<form class="space-y-6">
 				<div>
-					<label class="mb-2 block text-sm font-medium text-gray-700">Tipo de Clase</label>
-					<div class="flex space-x-4">
+					<label for="tipo-clase" class="mb-2 block text-sm font-medium text-gray-700"
+						>Tipo de Clase</label
+					>
+					<div
+						class="flex space-x-4"
+						id="tipo-clase"
+						role="radiogroup"
+						aria-labelledby="tipo-clase"
+					>
 						<label class="flex items-center">
 							<input
 								type="radio"

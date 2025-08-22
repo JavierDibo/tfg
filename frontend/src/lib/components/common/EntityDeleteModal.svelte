@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { BaseEntity } from './types';
 
 	const dispatch = createEventDispatcher();
 
 	export let showModal: boolean = false;
-	export let entity: BaseEntity | null = null;
+	export let entity: any | null = null;
 	export let entityName: string = 'elemento';
 	export let entityNameCapitalized: string = 'Elemento';
 	export let displayNameField: string = 'nombre';
@@ -24,12 +23,12 @@
 				if (field === 'nombre' && entity['apellidos']) {
 					return `${entity.nombre} ${entity.apellidos}`;
 				}
-				return entity[field];
+				return String(entity[field]);
 			}
 		}
 
 		// If no name field found, return ID or "unknown"
-		return entity.id || 'desconocido';
+		return entity.id ? String(entity.id) : 'desconocido';
 	}
 
 	function handleCancel() {

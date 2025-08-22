@@ -23,7 +23,7 @@
 	let totalPages = $state(1);
 	let totalElements = $state(0);
 	let pageSize = $state(20);
-	let searchTerm = $state('');
+	// Removed unused searchTerm variable
 
 	// Load available students
 	async function loadAvailableStudents() {
@@ -42,7 +42,7 @@
 
 			// Filter out students already enrolled in this class
 			availableStudents = (response.content || []).filter(
-				student => !enrolledStudentIds.includes(student.id)
+				(student) => !enrolledStudentIds.includes(student.id)
 			);
 			totalElements = response.page?.totalElements || 0;
 			totalPages = response.page?.totalPages || 1;
@@ -79,14 +79,32 @@
 </script>
 
 <div class="fixed inset-0 z-50 overflow-y-auto">
-	<div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-		<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick={handleClose}></div>
+	<div
+		class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0"
+	>
+		<div
+			class="bg-opacity-75 fixed inset-0 bg-gray-500 transition-opacity"
+			onclick={handleClose}
+			onkeydown={(e) => e.key === 'Escape' && handleClose()}
+			role="button"
+			tabindex="0"
+			aria-label="Cerrar modal"
+		></div>
 
-		<div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:align-middle">
+		<div
+			class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:align-middle"
+		>
 			<div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
 				<div class="sm:flex sm:items-start">
-					<div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-						<svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<div
+						class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10"
+					>
+						<svg
+							class="h-6 w-6 text-blue-600"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -95,8 +113,10 @@
 							/>
 						</svg>
 					</div>
-					<div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-						<h3 class="text-lg font-medium leading-6 text-gray-900">Alumnos Disponibles para Inscripción</h3>
+					<div class="mt-3 w-full text-center sm:mt-0 sm:ml-4 sm:text-left">
+						<h3 class="text-lg leading-6 font-medium text-gray-900">
+							Alumnos Disponibles para Inscripción
+						</h3>
 						<div class="mt-2">
 							<p class="text-sm text-gray-500">
 								Selecciona los alumnos que deseas inscribir en esta clase.
@@ -131,11 +151,13 @@
 								</div>
 							{:else if availableStudents.length > 0}
 								<div class="space-y-3">
-									{#each availableStudents as student}
+									{#each availableStudents as student (student.id)}
 										<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
 											<div class="flex items-center">
 												<div class="flex-shrink-0">
-													<div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+													<div
+														class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100"
+													>
 														<svg
 															class="h-4 w-4 text-green-600"
 															fill="none"
@@ -153,7 +175,8 @@
 												</div>
 												<div class="ml-3">
 													<p class="text-sm font-medium text-gray-900">
-														{student.nombre} {student.apellidos}
+														{student.nombre}
+														{student.apellidos}
 													</p>
 													<p class="text-xs text-gray-500">{student.email}</p>
 													<p class="text-xs text-gray-500">DNI: {student.dni}</p>
@@ -169,8 +192,14 @@
 													onclick={() => handleEnrollStudent(student)}
 													class="rounded bg-blue-50 p-1 text-blue-600 hover:bg-blue-100"
 													title="Inscribir alumno"
+													aria-label="Inscribir alumno {student.nombre} {student.apellidos}"
 												>
-													<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<svg
+														class="h-4 w-4"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
 														<path
 															stroke-linecap="round"
 															stroke-linejoin="round"
@@ -189,7 +218,10 @@
 									<div class="mt-4 border-t border-gray-200 pt-4">
 										<div class="flex items-center justify-between">
 											<div class="text-sm text-gray-700">
-												Mostrando {((currentPage - 1) * pageSize) + 1} a {Math.min(currentPage * pageSize, totalElements)} de {totalElements} alumnos
+												Mostrando {(currentPage - 1) * pageSize + 1} a {Math.min(
+													currentPage * pageSize,
+													totalElements
+												)} de {totalElements} alumnos
 											</div>
 											<div class="flex space-x-2">
 												{#if currentPage > 1}

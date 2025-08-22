@@ -25,20 +25,15 @@
 		statusField?: {
 			key: string;
 			label: string;
-			options: Array<{ value: any; label: string }>;
+			options: Array<{ value: string | number | boolean; label: string }>;
 		} | null;
 	}>();
 
 	// Local state for input values to prevent focus loss
-	let localFilters = $state({ ...currentFilters });
+	let localFilters = $derived({ ...currentFilters });
 
 	// Debounced search
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-
-	$effect(() => {
-		// Update local state when props change
-		localFilters = { ...currentFilters };
-	});
 
 	function debouncedSearch(value: string, filterKey: string) {
 		if (searchTimeout) {
@@ -54,7 +49,7 @@
 		dispatch('switchSearchMode', mode);
 	}
 
-	function updateFilters(filters: any) {
+	function updateFilters(filters: Record<string, unknown>) {
 		dispatch('updateFilters', filters);
 	}
 
@@ -125,7 +120,7 @@
 								updateFilters({ busquedaGeneral: localFilters.busquedaGeneral });
 							}}
 							class="w-full rounded-lg border border-gray-300 py-3 pr-4 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
-							placeholder={`Buscar por nombre, apellidos, DNI, email...`}
+							placeholder="Buscar por nombre, apellidos, DNI, email..."
 						/>
 						<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 							<svg
@@ -157,7 +152,7 @@
 							onchange={() => updateFilters({ [statusField.key]: localFilters[statusField.key] })}
 							class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 						>
-							{#each statusField.options as option}
+							{#each statusField.options as option (option.value)}
 								<option value={option.value}>{option.label}</option>
 							{/each}
 						</select>
@@ -170,7 +165,7 @@
 				<div>
 					<h3 class="text-md mb-3 font-medium text-gray-800">📝 Campos de Texto</h3>
 					<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-						{#each advancedFields as field}
+						{#each advancedFields as field (field.key)}
 							<div>
 								<label for={field.key} class="mb-1 block text-sm font-medium text-gray-700"
 									>{field.label}</label
@@ -206,7 +201,7 @@
 								onchange={() => updateFilters({ [statusField.key]: localFilters[statusField.key] })}
 								class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 							>
-								{#each statusField.options as option}
+								{#each statusField.options as option (option.value)}
 									<option value={option.value}>{option.label}</option>
 								{/each}
 							</select>

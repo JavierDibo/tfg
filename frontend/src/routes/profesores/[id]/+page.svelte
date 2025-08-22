@@ -2,8 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import type { DTOProfesor } from '$lib/generated/api';
-	import type { DTOActualizacionProfesor } from '$lib/services/profesorService';
+	import type { DTOProfesor, DTOActualizacionProfesor } from '$lib/generated/api';
 	import { ProfesorService } from '$lib/services/profesorService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 

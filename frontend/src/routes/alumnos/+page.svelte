@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { goto, invalidate } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import type { DTOAlumno } from '$lib/generated/api';
 	import { AlumnoService } from '$lib/services/alumnoService';
@@ -84,7 +83,7 @@
 
 		try {
 			// Build search parameters based on search mode
-			let searchParams: any = {
+			let searchParams: Record<string, unknown> = {
 				...currentPagination,
 				matriculado: currentFilters.matriculado
 			};
@@ -496,7 +495,7 @@
 			key: 'fechaInscripcion',
 			header: 'Fecha Inscripción',
 			sortable: true,
-			formatter: (date) => formatDate(new Date(date))
+			formatter: (date) => formatDate(new Date(date as string))
 		},
 		{
 			key: 'matriculado',

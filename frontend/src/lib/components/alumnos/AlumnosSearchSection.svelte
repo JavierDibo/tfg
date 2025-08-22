@@ -6,8 +6,8 @@
 		paginatedData,
 		loading = false
 	} = $props<{
-		currentFilters: any;
-		paginatedData: any;
+		currentFilters: Record<string, unknown>;
+		paginatedData: unknown;
 		loading?: boolean;
 	}>();
 
@@ -47,7 +47,7 @@
 		dispatch('switchSearchMode', mode);
 	}
 
-	function updateFilters(filters: any) {
+	function updateFilters(filters: Record<string, unknown>) {
 		dispatch('updateFilters', filters);
 	}
 

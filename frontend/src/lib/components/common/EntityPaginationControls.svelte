@@ -1,19 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { EntityPagination } from './types';
-	import type { PageDisplayInfo } from '$lib/types/pagination';
 
 	const dispatch = createEventDispatcher();
-
-	// Define props interface
-	interface Props {
-		pageDisplayInfo?: PageDisplayInfo | null;
-		currentPagination: EntityPagination;
-		sortFields?: Array<{ value: string; label: string }>;
-		pageSizeOptions?: number[];
-		showSortAndSize?: boolean;
-		justifyContent?: 'between' | 'center';
-	}
 
 	// Get props with defaults
 	const props = $props();
@@ -26,12 +14,7 @@
 	let showSortAndSize = $derived(props.showSortAndSize ?? true);
 	let justifyContent = $derived(props.justifyContent ?? 'between');
 
-	let selectedPage = $state(0);
-
-	// Keep local state in sync with props
-	$effect(() => {
-		selectedPage = pageDisplayInfo?.currentPage || 1;
-	});
+	let selectedPage = $derived(pageDisplayInfo?.currentPage || 1);
 
 	function goToPage(page: number) {
 		dispatch('goToPage', page);
@@ -116,7 +99,7 @@
 						value={currentPagination.sortBy}
 						onchange={changeSorting}
 					>
-						{#each sortFields as field}
+						{#each sortFields as field (field.value)}
 							<option value={field.value}>{field.label}</option>
 						{/each}
 					</select>
@@ -146,7 +129,7 @@
 						value={currentPagination.size}
 						onchange={changePageSize}
 					>
-						{#each pageSizeOptions as size}
+						{#each pageSizeOptions as size (size)}
 							<option value={size}>{size}</option>
 						{/each}
 					</select>

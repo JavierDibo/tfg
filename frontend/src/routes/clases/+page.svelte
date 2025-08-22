@@ -13,8 +13,6 @@
 	import ClasesPaginationControls from '$lib/components/clases/ClasesPaginationControls.svelte';
 	import ClasesStats from '$lib/components/clases/ClasesStats.svelte';
 
-	let { children } = $props();
-
 	// State
 	let clases = $state<DTOClase[]>([]);
 	let misClases = $state<DTOClase[]>([]);
@@ -35,7 +33,7 @@
 			goto('/auth');
 			return;
 		}
-		
+
 		// For teachers, default to 'my' tab and only show their classes
 		if (authStore.isProfesor) {
 			activeTab = 'my';
@@ -49,7 +47,7 @@
 			error = null;
 
 			let response: DTOClase[];
-			
+
 			if (searchTerm.trim()) {
 				// Use the new search API when there's a search term
 				response = await ClaseService.searchClasesByTitle(searchTerm.trim());
@@ -57,7 +55,7 @@
 				// Load all classes when no search term
 				response = await ClaseService.getAllClases();
 			}
-			
+
 			clases = response;
 			totalElements = response.length;
 			totalPages = Math.ceil(totalElements / pageSize);
@@ -78,7 +76,7 @@
 			error = null;
 
 			let response: DTOClase[];
-			
+
 			if (authStore.isAlumno) {
 				response = await ClaseService.getClasesByAlumno(authStore.user.sub);
 			} else if (authStore.isProfesor) {
@@ -87,7 +85,7 @@
 			} else {
 				response = [];
 			}
-			
+
 			misClases = response;
 		} catch (err) {
 			console.error('Error loading my classes:', err);
@@ -204,7 +202,9 @@
 				<nav class="-mb-px flex space-x-8">
 					<button
 						onclick={() => handleTabChange('my')}
-						class="whitespace-nowrap border-b-2 py-2 px-1 text-sm font-medium {activeTab === 'my' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
+						class="border-b-2 px-1 py-2 text-sm font-medium whitespace-nowrap {activeTab === 'my'
+							? 'border-blue-500 text-blue-600'
+							: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
 					>
 						{#if authStore.isAlumno}
 							Mis Clases Inscritas
@@ -215,7 +215,9 @@
 					{#if authStore.isAlumno}
 						<button
 							onclick={() => handleTabChange('all')}
-							class="whitespace-nowrap border-b-2 py-2 px-1 text-sm font-medium {activeTab === 'all' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
+							class="border-b-2 px-1 py-2 text-sm font-medium whitespace-nowrap {activeTab === 'all'
+								? 'border-blue-500 text-blue-600'
+								: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
 						>
 							Todas las Clases
 						</button>
@@ -229,7 +231,7 @@
 	{#if activeTab === 'my'}
 		<ClasesStats clases={misClases} />
 	{:else}
-		<ClasesStats clases={clases} />
+		<ClasesStats {clases} />
 	{/if}
 
 	<div class="rounded-lg bg-white p-6 shadow-md">
@@ -252,7 +254,7 @@
 						<MisClasesDataTable
 							clases={misClases}
 							onEnrollment={handleEnrollment}
-							enrollmentLoading={enrollmentLoading}
+							{enrollmentLoading}
 						/>
 					{:else if authStore.isProfesor}
 						<div class="space-y-6">
@@ -302,7 +304,7 @@
 					onEnrollment={handleEnrollment}
 					showEnrollmentButtons={authStore.isAlumno}
 					showTeacherActions={authStore.isProfesor || authStore.isAdmin}
-					enrollmentLoading={enrollmentLoading}
+					{enrollmentLoading}
 				/>
 
 				<ClasesPaginationControls

@@ -96,7 +96,7 @@
 						</svg>
 					</button>
 
-					{#each getPageNumbers() as page}
+					{#each getPageNumbers() as page (page)}
 						{#if page === '...'}
 							<span
 								class="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700"
@@ -105,7 +105,7 @@
 							</span>
 						{:else}
 							<button
-								on:click={() => handlePageChange(page)}
+								on:click={() => handlePageChange(Number(page))}
 								disabled={isLoading}
 								class="relative inline-flex items-center border px-4 py-2 text-sm font-medium {page ===
 								currentPage

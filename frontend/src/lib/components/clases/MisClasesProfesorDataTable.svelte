@@ -2,9 +2,7 @@
 	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
 	import { goto } from '$app/navigation';
 
-	let {
-		clases
-	} = $props<{
+	let { clases } = $props<{
 		clases: DTOClase[];
 	}>();
 
@@ -74,7 +72,7 @@
 			</tr>
 		</thead>
 		<tbody class="divide-y divide-gray-200 bg-white">
-			{#each clases as clase}
+			{#each clases as clase (clase.id)}
 				<tr class="hover:bg-gray-50">
 					<td class="px-6 py-4 whitespace-nowrap">
 						<div class="flex items-center">

@@ -23,10 +23,10 @@ interface LoginResponse {
 // State
 let token = $state<string | null>(null);
 let user = $state<DecodedToken | null>(null);
-let isAuthenticated = $derived(!!token);
-let isAdmin = $derived(user?.roles?.includes('ROLE_ADMIN') ?? false);
-let isProfesor = $derived(user?.roles?.includes('ROLE_PROFESOR') ?? false);
-let isAlumno = $derived(user?.roles?.includes('ROLE_ALUMNO') ?? false);
+const isAuthenticated = $derived(!!token);
+const isAdmin = $derived(user?.roles?.includes('ROLE_ADMIN') ?? false);
+const isProfesor = $derived(user?.roles?.includes('ROLE_PROFESOR') ?? false);
+const isAlumno = $derived(user?.roles?.includes('ROLE_ALUMNO') ?? false);
 
 // Helper to decode and set user from token
 function updateUserFromToken(jwt: string) {

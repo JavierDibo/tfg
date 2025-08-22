@@ -38,7 +38,7 @@
 
 					if (response.content) {
 						// Add class information to each student
-						const alumnosWithClass = response.content.map(alumno => ({
+						const alumnosWithClass = response.content.map((alumno) => ({
 							alumno,
 							clase
 						}));
@@ -64,7 +64,6 @@
 				alumno,
 				clase: clases[0] // Use first class for display
 			}));
-
 		} catch (err) {
 			console.error('Error loading all students:', err);
 			error = 'Error al cargar los alumnos';
@@ -114,7 +113,7 @@
 		</div>
 	{:else if allAlumnos.length > 0}
 		<div class="space-y-3">
-			{#each allAlumnos as { alumno, clase }}
+			{#each allAlumnos as { alumno, clase } (alumno.id)}
 				<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
 					<div class="flex items-center">
 						<div class="flex-shrink-0">
@@ -136,7 +135,8 @@
 						</div>
 						<div class="ml-3">
 							<p class="text-sm font-medium text-gray-900">
-								{alumno.nombre} {alumno.apellidos}
+								{alumno.nombre}
+								{alumno.apellidos}
 							</p>
 							<p class="text-xs text-gray-500">{alumno.email}</p>
 							<p class="text-xs text-blue-600">Clase: {clase.titulo}</p>

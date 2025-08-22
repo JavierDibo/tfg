@@ -11,12 +11,14 @@ export interface ProfesorStatistics {
 	totalCount: number;
 	activeCount: number;
 	inactiveCount: number;
+	newThisMonth: number;
+	newThisYear: number;
 	bySubject?: Record<string, number>;
 	byExperience?: Record<string, number>;
 }
 
 // Import pagination types
-import type { SortDirection, PageMetadata, PaginatedData } from '$lib/types/pagination';
+import type { SortDirection } from '$lib/types/pagination';
 
 export const ProfesorService = {
 	async getAllProfesores(filters: {
@@ -168,7 +170,9 @@ export const ProfesorService = {
 			return {
 				totalCount: totalStats['total'] || 0,
 				activeCount: habilitacionStats['habilitados'] || 0,
-				inactiveCount: habilitacionStats['noHabilitados'] || 0
+				inactiveCount: habilitacionStats['noHabilitados'] || 0,
+				newThisMonth: 0, // TODO: Implement when API provides this data
+				newThisYear: 0 // TODO: Implement when API provides this data
 			};
 		} catch (error) {
 			console.error('Error fetching professor statistics:', error);

@@ -1,20 +1,17 @@
 <script lang="ts">
 	import type { DTOProfesor } from '$lib/generated/api';
 	import { createEventDispatcher } from 'svelte';
-	import type { PageData } from '../../../routes/profesores/$types';
 
 	const dispatch = createEventDispatcher();
 
 	let {
 		loading,
 		profesores,
-		authStore,
-		currentPagination
+		authStore
 	}: {
 		loading: boolean;
 		profesores: DTOProfesor[];
 		authStore: { isAdmin: boolean };
-		currentPagination: PageData['pagination'];
 	} = $props();
 
 	function formatDate(date: Date | undefined): string {

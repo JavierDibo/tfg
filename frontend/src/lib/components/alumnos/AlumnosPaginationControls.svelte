@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import type { PageDisplayInfo } from '$lib/types/pagination';
+	import type { EntityPagination } from '$lib/components/common/types';
 
-	export let pageDisplayInfo: any;
-	export let currentPagination: any;
-	export let sortFields: any[];
+	export let pageDisplayInfo: PageDisplayInfo;
+	export let currentPagination: EntityPagination;
+	export let sortFields: Array<{ value: string; label: string }>;
 	export let pageSizeOptions: number[];
 
 	const dispatch = createEventDispatcher();
@@ -53,7 +55,7 @@
 						onchange={(e) => changePageSize(parseInt((e.target as HTMLSelectElement).value))}
 						class="rounded-md border border-gray-300 px-3 py-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 					>
-						{#each pageSizeOptions as size}
+						{#each pageSizeOptions as size (size)}
 							<option value={size}>{size}</option>
 						{/each}
 					</select>
@@ -68,7 +70,7 @@
 						onchange={(e) => changeSorting((e.target as HTMLSelectElement).value)}
 						class="rounded-md border border-gray-300 px-3 py-1 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 					>
-						{#each sortFields as field}
+						{#each sortFields as field (field.value)}
 							<option value={field.value}>{field.label}</option>
 						{/each}
 					</select>
@@ -107,9 +109,8 @@
 				<!-- Page numbers -->
 				{#each Array.from({ length: Math.min(10, pageDisplayInfo.totalPages) }, (_, i) => {
 					const start = Math.max(1, pageDisplayInfo.currentPage - 5);
-					const end = Math.min(pageDisplayInfo.totalPages, start + 9);
 					return start + i;
-				}).filter((page) => page <= pageDisplayInfo.totalPages) as page}
+				}).filter((page) => page <= pageDisplayInfo.totalPages) as page (page)}
 					<button
 						onclick={() => goToPage(page)}
 						class="rounded-md border px-3 py-2 text-sm {page === pageDisplayInfo.currentPage

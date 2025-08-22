@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
-	import type { Material } from '$lib/generated/api/models/Material';
 
 	let {
 		clase,
@@ -94,7 +93,7 @@
 
 	{#if clase.material && clase.material.length > 0}
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-			{#each clase.material as material}
+			{#each clase.material as material (material.id)}
 				<div class="rounded-lg border border-gray-200 p-4 transition-shadow hover:shadow-md">
 					<div class="flex items-start justify-between">
 						<div class="flex min-w-0 flex-1 items-center">
@@ -129,6 +128,7 @@
 								rel="noopener noreferrer"
 								class="p-1 text-blue-600 hover:text-blue-800"
 								title="Ver material"
+								aria-label="Ver material {material.nombre}"
 							>
 								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
@@ -144,6 +144,7 @@
 									onclick={() => onRemoveMaterial(material.id)}
 									class="p-1 text-red-600 hover:text-red-800"
 									title="Eliminar material"
+									aria-label="Eliminar material {material.nombre}"
 								>
 									<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path

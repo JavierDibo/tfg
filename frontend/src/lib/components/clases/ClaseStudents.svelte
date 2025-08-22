@@ -94,7 +94,7 @@
 		</div>
 	{:else if alumnos.length > 0}
 		<div class="space-y-3">
-			{#each alumnos as alumno}
+			{#each alumnos as alumno (alumno.id)}
 				<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
 					<div class="flex items-center">
 						<div class="flex-shrink-0">
@@ -116,7 +116,8 @@
 						</div>
 						<div class="ml-3">
 							<p class="text-sm font-medium text-gray-900">
-								{alumno.nombre} {alumno.apellidos}
+								{alumno.nombre}
+								{alumno.apellidos}
 							</p>
 							<p class="text-xs text-gray-500">{alumno.email}</p>
 						</div>
@@ -137,7 +138,10 @@
 			<div class="mt-4 border-t border-gray-200 pt-4">
 				<div class="flex items-center justify-between">
 					<div class="text-sm text-gray-700">
-						Mostrando {((currentPage - 1) * pageSize) + 1} a {Math.min(currentPage * pageSize, totalElements)} de {totalElements} alumnos
+						Mostrando {(currentPage - 1) * pageSize + 1} a {Math.min(
+							currentPage * pageSize,
+							totalElements
+						)} de {totalElements} alumnos
 					</div>
 					<div class="flex space-x-2">
 						{#if currentPage > 1}

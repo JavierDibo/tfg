@@ -1,21 +1,26 @@
-import type { PaginationMetaData } from '$lib/types/pagination';
+import type { PageMetadata } from '$lib/types/pagination';
 
 /**
  * Represents the base entity that all other entities should extend
  */
 export interface BaseEntity {
 	id?: string | number;
-	[key: string]: any;
+	[key: string]: unknown;
 }
+
+/**
+ * Type that extends BaseEntity with index signature for compatibility
+ */
+export type EntityWithIndex<T> = T & { [key: string]: unknown };
 
 /**
  * Configuration for entity columns in a data table
  */
-export interface EntityColumn<T = any> {
+export interface EntityColumn<T = Record<string, unknown>> {
 	key: keyof T | string;
 	header: string;
 	sortable?: boolean;
-	formatter?: (value: any, entity: T) => string | null;
+	formatter?: (value: unknown, entity: T) => string | null;
 	cell?: (entity: T) => string; // For custom cell rendering
 	width?: string;
 	class?: string;
@@ -27,7 +32,7 @@ export interface EntityColumn<T = any> {
 export interface EntityFilters {
 	searchMode: 'simple' | 'advanced' | string;
 	busquedaGeneral?: string;
-	[key: string]: any;
+	[key: string]: unknown;
 }
 
 /**
@@ -43,7 +48,7 @@ export interface EntityPagination {
 /**
  * Common action configuration for entity tables
  */
-export interface EntityAction<T = any> {
+export interface EntityAction<T = Record<string, unknown>> {
 	label: string;
 	dynamicLabel?: (entity: T) => string;
 	icon?: string;
@@ -56,9 +61,9 @@ export interface EntityAction<T = any> {
 /**
  * Generic entity collection with pagination metadata
  */
-export interface PaginatedEntities<T = any> {
+export interface PaginatedEntities<T = Record<string, unknown>> {
 	content?: T[];
-	page?: PaginationMetaData;
+	page?: PageMetadata;
 }
 
 /**
@@ -68,5 +73,5 @@ export interface AuthStoreType {
 	isAdmin: boolean;
 	isAuthenticated: boolean;
 	isProfesor?: boolean;
-	[key: string]: any;
+	[key: string]: unknown;
 }

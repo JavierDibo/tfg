@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import type { DTOAlumno } from '$lib/generated/api';
+	import type {
+		PaginatedEntities,
+		EntityPagination,
+		AuthStoreType
+	} from '$lib/components/common/types';
 
 	export let loading: boolean;
-	export let paginatedData: any;
-	export let currentPagination: any;
-	export let authStore: any;
+	export let paginatedData: PaginatedEntities<DTOAlumno>;
+	export let currentPagination: EntityPagination;
+	export let authStore: AuthStoreType;
 
 	const dispatch = createEventDispatcher();
 
@@ -18,7 +23,7 @@
 		dispatch('changeSorting', field);
 	}
 
-	function viewAlumno(id: string) {
+	function viewAlumno(id: string | number) {
 		dispatch('viewAlumno', id);
 	}
 
@@ -133,7 +138,7 @@
 				<tbody class="divide-y divide-gray-200 bg-white">
 					<!-- Skeleton rows during loading actions -->
 					{#if loading && paginatedData?.content}
-						{#each Array(currentPagination.size) as _, i}
+						{#each Array(currentPagination.size) as _, i (i)}
 							<tr class="animate-pulse">
 								<td class="px-6 py-4 whitespace-nowrap">
 									<div class="flex items-center">
@@ -273,7 +278,7 @@
 		<div class="lg:hidden">
 			<!-- Skeleton cards during loading actions -->
 			{#if loading && paginatedData?.content}
-				{#each Array(currentPagination.size) as _, i}
+				{#each Array(currentPagination.size) as _, i (i)}
 					<div class="animate-pulse border-b border-gray-200 p-4">
 						<div class="mb-2 flex items-start justify-between">
 							<div class="space-y-2">

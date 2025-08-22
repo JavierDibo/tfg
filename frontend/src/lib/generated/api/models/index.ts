@@ -1,5 +1,5 @@
 /* tslint:disable */
-/* eslint-disable */
+
 export * from './DTOActualizacionAlumno';
 export * from './DTOActualizacionProfesor';
 export * from './DTOAlumno';

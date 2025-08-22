@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { DTOEntidad } from '$lib/generated/models';
+	import type { DTOEntidad } from '$lib/generated/api';
 
 	export let searchTerm: string;
 	export let selectedEntidad: string;
@@ -67,8 +67,8 @@
 						class="mt-1 block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none disabled:opacity-50 sm:text-sm"
 					>
 						<option value="">Todas las entidades</option>
-						{#each entidades as entidad}
-							<option value={entidad.id}>{entidad.nombre}</option>
+						{#each entidades as entidad (entidad.id)}
+							<option value={entidad.id}>{entidad.info}</option>
 						{/each}
 					</select>
 				</div>

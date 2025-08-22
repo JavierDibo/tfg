@@ -4,7 +4,7 @@ import { Configuration } from '../generated/api/runtime';
 export interface ApiResponse {
 	success: boolean;
 	message: string;
-	data?: any;
+	data?: unknown;
 }
 
 class EntidadService {
@@ -31,7 +31,7 @@ class EntidadService {
 
 			const entity: DTOEntidad = {
 				info: info.trim(),
-				otraInfo: otraInfo?.trim()
+				otraInfo: otraInfo?.trim() || ''
 			};
 
 			const result = await this.api.crearEntidad({ dTOEntidad: entity });
@@ -68,7 +68,7 @@ class EntidadService {
 			const entity: DTOEntidad = {
 				id,
 				info: info.trim(),
-				otraInfo: otraInfo?.trim()
+				otraInfo: otraInfo?.trim() || ''
 			};
 
 			const result = await this.api.actualizarEntidad({ id, dTOEntidad: entity });
@@ -129,7 +129,7 @@ class EntidadService {
 
 	async getAllEntities(): Promise<DTOEntidad[]> {
 		try {
-			return await this.api.obtenerEntidadPorInfo();
+			return await this.api.obtenerEntidades();
 		} catch (error) {
 			console.error('Error fetching entities:', error);
 			return [];
@@ -138,7 +138,7 @@ class EntidadService {
 
 	async getEntitiesByInfo(info: string): Promise<DTOEntidad[]> {
 		try {
-			return await this.api.obtenerEntidadPorInfo({ info });
+			return await this.api.obtenerEntidades({ info });
 		} catch (error) {
 			console.error('Error fetching entities by info:', error);
 			return [];

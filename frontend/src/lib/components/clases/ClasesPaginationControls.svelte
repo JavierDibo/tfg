@@ -84,7 +84,7 @@
 						</svg>
 					</button>
 
-					{#each getPageNumbers() as pageNum}
+					{#each getPageNumbers() as pageNum (pageNum)}
 						{#if pageNum === 1 && getPageNumbers()[0] !== 1}
 							<button
 								onclick={() => onPageChange(1)}
@@ -116,7 +116,7 @@
 								onclick={() => onPageChange(pageNum)}
 								class="relative inline-flex items-center px-4 py-2 text-sm font-semibold {pageNum ===
 								currentPage
-									? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+									? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-blue-600'
 									: 'text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0'} ring-1 ring-gray-300 ring-inset"
 							>
 								{pageNum}

@@ -37,13 +37,21 @@
 	class="bg-opacity-50 fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600"
 	onclick={onClose}
 	onkeydown={handleKeyDown}
+	role="dialog"
+	aria-modal="true"
+	aria-labelledby="modal-title"
+	tabindex="-1"
 >
 	<!-- Modal content -->
 	<div class="relative top-20 mx-auto w-96 rounded-md border bg-white p-5 shadow-lg">
 		<div class="mt-3">
 			<div class="mb-4 flex items-center justify-between">
-				<h3 class="text-lg font-medium text-gray-900">Agregar Material</h3>
-				<button onclick={onClose} class="text-gray-400 hover:text-gray-600">
+				<h3 id="modal-title" class="text-lg font-medium text-gray-900">Agregar Material</h3>
+				<button
+					onclick={onClose}
+					class="text-gray-400 hover:text-gray-600"
+					aria-label="Cerrar modal"
+				>
 					<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"

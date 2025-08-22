@@ -158,7 +158,10 @@ export const ClaseService = {
 	},
 
 	// General unenrollment (Admin or Professor who teaches the class)
-	async unenrollStudentFromClass(alumnoId: number, claseId: number): Promise<DTORespuestaEnrollment> {
+	async unenrollStudentFromClass(
+		alumnoId: number,
+		claseId: number
+	): Promise<DTORespuestaEnrollment> {
 		try {
 			const enrollmentRequest: DTOPeticionEnrollment = {
 				alumnoId,
