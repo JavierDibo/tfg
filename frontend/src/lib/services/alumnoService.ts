@@ -396,7 +396,8 @@ export class AlumnoService {
 	private static handleApiError(error: unknown): Error {
 		if (error && typeof error === 'object' && 'response' in error) {
 			// HTTP error with response
-			const response = (error as any).response;
+			const response = (error as { response: { status: number; data?: { message?: string } } })
+				.response;
 			const status = response.status;
 			const data = response.data;
 
@@ -418,7 +419,7 @@ export class AlumnoService {
 			}
 		} else if (error && typeof error === 'object' && 'message' in error) {
 			// Network or other errors
-			return new Error((error as any).message);
+			return new Error((error as { message: string }).message);
 		} else {
 			// Unknown error
 			return new Error('Error desconocido');

@@ -28,20 +28,24 @@
 				});
 				authStore.login(response);
 			}
-		} catch (e: any) {
-			if (e.response) {
+		} catch (e: unknown) {
+			const caughtError = e as { response?: { json(): Promise<unknown> }; message?: string };
+			if (caughtError.response) {
 				try {
-					const errorData = await e.response.json();
+					const errorData = (await caughtError.response.json()) as {
+						fieldErrors?: Record<string, string[]>;
+						message?: string;
+					};
 					if (errorData.fieldErrors) {
 						error = Object.values(errorData.fieldErrors).join(', ');
 					} else {
 						error = errorData.message || 'An unknown error occurred.';
 					}
-				} catch (jsonError) {
+				} catch {
 					error = 'Failed to parse error response.';
 				}
 			} else {
-				error = e.message || 'An unknown network error occurred.';
+				error = caughtError.message || 'An unknown network error occurred.';
 			}
 			console.error(e);
 		} finally {
@@ -156,7 +160,7 @@
 			<button
 				type="submit"
 				disabled={loading}
-				class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm leading-6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+				class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm leading-6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
 			>
 				{loading ? '...' : isLogin ? 'Sign in' : 'Create account'}
 			</button>

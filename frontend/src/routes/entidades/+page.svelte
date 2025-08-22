@@ -43,8 +43,8 @@
 				info: searchInfo,
 				otraInfo: searchOtraInfo
 			});
-		} catch (err: any) {
-			error = `Error loading entities: ${err.message}`;
+		} catch (err: unknown) {
+			error = `Error loading entities: ${(err as Error).message}`;
 			console.error('Error loading entities:', err);
 		} finally {
 			loading = false;
@@ -63,8 +63,8 @@
 			entidades = entidades;
 			message = 'Entity created successfully!';
 			resetForm();
-		} catch (err: any) {
-			error = `Error creating entity: ${err.message}`;
+		} catch (err: unknown) {
+			error = `Error creating entity: ${(err as Error).message}`;
 			console.error('Error creating entity:', err);
 		} finally {
 			loading = false;
@@ -84,8 +84,8 @@
 			entidades = entidades.map((e) => (e.id === editingId ? updatedEntity : e));
 			message = 'Entity updated successfully!';
 			resetForm();
-		} catch (err: any) {
-			error = `Error updating entity: ${err.message}`;
+		} catch (err: unknown) {
+			error = `Error updating entity: ${(err as Error).message}`;
 			console.error('Error updating entity:', err);
 		} finally {
 			loading = false;
@@ -101,8 +101,8 @@
 			await entidadApi.borrarEntidadPorId({ id });
 			entidades = entidades.filter((e) => e.id !== id);
 			message = 'Entity deleted successfully!';
-		} catch (err: any) {
-			error = `Error deleting entity: ${err.message}`;
+		} catch (err: unknown) {
+			error = `Error deleting entity: ${(err as Error).message}`;
 			console.error('Error deleting entity:', err);
 		} finally {
 			loading = false;
@@ -118,8 +118,8 @@
 			await entidadApi.borrarTodasLasEntidades();
 			entidades = [];
 			message = 'All entities deleted successfully!';
-		} catch (err: any) {
-			error = `Error deleting all entities: ${err.message}`;
+		} catch (err: unknown) {
+			error = `Error deleting all entities: ${(err as Error).message}`;
 			console.error('Error deleting all entities:', err);
 		} finally {
 			loading = false;
@@ -139,8 +139,8 @@
 				setTimeout(() => entityElement.classList.remove('highlight'), 2000);
 			}
 			message = `Found entity: ${entity.info || 'N/A'}`;
-		} catch (err: any) {
-			error = `Error getting entity: ${err.message}`;
+		} catch (err: unknown) {
+			error = `Error getting entity: ${(err as Error).message}`;
 			console.error('Error getting entity:', err);
 		} finally {
 			loading = false;

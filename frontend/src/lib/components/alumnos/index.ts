@@ -1,36 +1,3 @@
-// Main Alumnos Management Components
-// =====================================
-
-// Header component with title and "New Student" button for the main alumnos page
-export { default as AlumnosHeader } from './AlumnosHeader.svelte';
-
-// Statistics summary cards showing quick stats (total, enrolled, etc.) - used in main alumnos view
-export { default as AlumnosStats } from './AlumnosStats.svelte';
-
-// Filter controls for advanced search functionality (name, apellidos, DNI, email filters)
-export { default as AlumnosFilters } from './AlumnosFilters.svelte';
-
-// Basic table component for displaying student data in tabular format
-export { default as AlumnosTable } from './AlumnosTable.svelte';
-
-// Pagination component for navigating through student records
-export { default as AlumnosPagination } from './AlumnosPagination.svelte';
-
-// Combined search section with simple/advanced search modes, filters, and export functionality
-export { default as AlumnosSearchSection } from './AlumnosSearchSection.svelte';
-
-// Enhanced pagination controls with page size selection, sorting options, and navigation
-export { default as AlumnosPaginationControls } from './AlumnosPaginationControls.svelte';
-
-// Complete data table with loading states, sorting, and student action buttons (view, edit, delete)
-export { default as AlumnosDataTable } from './AlumnosDataTable.svelte';
-
-// Confirmation modal for deleting student records with safety prompts
-export { default as AlumnosDeleteModal } from './AlumnosDeleteModal.svelte';
-
-// Reusable message component for displaying success and error notifications
-export { default as AlumnosMessages } from './AlumnosMessages.svelte';
-
 // Statistics Page Components
 // ===========================
 

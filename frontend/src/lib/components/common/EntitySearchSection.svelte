@@ -13,7 +13,7 @@
 		statusField = null
 	} = $props<{
 		currentFilters: EntityFilters;
-		paginatedData?: PaginatedEntities<any> | null;
+		paginatedData?: PaginatedEntities<Record<string, unknown>> | null;
 		loading?: boolean;
 		entityNamePlural?: string;
 		advancedFields?: Array<{

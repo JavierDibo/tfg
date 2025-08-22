@@ -65,18 +65,19 @@
 
 			// Redirect to the new professor's profile
 			goto(`/profesores/${newProfesor.id}?created=true`);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			loading = false;
 
 			// Handle specific field errors from backend
-			if (error.message.includes('usuario')) {
+			const errorMessage = (error as Error).message;
+			if (errorMessage.includes('usuario')) {
 				fieldErrors.usuario = 'El nombre de usuario ya existe';
-			} else if (error.message.includes('email')) {
+			} else if (errorMessage.includes('email')) {
 				fieldErrors.email = 'El email ya está registrado';
-			} else if (error.message.includes('dni')) {
+			} else if (errorMessage.includes('dni')) {
 				fieldErrors.dni = 'El DNI ya está registrado';
 			} else {
-				errors = [error.message];
+				errors = [errorMessage];
 			}
 		}
 	}
@@ -152,7 +153,7 @@
 	{#if errors.length > 0}
 		<div class="mb-6 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
 			<ul class="list-inside list-disc">
-				{#each errors as error}
+				{#each errors as error, i (i)}
 					<li>{error}</li>
 				{/each}
 			</ul>

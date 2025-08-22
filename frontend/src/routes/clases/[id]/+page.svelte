@@ -13,7 +13,7 @@
 	import ClaseEditModal from '$lib/components/clases/ClaseEditModal.svelte';
 	import MaterialAddModal from '$lib/components/clases/MaterialAddModal.svelte';
 
-	let { children } = $props();
+	// No props needed
 
 	// Get class ID from URL
 	const claseId = Number($page.params.id);
@@ -74,7 +74,7 @@
 	}
 
 	// Handle class update
-	async function handleClassUpdate(updatedClase: DTOClase) {
+	async function handleClassUpdate() {
 		try {
 			// Note: The API doesn't seem to have an update method, so we'll reload
 			await loadClase();

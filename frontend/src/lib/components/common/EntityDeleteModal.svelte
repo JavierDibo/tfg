@@ -4,7 +4,7 @@
 	const dispatch = createEventDispatcher();
 
 	export let showModal: boolean = false;
-	export let entity: any | null = null;
+	export let entity: Record<string, unknown> | null = null;
 	export let entityName: string = 'elemento';
 	export let entityNameCapitalized: string = 'Elemento';
 	export let displayNameField: string = 'nombre';

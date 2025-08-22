@@ -21,6 +21,7 @@ export interface EntityColumn<T = Record<string, unknown>> {
 	header: string;
 	sortable?: boolean;
 	formatter?: (value: unknown, entity: T) => string | null;
+	html?: boolean; // Indicates if the formatter returns HTML that should be rendered
 	cell?: (entity: T) => string; // For custom cell rendering
 	width?: string;
 	class?: string;

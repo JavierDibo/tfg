@@ -5,10 +5,7 @@
 	import { ProfesorService } from '$lib/services/profesorService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import type { PageData } from './$types';
-	import {
-		getPageDisplayInfo,
-		type PaginatedData
-	} from '$lib/types/pagination';
+	import { getPageDisplayInfo, type PaginatedData } from '$lib/types/pagination';
 	import {
 		EntityDataTable,
 		EntitySearchSection,
@@ -16,7 +13,8 @@
 		EntityDeleteModal,
 		EntityMessages,
 		type EntityColumn,
-		type EntityAction
+		type EntityAction,
+		type PaginatedEntities
 	} from '$lib/components/common';
 
 	// Props from load function
@@ -88,8 +86,8 @@
 		// Sorting
 		const { sortBy, sortDirection } = currentPagination;
 		result.sort((a, b) => {
-			const aValue = (a as any)[sortBy];
-			const bValue = (b as any)[sortBy];
+			const aValue = (a as Record<string, unknown>)[sortBy];
+			const bValue = (b as Record<string, unknown>)[sortBy];
 			if (aValue == null || bValue == null) return 0;
 
 			let comparison = 0;
@@ -373,6 +371,7 @@
 			key: 'enabled',
 			header: 'Estado',
 			sortable: true,
+			html: true,
 			formatter: (_, profesor) => {
 				return profesor.enabled
 					? '<span class="inline-flex rounded-full bg-green-100 px-2 text-xs leading-5 font-semibold text-green-800">Habilitado</span>'
@@ -454,7 +453,7 @@
 
 	<EntitySearchSection
 		{currentFilters}
-		{paginatedData}
+		paginatedData={paginatedData as PaginatedEntities<Record<string, unknown>>}
 		{loading}
 		entityNamePlural="profesores"
 		advancedFields={advancedSearchFields}
@@ -479,11 +478,11 @@
 
 	<EntityDataTable
 		{loading}
-		{paginatedData}
+		paginatedData={paginatedData as PaginatedEntities<Record<string, unknown>>}
 		{currentPagination}
 		{authStore}
-		columns={tableColumns}
-		actions={tableActions}
+		columns={tableColumns as unknown as EntityColumn<Record<string, unknown>>[]}
+		actions={tableActions as unknown as EntityAction<Record<string, unknown>>[]}
 		entityName="profesor"
 		entityNamePlural="profesores"
 		on:changeSorting={(e) => changeSorting(e.detail)}
@@ -508,7 +507,7 @@
 
 <EntityDeleteModal
 	showModal={showDeleteModal}
-	entity={profesorToDelete}
+	entity={profesorToDelete as unknown as Record<string, unknown>}
 	entityName="profesor"
 	entityNameCapitalized="Profesor"
 	displayNameField="nombreCompleto"

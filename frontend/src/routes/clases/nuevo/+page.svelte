@@ -5,7 +5,7 @@
 	import type { DTOPeticionCrearCurso } from '$lib/generated/api/models/DTOPeticionCrearCurso';
 	import type { DTOPeticionCrearTaller } from '$lib/generated/api/models/DTOPeticionCrearTaller';
 
-	let { children } = $props();
+	// No props needed
 
 	// State
 	let loading = $state(false);

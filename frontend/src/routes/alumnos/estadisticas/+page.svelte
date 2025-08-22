@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { AlumnoService, type AlumnoStatistics } from '$lib/services/alumnoService';
 	import { authStore } from '$lib/stores/authStore.svelte';
-	import { AlumnosMessages } from '$lib/components/alumnos';
+	import { EntityMessages } from '$lib/components/common';
 	import {
 		EstadisticasHeader,
 		EstadisticasStatsGrid,
@@ -55,7 +55,7 @@
 	<EstadisticasHeader on:refresh={loadStatistics} />
 
 	<!-- Messages Component -->
-	<AlumnosMessages successMessage={null} {error} on:clearError={() => (error = null)} />
+	<EntityMessages successMessage={null} {error} on:clearError={() => (error = null)} />
 
 	<!-- Loading State -->
 	{#if loading}

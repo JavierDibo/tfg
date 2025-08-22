@@ -36,5 +36,48 @@ export default ts.config(
 			}
 		}
 	},
-	storybook.configs['flat/recommended']
+	storybook.configs['flat/recommended'],
+	// Ignore auto-generated files
+	{
+		ignores: [
+			'src/lib/generated/**/*',
+			'src/paraglide/**/*',
+			'node_modules/**/*',
+			'.svelte-kit/**/*',
+			'build/**/*',
+			'dist/**/*',
+			'storybook-static/**/*',
+			'coverage/**/*',
+			'*.config.js',
+			'*.config.ts',
+			'vite.config.ts',
+			'svelte.config.js',
+			'playwright.config.ts',
+			'vitest-setup-client.ts',
+			'openapitools.json',
+			'project.inlang/**/*',
+			'messages/**/*',
+			'package-lock.json',
+			'pnpm-lock.yaml',
+			'yarn.lock',
+			'src/stories/**/*',
+			'e2e/**/*',
+			'**/*.test.ts',
+			'**/*.spec.ts',
+			'**/*.test.js',
+			'**/*.spec.js',
+			'**/*.test.svelte',
+			'**/*.spec.svelte',
+			'.storybook/**/*',
+			'**/*.stories.svelte',
+			'**/*.stories.ts',
+			'**/*.stories.js',
+			'**/*.stories.mdx',
+			'**/*.stories.mdx',
+			'**/*.test.tsx',
+			'**/*.spec.tsx',
+			'**/*.test.jsx',
+			'**/*.spec.jsx'
+		]
+	}
 );

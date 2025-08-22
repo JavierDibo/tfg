@@ -13,7 +13,8 @@
 		EntityDeleteModal,
 		EntityMessages,
 		type EntityColumn,
-		type EntityAction
+		type EntityAction,
+		type PaginatedEntities
 	} from '$lib/components/common';
 
 	// Props from load function
@@ -126,7 +127,7 @@
 				console.log('🔍 Search words:', searchWords);
 
 				// Filter students - all words must be found somewhere in the searchable fields
-				const filteredStudents = allStudents.filter((alumno: any) => {
+				const filteredStudents = allStudents.filter((alumno: DTOAlumno) => {
 					const searchableFields = [
 						normalizeText(alumno.nombre || ''),
 						normalizeText(alumno.apellidos || ''),
@@ -501,6 +502,7 @@
 			key: 'matriculado',
 			header: 'Estado',
 			sortable: true,
+			html: true,
 			formatter: (_, alumno) => {
 				return `
 					<div class="space-y-1">
@@ -534,7 +536,7 @@
 			dynamicLabel: (alumno) => (alumno.matriculado ? 'Desmatricular' : 'Matricular'),
 			color: 'green',
 			hoverColor: 'green',
-			condition: (alumno) => !!authStore.isAdmin,
+			condition: () => !!authStore.isAdmin,
 			action: toggleEnrollmentStatus
 		},
 		{
@@ -542,14 +544,14 @@
 			dynamicLabel: (alumno) => (alumno.enabled ? 'Deshabilitar' : 'Habilitar'),
 			color: 'yellow',
 			hoverColor: 'yellow',
-			condition: (alumno) => !!authStore.isAdmin,
+			condition: () => !!authStore.isAdmin,
 			action: toggleAccountStatus
 		},
 		{
 			label: 'Eliminar',
 			color: 'red',
 			hoverColor: 'red',
-			condition: (alumno) => !!authStore.isAdmin,
+			condition: () => !!authStore.isAdmin,
 			action: confirmDelete
 		}
 	];
@@ -613,7 +615,7 @@
 	<!-- Search and Filter Section -->
 	<EntitySearchSection
 		{currentFilters}
-		{paginatedData}
+		paginatedData={paginatedData as PaginatedEntities<Record<string, unknown>>}
 		{loading}
 		entityNamePlural="alumnos"
 		advancedFields={advancedSearchFields}
@@ -640,11 +642,11 @@
 	<!-- Students Table -->
 	<EntityDataTable
 		{loading}
-		{paginatedData}
+		paginatedData={paginatedData as PaginatedEntities<Record<string, unknown>>}
 		{currentPagination}
 		{authStore}
-		columns={tableColumns}
-		actions={tableActions}
+		columns={tableColumns as unknown as EntityColumn<Record<string, unknown>>[]}
+		actions={tableActions as unknown as EntityAction<Record<string, unknown>>[]}
 		entityName="alumno"
 		entityNamePlural="alumnos"
 		on:changeSorting={(e) => changeSorting(e.detail)}
@@ -671,7 +673,7 @@
 <!-- Delete Confirmation Modal -->
 <EntityDeleteModal
 	showModal={showDeleteModal}
-	entity={alumnoToDelete}
+	entity={alumnoToDelete as unknown as Record<string, unknown>}
 	entityName="alumno"
 	entityNameCapitalized="Alumno"
 	displayNameField="nombre"
