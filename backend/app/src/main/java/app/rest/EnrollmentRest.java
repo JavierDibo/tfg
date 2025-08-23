@@ -85,8 +85,14 @@ public class EnrollmentRest {
     @PostMapping("/{claseId}/self-enroll")
     @PreAuthorize("hasRole('ALUMNO')")
     @Operation(summary = "Auto-inscripción en clase", description = "Permite a un alumno inscribirse en una clase")
-    public ResponseEntity<DTOClase> inscribirseEnClase(@PathVariable Long claseId) {
-        return ResponseEntity.ok(servicioClase.inscribirseEnClase(claseId));
+    public ResponseEntity<DTORespuestaEnrollment> inscribirseEnClase(@PathVariable Long claseId) {
+        DTORespuestaEnrollment respuesta = servicioClase.inscribirseEnClase(claseId);
+        
+        if (respuesta.success()) {
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.badRequest().body(respuesta);
+        }
     }
 
     /**
@@ -95,8 +101,14 @@ public class EnrollmentRest {
     @DeleteMapping("/{claseId}/self-unenroll")
     @PreAuthorize("hasRole('ALUMNO')")
     @Operation(summary = "Auto-baja de clase", description = "Permite a un alumno darse de baja de una clase")
-    public ResponseEntity<DTOClase> darseDeBajaDeClase(@PathVariable Long claseId) {
-        return ResponseEntity.ok(servicioClase.darseDeBajaDeClase(claseId));
+    public ResponseEntity<DTORespuestaEnrollment> darseDeBajaDeClase(@PathVariable Long claseId) {
+        DTORespuestaEnrollment respuesta = servicioClase.darseDeBajaDeClase(claseId);
+        
+        if (respuesta.success()) {
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.badRequest().body(respuesta);
+        }
     }
 
     // ===== OPERACIONES DE CONSULTA DE ESTADO =====

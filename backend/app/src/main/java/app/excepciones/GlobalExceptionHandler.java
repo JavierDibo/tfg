@@ -1,6 +1,7 @@
 package app.excepciones;
 
 import app.dtos.ErrorResponse;
+import app.util.AccessDeniedUtils;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,8 @@ import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -236,13 +239,49 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDenied(Exception ex, WebRequest request) {
         log.warn("Access denied: {}", ex.getMessage());
         
+        // Extract relevant information for better error reporting
+        String path = getPath(request);
+        String resourceType = AccessDeniedUtils.extractResourceType(path);
+        String resourceId = AccessDeniedUtils.extractResourceId(path);
+        String action = AccessDeniedUtils.extractAction(request);
+        String requiredRole = AccessDeniedUtils.extractRequiredRole(ex.getMessage());
+        
+        // Get current authentication context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserRole = AccessDeniedUtils.extractCurrentUserRole(authentication);
+        
+        // Determine the type of access denied
+        boolean isAuthRequired = AccessDeniedUtils.isAuthenticationRequired(authentication);
+        boolean isInsufficientPrivileges = AccessDeniedUtils.isInsufficientPrivileges(authentication, requiredRole);
+        
+        // Generate appropriate message and suggestion
+        String message;
+        String suggestion;
+        
+        if (isAuthRequired) {
+            message = "Autenticación requerida para acceder a este recurso";
+            suggestion = "Inicia sesión para acceder a esta funcionalidad";
+        } else if (isInsufficientPrivileges) {
+            message = "No tienes permisos suficientes para realizar esta acción";
+            suggestion = AccessDeniedUtils.generateSuggestion(requiredRole, currentUserRole, resourceType, action);
+        } else {
+            message = "Acceso denegado a este recurso";
+            suggestion = "Verifica que tienes los permisos necesarios para realizar esta acción";
+        }
+        
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.FORBIDDEN.value())
                 .error(HttpStatus.FORBIDDEN.getReasonPhrase())
-                .message("No tienes permisos para realizar esta acción")
+                .message(message)
                 .errorCode("ACCESS_DENIED")
-                .path(getPath(request))
+                .path(path)
+                .requiredRole(requiredRole)
+                .currentUserRole(currentUserRole)
+                .resourceType(resourceType)
+                .resourceId(resourceId)
+                .action(action)
+                .suggestion(suggestion)
                 .build();
         
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);

@@ -153,6 +153,32 @@ This refactoring provides a solid foundation for:
 4. **Caching**: Different caching strategies per controller
 5. **Monitoring**: Better metrics and monitoring per domain
 
+## Enhanced Access Denied Responses
+
+As part of this refactoring, the API now provides detailed, relevant information when access is denied:
+
+### Enhanced Error Response
+```json
+{
+  "status": 403,
+  "message": "No tienes permisos suficientes para realizar esta acción",
+  "errorCode": "ACCESS_DENIED",
+  "requiredRole": "ADMIN",
+  "currentUserRole": "ROLE_ALUMNO",
+  "resourceType": "clases",
+  "action": "POST",
+  "suggestion": "Esta acción requiere permisos de administrador. Contacta con un administrador del sistema."
+}
+```
+
+### Key Improvements
+- **Contextual Information**: Shows what role is required vs. what the user has
+- **Resource Context**: Identifies what resource and action was being accessed
+- **Helpful Suggestions**: Provides actionable guidance for resolving the issue
+- **Better Debugging**: Developers can quickly identify permission issues
+
+See `docs/ENHANCED_ACCESS_DENIED_GUIDE.md` for complete documentation.
+
 ## Conclusion
 
-This refactoring successfully addresses all identified issues while maintaining 100% backward compatibility at the service layer. The new structure is more maintainable, testable, and follows REST best practices.
+This refactoring successfully addresses all identified issues while maintaining 100% backward compatibility at the service layer. The new structure is more maintainable, testable, and follows REST best practices. Additionally, the enhanced access denied responses provide a much better developer and user experience.

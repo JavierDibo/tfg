@@ -96,7 +96,12 @@ public class ClaseRest {
      */
     @PostMapping("/cursos")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Crear curso", description = "Crea un nuevo curso")
+    @Operation(summary = "Crear curso", description = "Crea un nuevo curso. Requiere permisos de ADMIN o PROFESOR")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Curso creado exitosamente"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - Se requieren permisos de ADMIN o PROFESOR"),
+        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+    })
     public ResponseEntity<DTOCurso> crearCurso(@Valid @RequestBody DTOPeticionCrearCurso peticion) {
         DTOCurso curso = servicioClase.crearCurso(
                 new DTOPeticionCrearClase(

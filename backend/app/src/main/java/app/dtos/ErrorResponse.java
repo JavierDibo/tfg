@@ -26,4 +26,23 @@ public class ErrorResponse {
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String details;
+    
+    // Additional fields for access denied scenarios
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String requiredRole;
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String currentUserRole;
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String resourceType;
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String resourceId;
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String action;
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String suggestion;
 }
