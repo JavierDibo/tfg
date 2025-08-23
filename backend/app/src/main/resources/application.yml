@@ -39,14 +39,14 @@ logging:
   level:
     root: INFO
     app: INFO
-    app.config.ApiLoggingInterceptor: DEBUG
+    app.config.ApiLoggingInterceptor: INFO
     org.springframework.security: WARN
     org.springframework.web: WARN
     org.hibernate.SQL: WARN
     org.hibernate.type.descriptor.sql.BasicBinder: WARN
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: WARN
   pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} %-5level - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
   file:
     name: logs/application.log
@@ -57,4 +57,5 @@ app:
     response-body:
       enabled: true          # Enable/disable response body logging
       max-length: 2000       # Maximum characters to log before truncating
-      include-size: true     # Whether to include response size in logs
+    colors:
+      enabled: true          # Enable/disable ANSI color codes in console output

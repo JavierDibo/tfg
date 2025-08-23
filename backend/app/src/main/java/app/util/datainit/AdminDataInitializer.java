@@ -28,7 +28,7 @@ public class AdminDataInitializer extends BaseDataInitializer {
             
             try {
                 repositorioUsuario.save(admin);
-                System.out.println("✓ Admin user created successfully with encoded password");
+                // System.out.println("✓ Admin user created successfully with encoded password");
             } catch (Exception e) {
                 System.err.println("✗ Error creating admin user: " + e.getMessage());
             }

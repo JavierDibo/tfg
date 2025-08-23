@@ -7,8 +7,11 @@ import app.entidades.Material;
 import app.entidades.Taller;
 import app.entidades.enums.EPresencialidad;
 import app.entidades.enums.ENivel;
-import app.excepciones.EntidadNoEncontradaException;
+import app.excepciones.ResourceNotFoundException;
+import app.repositorios.RepositorioAlumno;
 import app.repositorios.RepositorioClase;
+import app.repositorios.RepositorioProfesor;
+import app.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +40,16 @@ import static org.mockito.Mockito.*;
 class ServicioClaseTest {
 
     @Mock
+    private RepositorioAlumno repositorioAlumno;
+
+    @Mock
     private RepositorioClase repositorioClase;
+
+    @Mock
+    private RepositorioProfesor repositorioProfesor;
+
+    @Mock
+    private SecurityUtils securityUtils;
 
     @InjectMocks
     private ServicioClase servicioClase;
@@ -49,6 +61,11 @@ class ServicioClaseTest {
 
     @BeforeEach
     void setUp() {
+        // Mock SecurityUtils behavior with lenient stubbing
+        lenient().when(securityUtils.isAdmin()).thenReturn(true);
+        lenient().when(securityUtils.isProfessor()).thenReturn(false);
+        lenient().when(securityUtils.getCurrentUserId()).thenReturn(1L);
+        
         material = new Material("mat1", "Apuntes de Java", "https://ejemplo.com/apuntes.pdf");
         
         curso = new Curso(
@@ -109,7 +126,7 @@ class ServicioClaseTest {
     void testObtenerClasePorIdNoExiste() {
         when(repositorioClase.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioClase.obtenerClasePorId(999L);
         });
 
@@ -133,7 +150,7 @@ class ServicioClaseTest {
     void testObtenerClasePorTituloNoExiste() {
         when(repositorioClase.findByTitulo("Clase Inexistente")).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioClase.obtenerClasePorTitulo("Clase Inexistente");
         });
 
@@ -277,7 +294,7 @@ class ServicioClaseTest {
     void testAgregarAlumnoClaseNoExiste() {
         when(repositorioClase.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioClase.agregarAlumno(999L, "alumno3");
         });
 
@@ -414,22 +431,26 @@ class ServicioClaseTest {
     @Test
     @DisplayName("contarAlumnosEnClase debe retornar el número correcto de alumnos")
     void testContarAlumnosEnClase() {
+        when(repositorioClase.findById(1L)).thenReturn(Optional.of(curso));
         when(repositorioClase.countAlumnosByClaseId(1L)).thenReturn(2);
 
         Integer resultado = servicioClase.contarAlumnosEnClase(1L);
 
         assertEquals(2, resultado);
+        verify(repositorioClase).findById(1L);
         verify(repositorioClase).countAlumnosByClaseId(1L);
     }
 
     @Test
     @DisplayName("contarProfesoresEnClase debe retornar el número correcto de profesores")
     void testContarProfesoresEnClase() {
+        when(repositorioClase.findById(1L)).thenReturn(Optional.of(curso));
         when(repositorioClase.countProfesoresByClaseId(1L)).thenReturn(1);
 
         Integer resultado = servicioClase.contarProfesoresEnClase(1L);
 
         assertEquals(1, resultado);
+        verify(repositorioClase).findById(1L);
         verify(repositorioClase).countProfesoresByClaseId(1L);
     }
 }

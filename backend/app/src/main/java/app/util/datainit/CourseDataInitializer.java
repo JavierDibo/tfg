@@ -16,7 +16,7 @@ import java.util.List;
 
 @Component
 public class CourseDataInitializer extends BaseDataInitializer {
-    private static final int COURSES_PER_PROFESSOR = 2;
+    private static final int COURSES_PER_PROFESSOR = 1;
     private final List<DTOCurso> createdCourses = new ArrayList<>();
 
     @Override
@@ -24,7 +24,7 @@ public class CourseDataInitializer extends BaseDataInitializer {
         ServicioClase servicioClase = context.getBean(ServicioClase.class);
         ProfessorDataInitializer professorInit = context.getBean(ProfessorDataInitializer.class);
         
-        System.out.println("Creating courses for professors...");
+        // System.out.println("Creating courses for professors...");
         
         for (DTOProfesor profesor : professorInit.getCreatedProfessors()) {
             for (int i = 0; i < COURSES_PER_PROFESSOR; i++) {
@@ -63,7 +63,7 @@ public class CourseDataInitializer extends BaseDataInitializer {
             }
         }
         
-        System.out.println("✓ Course creation completed. Total created: " + createdCourses.size());
+        System.out.println("Course creation completed. Total created: " + createdCourses.size());
     }
     
     private String generateRandomCourseName() {

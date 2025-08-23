@@ -36,31 +36,15 @@ public class RequestResponseLoggingFilter implements Filter {
             
             // Only wrap API requests
             if (httpRequest.getRequestURI().startsWith("/api/")) {
-                log.debug("Processing API request: {} {}", httpRequest.getMethod(), httpRequest.getRequestURI());
-                
                 ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(httpRequest);
                 LoggingResponseWrapper wrappedResponse = new LoggingResponseWrapper(httpResponse);
                 
                 try {
-                    // Log that we're wrapping the request/response
-                    log.debug("Wrapping request/response for API endpoint: {}", httpRequest.getRequestURI());
-                    
                     chain.doFilter(wrappedRequest, wrappedResponse);
-                    
-                    // Log response details before copying
-                    byte[] responseContent = wrappedResponse.getContentAsByteArray();
-                    log.debug("Response content captured for {}: {} bytes", httpRequest.getRequestURI(), responseContent.length);
-                    
-                    if (responseContent.length > 0) {
-                        String responseBody = new String(responseContent, StandardCharsets.UTF_8);
-                        log.debug("Response body preview for {}: {}", httpRequest.getRequestURI(), 
-                            responseBody.length() > 100 ? responseBody.substring(0, 100) + "..." : responseBody);
-                    }
                     
                     // Ensure the response body is copied back to the original response
                     try {
                         wrappedResponse.copyBodyToResponse();
-                        log.debug("Successfully copied response body for: {}", httpRequest.getRequestURI());
                     } catch (Exception e) {
                         log.warn("Error copying response body for {}: {}", httpRequest.getRequestURI(), e.getMessage());
                     }

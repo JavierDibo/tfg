@@ -28,7 +28,16 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
 
     private final ServicioJwt servicioJwt;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+    
+    // ANSI Color codes for console output
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_BLUE = "\u001B[34m";      // Request phase
+    private static final String ANSI_GREEN = "\u001B[32m";     // Response phase (success)
+    private static final String ANSI_RED = "\u001B[31m";       // Response phase (error)
+    private static final String ANSI_YELLOW = "\u001B[33m";    // Request ID
+    private static final String ANSI_CYAN = "\u001B[36m";      // API-LOG tag
+    private static final String ANSI_PURPLE = "\u001B[35m";    // Response body
     
     // Configurable properties for response body logging
     @Value("${app.logging.response-body.enabled:true}")
@@ -37,8 +46,8 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
     @Value("${app.logging.response-body.max-length:2000}")
     private int maxResponseBodyLength;
     
-    @Value("${app.logging.response-body.include-size:true}")
-    private boolean includeResponseSize;
+    @Value("${app.logging.colors.enabled:true}")
+    private boolean colorsEnabled;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -50,13 +59,18 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
         // Extract user info from JWT if available
         String userInfo = extractUserInfo(request);
         
-        // Log request details
-        log.info("[API-LOG] {} | {} {} | User: {} | RequestID: {}", 
-                LocalDateTime.now().format(TIMESTAMP_FORMATTER),
+        // Log request details with condensed format
+        log.info("{}{}{} {}[API-LOG]{} {}>>> {} {} | User: {}{}", 
+                colorize(ANSI_YELLOW, requestId),
+                ANSI_RESET,
+                " ",
+                colorize(ANSI_CYAN, ""),
+                ANSI_RESET,
+                colorize(ANSI_BLUE, ""),
                 request.getMethod(), 
                 request.getRequestURI(),
                 userInfo,
-                requestId);
+                ANSI_RESET);
 
         // Log additional user context
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -65,7 +79,9 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
             
             Object principal = authentication.getPrincipal();
             if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
-                log.info("[API-LOG] User Context: {} | Enabled: {} | Authorities: {}", 
+                log.info("{}{}{} {}[API-LOG]{} User Context: {} | Enabled: {} | Authorities: {}", 
+                    colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
+                    colorize(ANSI_CYAN, ""), ANSI_RESET,
                     userDetails.getUsername(),
                     userDetails.isEnabled(),
                     userDetails.getAuthorities());
@@ -75,23 +91,19 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
         // Log request body for all operations that might have a body
         String requestBody = getRequestBody(request);
         if (requestBody != null && !requestBody.trim().isEmpty()) {
-            log.info("[API-LOG] Request Body: {}", maskSensitiveData(requestBody));
+            log.info("{}{}{} {}[API-LOG]{} Request JSON: {}", 
+                colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
+                colorize(ANSI_CYAN, ""), ANSI_RESET,
+                maskSensitiveData(requestBody));
         }
 
         // Log query parameters if present
         String queryString = request.getQueryString();
         if (queryString != null && !queryString.trim().isEmpty()) {
-            log.info("[API-LOG] Query Parameters: {}", queryString);
-        }
-
-        // Log important headers (excluding sensitive ones)
-        String contentType = request.getHeader("Content-Type");
-        String userAgent = request.getHeader("User-Agent");
-        if (contentType != null) {
-            log.info("[API-LOG] Content-Type: {}", contentType);
-        }
-        if (userAgent != null) {
-            log.info("[API-LOG] User-Agent: {}", userAgent);
+            log.info("{}{}{} {}[API-LOG]{} Query Parameters: {}", 
+                colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
+                colorize(ANSI_CYAN, ""), ANSI_RESET,
+                queryString);
         }
 
         return true;
@@ -105,30 +117,30 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
         if (requestId != null && startTime != null) {
             long duration = System.currentTimeMillis() - startTime;
             
-            // Log response details
-            log.info("[API-LOG] {} | {} {} | User: {} | Duration: {}ms | Status: {} | RequestID: {}", 
-                    LocalDateTime.now().format(TIMESTAMP_FORMATTER),
+            // Log response details with condensed format
+            String responseColor = response.getStatus() >= 400 ? ANSI_RED : ANSI_GREEN;
+            log.info("{}{}{} {}[API-LOG]{} {}<<< {} {} | User: {} | Duration: {}ms | Status: {}{}", 
+                    colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
+                    colorize(ANSI_CYAN, ""), ANSI_RESET,
+                    colorize(responseColor, ""),
                     request.getMethod(), 
                     request.getRequestURI(),
                     extractUserInfo(request),
                     duration,
                     response.getStatus(),
-                    requestId);
+                    ANSI_RESET);
 
             // Enhanced response body logging
             if (responseBodyLoggingEnabled) {
                 logResponseBody(response, requestId);
             }
 
-            // Log response headers
-            String responseContentType = response.getContentType();
-            if (responseContentType != null) {
-                log.info("[API-LOG] Response Content-Type: {}", responseContentType);
-            }
-
             // Log exception if present
             if (ex != null) {
-                log.error("[API-LOG] Exception occurred: {}", ex.getMessage(), ex);
+                log.error("{}{}{} {}[API-LOG]{} {}Exception occurred: {}{}", 
+                    colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
+                    colorize(ANSI_CYAN, ""), ANSI_RESET,
+                    colorize(ANSI_RED, ""), ex.getMessage(), ANSI_RESET, ex);
             }
         }
     }
@@ -198,19 +210,13 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
 
     private String getResponseBody(HttpServletResponse response) {
         try {
-            log.debug("[API-LOG] Checking response type: {}", response.getClass().getName());
-            
             // Try to get response body from different wrapper types
             if (response instanceof ContentCachingResponseWrapper wrapper) {
                 byte[] content = wrapper.getContentAsByteArray();
-                log.debug("[API-LOG] Content wrapper found, content length: {}", content.length);
                 
                 if (content.length > 0) {
                     String responseBody = new String(content, StandardCharsets.UTF_8);
-                    log.debug("[API-LOG] Response body extracted successfully, length: {}", responseBody.length());
                     return responseBody;
-                } else {
-                    log.debug("[API-LOG] Response content is empty (0 bytes)");
                 }
             } else if (response.getClass().getName().contains("LoggingResponseWrapper")) {
                 // Try to access our custom wrapper using reflection
@@ -219,21 +225,14 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
                     byte[] content = (byte[]) getContentMethod.invoke(response);
                     if (content != null && content.length > 0) {
                         String responseBody = new String(content, StandardCharsets.UTF_8);
-                        log.debug("[API-LOG] Response body extracted from LoggingResponseWrapper, length: {}", responseBody.length());
                         return responseBody;
                     }
                 } catch (Exception e) {
-                    log.debug("[API-LOG] Could not access LoggingResponseWrapper content: {}", e.getMessage());
+                    // Silently handle reflection errors
                 }
-            } else {
-                log.debug("[API-LOG] Response is not a recognized wrapper: {}", response.getClass().getName());
-                
-                // For Spring Security wrapped responses, we can't easily access the body
-                // This is a limitation of the current approach
-                log.debug("[API-LOG] Spring Security response wrapper detected - response body logging not available");
             }
         } catch (Exception e) {
-            log.debug("[API-LOG] Could not read response body: {}", e.getMessage(), e);
+            // Silently handle response body reading errors
         }
         return null;
     }
@@ -252,21 +251,11 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
      */
     private void logResponseBody(HttpServletResponse response, String requestId) {
         try {
-            log.debug("[API-LOG] Attempting to log response body for request: {}", requestId);
-            log.debug("[API-LOG] Response class: {}", response.getClass().getName());
-            log.debug("[API-LOG] Response content type: {}", response.getContentType());
-            log.debug("[API-LOG] Response status: {}", response.getStatus());
-            
             String responseBody = getResponseBody(response);
-            log.debug("[API-LOG] Response body retrieved for request {}: length={}, isNull={}", 
-                requestId, 
-                responseBody != null ? responseBody.length() : 0, 
-                responseBody == null);
             
             if (responseBody != null && !responseBody.trim().isEmpty()) {
                 // Check if response is JSON and try to format it
                 String contentType = response.getContentType();
-                log.debug("[API-LOG] Response content type for request {}: {}", requestId, contentType);
                 
                 if (contentType != null && contentType.contains("application/json")) {
                     try {
@@ -275,49 +264,57 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
                         String prettyJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
                         
                         if (prettyJson.length() > maxResponseBodyLength) {
-                            log.info("[API-LOG] Response Body (truncated, {} chars):\n{}...", 
-                                prettyJson.length(), 
+                            log.info("{}{}{} {}[API-LOG]{} {}Response (truncated):{}\n{}...", 
+                                colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
+                                colorize(ANSI_CYAN, ""), ANSI_RESET,
+                                colorize(ANSI_PURPLE, ""), ANSI_RESET,
                                 prettyJson.substring(0, maxResponseBodyLength));
                         } else {
-                            log.info("[API-LOG] Response Body ({} chars):\n{}", 
-                                prettyJson.length(), 
+                            log.info("{}{}{} {}[API-LOG]{} {}Response:{}\n{}", 
+                                colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
+                                colorize(ANSI_CYAN, ""), ANSI_RESET,
+                                colorize(ANSI_PURPLE, ""), ANSI_RESET,
                                 prettyJson);
                         }
                     } catch (Exception jsonException) {
-                        log.debug("[API-LOG] JSON parsing failed for request {}, logging as text: {}", 
-                            requestId, jsonException.getMessage());
                         // If JSON parsing fails, log as plain text
-                        logResponseBodyAsText(responseBody, "JSON parsing failed, logging as text");
+                        logResponseBodyAsText(responseBody, requestId, "JSON parsing failed, logging as text");
                     }
                 } else {
                     // Non-JSON response
-                    logResponseBodyAsText(responseBody, "Non-JSON response");
+                    logResponseBodyAsText(responseBody, requestId, "Non-JSON response");
                 }
-                
-                // Log response size if enabled
-                if (includeResponseSize) {
-                    log.info("[API-LOG] Response Size: {} characters", responseBody.length());
-                }
-            } else {
-                log.debug("[API-LOG] Response body is empty or null for request: {}", requestId);
-                log.debug("[API-LOG] This might indicate the response wasn't properly wrapped or the body is empty");
             }
         } catch (Exception e) {
-            log.warn("[API-LOG] Could not log response body for request {}: {}", requestId, e.getMessage());
-            log.debug("[API-LOG] Exception details for request {}: ", requestId, e);
+            log.warn("{}{}{} {}[API-LOG]{} {}Could not log response body: {}{}", 
+                colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
+                colorize(ANSI_CYAN, ""), ANSI_RESET,
+                colorize(ANSI_RED, ""), e.getMessage(), ANSI_RESET);
         }
     }
 
     /**
      * Log response body as plain text with truncation
      */
-    private void logResponseBodyAsText(String responseBody, String context) {
+    private void logResponseBodyAsText(String responseBody, String requestId, String context) {
         if (responseBody.length() > maxResponseBodyLength) {
-            log.info("[API-LOG] Response Body ({} - truncated): {}...", 
-                context, 
+            log.info("{}{}{} {}[API-LOG]{} {}Response ({} - truncated):{} {}...", 
+                colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
+                colorize(ANSI_CYAN, ""), ANSI_RESET,
+                colorize(ANSI_PURPLE, ""), context, ANSI_RESET,
                 responseBody.substring(0, maxResponseBodyLength));
         } else {
-            log.info("[API-LOG] Response Body ({}): {}", context, responseBody);
+            log.info("{}{}{} {}[API-LOG]{} {}Response ({}):{} {}", 
+                colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
+                colorize(ANSI_CYAN, ""), ANSI_RESET,
+                colorize(ANSI_PURPLE, ""), context, ANSI_RESET, responseBody);
         }
+    }
+
+    /**
+     * Helper method to apply colors only if colors are enabled
+     */
+    private String colorize(String color, String text) {
+        return colorsEnabled ? color + text : text;
     }
 } 

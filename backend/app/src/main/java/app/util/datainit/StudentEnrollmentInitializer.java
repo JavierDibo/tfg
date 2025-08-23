@@ -30,7 +30,7 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
             return;
         }
         
-        System.out.println("Enrolling students in courses...");
+        // System.out.println("Enrolling students in courses...");
         System.out.println("Students: " + students.size() + ", Courses: " + courses.size());
         
         int totalEnrollments = 0;
@@ -64,7 +64,7 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
             }
         }
         
-        System.out.println("✓ Enrollment completed. Total enrollments: " + totalEnrollments);
+        System.out.println("Enrollment completed. Total enrollments: " + totalEnrollments);
         
         // Print enrollment statistics
         printEnrollmentStatistics(students, courses, servicioAlumno);

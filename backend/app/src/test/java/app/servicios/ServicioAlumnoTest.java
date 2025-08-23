@@ -6,7 +6,8 @@ import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Alumno;
-import app.excepciones.EntidadNoEncontradaException;
+import app.excepciones.ResourceNotFoundException;
+import app.excepciones.ValidationException;
 import app.repositorios.RepositorioAlumno;
 import app.servicios.ServicioCachePassword;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,7 +109,7 @@ class ServicioAlumnoTest {
     void testObtenerAlumnoPorIdNoExiste() {
         when(repositorioAlumno.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioAlumno.obtenerAlumnoPorId(999L);
         });
         verify(repositorioAlumno).findById(999L);
@@ -130,7 +131,7 @@ class ServicioAlumnoTest {
     void testObtenerAlumnoPorEmailNoExiste() {
         when(repositorioAlumno.findByEmail("inexistente@ejemplo.com")).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioAlumno.obtenerAlumnoPorEmail("inexistente@ejemplo.com");
         });
         verify(repositorioAlumno).findByEmail("inexistente@ejemplo.com");
@@ -232,7 +233,7 @@ class ServicioAlumnoTest {
         
         when(repositorioAlumno.existsByUsuario("existente")).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(ValidationException.class, () -> {
             servicioAlumno.crearAlumno(peticion);
         });
         verify(repositorioAlumno).existsByUsuario("existente");
@@ -249,7 +250,7 @@ class ServicioAlumnoTest {
         when(repositorioAlumno.existsByUsuario("nuevo")).thenReturn(false);
         when(repositorioAlumno.existsByEmail("existente@ejemplo.com")).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(ValidationException.class, () -> {
             servicioAlumno.crearAlumno(peticion);
         });
         verify(repositorioAlumno).existsByUsuario("nuevo");
@@ -284,7 +285,7 @@ class ServicioAlumnoTest {
         
         when(repositorioAlumno.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioAlumno.actualizarAlumno(999L, dtoParcial);
         });
         verify(repositorioAlumno).findById(999L);
