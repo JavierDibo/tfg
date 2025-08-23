@@ -786,25 +786,26 @@ public class ServicioClase {
     /**
      * Permite a un alumno inscribirse en una clase.
      * @param claseId ID de la clase a inscribirse.
-     * @return DTOClase actualizada.
+     * @return DTORespuestaEnrollment con el resultado de la operación.
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public DTOClase inscribirseEnClase(Long claseId) {
+    public DTORespuestaEnrollment inscribirseEnClase(Long claseId) {
         String alumnoId = securityUtils.getCurrentUserId().toString(); // Obtiene el ID del alumno autenticado
+        Long alumnoIdLong = Long.parseLong(alumnoId);
 
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
         // Verificar si el alumno ya está inscrito
         if (clase.getAlumnosId().contains(alumnoId)) {
-            return new DTOClase(clase); // El alumno ya está inscrito, devolver la clase sin cambios
+            return DTORespuestaEnrollment.failure(alumnoIdLong, claseId, 
+                "El alumno ya está inscrito en esta clase", "ENROLLMENT");
         }
 
         clase.agregarAlumno(alumnoId);
         
         // También agregar la clase al alumno (actualizar la relación bidireccional)
         try {
-            Long alumnoIdLong = Long.parseLong(alumnoId);
             Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
             ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
             
@@ -815,24 +816,32 @@ public class ServicioClase {
         }
         
         Clase claseActualizada = repositorioClase.save(clase);
-        return new DTOClase(claseActualizada);
+        
+        // Obtener información del alumno para la respuesta
+        Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
+        String nombreAlumno = alumno != null ? alumno.getNombre() : "Alumno";
+        
+        return DTORespuestaEnrollment.success(alumnoIdLong, claseId, 
+            nombreAlumno, claseActualizada.getTitulo(), "ENROLLMENT");
     }
 
     /**
      * Permite a un alumno darse de baja de una clase.
      * @param claseId ID de la clase a darse de baja.
-     * @return DTOClase actualizada.
+     * @return DTORespuestaEnrollment con el resultado de la operación.
      */
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public DTOClase darseDeBajaDeClase(Long claseId) {
+    public DTORespuestaEnrollment darseDeBajaDeClase(Long claseId) {
         String alumnoId = securityUtils.getCurrentUserId().toString(); // Obtiene el ID del alumno autenticado
+        Long alumnoIdLong = Long.parseLong(alumnoId);
 
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
         // Verificar si el alumno está inscrito en la clase
         if (!clase.getAlumnosId().contains(alumnoId)) {
-            return new DTOClase(clase); // El alumno no está inscrito, devolver la clase sin cambios
+            return DTORespuestaEnrollment.failure(alumnoIdLong, claseId, 
+                "El alumno no está inscrito en esta clase", "UNENROLLMENT");
         }
 
         // Remover el alumno de la clase
@@ -840,7 +849,6 @@ public class ServicioClase {
         
         // También remover la clase del alumno (actualizar la relación bidireccional)
         try {
-            Long alumnoIdLong = Long.parseLong(alumnoId);
             Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
             ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
             
@@ -851,7 +859,13 @@ public class ServicioClase {
         }
         
         Clase claseActualizada = repositorioClase.save(clase);
-        return new DTOClase(claseActualizada);
+        
+        // Obtener información del alumno para la respuesta
+        Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
+        String nombreAlumno = alumno != null ? alumno.getNombre() : "Alumno";
+        
+        return DTORespuestaEnrollment.success(alumnoIdLong, claseId, 
+            nombreAlumno, claseActualizada.getTitulo(), "UNENROLLMENT");
     }
 
     // ===== NUEVOS MÉTODOS PARA ESTUDIANTES =====

@@ -69,6 +69,18 @@ export class AlumnoService {
 	}
 
 	/**
+	 * Get student by username
+	 */
+	static async getAlumnoByUsername(username: string): Promise<DTOAlumno> {
+		try {
+			return await alumnoApi.obtenerAlumnoPorUsuario({ usuario: username });
+		} catch (error) {
+			ErrorHandler.logError(error, `getAlumnoByUsername(${username})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
 	 * Create a new student
 	 */
 	static async createAlumno(alumnoData: DTOPeticionRegistroAlumno): Promise<DTOAlumno> {

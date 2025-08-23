@@ -13,8 +13,7 @@
 		EntityFilters,
 		PaginatedEntities,
 		EntityColumn,
-		EntityAction,
-		EntityPagination
+		EntityAction
 	} from '$lib/components/common/types';
 	import { getSearchConfig } from '$lib/components/common/searchConfigs';
 

@@ -37,24 +37,38 @@ public class ConfigFiltroJwt extends OncePerRequestFilter {
             return;
         }
         
-        jwt = authHeader.substring(7);
-        username = servicioJwt.extractUsername(jwt);
-        
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+        try {
+            jwt = authHeader.substring(7);
+            username = servicioJwt.extractUsername(jwt);
             
-            if (servicioJwt.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                try {
+                    UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                    
+                    if (servicioJwt.isTokenValid(jwt, userDetails)) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+                        authToken.setDetails(
+                                new WebAuthenticationDetailsSource().buildDetails(request)
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+                } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
+                    // User not found in database, but token might be valid
+                    // Log the issue but don't throw an exception
+                    // This allows the request to continue without authentication
+                    System.out.println("Warning: JWT token contains username '" + username + "' that doesn't exist in database");
+                }
             }
+        } catch (Exception e) {
+            // Log any other JWT-related errors but don't throw exceptions
+            // This prevents the filter from breaking the request chain
+            System.out.println("Warning: Error processing JWT token: " + e.getMessage());
         }
+        
         filterChain.doFilter(request, response);
     }
 } 

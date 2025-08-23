@@ -17,8 +17,7 @@
 		EntityFilters,
 		PaginatedEntities,
 		EntityColumn,
-		EntityAction,
-		EntityPagination
+		EntityAction
 	} from '$lib/components/common/types';
 	import { getSearchConfig } from '$lib/components/common/searchConfigs';
 
@@ -203,36 +202,6 @@
 	function cancelDelete() {
 		showDeleteModal = false;
 		claseToDelete = null;
-	}
-
-	// Utility functions
-	function formatPrice(precio: number | undefined): string {
-		if (precio === undefined || precio === null) return 'N/A';
-		return `€${precio.toFixed(2)}`;
-	}
-
-	function getNivelColor(nivel: string | undefined): string {
-		switch (nivel) {
-			case 'PRINCIPIANTE':
-				return 'bg-green-100 text-green-800';
-			case 'INTERMEDIO':
-				return 'bg-yellow-100 text-yellow-800';
-			case 'AVANZADO':
-				return 'bg-red-100 text-red-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
-	function getPresencialidadColor(presencialidad: string | undefined): string {
-		switch (presencialidad) {
-			case 'ONLINE':
-				return 'bg-blue-100 text-blue-800';
-			case 'PRESENCIAL':
-				return 'bg-purple-100 text-purple-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
 	}
 
 	// Table configuration
