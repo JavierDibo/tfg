@@ -1,33 +1,5 @@
 package app.servicios;
 
-import app.dtos.*;
-import app.dtos.DTOPeticionEnrollment;
-import app.dtos.DTORespuestaEnrollment;
-import app.entidades.Alumno;
-import app.entidades.Clase;
-import app.entidades.Curso;
-import app.entidades.Material;
-import app.entidades.Taller;
-import app.entidades.Profesor;
-import app.excepciones.EntidadNoEncontradaException;
-import app.repositorios.RepositorioAlumno;
-import app.repositorios.RepositorioClase;
-import app.repositorios.RepositorioProfesor;
-import app.util.ExceptionUtils;
-import app.util.SecurityUtils;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Isolation;
-
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -35,6 +7,43 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+
+import app.dtos.DTOAlumnoPublico;
+import app.dtos.DTOClase;
+import app.dtos.DTOClaseConDetalles;
+import app.dtos.DTOClaseInscrita;
+import app.dtos.DTOCurso;
+import app.dtos.DTOEstadoInscripcion;
+import app.dtos.DTOParametrosBusquedaClase;
+import app.dtos.DTOPeticionCrearClase;
+import app.dtos.DTOPeticionEnrollment;
+import app.dtos.DTOProfesor;
+import app.dtos.DTORespuestaEnrollment;
+import app.dtos.DTORespuestaPaginada;
+import app.dtos.DTOTaller;
+import app.entidades.Alumno;
+import app.entidades.Clase;
+import app.entidades.Curso;
+import app.entidades.Material;
+import app.entidades.Profesor;
+import app.entidades.Taller;
+import app.excepciones.EntidadNoEncontradaException;
+import app.repositorios.RepositorioAlumno;
+import app.repositorios.RepositorioClase;
+import app.repositorios.RepositorioProfesor;
+import app.util.ExceptionUtils;
+import app.util.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Servicio para la gestión de clases
@@ -54,6 +63,7 @@ public class ServicioClase {
      * Obtiene todas las clases
      * @return Lista de DTOClase
      */
+    @Transactional(readOnly = true)
     public List<DTOClase> obtenerClases() {
         return repositorioClase.findAllOrderedById().stream()
                 .map(DTOClase::new)
@@ -67,6 +77,7 @@ public class ServicioClase {
      * - ALUMNO: todas las clases (para ver el catálogo)
      * @return Lista de DTOClase filtrada según el rol
      */
+    @Transactional(readOnly = true)
     public List<DTOClase> obtenerClasesSegunRol() {
         if (securityUtils.isAdmin()) {
             // Los administradores pueden ver todas las clases
@@ -108,6 +119,7 @@ public class ServicioClase {
      * @param parametros Parámetros de búsqueda
      * @return DTORespuestaPaginada con las clases encontradas filtradas según el rol
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOClase> buscarClasesSegunRol(DTOParametrosBusquedaClase parametros) {
         if (securityUtils.isAdmin()) {
             // Los administradores pueden buscar en todas las clases
@@ -176,6 +188,7 @@ public class ServicioClase {
      * @return DTOClase
      * @throws EntidadNoEncontradaException si no se encuentra la clase o no tiene acceso
      */
+    @Transactional(readOnly = true)
     public DTOClase obtenerClasePorId(Long id) {
         Clase clase = repositorioClase.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", id);
@@ -212,6 +225,7 @@ public class ServicioClase {
      * @return DTOClase
      * @throws EntidadNoEncontradaException si no se encuentra la clase o no tiene acceso
      */
+    @Transactional(readOnly = true)
     public DTOClase obtenerClasePorTitulo(String titulo) {
         Clase clase = repositorioClase.findByTitulo(titulo).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "título", titulo);
@@ -368,6 +382,7 @@ public class ServicioClase {
      * @param parametros Parámetros de búsqueda
      * @return DTORespuestaPaginada con las clases encontradas
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOClase> buscarClases(DTOParametrosBusquedaClase parametros) {
         // Configurar paginación
         Pageable pageable = PageRequest.of(
@@ -376,34 +391,58 @@ public class ServicioClase {
                 Sort.by(Sort.Direction.fromString(parametros.ordenDireccion()), parametros.ordenCampo())
         );
         
-        // Realizar búsqueda según criterios proporcionados
+        // Enhanced search logic with "q" parameter support
         Page<Clase> resultado;
         
-        if (parametros.titulo() != null && !parametros.titulo().isEmpty()) {
-            // Aplicar paginación manualmente ya que el repositorio no tiene sobrecarga con Pageable
-            List<Clase> clases = repositorioClase.findByTituloContainingIgnoreCase(parametros.titulo());
-            resultado = convertirListaAPagina(clases, pageable);
-        } else if (parametros.descripcion() != null && !parametros.descripcion().isEmpty()) {
-            List<Clase> clases = repositorioClase.findByDescripcionContainingIgnoreCase(parametros.descripcion());
-            resultado = convertirListaAPagina(clases, pageable);
-        } else if (parametros.presencialidad() != null) {
-            List<Clase> clases = repositorioClase.findByPresencialidad(parametros.presencialidad());
-            resultado = convertirListaAPagina(clases, pageable);
-        } else if (parametros.nivel() != null) {
-            List<Clase> clases = repositorioClase.findByNivel(parametros.nivel());
-            resultado = convertirListaAPagina(clases, pageable);
-        } else if (parametros.precioMaximo() != null && parametros.precioMinimo() == null) {
-            List<Clase> clases = repositorioClase.findByPrecioLessThanEqual(parametros.precioMaximo());
-            resultado = convertirListaAPagina(clases, pageable);
-        } else if (parametros.precioMinimo() != null && parametros.precioMaximo() != null) {
-            List<Clase> clases = repositorioClase.findByPrecioBetween(parametros.precioMinimo(), parametros.precioMaximo());
-            resultado = convertirListaAPagina(clases, pageable);
+        if (parametros.hasGeneralSearch()) {
+            if (parametros.hasSpecificFilters()) {
+                // Use combined search (general + specific filters)
+                resultado = repositorioClase.findByGeneralAndSpecificFilters(
+                    parametros.q(),
+                    parametros.titulo(),
+                    parametros.descripcion(),
+                    parametros.presencialidad(),
+                    parametros.nivel(),
+                    parametros.precioMinimo(),
+                    parametros.precioMaximo(),
+                    pageable
+                );
+            } else {
+                // Use only general search
+                resultado = repositorioClase.findByGeneralSearch(parametros.q(), pageable);
+            }
         } else {
-            resultado = repositorioClase.findAll(pageable);
+            // Use existing specific search logic
+            if (parametros.titulo() != null && !parametros.titulo().isEmpty()) {
+                // Aplicar paginación manualmente ya que el repositorio no tiene sobrecarga con Pageable
+                List<Clase> clases = repositorioClase.findByTituloContainingIgnoreCase(parametros.titulo());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else if (parametros.descripcion() != null && !parametros.descripcion().isEmpty()) {
+                List<Clase> clases = repositorioClase.findByDescripcionContainingIgnoreCase(parametros.descripcion());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else if (parametros.presencialidad() != null) {
+                List<Clase> clases = repositorioClase.findByPresencialidad(parametros.presencialidad());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else if (parametros.nivel() != null) {
+                List<Clase> clases = repositorioClase.findByNivel(parametros.nivel());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else if (parametros.precioMinimo() != null && parametros.precioMaximo() != null) {
+                List<Clase> clases = repositorioClase.findByPrecioBetween(parametros.precioMinimo(), parametros.precioMaximo());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else if (parametros.precioMaximo() != null) {
+                List<Clase> clases = repositorioClase.findByPrecioLessThanEqual(parametros.precioMaximo());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else {
+                // Si no hay criterios específicos, obtener todas las clases
+                List<Clase> todasLasClases = repositorioClase.findAllOrderedById();
+                resultado = convertirListaAPagina(todasLasClases, pageable);
+            }
         }
         
-        // Construir respuesta paginada usando el constructor que acepta un Page
-        return DTORespuestaPaginada.fromPage(resultado.map(clase -> new DTOClase(clase)), "id", "ASC");
+        // Convertir a DTOs
+        Page<DTOClase> pageDTOs = resultado.map(DTOClase::new);
+        
+        return DTORespuestaPaginada.fromPage(pageDTOs, parametros.ordenCampo(), parametros.ordenDireccion());
     }
 
     /**
@@ -747,111 +786,72 @@ public class ServicioClase {
     /**
      * Permite a un alumno inscribirse en una clase.
      * @param claseId ID de la clase a inscribirse.
-     * @return DTORespuestaEnrollment con el resultado de la operación.
+     * @return DTOClase actualizada.
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public DTORespuestaEnrollment inscribirseEnClase(Long claseId) {
-        Long alumnoId = securityUtils.getCurrentUserId(); // Obtiene el ID del alumno del contexto de seguridad
+    public DTOClase inscribirseEnClase(Long claseId) {
+        String alumnoId = securityUtils.getCurrentUserId().toString(); // Obtiene el ID del alumno autenticado
 
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
         // Verificar si el alumno ya está inscrito
-        if (clase.getAlumnosId().contains(alumnoId.toString())) {
-            return DTORespuestaEnrollment.failure(
-                alumnoId, 
-                claseId, 
-                "Ya estás inscrito en esta clase", 
-                "ENROLLMENT"
-            );
+        if (clase.getAlumnosId().contains(alumnoId)) {
+            return new DTOClase(clase); // El alumno ya está inscrito, devolver la clase sin cambios
         }
 
-        // Obtener información del alumno para el mensaje de respuesta
-        Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
-        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
-        
-        String nombreAlumno = alumno.getNombre() + " " + alumno.getApellidos();
-
-        // Agregar el alumno a la clase
-        clase.agregarAlumno(alumnoId.toString());
+        clase.agregarAlumno(alumnoId);
         
         // También agregar la clase al alumno (actualizar la relación bidireccional)
         try {
+            Long alumnoIdLong = Long.parseLong(alumnoId);
+            Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
+            
             alumno.agregarClase(claseId.toString());
             repositorioAlumno.save(alumno);
         } catch (Exception e) {
-            return DTORespuestaEnrollment.failure(
-                alumnoId, 
-                claseId, 
-                "Error al actualizar el alumno: " + e.getMessage(), 
-                "ENROLLMENT"
-            );
+            // Log the error but continue with the class update
         }
         
         Clase claseActualizada = repositorioClase.save(clase);
-        
-        return DTORespuestaEnrollment.success(
-            alumnoId,
-            claseId,
-            nombreAlumno,
-            claseActualizada.getTitulo(),
-            "ENROLLMENT"
-        );
+        return new DTOClase(claseActualizada);
     }
 
     /**
      * Permite a un alumno darse de baja de una clase.
      * @param claseId ID de la clase a darse de baja.
-     * @return DTORespuestaEnrollment con el resultado de la operación.
+     * @return DTOClase actualizada.
      */
-    @Transactional(isolation = Isolation.SERIALIZABLE)
-    public DTORespuestaEnrollment darseDeBajaDeClase(Long claseId) {
-        Long alumnoId = securityUtils.getCurrentUserId(); // Obtiene el ID del alumno del contexto de seguridad
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public DTOClase darseDeBajaDeClase(Long claseId) {
+        String alumnoId = securityUtils.getCurrentUserId().toString(); // Obtiene el ID del alumno autenticado
 
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
         // Verificar si el alumno está inscrito en la clase
-        if (!clase.getAlumnosId().contains(alumnoId.toString())) {
-            return DTORespuestaEnrollment.failure(
-                alumnoId, 
-                claseId, 
-                "No estás inscrito en esta clase", 
-                "UNENROLLMENT"
-            );
+        if (!clase.getAlumnosId().contains(alumnoId)) {
+            return new DTOClase(clase); // El alumno no está inscrito, devolver la clase sin cambios
         }
 
-        // Obtener información del alumno para el mensaje de respuesta
-        Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
-        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
-        
-        String nombreAlumno = alumno.getNombre() + " " + alumno.getApellidos();
-
         // Remover el alumno de la clase
-        clase.removerAlumno(alumnoId.toString());
+        clase.removerAlumno(alumnoId);
         
         // También remover la clase del alumno (actualizar la relación bidireccional)
         try {
+            Long alumnoIdLong = Long.parseLong(alumnoId);
+            Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
+            
             alumno.removerClase(claseId.toString());
             repositorioAlumno.save(alumno);
         } catch (Exception e) {
-            return DTORespuestaEnrollment.failure(
-                alumnoId, 
-                claseId, 
-                "Error al actualizar el alumno: " + e.getMessage(), 
-                "UNENROLLMENT"
-            );
+            // Log the error but continue with the class update
         }
         
         Clase claseActualizada = repositorioClase.save(clase);
-        
-        return DTORespuestaEnrollment.success(
-            alumnoId,
-            claseId,
-            nombreAlumno,
-            claseActualizada.getTitulo(),
-            "UNENROLLMENT"
-        );
+        return new DTOClase(claseActualizada);
     }
 
     // ===== NUEVOS MÉTODOS PARA ESTUDIANTES =====

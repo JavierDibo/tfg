@@ -79,6 +79,7 @@ export interface ObtenerAlumnoPorUsuarioRequest {
 }
 
 export interface ObtenerAlumnosRequest {
+	q?: string;
 	nombre?: string;
 	apellidos?: string;
 	dni?: string;
@@ -108,6 +109,7 @@ export interface ObtenerAlumnosNoMatriculadosPaginadosRequest {
 }
 
 export interface ObtenerAlumnosPaginadosRequest {
+	q?: string;
 	nombre?: string;
 	apellidos?: string;
 	dni?: string;
@@ -579,6 +581,10 @@ export class AlumnosApi extends runtime.BaseAPI {
 	): Promise<runtime.ApiResponse<DTOAlumno>> {
 		const queryParameters: any = {};
 
+		if (requestParameters['q'] != null) {
+			queryParameters['q'] = requestParameters['q'];
+		}
+
 		if (requestParameters['nombre'] != null) {
 			queryParameters['nombre'] = requestParameters['nombre'];
 		}
@@ -881,6 +887,10 @@ export class AlumnosApi extends runtime.BaseAPI {
 		initOverrides?: RequestInit | runtime.InitOverrideFunction
 	): Promise<runtime.ApiResponse<DTORespuestaPaginada>> {
 		const queryParameters: any = {};
+
+		if (requestParameters['q'] != null) {
+			queryParameters['q'] = requestParameters['q'];
+		}
 
 		if (requestParameters['nombre'] != null) {
 			queryParameters['nombre'] = requestParameters['nombre'];

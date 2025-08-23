@@ -80,6 +80,18 @@ public class ClaseRest {
     }
 
     /**
+     * Busca clases con término general según el rol del usuario autenticado
+     */
+    @GetMapping("/buscar/general")
+    @Operation(summary = "Buscar clases con término general", description = "Busca clases con término general en título y descripción")
+    public ResponseEntity<List<DTOClase>> buscarClasesPorTerminoGeneral(@RequestParam String q) {
+        DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase();
+        // Create a new instance with the general search term
+        parametros = new DTOParametrosBusquedaClase(q, null, null, null, null, null, null, null, 0, 100, "id", "ASC");
+        return ResponseEntity.ok(servicioClase.buscarClasesSegunRol(parametros).contenido());
+    }
+
+    /**
      * Busca clases con paginación y filtros según el rol del usuario autenticado
      */
     @PostMapping("/buscar")

@@ -48,8 +48,8 @@
 		let result = [...allProfesores];
 
 		// Filtering
-		if (currentFilters.searchMode === 'simple' && currentFilters.busquedaGeneral) {
-			const searchTerm = normalizeText(currentFilters.busquedaGeneral);
+		if (currentFilters.searchMode === 'simple' && currentFilters.q) {
+			const searchTerm = normalizeText(currentFilters.q);
 			const searchWords = searchTerm.split(/\s+/).filter(Boolean);
 			result = result.filter((p) => {
 				const searchableText = [p.nombre, p.apellidos, p.usuario, p.dni, p.email, p.numeroTelefono]
@@ -58,6 +58,23 @@
 				return searchWords.every((word) => searchableText.includes(word));
 			});
 		} else if (currentFilters.searchMode === 'advanced') {
+			if (currentFilters.q) {
+				const searchTerm = normalizeText(currentFilters.q);
+				const searchWords = searchTerm.split(/\s+/).filter(Boolean);
+				result = result.filter((p) => {
+					const searchableText = [
+						p.nombre,
+						p.apellidos,
+						p.usuario,
+						p.dni,
+						p.email,
+						p.numeroTelefono
+					]
+						.map((field) => normalizeText(field || ''))
+						.join(' ');
+					return searchWords.every((word) => searchableText.includes(word));
+				});
+			}
 			if (currentFilters.nombre) {
 				result = result.filter((p) =>
 					normalizeText(p.nombre || '').includes(normalizeText(currentFilters.nombre!))

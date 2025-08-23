@@ -1,15 +1,8 @@
 package app.servicios;
 
-import app.dtos.*;
-import app.entidades.Clase;
-import app.entidades.Profesor;
-//import app.entidades.Usuario;
-import app.excepciones.EntidadNoEncontradaException;
-import app.repositorios.RepositorioClase;
-import app.repositorios.RepositorioProfesor;
-import app.util.ExceptionUtils;
-//import app.repositorios.RepositorioUsuario;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -19,8 +12,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import app.dtos.DTOActualizacionProfesor;
+import app.dtos.DTOClase;
+import app.dtos.DTOParametrosBusquedaProfesor;
+import app.dtos.DTOPeticionRegistroProfesor;
+import app.dtos.DTOProfesor;
+import app.dtos.DTORespuestaPaginada;
+import app.entidades.Clase;
+import app.entidades.Profesor;
+import app.excepciones.EntidadNoEncontradaException;
+import app.repositorios.RepositorioClase;
+import app.repositorios.RepositorioProfesor;
+import app.util.ExceptionUtils;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Servicio para la gestión de profesores
@@ -36,11 +40,13 @@ public class ServicioProfesor {
     // Uncomment if needed in the future
     // private final RepositorioUsuario repositorioUsuario;
     private final PasswordEncoder passwordEncoder;
+    private final ServicioCachePassword servicioCachePassword;
 
     /**
      * Obtiene todos los profesores
      * @return Lista de DTOProfesor
      */
+    @Transactional(readOnly = true)
     public List<DTOProfesor> obtenerProfesores() {
         return repositorioProfesor.findAllOrderedById()
                 .stream()
@@ -54,6 +60,7 @@ public class ServicioProfesor {
      * @return DTOProfesor
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
+    @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorId(Long id) {
         Profesor profesor = repositorioProfesor.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
@@ -66,6 +73,7 @@ public class ServicioProfesor {
      * @return DTOProfesor
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
+    @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorEmail(String email) {
         Profesor profesor = repositorioProfesor.findByEmail(email).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "email", email);
@@ -78,6 +86,7 @@ public class ServicioProfesor {
      * @return DTOProfesor
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
+    @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorUsuario(String usuario) {
         Profesor profesor = repositorioProfesor.findByUsuario(usuario).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "usuario", usuario);
@@ -90,6 +99,7 @@ public class ServicioProfesor {
      * @return DTOProfesor
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
+    @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorDni(String dni) {
         Profesor profesor = repositorioProfesor.findByDni(dni).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "DNI", dni);
@@ -126,27 +136,70 @@ public class ServicioProfesor {
      * @return Lista de DTOProfesor
      */
     public List<DTOProfesor> buscarProfesoresPorParametros(DTOParametrosBusquedaProfesor parametros) {
-        // Si todos los parámetros son nulos, devolver todos los profesores
-        if (parametros.nombre() == null && parametros.apellidos() == null && 
-            parametros.dni() == null && parametros.email() == null) {
-            return obtenerProfesores();
+        // Enhanced search logic with "q" parameter support
+        if (parametros.hasGeneralSearch()) {
+            if (parametros.hasSpecificFilters()) {
+                // Use combined search (general + specific filters) without pagination
+                List<Profesor> profesores = repositorioProfesor.findAll().stream()
+                    .filter(p -> {
+                        String searchTerm = parametros.q().toLowerCase();
+                        boolean generalMatch = p.getNombre().toLowerCase().contains(searchTerm) ||
+                                             p.getApellidos().toLowerCase().contains(searchTerm) ||
+                                             p.getEmail().toLowerCase().contains(searchTerm) ||
+                                             p.getUsuario().toLowerCase().contains(searchTerm) ||
+                                             p.getDni().toLowerCase().contains(searchTerm);
+                        
+                        boolean specificMatch = (parametros.nombre() == null || 
+                                               p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())) &&
+                                              (parametros.apellidos() == null || 
+                                               p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())) &&
+                                              (parametros.dni() == null || 
+                                               p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())) &&
+                                              (parametros.email() == null || 
+                                               p.getEmail().toLowerCase().contains(parametros.email().toLowerCase()));
+                        
+                        return generalMatch && specificMatch;
+                    })
+                    .collect(Collectors.toList());
+                
+                return profesores.stream().map(DTOProfesor::new).toList();
+            } else {
+                // Use only general search without pagination
+                List<Profesor> profesores = repositorioProfesor.findAll().stream()
+                    .filter(p -> {
+                        String searchTerm = parametros.q().toLowerCase();
+                        return p.getNombre().toLowerCase().contains(searchTerm) ||
+                               p.getApellidos().toLowerCase().contains(searchTerm) ||
+                               p.getEmail().toLowerCase().contains(searchTerm) ||
+                               p.getUsuario().toLowerCase().contains(searchTerm) ||
+                               p.getDni().toLowerCase().contains(searchTerm);
+                    })
+                    .collect(Collectors.toList());
+                
+                return profesores.stream().map(DTOProfesor::new).toList();
+            }
+        } else {
+            // Use existing specific search logic
+            if (parametros.hasSpecificFilters()) {
+                // Buscar por filtros básicos
+                List<Profesor> profesores = repositorioProfesor.findAll().stream()
+                        .filter(p -> (parametros.nombre() == null || 
+                                      p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())))
+                        .filter(p -> (parametros.apellidos() == null || 
+                                      p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())))
+                        .filter(p -> (parametros.dni() == null || 
+                                      p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())))
+                        .filter(p -> (parametros.email() == null || 
+                                      p.getEmail().toLowerCase().contains(parametros.email().toLowerCase())))
+                        .collect(Collectors.toList());
+                
+                return profesores.stream()
+                        .map(DTOProfesor::new)
+                        .toList();
+            } else {
+                return obtenerProfesores();
+            }
         }
-        
-        // Buscar por filtros básicos
-        List<Profesor> profesores = repositorioProfesor.findAll().stream()
-                .filter(p -> (parametros.nombre() == null || 
-                              p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())))
-                .filter(p -> (parametros.apellidos() == null || 
-                              p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())))
-                .filter(p -> (parametros.dni() == null || 
-                              p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())))
-                .filter(p -> (parametros.email() == null || 
-                              p.getEmail().toLowerCase().contains(parametros.email().toLowerCase())))
-                .collect(Collectors.toList());
-        
-        return profesores.stream()
-                .map(DTOProfesor::new)
-                .toList();
     }
 
     /**
@@ -175,7 +228,7 @@ public class ServicioProfesor {
         // Crear el profesor
         Profesor profesor = new Profesor(
             peticion.usuario(),
-            passwordEncoder.encode(peticion.password()),
+            servicioCachePassword.encodePassword(peticion.password()),
             peticion.nombre(),
             peticion.apellidos(),
             peticion.dni(),
@@ -467,6 +520,7 @@ public class ServicioProfesor {
     /**
      * Busca profesores por parámetros con paginación
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOProfesor> buscarProfesoresPorParametrosPaginados(
             DTOParametrosBusquedaProfesor parametros, int page, int size, String sortBy, String sortDirection) {
         
@@ -483,40 +537,78 @@ public class ServicioProfesor {
         }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<Profesor> pageProfesores;
         
-        // Filtrar profesores según parámetros
-        List<Profesor> profesoresFiltrados;
-        
-        // Si todos los parámetros son nulos, obtener todos
-        if (parametros.nombre() == null && parametros.apellidos() == null && 
-            parametros.dni() == null && parametros.email() == null) {
-            profesoresFiltrados = repositorioProfesor.findAll(Sort.by(direction, sortBy));
+        // Enhanced search logic with "q" parameter support
+        if (parametros.hasGeneralSearch()) {
+            if (parametros.hasSpecificFilters()) {
+                // Use combined search (general + specific filters)
+                pageProfesores = repositorioProfesor.findByGeneralAndSpecificFilters(
+                    parametros.q(),
+                    parametros.nombre(),
+                    parametros.apellidos(),
+                    parametros.email(),
+                    parametros.usuario(),
+                    parametros.dni(),
+                    parametros.habilitado(),
+                    pageable
+                );
+            } else {
+                // Use only general search
+                pageProfesores = repositorioProfesor.findByGeneralSearch(parametros.q(), pageable);
+            }
         } else {
-            // Filtrar según parámetros
-            profesoresFiltrados = repositorioProfesor.findAll(Sort.by(direction, sortBy))
-                .stream()
-                .filter(p -> (parametros.nombre() == null || 
-                            p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())))
-                .filter(p -> (parametros.apellidos() == null || 
-                            p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())))
-                .filter(p -> (parametros.dni() == null || 
-                            p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())))
-                .filter(p -> (parametros.email() == null || 
-                            p.getEmail().toLowerCase().contains(parametros.email().toLowerCase())))
-                .collect(Collectors.toList());
+            // Use existing specific search logic
+            if (parametros.hasSpecificFilters()) {
+                // Filtrar profesores según parámetros
+                List<Profesor> profesoresFiltrados;
+                
+                // Si todos los parámetros son nulos, obtener todos
+                if (parametros.nombre() == null && parametros.apellidos() == null && 
+                    parametros.dni() == null && parametros.email() == null) {
+                    profesoresFiltrados = repositorioProfesor.findAll(Sort.by(direction, sortBy));
+                } else {
+                    // Filtrar según parámetros
+                    profesoresFiltrados = repositorioProfesor.findAll(Sort.by(direction, sortBy))
+                        .stream()
+                        .filter(p -> (parametros.nombre() == null || 
+                                    p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())))
+                        .filter(p -> (parametros.apellidos() == null || 
+                                    p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())))
+                        .filter(p -> (parametros.dni() == null || 
+                                    p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())))
+                        .filter(p -> (parametros.email() == null || 
+                                    p.getEmail().toLowerCase().contains(parametros.email().toLowerCase())))
+                        .collect(Collectors.toList());
+                }
+                
+                // Aplicar paginación
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), profesoresFiltrados.size());
+                
+                if (start > end) {
+                    start = 0;
+                    end = 0;
+                }
+                
+                List<Profesor> pageContent = profesoresFiltrados.subList(start, end);
+                pageProfesores = new PageImpl<>(pageContent, pageable, profesoresFiltrados.size());
+            } else {
+                // Implementar paginación manualmente
+                List<Profesor> allProfesores = repositorioProfesor.findAll(Sort.by(direction, sortBy));
+                
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), allProfesores.size());
+                
+                if (start > end) {
+                    start = 0;
+                    end = 0;
+                }
+                
+                List<Profesor> pageContent = allProfesores.subList(start, end);
+                pageProfesores = new PageImpl<>(pageContent, pageable, allProfesores.size());
+            }
         }
-        
-        // Aplicar paginación
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), profesoresFiltrados.size());
-        
-        if (start > end) {
-            start = 0;
-            end = 0;
-        }
-        
-        List<Profesor> pageContent = profesoresFiltrados.subList(start, end);
-        Page<Profesor> pageProfesores = new PageImpl<>(pageContent, pageable, profesoresFiltrados.size());
         
         // Convertir a DTOs
         Page<DTOProfesor> pageDTOs = pageProfesores.map(DTOProfesor::new);
@@ -533,6 +625,7 @@ public class ServicioProfesor {
      * @param sortDirection dirección de ordenamiento (ASC/DESC)
      * @return DTORespuestaPaginada con los profesores que imparten la clase
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOProfesor> obtenerProfesoresPorClasePaginados(
             String claseId, int page, int size, String sortBy, String sortDirection) {
         
@@ -602,6 +695,7 @@ public class ServicioProfesor {
      * @param sortDirection dirección del ordenamiento (por defecto: ASC)
      * @return DTORespuestaPaginada con los profesores habilitados y metadatos de paginación
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOProfesor> obtenerProfesoresHabilitadosPaginados(
             int page, int size, String sortBy, String sortDirection) {
         

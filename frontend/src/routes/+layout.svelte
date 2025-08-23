@@ -1,8 +1,12 @@
 <script lang="ts">
 	import '../app.css';
 	import { authStore } from '$lib/stores/authStore.svelte';
+	import QuickLoginButtons from '$lib/components/QuickLoginButtons.svelte';
 
 	let { children } = $props();
+
+	// Show quick login buttons in development or when explicitly enabled
+	const showQuickLogin = import.meta.env.DEV || window.location.search.includes('debug=true');
 </script>
 
 <nav class="bg-gray-800">
@@ -138,3 +142,10 @@
 <main>
 	{@render children()}
 </main>
+
+<!-- Quick Login Buttons (Development Only) -->
+{#if showQuickLogin}
+	<div class="fixed right-4 bottom-4 z-50">
+		<QuickLoginButtons />
+	</div>
+{/if}

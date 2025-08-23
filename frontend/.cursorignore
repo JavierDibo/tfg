@@ -1,0 +1,26 @@
+# Cursor ignore file - excludes folders from indexing
+
+# Build and output directories
+.svelte-kit/
+.vercel/
+build/
+storybook-static/
+
+# Dependencies
+node_modules/
+
+# Configuration and cache
+.cursor/rules/
+.vscode/
+project.inlang/
+
+# Static assets (if you don't want them indexed)
+static/ 
+
+# Additional common exclusions
+*.log
+*.tmp
+*.cache
+.env*
+!.env.example
+.cursor/rules/

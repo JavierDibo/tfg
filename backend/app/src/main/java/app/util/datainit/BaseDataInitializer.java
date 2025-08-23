@@ -2,37 +2,31 @@ package app.util.datainit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import app.servicios.ServicioCachePassword;
 
 import java.util.Random;
 
 @Component
 public abstract class BaseDataInitializer {
+    
     @Autowired
     protected ApplicationContext context;
+    
+    @Autowired
+    protected ServicioCachePassword servicioCachePassword;
+    
     protected final Random random = new Random();
-    protected PasswordEncoder passwordEncoder;
 
     protected abstract void initialize();
 
     /**
-     * Initialize the password encoder for use in data initialization
-     */
-    protected void initializePasswordEncoder() {
-        if (passwordEncoder == null) {
-            passwordEncoder = context.getBean(PasswordEncoder.class);
-        }
-    }
-
-    /**
-     * Encode a password using the configured PasswordEncoder
+     * Encode a password using the password cache service
      * @param rawPassword The raw password to encode
      * @return The encoded password
      */
     protected String encodePassword(String rawPassword) {
-        initializePasswordEncoder();
-        return passwordEncoder.encode(rawPassword);
+        return servicioCachePassword.encodePassword(rawPassword);
     }
 
     protected String[] generateRandomNames() {

@@ -10,17 +10,16 @@ import java.util.List;
 
 @Component
 public class ProfessorDataInitializer extends BaseDataInitializer {
-    private static final int NUM_PROFESSORS = 20;
+    private static final int NUM_PROFESSORS = 9;
     private final List<DTOProfesor> createdProfessors = new ArrayList<>();
 
     @Override
     public void initialize() {
         ServicioProfesor servicioProfesor = context.getBean(ServicioProfesor.class);
         
-        // Initialize password encoder
-        initializePasswordEncoder();
+        // Password service is now injected automatically
         
-        System.out.println("Creating hardcoded professor and " + NUM_PROFESSORS + " additional professors...");
+        // System.out.println("Creating hardcoded professor and " + NUM_PROFESSORS + " additional professors...");
         
         // Create hardcoded professor first
         DTOPeticionRegistroProfesor hardcodedProfessor = new DTOPeticionRegistroProfesor(
@@ -37,7 +36,7 @@ public class ProfessorDataInitializer extends BaseDataInitializer {
         try {
             DTOProfesor profesor = servicioProfesor.crearProfesor(hardcodedProfessor);
             createdProfessors.add(profesor);
-            System.out.println("✓ Created hardcoded professor: profesor with password: password");
+            // System.out.println("✓ Created hardcoded professor: profesor with password: password");
         } catch (Exception e) {
             System.err.println("✗ Error creating hardcoded professor: " + e.getMessage());
         }
@@ -70,13 +69,12 @@ public class ProfessorDataInitializer extends BaseDataInitializer {
             try {
                 DTOProfesor profesor = servicioProfesor.crearProfesor(dto);
                 createdProfessors.add(profesor);
-                System.out.println("✓ Created professor: " + username + " with encoded password");
             } catch (Exception e) {
                 System.err.println("✗ Error creating professor: " + e.getMessage());
             }
         }
         
-        System.out.println("✓ Professor creation completed. Total created: " + createdProfessors.size());
+        System.out.println("Professor creation completed. Total created: " + createdProfessors.size());
     }
     
     public List<DTOProfesor> getCreatedProfessors() {

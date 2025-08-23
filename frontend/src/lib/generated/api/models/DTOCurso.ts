@@ -110,19 +110,13 @@ export interface DTOCurso {
 	 * @type {number}
 	 * @memberof DTOCurso
 	 */
-	numeroAlumnos?: number;
+	duracionEnSemanas?: number;
 	/**
 	 *
 	 * @type {number}
 	 * @memberof DTOCurso
 	 */
 	porcentajeProgreso?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTOCurso
-	 */
-	duracionEnSemanas?: number;
 	/**
 	 *
 	 * @type {number}
@@ -135,6 +129,12 @@ export interface DTOCurso {
 	 * @memberof DTOCurso
 	 */
 	numeroProfesores?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOCurso
+	 */
+	numeroAlumnos?: number;
 }
 
 /**
@@ -187,11 +187,11 @@ export function DTOCursoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
 			json['material'] == null ? undefined : (json['material'] as Array<any>).map(MaterialFromJSON),
 		fechaInicio: json['fechaInicio'] == null ? undefined : new Date(json['fechaInicio']),
 		fechaFin: json['fechaFin'] == null ? undefined : new Date(json['fechaFin']),
-		numeroAlumnos: json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
-		porcentajeProgreso: json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
 		duracionEnSemanas: json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
+		porcentajeProgreso: json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
 		duracionEnDias: json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
-		numeroProfesores: json['numeroProfesores'] == null ? undefined : json['numeroProfesores']
+		numeroProfesores: json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
+		numeroAlumnos: json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos']
 	};
 }
 
@@ -226,10 +226,10 @@ export function DTOCursoToJSONTyped(
 				: value['fechaInicio'].toISOString().substring(0, 10),
 		fechaFin:
 			value['fechaFin'] == null ? undefined : value['fechaFin'].toISOString().substring(0, 10),
-		numeroAlumnos: value['numeroAlumnos'],
-		porcentajeProgreso: value['porcentajeProgreso'],
 		duracionEnSemanas: value['duracionEnSemanas'],
+		porcentajeProgreso: value['porcentajeProgreso'],
 		duracionEnDias: value['duracionEnDias'],
-		numeroProfesores: value['numeroProfesores']
+		numeroProfesores: value['numeroProfesores'],
+		numeroAlumnos: value['numeroAlumnos']
 	};
 }

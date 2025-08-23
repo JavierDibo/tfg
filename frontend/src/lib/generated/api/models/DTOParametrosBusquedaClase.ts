@@ -24,6 +24,12 @@ export interface DTOParametrosBusquedaClase {
 	 * @type {string}
 	 * @memberof DTOParametrosBusquedaClase
 	 */
+	q?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOParametrosBusquedaClase
+	 */
 	titulo?: string;
 	/**
 	 *
@@ -139,6 +145,7 @@ export function DTOParametrosBusquedaClaseFromJSONTyped(
 		return json;
 	}
 	return {
+		q: json['q'] == null ? undefined : json['q'],
 		titulo: json['titulo'] == null ? undefined : json['titulo'],
 		descripcion: json['descripcion'] == null ? undefined : json['descripcion'],
 		presencialidad: json['presencialidad'] == null ? undefined : json['presencialidad'],
@@ -168,6 +175,7 @@ export function DTOParametrosBusquedaClaseToJSONTyped(
 	}
 
 	return {
+		q: value['q'],
 		titulo: value['titulo'],
 		descripcion: value['descripcion'],
 		presencialidad: value['presencialidad'],

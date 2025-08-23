@@ -123,13 +123,13 @@ export interface DTOClaseInscrita {
 	 * @type {number}
 	 * @memberof DTOClaseInscrita
 	 */
-	numeroAlumnos?: number;
+	numeroProfesores?: number;
 	/**
 	 *
 	 * @type {number}
 	 * @memberof DTOClaseInscrita
 	 */
-	numeroProfesores?: number;
+	numeroAlumnos?: number;
 }
 
 /**
@@ -188,8 +188,8 @@ export function DTOClaseInscritaFromJSONTyped(
 		profesor: json['profesor'] == null ? undefined : DTOProfesorFromJSON(json['profesor']),
 		fechaInscripcion:
 			json['fechaInscripcion'] == null ? undefined : new Date(json['fechaInscripcion']),
-		numeroAlumnos: json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
-		numeroProfesores: json['numeroProfesores'] == null ? undefined : json['numeroProfesores']
+		numeroProfesores: json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
+		numeroAlumnos: json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos']
 	};
 }
 
@@ -222,7 +222,7 @@ export function DTOClaseInscritaToJSONTyped(
 		profesor: DTOProfesorToJSON(value['profesor']),
 		fechaInscripcion:
 			value['fechaInscripcion'] == null ? undefined : value['fechaInscripcion'].toISOString(),
-		numeroAlumnos: value['numeroAlumnos'],
-		numeroProfesores: value['numeroProfesores']
+		numeroProfesores: value['numeroProfesores'],
+		numeroAlumnos: value['numeroAlumnos']
 	};
 }

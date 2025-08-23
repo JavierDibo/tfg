@@ -24,7 +24,7 @@ public class ConfigBaseDatos {
                 try (var statement = connection.createStatement()) {
                     // Crear extensión unaccent si no existe
                     statement.execute("CREATE EXTENSION IF NOT EXISTS unaccent");
-                    System.out.println("✅ Extensión unaccent verificada/creada");
+                    // System.out.println("✅ Extensión unaccent verificada/creada");
                     
                     // Crear función de normalización
                     String createFunction = """
@@ -41,7 +41,7 @@ public class ConfigBaseDatos {
                         """;
                     
                     statement.execute(createFunction);
-                    System.out.println("✅ Función normalize_text creada correctamente");
+                    // System.out.println("✅ Función normalize_text creada correctamente");
                 }
             }
         } catch (Exception e) {

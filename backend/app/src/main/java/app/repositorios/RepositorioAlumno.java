@@ -88,4 +88,63 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
     
     @Query("SELECT a FROM Alumno a WHERE a.matriculado = :matriculado")
     Page<Alumno> findByMatriculadoPaged(@Param("matriculado") boolean matriculado, Pageable pageable);
+    
+    // NEW: General search methods for "q" parameter
+    
+    /**
+     * General search across multiple fields using the "q" parameter
+     * Searches in nombre, apellidos, dni, and email fields
+     */
+    @Query(value = "SELECT * FROM usuarios a WHERE " +
+           "(normalize_text(a.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(a.apellidos) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "LOWER(a.dni) LIKE '%' || LOWER(:searchTerm) || '%' OR " +
+           "LOWER(a.email) LIKE '%' || LOWER(:searchTerm) || '%') AND " +
+           "a.tipo_usuario = 'ALUMNO'",
+           countQuery = "SELECT COUNT(*) FROM usuarios a WHERE " +
+           "(normalize_text(a.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(a.apellidos) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "LOWER(a.dni) LIKE '%' || LOWER(:searchTerm) || '%' OR " +
+           "LOWER(a.email) LIKE '%' || LOWER(:searchTerm) || '%') AND " +
+           "a.tipo_usuario = 'ALUMNO'",
+           nativeQuery = true)
+    Page<Alumno> findByGeneralSearch(@Param("searchTerm") String searchTerm, Pageable pageable);
+    
+    /**
+     * Combined search with general term and specific filters
+     */
+    @Query(value = "SELECT * FROM usuarios a WHERE " +
+           "(:searchTerm IS NULL OR (" +
+           "normalize_text(a.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(a.apellidos) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "LOWER(a.dni) LIKE '%' || LOWER(:searchTerm) || '%' OR " +
+           "LOWER(a.email) LIKE '%' || LOWER(:searchTerm) || '%')) AND " +
+           "(:nombre IS NULL OR normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:apellidos IS NULL OR normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%') AND " +
+           "(:dni IS NULL OR LOWER(a.dni) LIKE '%' || LOWER(:dni) || '%') AND " +
+           "(:email IS NULL OR LOWER(a.email) LIKE '%' || LOWER(:email) || '%') AND " +
+           "(:matriculado IS NULL OR a.matriculado = :matriculado) AND " +
+           "a.tipo_usuario = 'ALUMNO'",
+           countQuery = "SELECT COUNT(*) FROM usuarios a WHERE " +
+           "(:searchTerm IS NULL OR (" +
+           "normalize_text(a.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(a.apellidos) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "LOWER(a.dni) LIKE '%' || LOWER(:searchTerm) || '%' OR " +
+           "LOWER(a.email) LIKE '%' || LOWER(:searchTerm) || '%')) AND " +
+           "(:nombre IS NULL OR normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:apellidos IS NULL OR normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%') AND " +
+           "(:dni IS NULL OR LOWER(a.dni) LIKE '%' || LOWER(:dni) || '%') AND " +
+           "(:email IS NULL OR LOWER(a.email) LIKE '%' || LOWER(:email) || '%') AND " +
+           "(:matriculado IS NULL OR a.matriculado = :matriculado) AND " +
+           "a.tipo_usuario = 'ALUMNO'",
+           nativeQuery = true)
+    Page<Alumno> findByGeneralAndSpecificFilters(
+        @Param("searchTerm") String searchTerm,
+        @Param("nombre") String nombre,
+        @Param("apellidos") String apellidos,
+        @Param("dni") String dni,
+        @Param("email") String email,
+        @Param("matriculado") Boolean matriculado,
+        Pageable pageable
+    );
 }

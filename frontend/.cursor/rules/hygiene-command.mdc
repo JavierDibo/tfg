@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+To keep things tidy, after any reasonable change to the codebase, run the 'npm run hygiene' command. This runs a formatter, linter and svelte checker.

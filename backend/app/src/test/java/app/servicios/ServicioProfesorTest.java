@@ -5,9 +5,10 @@ import app.dtos.DTOPeticionRegistroProfesor;
 import app.dtos.DTOParametrosBusquedaProfesor;
 import app.entidades.Profesor;
 import app.entidades.Curso;
-import app.excepciones.EntidadNoEncontradaException;
+import app.excepciones.ResourceNotFoundException;
 import app.repositorios.RepositorioProfesor;
 import app.repositorios.RepositorioClase;
+import app.servicios.ServicioCachePassword;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +41,9 @@ class ServicioProfesorTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private ServicioCachePassword servicioCachePassword;
 
     @InjectMocks
     private ServicioProfesor servicioProfesor;
@@ -158,7 +162,7 @@ class ServicioProfesorTest {
     void testObtenerProfesorPorIdNoExiste() {
         when(repositorioProfesor.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioProfesor.obtenerProfesorPorId(999L);
         });
         verify(repositorioProfesor).findById(999L);
@@ -190,7 +194,7 @@ class ServicioProfesorTest {
     void testObtenerProfesorPorEmailNoExiste() {
         when(repositorioProfesor.findByEmail("inexistente@ejemplo.com")).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioProfesor.obtenerProfesorPorEmail("inexistente@ejemplo.com");
         });
         verify(repositorioProfesor).findByEmail("inexistente@ejemplo.com");
@@ -222,7 +226,7 @@ class ServicioProfesorTest {
     void testObtenerProfesorPorUsuarioNoExiste() {
         when(repositorioProfesor.findByUsuario("inexistente")).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioProfesor.obtenerProfesorPorUsuario("inexistente");
         });
         verify(repositorioProfesor).findByUsuario("inexistente");
@@ -254,7 +258,7 @@ class ServicioProfesorTest {
     void testObtenerProfesorPorDniNoExiste() {
         when(repositorioProfesor.findByDni("99999999A")).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioProfesor.obtenerProfesorPorDni("99999999A");
         });
         verify(repositorioProfesor).findByDni("99999999A");
@@ -415,7 +419,7 @@ class ServicioProfesorTest {
         DTOPeticionRegistroProfesor peticion = new DTOPeticionRegistroProfesor(
                 "nuevo", "password123", "Nuevo", "Profesor", "98765432X", "nuevo@ejemplo.com", "555123456");
         
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+        when(servicioCachePassword.encodePassword("password123")).thenReturn("encodedPassword");
         when(repositorioProfesor.save(any(Profesor.class))).thenAnswer(invocation -> {
             Profesor profesorGuardado = invocation.getArgument(0);
             profesorGuardado.setId(4L);
@@ -437,7 +441,7 @@ class ServicioProfesorTest {
         assertNotNull(resultado.clasesId());
         assertTrue(resultado.clasesId().isEmpty());
         
-        verify(passwordEncoder).encode("password123");
+        verify(servicioCachePassword).encodePassword("password123");
         verify(repositorioProfesor).save(any(Profesor.class));
     }
 
@@ -506,7 +510,7 @@ class ServicioProfesorTest {
         when(repositorioProfesor.findByUsuario("nuevo")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByEmail("nuevo@ejemplo.com")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByDni("99999999A")).thenReturn(Optional.empty());
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+        when(servicioCachePassword.encodePassword("password123")).thenReturn("encodedPassword");
         when(repositorioProfesor.save(any(Profesor.class))).thenAnswer(invocation -> {
             Profesor savedProfesor = invocation.getArgument(0);
             return savedProfesor;
@@ -521,24 +525,24 @@ class ServicioProfesorTest {
     @Test
     @DisplayName("borrarProfesorPorId debe borrar profesor correctamente")
     void testBorrarProfesorPorId() {
-        when(repositorioProfesor.existsById(1L)).thenReturn(true);
+        when(repositorioProfesor.findById(1L)).thenReturn(Optional.of(profesor1));
 
         boolean resultado = servicioProfesor.borrarProfesorPorId(1L);
 
         assertTrue(resultado);
-        verify(repositorioProfesor).existsById(1L);
+        verify(repositorioProfesor).findById(1L);
         verify(repositorioProfesor).deleteById(1L);
     }
 
     @Test
     @DisplayName("borrarProfesorPorId debe lanzar excepción si profesor no existe")
     void testBorrarProfesorPorIdNoExiste() {
-        when(repositorioProfesor.existsById(999L)).thenReturn(false);
+        when(repositorioProfesor.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioProfesor.borrarProfesorPorId(999L);
         });
-        verify(repositorioProfesor).existsById(999L);
+        verify(repositorioProfesor).findById(999L);
         verify(repositorioProfesor, never()).deleteById(any());
     }
 
@@ -565,7 +569,7 @@ class ServicioProfesorTest {
     void testAsignarClaseProfesorNoExiste() {
         when(repositorioProfesor.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioProfesor.asignarClase(999L, "3");
         });
         verify(repositorioProfesor).findById(999L);
@@ -595,7 +599,7 @@ class ServicioProfesorTest {
     void testRemoverClaseProfesorNoExiste() {
         when(repositorioProfesor.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioProfesor.removerClase(999L, "1");
         });
         verify(repositorioProfesor).findById(999L);
@@ -634,7 +638,7 @@ class ServicioProfesorTest {
     void testCambiarEstadoProfesorNoExiste() {
         when(repositorioProfesor.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(EntidadNoEncontradaException.class, () -> {
+        assertThrows(ResourceNotFoundException.class, () -> {
             servicioProfesor.cambiarEstadoProfesor(999L, false);
         });
         verify(repositorioProfesor).findById(999L);

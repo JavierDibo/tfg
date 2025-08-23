@@ -7,7 +7,7 @@ import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPerfilAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
 import app.dtos.DTORespuestaPaginada;
-import app.excepciones.ResourceNotFoundException;
+
 import app.servicios.ServicioAlumno;
 import app.servicios.ServicioClase;
 import app.util.SecurityUtils;
@@ -65,6 +65,8 @@ public class AlumnoRest {
         )
     })
     public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosPaginados(
+            @Parameter(description = "Término de búsqueda general (busca en nombre, apellidos, DNI, email)", required = false)
+            @RequestParam(required = false) @Size(max = 100) String q,
             @Parameter(description = "Nombre del alumno para filtrar", required = false)
             @RequestParam(required = false) @Size(max = 100) String nombre,
             @Parameter(description = "Apellidos del alumno para filtrar", required = false)
@@ -85,7 +87,7 @@ public class AlumnoRest {
             @RequestParam(defaultValue = "ASC") String sortDirection) {
         
         DTOParametrosBusquedaAlumno parametros = new DTOParametrosBusquedaAlumno(
-            nombre, apellidos, dni, email, matriculado);
+            q, nombre, apellidos, dni, email, matriculado);
         
         DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.buscarAlumnosPorParametrosPaginados(
             parametros, page, size, sortBy, sortDirection);
@@ -161,6 +163,8 @@ public class AlumnoRest {
         )
     })
     public ResponseEntity<List<DTOAlumno>> obtenerAlumnos(
+            @Parameter(description = "Término de búsqueda general (busca en nombre, apellidos, DNI, email)", required = false)
+            @RequestParam(required = false) @Size(max = 100) String q,
             @Parameter(description = "Nombre del alumno para filtrar", required = false)
             @RequestParam(required = false) @Size(max = 100) String nombre,
             @Parameter(description = "Apellidos del alumno para filtrar", required = false)
@@ -173,7 +177,7 @@ public class AlumnoRest {
             @RequestParam(required = false) Boolean matriculado) {
         
         DTOParametrosBusquedaAlumno parametros = new DTOParametrosBusquedaAlumno(
-            nombre, apellidos, dni, email, matriculado);
+            q, nombre, apellidos, dni, email, matriculado);
         
         List<DTOAlumno> alumnosDTO = servicioAlumno.buscarAlumnosPorParametros(parametros);
         return new ResponseEntity<>(alumnosDTO, HttpStatus.OK);
@@ -212,10 +216,10 @@ public class AlumnoRest {
     }
 
     @GetMapping("/usuario/{usuario}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #usuario == authentication.principal.username)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Obtener alumno por usuario",
-        description = "Obtiene un alumno específico por su nombre de usuario. Los alumnos solo pueden ver su propio perfil."
+        description = "Obtiene un alumno específico por su nombre de usuario. Para alumnos, usar el endpoint /mi-perfil."
     )
     @ApiResponses(value = {
         @ApiResponse(

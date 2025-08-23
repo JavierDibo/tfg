@@ -1,326 +1,424 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import type {
+		DTOClase,
+		DTOParametrosBusquedaClaseNivelEnum,
+		DTOParametrosBusquedaClasePresencialidadEnum
+	} from '$lib/generated/api';
 	import { ClaseService } from '$lib/services/claseService';
 	import { authStore } from '$lib/stores/authStore.svelte';
-	import type { DTOClase } from '$lib/generated/api/models/DTOClase';
-	import ClasesDataTable from '$lib/components/clases/ClasesDataTable.svelte';
-	import MisClasesDataTable from '$lib/components/clases/MisClasesDataTable.svelte';
-	import MisClasesProfesorDataTable from '$lib/components/clases/MisClasesProfesorDataTable.svelte';
-	import MisAlumnos from '$lib/components/clases/MisAlumnos.svelte';
-	import ClasesSearchSection from '$lib/components/clases/ClasesSearchSection.svelte';
-	import ClasesMessages from '$lib/components/clases/ClasesMessages.svelte';
-	import ClasesPaginationControls from '$lib/components/clases/ClasesPaginationControls.svelte';
-	import ClasesStats from '$lib/components/clases/ClasesStats.svelte';
+	import {
+		EntitySearchSection,
+		EntityDataTable,
+		EntityPaginationControls,
+		EntityMessages
+	} from '$lib/components/common';
+	import type {
+		EntityFilters,
+		PaginatedEntities,
+		EntityColumn,
+		EntityAction,
+		EntityPagination
+	} from '$lib/components/common/types';
+	import { getSearchConfig } from '$lib/components/common/searchConfigs';
 
 	// State
-	let clases = $state<DTOClase[]>([]);
-	let misClases = $state<DTOClase[]>([]);
-	let loading = $state(true);
-	let misClasesLoading = $state(false);
+	let loading = $state(false);
 	let error = $state<string | null>(null);
-	let searchTerm = $state('');
-	let currentPage = $state(1);
-	let totalPages = $state(1);
+	let successMessage = $state<string | null>(null);
+	let clases = $state<DTOClase[]>([]);
 	let totalElements = $state(0);
-	let pageSize = $state(10);
-	let enrollmentLoading = $state<number | null>(null); // Track which class is being enrolled/unenrolled
-	let activeTab = $state<'all' | 'my'>(authStore.isProfesor ? 'my' : 'all');
-	// Track which classes student is enrolled in (for future use)
-	// let enrolledClassIds = $state<Set<number>>(new Set());
+	let totalPages = $state(0);
+	let currentPage = $state(0);
+	let pageSize = $state(20);
 
-	// Check authentication and permissions
+	// Search configuration
+	const searchConfig = getSearchConfig('clases');
+
+	// Search and filters
+	let currentFilters = $state<EntityFilters>({
+		searchMode: 'simple',
+		q: '',
+		titulo: '',
+		descripcion: '',
+		nivel: '',
+		presencialidad: '',
+		precioMinimo: '',
+		precioMaximo: ''
+	});
+
+	// Modal state
+	let showDeleteModal = $state(false);
+	let claseToDelete: DTOClase | null = $state(null);
+
+	// Check authentication
 	$effect(() => {
 		if (!authStore.isAuthenticated) {
 			goto('/auth');
 			return;
 		}
+	});
 
-		// For teachers, default to 'my' tab and only show their classes
-		if (authStore.isProfesor) {
-			activeTab = 'my';
+	// Load data when component mounts or filters change
+	$effect(() => {
+		if (authStore.isAuthenticated) {
+			loadClases();
 		}
 	});
 
-	// Load all classes
+	// Data loading with new search parameters
 	async function loadClases() {
+		loading = true;
+		error = null;
+
 		try {
-			loading = true;
-			error = null;
+			const params: Record<string, unknown> = {
+				page: currentPage,
+				size: pageSize,
+				sortBy: 'titulo',
+				sortDirection: 'ASC'
+			};
 
-			let response: DTOClase[];
-
-			if (searchTerm.trim()) {
-				// Use the new search API when there's a search term
-				response = await ClaseService.searchClasesByTitle(searchTerm.trim());
-			} else {
-				// Load all classes when no search term
-				response = await ClaseService.getAllClases();
+			// Add search parameters
+			if (currentFilters.q && typeof currentFilters.q === 'string' && currentFilters.q.trim()) {
+				params.q = currentFilters.q.trim();
+			}
+			if (
+				currentFilters.titulo &&
+				typeof currentFilters.titulo === 'string' &&
+				currentFilters.titulo.trim()
+			) {
+				params.titulo = currentFilters.titulo.trim();
+			}
+			if (
+				currentFilters.descripcion &&
+				typeof currentFilters.descripcion === 'string' &&
+				currentFilters.descripcion.trim()
+			) {
+				params.descripcion = currentFilters.descripcion.trim();
+			}
+			if (
+				currentFilters.nivel &&
+				typeof currentFilters.nivel === 'string' &&
+				currentFilters.nivel.trim()
+			) {
+				params.nivel = currentFilters.nivel.trim() as DTOParametrosBusquedaClaseNivelEnum;
+			}
+			if (
+				currentFilters.presencialidad &&
+				typeof currentFilters.presencialidad === 'string' &&
+				currentFilters.presencialidad.trim()
+			) {
+				params.presencialidad =
+					currentFilters.presencialidad.trim() as DTOParametrosBusquedaClasePresencialidadEnum;
+			}
+			if (
+				currentFilters.precioMinimo &&
+				typeof currentFilters.precioMinimo === 'string' &&
+				currentFilters.precioMinimo.trim()
+			) {
+				params.precioMin = parseFloat(currentFilters.precioMinimo);
+			}
+			if (
+				currentFilters.precioMaximo &&
+				typeof currentFilters.precioMaximo === 'string' &&
+				currentFilters.precioMaximo.trim()
+			) {
+				params.precioMax = parseFloat(currentFilters.precioMaximo);
 			}
 
-			clases = response;
-			totalElements = response.length;
-			totalPages = Math.ceil(totalElements / pageSize);
+			const response = await ClaseService.getPaginatedClases(params);
+
+			clases = response.contenido || [];
+			totalElements = response.totalElementos || 0;
+			totalPages = response.totalPaginas || 0;
+			currentPage = response.numeroPagina || 0;
 		} catch (err) {
-			console.error('Error loading classes:', err);
-			error = 'Error al cargar las clases';
+			error = `Error al cargar clases: ${err}`;
+			console.error('Error loading clases:', err);
 		} finally {
 			loading = false;
 		}
 	}
 
-	// Load my classes (enrolled for students, teaching for teachers)
-	async function loadMisClases() {
-		if (!authStore.user?.sub) return;
-
-		try {
-			misClasesLoading = true;
-			error = null;
-
-			let response: DTOClase[];
-
-			if (authStore.isAlumno) {
-				response = await ClaseService.getMisClasesInscritas();
-				// Update enrolled class IDs for enrollment status tracking
-				// enrolledClassIds = new Set(response.map((clase) => clase.id!));
-			} else if (authStore.isProfesor) {
-				// Use the new mis-clases endpoint for teachers
-				response = await ClaseService.getMisClases();
-			} else {
-				response = [];
-			}
-
-			misClases = response;
-		} catch (err) {
-			console.error('Error loading my classes:', err);
-			error = 'Error al cargar mis clases';
-		} finally {
-			misClasesLoading = false;
-		}
-	}
-
-	// Handle search
-	function handleSearch(term: string) {
-		searchTerm = term;
-		currentPage = 1;
-		if (activeTab === 'all') {
-			loadClases();
-		}
-	}
-
-	// Handle page change
-	function handlePageChange(page: number) {
+	// Navigation functions
+	function goToPage(page: number) {
 		currentPage = page;
-		if (activeTab === 'all') {
-			loadClases();
-		}
+		loadClases();
 	}
 
-	// Handle tab change
-	function handleTabChange(tab: 'all' | 'my') {
-		activeTab = tab;
-		if (tab === 'my') {
-			loadMisClases();
-		} else {
-			loadClases();
-		}
+	function changePageSize(newSize: number) {
+		pageSize = newSize;
+		currentPage = 0;
+		loadClases();
 	}
 
-	// Handle enrollment/disenrollment
-	async function handleEnrollment(claseId: number, enroll: boolean) {
-		if (!authStore.isAlumno || !authStore.user?.sub) {
-			error = 'Debes estar autenticado como alumno para inscribirte';
-			return;
-		}
+	// Search and filter functions
+	function updateFilters(filters: Record<string, unknown>) {
+		Object.assign(currentFilters, filters);
+		currentPage = 0;
+		loadClases();
+	}
 
-		enrollmentLoading = claseId;
+	function clearFilters() {
+		currentFilters = {
+			searchMode: 'simple',
+			q: '',
+			titulo: '',
+			descripcion: '',
+			nivel: '',
+			presencialidad: '',
+			precioMinimo: '',
+			precioMaximo: ''
+		};
+		currentPage = 0;
+		loadClases();
+	}
+
+	function switchSearchMode(mode: 'simple' | 'advanced') {
+		currentFilters.searchMode = mode;
+	}
+
+	// Delete functions
+	function openDeleteModal(clase: DTOClase) {
+		claseToDelete = clase;
+		showDeleteModal = true;
+	}
+
+	async function deleteClase() {
+		if (!claseToDelete?.id) return;
+
 		try {
-			if (enroll) {
-				await ClaseService.enrollInClase(claseId);
-			} else {
-				await ClaseService.unenrollFromClase(claseId);
-			}
-			// Reload both views to update enrollment status
-			await loadClases();
-			await loadMisClases();
-		} catch (err) {
-			console.error('Error handling enrollment:', err);
-			error = enroll ? 'Error al inscribirse en la clase' : 'Error al desinscribirse de la clase';
-		} finally {
-			enrollmentLoading = null;
-		}
-	}
-
-	// Check if user is enrolled in a class
-	function isEnrolled(clase: DTOClase): boolean {
-		// For now, use the existing logic
-		// In the future, we could use the new enrollment status endpoint
-		return (
-			authStore.isAlumno &&
-			!!authStore.user?.sub &&
-			(clase.alumnosId?.includes(authStore.user.sub) ?? false)
-		);
-	}
-
-	// Check if user is teacher of a class
-	function isTeacher(clase: DTOClase): boolean {
-		return (
-			authStore.isProfesor &&
-			!!authStore.user?.sub &&
-			(clase.profesoresId?.includes(authStore.user.sub) ?? false)
-		);
-	}
-
-	onMount(() => {
-		if (authStore.isProfesor) {
-			// Teachers only see their classes
-			loadMisClases();
-		} else {
-			// Students and admins can see all classes
+			await ClaseService.borrarClasePorId(claseToDelete.id);
+			successMessage = 'Clase eliminada correctamente';
+			showDeleteModal = false;
+			claseToDelete = null;
 			loadClases();
-			if (authStore.isAlumno) {
-				loadMisClases();
-			}
+		} catch (err) {
+			error = `Error al eliminar clase: ${err}`;
+			console.error('Error deleting clase:', err);
 		}
+	}
+
+	function cancelDelete() {
+		showDeleteModal = false;
+		claseToDelete = null;
+	}
+
+	// Utility functions
+	function formatPrice(precio: number | undefined): string {
+		if (precio === undefined || precio === null) return 'N/A';
+		return `€${precio.toFixed(2)}`;
+	}
+
+	function getNivelColor(nivel: string | undefined): string {
+		switch (nivel) {
+			case 'PRINCIPIANTE':
+				return 'bg-green-100 text-green-800';
+			case 'INTERMEDIO':
+				return 'bg-yellow-100 text-yellow-800';
+			case 'AVANZADO':
+				return 'bg-red-100 text-red-800';
+			default:
+				return 'bg-gray-100 text-gray-800';
+		}
+	}
+
+	function getPresencialidadColor(presencialidad: string | undefined): string {
+		switch (presencialidad) {
+			case 'ONLINE':
+				return 'bg-blue-100 text-blue-800';
+			case 'PRESENCIAL':
+				return 'bg-purple-100 text-purple-800';
+			default:
+				return 'bg-gray-100 text-gray-800';
+		}
+	}
+
+	// Table configuration
+	const tableColumns = [
+		{ key: 'titulo', header: 'Título', sortable: true },
+		{ key: 'descripcion', header: 'Descripción', sortable: true },
+		{ key: 'nivel', header: 'Nivel', sortable: true },
+		{ key: 'presencialidad', header: 'Presencialidad', sortable: true },
+		{ key: 'precio', header: 'Precio', sortable: true }
+	];
+
+	const tableActions = [
+		{
+			label: 'Ver',
+			color: 'blue',
+			hoverColor: 'blue-700',
+			action: (clase: DTOClase) => goto(`/clases/${clase.id}`),
+			condition: () => true
+		},
+		{
+			label: 'Eliminar',
+			color: 'red',
+			hoverColor: 'red-700',
+			action: (clase: DTOClase) => openDeleteModal(clase),
+			condition: () => authStore.isAdmin
+		}
+	];
+
+	// Pagination configuration
+	const pageDisplayInfo = $derived({
+		currentPage,
+		totalPages,
+		totalElements,
+		pageSize
 	});
+
+	const currentPagination = $derived({
+		page: currentPage,
+		size: pageSize,
+		sortBy: 'titulo',
+		sortDirection: 'ASC' as const
+	});
+
+	const sortFields = [
+		{ value: 'titulo', label: 'Título' },
+		{ value: 'descripcion', label: 'Descripción' },
+		{ value: 'nivel', label: 'Nivel' },
+		{ value: 'presencialidad', label: 'Presencialidad' },
+		{ value: 'precio', label: 'Precio' }
+	];
+
+	const pageSizeOptions = [10, 20, 50, 100];
+
+	function changeSorting(field: string) {
+		// Implement sorting logic
+		console.log('Sorting by:', field);
+	}
+
+	function exportResults() {
+		// Implement export functionality
+		console.log('Export functionality to be implemented');
+	}
 </script>
+
+<svelte:head>
+	<title>Clases - Academia</title>
+</svelte:head>
 
 <div class="container mx-auto px-4 py-8">
 	<div class="mb-8">
-		<h1 class="mb-2 text-3xl font-bold text-gray-900">Clases</h1>
-		<p class="text-gray-600">
-			{#if authStore.isAlumno}
-				Explora y gestiona tus clases inscritas
-			{:else if authStore.isProfesor}
-				Gestiona tus clases asignadas y alumnos
-			{:else if authStore.isAdmin}
-				Gestiona todas las clases del sistema
-			{:else}
-				Explora las clases disponibles
+		<div class="mb-6 flex items-center justify-between">
+			<h1 class="text-3xl font-bold text-gray-900">
+				{#if authStore.isAdmin}
+					Gestión de Clases
+				{:else if authStore.isProfesor}
+					Mis Clases
+				{:else if authStore.isAlumno}
+					Clases Disponibles
+				{:else}
+					Clases
+				{/if}
+			</h1>
+			{#if authStore.isAdmin || authStore.isProfesor}
+				<a
+					href="/clases/nuevo"
+					class="rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700"
+				>
+					Nueva Clase
+				</a>
 			{/if}
-		</p>
-	</div>
-
-	<!-- Tabs for students and teachers -->
-	{#if authStore.isAlumno || authStore.isProfesor}
-		<div class="mb-6">
-			<div class="border-b border-gray-200">
-				<nav class="-mb-px flex space-x-8">
-					<button
-						onclick={() => handleTabChange('my')}
-						class="border-b-2 px-1 py-2 text-sm font-medium whitespace-nowrap {activeTab === 'my'
-							? 'border-blue-500 text-blue-600'
-							: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
-					>
-						{#if authStore.isAlumno}
-							Mis Clases Inscritas
-						{:else if authStore.isProfesor}
-							Mis Clases
-						{/if}
-					</button>
-					{#if authStore.isAlumno}
-						<button
-							onclick={() => handleTabChange('all')}
-							class="border-b-2 px-1 py-2 text-sm font-medium whitespace-nowrap {activeTab === 'all'
-								? 'border-blue-500 text-blue-600'
-								: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
-						>
-							Todas las Clases
-						</button>
-					{/if}
-				</nav>
-			</div>
 		</div>
-	{/if}
 
-	<!-- Stats based on active tab -->
-	{#if activeTab === 'my'}
-		<ClasesStats clases={misClases} />
-	{:else}
-		<ClasesStats {clases} />
-	{/if}
-
-	<div class="rounded-lg bg-white p-6 shadow-md">
-		<!-- Search section only for "all" tab or admins -->
-		{#if (activeTab === 'all' || authStore.isAdmin) && !authStore.isProfesor}
-			<ClasesSearchSection
-				{searchTerm}
-				onSearch={handleSearch}
-				showCreateButton={authStore.isProfesor || authStore.isAdmin}
+		<!-- Search and Filters Section -->
+		<div class="mb-6 rounded-lg bg-white p-6 shadow-md">
+			<EntitySearchSection
+				{currentFilters}
+				paginatedData={{
+					content: clases as unknown as Record<string, unknown>[],
+					totalElements,
+					totalPages,
+					currentPage
+				} as PaginatedEntities<Record<string, unknown>>}
+				{loading}
+				entityNamePlural={searchConfig.entityNamePlural}
+				advancedFields={searchConfig.advancedFields}
+				statusField={searchConfig.statusField}
+				entityType={searchConfig.entityType}
+				on:updateFilters={(e) => updateFilters(e.detail)}
+				on:clearFilters={clearFilters}
+				on:switchSearchMode={(e) => switchSearchMode(e.detail)}
+				on:exportResults={exportResults}
 			/>
+		</div>
+
+		<!-- Messages -->
+		{#if error}
+			<EntityMessages {error} on:clearError={() => (error = null)} />
 		{/if}
 
-		<ClasesMessages {error} loading={activeTab === 'my' ? misClasesLoading : loading} />
+		{#if successMessage}
+			<EntityMessages {successMessage} on:clearSuccess={() => (successMessage = null)} />
+		{/if}
 
-		{#if activeTab === 'my'}
-			<!-- My Classes View -->
-			{#if !misClasesLoading && !error}
-				{#if misClases.length > 0}
-					{#if authStore.isAlumno}
-						<MisClasesDataTable
-							clases={misClases}
-							onEnrollment={handleEnrollment}
-							{enrollmentLoading}
-						/>
-					{:else if authStore.isProfesor}
-						<div class="space-y-6">
-							<MisClasesProfesorDataTable clases={misClases} />
-							<MisAlumnos clases={misClases} />
-						</div>
-					{/if}
-				{:else}
-					<div class="py-12 text-center">
-						<svg
-							class="mx-auto h-12 w-12 text-gray-400"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-							/>
-						</svg>
-						<h3 class="mt-2 text-sm font-medium text-gray-900">
-							{#if authStore.isAlumno}
-								No tienes clases inscritas
-							{:else if authStore.isProfesor}
-								No tienes clases asignadas
-							{/if}
-						</h3>
-						<p class="mt-1 text-sm text-gray-500">
-							{#if authStore.isAlumno}
-								Inscríbete en algunas clases para comenzar
-							{:else if authStore.isProfesor}
-								Contacta al administrador para que te asigne clases
-							{/if}
-						</p>
-					</div>
-				{/if}
-			{/if}
+		<!-- Loading State -->
+		{#if loading}
+			<div class="flex items-center justify-center py-8">
+				<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+			</div>
 		{:else}
-			<!-- All Classes View -->
-			{#if !loading && !error && clases.length > 0}
-				<ClasesDataTable
-					{clases}
-					{isEnrolled}
-					{isTeacher}
-					onEnrollment={handleEnrollment}
-					showEnrollmentButtons={authStore.isAlumno}
-					showTeacherActions={authStore.isProfesor || authStore.isAdmin}
-					{enrollmentLoading}
-				/>
+			<!-- Classes Grid -->
+			<EntityDataTable
+				{loading}
+				paginatedData={{
+					content: clases as unknown as Record<string, unknown>[],
+					totalElements,
+					totalPages,
+					currentPage
+				} as PaginatedEntities<Record<string, unknown>>}
+				{currentPagination}
+				{authStore}
+				columns={tableColumns as unknown as EntityColumn<Record<string, unknown>>[]}
+				actions={tableActions as unknown as EntityAction<Record<string, unknown>>[]}
+				entityName="clase"
+				entityNamePlural="clases"
+				on:changeSorting={(e) => changeSorting(e.detail)}
+			/>
 
-				<ClasesPaginationControls
-					{currentPage}
-					{totalPages}
-					{totalElements}
-					{pageSize}
-					onPageChange={handlePageChange}
-				/>
-			{/if}
+			<!-- Pagination -->
+			<EntityPaginationControls
+				{pageDisplayInfo}
+				{currentPagination}
+				{sortFields}
+				{pageSizeOptions}
+				on:goToPage={(e) => goToPage(e.detail)}
+				on:changePageSize={(e) => changePageSize(e.detail)}
+				on:changeSorting={(e) => changeSorting(e.detail)}
+			/>
 		{/if}
 	</div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+{#if showDeleteModal}
+	<div class="bg-opacity-50 fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600">
+		<div class="relative top-20 mx-auto w-96 rounded-md border bg-white p-5 shadow-lg">
+			<div class="mt-3 text-center">
+				<h3 class="mb-4 text-lg font-medium text-gray-900">Confirmar eliminación</h3>
+				<p class="mb-6 text-sm text-gray-500">
+					¿Estás seguro de que quieres eliminar la clase "{claseToDelete?.titulo}"? Esta acción no
+					se puede deshacer.
+				</p>
+				<div class="flex justify-center space-x-4">
+					<button
+						onclick={cancelDelete}
+						class="rounded-md bg-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-400"
+					>
+						Cancelar
+					</button>
+					<button
+						onclick={deleteClase}
+						class="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+					>
+						Eliminar
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{/if}

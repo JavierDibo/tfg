@@ -51,6 +51,10 @@ export interface BuscarClasesRequest {
 	dTOParametrosBusquedaClase: DTOParametrosBusquedaClase;
 }
 
+export interface BuscarClasesPorTerminoGeneralRequest {
+	q: string;
+}
+
 export interface BuscarClasesPorTituloRequest {
 	titulo: string;
 }
@@ -234,6 +238,56 @@ export class ClasesApi extends runtime.BaseAPI {
 		initOverrides?: RequestInit | runtime.InitOverrideFunction
 	): Promise<DTORespuestaPaginadaDTOClase> {
 		const response = await this.buscarClasesRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 * Busca clases con término general en título y descripción
+	 * Buscar clases con término general
+	 */
+	async buscarClasesPorTerminoGeneralRaw(
+		requestParameters: BuscarClasesPorTerminoGeneralRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<Array<DTOClase>>> {
+		if (requestParameters['q'] == null) {
+			throw new runtime.RequiredError(
+				'q',
+				'Required parameter "q" was null or undefined when calling buscarClasesPorTerminoGeneral().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		if (requestParameters['q'] != null) {
+			queryParameters['q'] = requestParameters['q'];
+		}
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/clases/buscar/general`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOClaseFromJSON));
+	}
+
+	/**
+	 * Busca clases con término general en título y descripción
+	 * Buscar clases con término general
+	 */
+	async buscarClasesPorTerminoGeneral(
+		requestParameters: BuscarClasesPorTerminoGeneralRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<Array<DTOClase>> {
+		const response = await this.buscarClasesPorTerminoGeneralRaw(requestParameters, initOverrides);
 		return await response.value();
 	}
 

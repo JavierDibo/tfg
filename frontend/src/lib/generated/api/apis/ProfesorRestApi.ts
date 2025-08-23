@@ -100,6 +100,7 @@ export interface ObtenerProfesorPorUsuarioRequest {
 }
 
 export interface ObtenerProfesoresRequest {
+	q?: string;
 	nombre?: string;
 	apellidos?: string;
 	email?: string;
@@ -114,6 +115,7 @@ export interface ObtenerProfesoresHabilitadosPaginadosRequest {
 }
 
 export interface ObtenerProfesoresPaginadosRequest {
+	q?: string;
 	nombre?: string;
 	apellidos?: string;
 	email?: string;
@@ -882,6 +884,10 @@ export class ProfesorRestApi extends runtime.BaseAPI {
 	): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
 		const queryParameters: any = {};
 
+		if (requestParameters['q'] != null) {
+			queryParameters['q'] = requestParameters['q'];
+		}
+
 		if (requestParameters['nombre'] != null) {
 			queryParameters['nombre'] = requestParameters['nombre'];
 		}
@@ -1024,6 +1030,10 @@ export class ProfesorRestApi extends runtime.BaseAPI {
 		initOverrides?: RequestInit | runtime.InitOverrideFunction
 	): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOProfesor>> {
 		const queryParameters: any = {};
+
+		if (requestParameters['q'] != null) {
+			queryParameters['q'] = requestParameters['q'];
+		}
 
 		if (requestParameters['nombre'] != null) {
 			queryParameters['nombre'] = requestParameters['nombre'];

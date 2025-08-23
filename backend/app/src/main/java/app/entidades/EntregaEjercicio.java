@@ -2,6 +2,7 @@ package app.entidades;
 
 import app.entidades.enums.EEstadoEjercicio;
 import jakarta.persistence.*;
+import jakarta.persistence.FetchType;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -43,7 +44,7 @@ public class EntregaEjercicio {
     
     // Representación simplificada de archivos como strings
     // TODO: En una implementación real se podría usar un sistema de archivos o URLs
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "entrega_archivos", joinColumns = @JoinColumn(name = "entrega_id"))
     @Column(name = "archivo_path")
     private List<String> archivosEntregados = new ArrayList<>();

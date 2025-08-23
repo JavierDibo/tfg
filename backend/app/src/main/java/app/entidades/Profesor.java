@@ -1,6 +1,7 @@
 package app.entidades;
 
 import jakarta.persistence.*;
+import jakarta.persistence.FetchType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -19,7 +20,7 @@ import java.util.List;
 public class Profesor extends Usuario {
     
     // Lista de clases que imparte el profesor
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "profesor_clases", joinColumns = @JoinColumn(name = "profesor_id"))
     @Column(name = "clase_id")
     private List<String> clasesId = new ArrayList<>();

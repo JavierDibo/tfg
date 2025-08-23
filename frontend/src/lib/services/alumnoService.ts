@@ -21,6 +21,7 @@ export class AlumnoService {
 			size?: number;
 			sortBy?: string;
 			sortDirection?: 'ASC' | 'DESC';
+			q?: string; // General search parameter
 			nombre?: string;
 			apellidos?: string;
 			dni?: string;
