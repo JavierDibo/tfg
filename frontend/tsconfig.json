@@ -10,7 +10,32 @@
 		"sourceMap": true,
 		"strict": true,
 		"moduleResolution": "bundler"
-	}
+	},
+	"exclude": [
+		"src/lib/paraglide/**/*",
+		"src/stories/**/*",
+		"src/lib/generated/**/*",
+		"project.inlang/**/*",
+		"messages/**/*",
+		"e2e/**/*",
+		"coverage/**/*",
+		"storybook-static/**/*",
+		".storybook/**/*",
+		"**/*.test.*",
+		"**/*.spec.*",
+		"**/*.stories.*",
+		"*.config.js",
+		"*.config.ts",
+		"vite.config.ts",
+		"svelte.config.js",
+		"playwright.config.ts",
+		"vitest-setup-client.ts",
+		"openapitools.json",
+		"eslint.config.js",
+		"docs/**/*",
+		"static/**/*",
+		"src/lib/assets/**/*"
+	]
 	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
 	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
 	//
