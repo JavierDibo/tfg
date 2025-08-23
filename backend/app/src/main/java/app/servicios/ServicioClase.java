@@ -13,8 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -791,8 +790,7 @@ public class ServicioClase {
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public DTOClase inscribirseEnClase(Long claseId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String alumnoId = authentication.getName(); // Obtiene el ID del alumno del contexto de seguridad
+        String alumnoId = securityUtils.getCurrentUserId().toString(); // Obtiene el ID del alumno autenticado
 
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
@@ -803,6 +801,19 @@ public class ServicioClase {
         }
 
         clase.agregarAlumno(alumnoId);
+        
+        // También agregar la clase al alumno (actualizar la relación bidireccional)
+        try {
+            Long alumnoIdLong = Long.parseLong(alumnoId);
+            Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
+            
+            alumno.agregarClase(claseId.toString());
+            repositorioAlumno.save(alumno);
+        } catch (Exception e) {
+            // Log the error but continue with the class update
+        }
+        
         Clase claseActualizada = repositorioClase.save(clase);
         return new DTOClase(claseActualizada);
     }
@@ -812,10 +823,9 @@ public class ServicioClase {
      * @param claseId ID de la clase a darse de baja.
      * @return DTOClase actualizada.
      */
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public DTOClase darseDeBajaDeClase(Long claseId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String alumnoId = authentication.getName(); // Obtiene el ID del alumno del contexto de seguridad
+        String alumnoId = securityUtils.getCurrentUserId().toString(); // Obtiene el ID del alumno autenticado
 
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
@@ -836,9 +846,6 @@ public class ServicioClase {
             
             alumno.removerClase(claseId.toString());
             repositorioAlumno.save(alumno);
-        } catch (NumberFormatException e) {
-            // Si no se puede parsear el ID del alumno, continuar solo con la clase
-            // Esto puede suceder si el ID del alumno no es un número válido
         } catch (Exception e) {
             // Log the error but continue with the class update
         }

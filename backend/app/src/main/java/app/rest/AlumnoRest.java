@@ -7,7 +7,7 @@ import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPerfilAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
 import app.dtos.DTORespuestaPaginada;
-import app.excepciones.ResourceNotFoundException;
+
 import app.servicios.ServicioAlumno;
 import app.servicios.ServicioClase;
 import app.util.SecurityUtils;
@@ -216,10 +216,10 @@ public class AlumnoRest {
     }
 
     @GetMapping("/usuario/{usuario}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #usuario == authentication.principal.username)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Obtener alumno por usuario",
-        description = "Obtiene un alumno específico por su nombre de usuario. Los alumnos solo pueden ver su propio perfil."
+        description = "Obtiene un alumno específico por su nombre de usuario. Para alumnos, usar el endpoint /mi-perfil."
     )
     @ApiResponses(value = {
         @ApiResponse(

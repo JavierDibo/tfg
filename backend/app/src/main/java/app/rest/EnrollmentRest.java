@@ -4,9 +4,7 @@ import app.dtos.*;
 import app.servicios.ServicioClase;
 import app.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -105,12 +103,13 @@ public class EnrollmentRest {
      * Verifica el estado de inscripción de un estudiante en una clase específica
      */
     @GetMapping("/{claseId}/status/{alumnoId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #alumnoId == authentication.principal.id)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(summary = "Verificar estado de inscripción", description = "Verifica si un estudiante está inscrito en una clase específica")
     public ResponseEntity<DTOEstadoInscripcion> verificarEstadoInscripcion(
             @PathVariable Long claseId,
             @PathVariable Long alumnoId) {
         
+        // Para alumnos, solo permitir acceder a su propia información a través del endpoint /my-status
         DTOEstadoInscripcion estado = servicioClase.verificarEstadoInscripcion(alumnoId, claseId);
         return ResponseEntity.ok(estado);
     }
@@ -146,12 +145,13 @@ public class EnrollmentRest {
      * Obtiene información detallada de una clase para un estudiante específico
      */
     @GetMapping("/{claseId}/details-for-student/{alumnoId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #alumnoId == authentication.principal.id)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(summary = "Obtener detalles de clase para estudiante", description = "Obtiene información detallada de una clase para un estudiante específico")
     public ResponseEntity<DTOClaseConDetalles> obtenerClaseConDetallesParaEstudiante(
             @PathVariable Long claseId,
             @PathVariable Long alumnoId) {
         
+        // Para alumnos, usar el endpoint /details-for-me
         DTOClaseConDetalles detalles = servicioClase.obtenerClaseConDetallesParaEstudiante(claseId, alumnoId);
         return ResponseEntity.ok(detalles);
     }

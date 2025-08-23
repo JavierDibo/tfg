@@ -59,3 +59,5 @@ app:
       max-length: 2000       # Maximum characters to log before truncating
     colors:
       enabled: true          # Enable/disable ANSI color codes in console output
+    encapsulation:
+      enabled: true          # Enable/disable visual request encapsulation

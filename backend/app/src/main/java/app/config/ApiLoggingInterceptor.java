@@ -38,6 +38,7 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
     private static final String ANSI_YELLOW = "\u001B[33m";    // Request ID
     private static final String ANSI_CYAN = "\u001B[36m";      // API-LOG tag
     private static final String ANSI_PURPLE = "\u001B[35m";    // Response body
+    private static final String ANSI_WHITE = "\u001B[37m";     // Separators
     
     // Configurable properties for response body logging
     @Value("${app.logging.response-body.enabled:true}")
@@ -48,6 +49,9 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
     
     @Value("${app.logging.colors.enabled:true}")
     private boolean colorsEnabled;
+    
+    @Value("${app.logging.encapsulation.enabled:true}")
+    private boolean encapsulationEnabled;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -55,6 +59,11 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
         String requestId = UUID.randomUUID().toString().substring(0, 8);
         request.setAttribute("requestId", requestId);
         request.setAttribute("startTime", System.currentTimeMillis());
+
+        // Log request start separator
+        if (encapsulationEnabled) {
+            log.info("{}", colorize(ANSI_WHITE, "╔══════════════════════════════════════════════════════════════════════════════"));
+        }
 
         // Extract user info from JWT if available
         String userInfo = extractUserInfo(request);
@@ -141,6 +150,11 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
                     colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
                     colorize(ANSI_CYAN, ""), ANSI_RESET,
                     colorize(ANSI_RED, ""), ex.getMessage(), ANSI_RESET, ex);
+            }
+            
+            // Log request end separator
+            if (encapsulationEnabled) {
+                log.info("{}", colorize(ANSI_WHITE, "╚══════════════════════════════════════════════════════════════════════════════"));
             }
         }
     }
