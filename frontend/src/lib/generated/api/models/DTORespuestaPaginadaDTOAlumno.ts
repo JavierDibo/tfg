@@ -15,10 +15,10 @@
 import { mapValues } from '../runtime';
 import type { DTOAlumno } from './DTOAlumno';
 import {
-	DTOAlumnoFromJSON,
-	DTOAlumnoFromJSONTyped,
-	DTOAlumnoToJSON,
-	DTOAlumnoToJSONTyped
+    DTOAlumnoFromJSON,
+    DTOAlumnoFromJSONTyped,
+    DTOAlumnoToJSON,
+    DTOAlumnoToJSONTyped,
 } from './DTOAlumno';
 
 /**
@@ -27,134 +27,129 @@ import {
  * @interface DTORespuestaPaginadaDTOAlumno
  */
 export interface DTORespuestaPaginadaDTOAlumno {
-	/**
-	 * Lista de elementos de la página actual
-	 * @type {Array<DTOAlumno>}
-	 * @memberof DTORespuestaPaginadaDTOAlumno
-	 */
-	contenido: Array<DTOAlumno>;
-	/**
-	 * Número de página actual (0-indexed)
-	 * @type {number}
-	 * @memberof DTORespuestaPaginadaDTOAlumno
-	 */
-	numeroPagina: number;
-	/**
-	 * Tamaño de la página
-	 * @type {number}
-	 * @memberof DTORespuestaPaginadaDTOAlumno
-	 */
-	tamanoPagina: number;
-	/**
-	 * Número total de elementos
-	 * @type {number}
-	 * @memberof DTORespuestaPaginadaDTOAlumno
-	 */
-	totalElementos: number;
-	/**
-	 * Número total de páginas
-	 * @type {number}
-	 * @memberof DTORespuestaPaginadaDTOAlumno
-	 */
-	totalPaginas: number;
-	/**
-	 * Indica si es la primera página
-	 * @type {boolean}
-	 * @memberof DTORespuestaPaginadaDTOAlumno
-	 */
-	esPrimera: boolean;
-	/**
-	 * Indica si es la última página
-	 * @type {boolean}
-	 * @memberof DTORespuestaPaginadaDTOAlumno
-	 */
-	esUltima: boolean;
-	/**
-	 * Indica si la página tiene contenido
-	 * @type {boolean}
-	 * @memberof DTORespuestaPaginadaDTOAlumno
-	 */
-	tieneContenido: boolean;
-	/**
-	 * Campo por el que está ordenado
-	 * @type {string}
-	 * @memberof DTORespuestaPaginadaDTOAlumno
-	 */
-	ordenadoPor: string;
-	/**
-	 * Dirección de ordenación
-	 * @type {string}
-	 * @memberof DTORespuestaPaginadaDTOAlumno
-	 */
-	direccionOrden: string;
+    /**
+     * Lista de elementos de la página actual
+     * @type {Array<DTOAlumno>}
+     * @memberof DTORespuestaPaginadaDTOAlumno
+     */
+    contenido: Array<DTOAlumno>;
+    /**
+     * Número de página actual (0-indexed)
+     * @type {number}
+     * @memberof DTORespuestaPaginadaDTOAlumno
+     */
+    numeroPagina: number;
+    /**
+     * Tamaño de la página
+     * @type {number}
+     * @memberof DTORespuestaPaginadaDTOAlumno
+     */
+    tamanoPagina: number;
+    /**
+     * Número total de elementos
+     * @type {number}
+     * @memberof DTORespuestaPaginadaDTOAlumno
+     */
+    totalElementos: number;
+    /**
+     * Número total de páginas
+     * @type {number}
+     * @memberof DTORespuestaPaginadaDTOAlumno
+     */
+    totalPaginas: number;
+    /**
+     * Indica si es la primera página
+     * @type {boolean}
+     * @memberof DTORespuestaPaginadaDTOAlumno
+     */
+    esPrimera: boolean;
+    /**
+     * Indica si es la última página
+     * @type {boolean}
+     * @memberof DTORespuestaPaginadaDTOAlumno
+     */
+    esUltima: boolean;
+    /**
+     * Indica si la página tiene contenido
+     * @type {boolean}
+     * @memberof DTORespuestaPaginadaDTOAlumno
+     */
+    tieneContenido: boolean;
+    /**
+     * Campo por el que está ordenado
+     * @type {string}
+     * @memberof DTORespuestaPaginadaDTOAlumno
+     */
+    ordenadoPor: string;
+    /**
+     * Dirección de ordenación
+     * @type {string}
+     * @memberof DTORespuestaPaginadaDTOAlumno
+     */
+    direccionOrden: string;
 }
 
 /**
  * Check if a given object implements the DTORespuestaPaginadaDTOAlumno interface.
  */
-export function instanceOfDTORespuestaPaginadaDTOAlumno(
-	value: object
-): value is DTORespuestaPaginadaDTOAlumno {
-	if (!('contenido' in value) || value['contenido'] === undefined) return false;
-	if (!('numeroPagina' in value) || value['numeroPagina'] === undefined) return false;
-	if (!('tamanoPagina' in value) || value['tamanoPagina'] === undefined) return false;
-	if (!('totalElementos' in value) || value['totalElementos'] === undefined) return false;
-	if (!('totalPaginas' in value) || value['totalPaginas'] === undefined) return false;
-	if (!('esPrimera' in value) || value['esPrimera'] === undefined) return false;
-	if (!('esUltima' in value) || value['esUltima'] === undefined) return false;
-	if (!('tieneContenido' in value) || value['tieneContenido'] === undefined) return false;
-	if (!('ordenadoPor' in value) || value['ordenadoPor'] === undefined) return false;
-	if (!('direccionOrden' in value) || value['direccionOrden'] === undefined) return false;
-	return true;
+export function instanceOfDTORespuestaPaginadaDTOAlumno(value: object): value is DTORespuestaPaginadaDTOAlumno {
+    if (!('contenido' in value) || value['contenido'] === undefined) return false;
+    if (!('numeroPagina' in value) || value['numeroPagina'] === undefined) return false;
+    if (!('tamanoPagina' in value) || value['tamanoPagina'] === undefined) return false;
+    if (!('totalElementos' in value) || value['totalElementos'] === undefined) return false;
+    if (!('totalPaginas' in value) || value['totalPaginas'] === undefined) return false;
+    if (!('esPrimera' in value) || value['esPrimera'] === undefined) return false;
+    if (!('esUltima' in value) || value['esUltima'] === undefined) return false;
+    if (!('tieneContenido' in value) || value['tieneContenido'] === undefined) return false;
+    if (!('ordenadoPor' in value) || value['ordenadoPor'] === undefined) return false;
+    if (!('direccionOrden' in value) || value['direccionOrden'] === undefined) return false;
+    return true;
 }
 
 export function DTORespuestaPaginadaDTOAlumnoFromJSON(json: any): DTORespuestaPaginadaDTOAlumno {
-	return DTORespuestaPaginadaDTOAlumnoFromJSONTyped(json, false);
+    return DTORespuestaPaginadaDTOAlumnoFromJSONTyped(json, false);
 }
 
-export function DTORespuestaPaginadaDTOAlumnoFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTORespuestaPaginadaDTOAlumno {
-	if (json == null) {
-		return json;
-	}
-	return {
-		contenido: (json['contenido'] as Array<any>).map(DTOAlumnoFromJSON),
-		numeroPagina: json['numeroPagina'],
-		tamanoPagina: json['tamanoPagina'],
-		totalElementos: json['totalElementos'],
-		totalPaginas: json['totalPaginas'],
-		esPrimera: json['esPrimera'],
-		esUltima: json['esUltima'],
-		tieneContenido: json['tieneContenido'],
-		ordenadoPor: json['ordenadoPor'],
-		direccionOrden: json['direccionOrden']
-	};
+export function DTORespuestaPaginadaDTOAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTORespuestaPaginadaDTOAlumno {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'contenido': ((json['contenido'] as Array<any>).map(DTOAlumnoFromJSON)),
+        'numeroPagina': json['numeroPagina'],
+        'tamanoPagina': json['tamanoPagina'],
+        'totalElementos': json['totalElementos'],
+        'totalPaginas': json['totalPaginas'],
+        'esPrimera': json['esPrimera'],
+        'esUltima': json['esUltima'],
+        'tieneContenido': json['tieneContenido'],
+        'ordenadoPor': json['ordenadoPor'],
+        'direccionOrden': json['direccionOrden'],
+    };
 }
 
 export function DTORespuestaPaginadaDTOAlumnoToJSON(json: any): DTORespuestaPaginadaDTOAlumno {
-	return DTORespuestaPaginadaDTOAlumnoToJSONTyped(json, false);
+    return DTORespuestaPaginadaDTOAlumnoToJSONTyped(json, false);
 }
 
-export function DTORespuestaPaginadaDTOAlumnoToJSONTyped(
-	value?: DTORespuestaPaginadaDTOAlumno | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTORespuestaPaginadaDTOAlumnoToJSONTyped(value?: DTORespuestaPaginadaDTOAlumno | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		contenido: (value['contenido'] as Array<any>).map(DTOAlumnoToJSON),
-		numeroPagina: value['numeroPagina'],
-		tamanoPagina: value['tamanoPagina'],
-		totalElementos: value['totalElementos'],
-		totalPaginas: value['totalPaginas'],
-		esPrimera: value['esPrimera'],
-		esUltima: value['esUltima'],
-		tieneContenido: value['tieneContenido'],
-		ordenadoPor: value['ordenadoPor'],
-		direccionOrden: value['direccionOrden']
-	};
+    return {
+        
+        'contenido': ((value['contenido'] as Array<any>).map(DTOAlumnoToJSON)),
+        'numeroPagina': value['numeroPagina'],
+        'tamanoPagina': value['tamanoPagina'],
+        'totalElementos': value['totalElementos'],
+        'totalPaginas': value['totalPaginas'],
+        'esPrimera': value['esPrimera'],
+        'esUltima': value['esUltima'],
+        'tieneContenido': value['tieneContenido'],
+        'ordenadoPor': value['ordenadoPor'],
+        'direccionOrden': value['direccionOrden'],
+    };
 }
+

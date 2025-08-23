@@ -36,6 +36,7 @@ public class ServicioProfesor {
     // Uncomment if needed in the future
     // private final RepositorioUsuario repositorioUsuario;
     private final PasswordEncoder passwordEncoder;
+    private final ServicioCachePassword servicioCachePassword;
 
     /**
      * Obtiene todos los profesores
@@ -175,7 +176,7 @@ public class ServicioProfesor {
         // Crear el profesor
         Profesor profesor = new Profesor(
             peticion.usuario(),
-            passwordEncoder.encode(peticion.password()),
+            servicioCachePassword.encodePassword(peticion.password()),
             peticion.nombre(),
             peticion.apellidos(),
             peticion.dni(),

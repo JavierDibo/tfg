@@ -55,12 +55,8 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
                         servicioAlumno.inscribirEnClase(student.id(), course.id());
                         totalEnrollments++;
                         enrolledInThisStudent++;
-                        System.out.println("✓ Enrolled student " + student.nombre() + " in course " + course.titulo());
                     } catch (Exception e) {
-                        // If student is already enrolled, that's fine (rule 2)
-                        if (e.getMessage().contains("ya está inscrito")) {
-                            System.out.println("ℹ Student " + student.nombre() + " already enrolled in " + course.titulo());
-                        } else {
+                        if (!e.getMessage().contains("ya está inscrito")) {
                             System.err.println("✗ Error enrolling student " + student.nombre() + " in course " + course.titulo() + ": " + e.getMessage());
                         }
                     }
@@ -78,14 +74,16 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
         System.out.println("\n=== Enrollment Statistics ===");
         
         // Count students per course
+        int totalStudentsInCourses = 0;
         for (DTOCurso course : courses) {
             try {
                 int studentCount = servicioAlumno.obtenerAlumnosPorClasePaginados(course.id(), 0, 1000, "id", "ASC").contenido().size();
-                System.out.println("Course: " + course.titulo() + " - Students: " + studentCount);
+                totalStudentsInCourses += studentCount;
             } catch (Exception e) {
                 System.err.println("Error getting students for course " + course.titulo() + ": " + e.getMessage());
             }
         }
+        System.out.println("Total students enrolled across all courses: " + totalStudentsInCourses);
         
         // Count courses per student
         int studentsWithCourses = 0;
@@ -103,7 +101,7 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
             }
         }
         
-        System.out.println("\nStudents with courses: " + studentsWithCourses + "/" + students.size());
+        System.out.println("Students with courses: " + studentsWithCourses + "/" + students.size());
         if (studentsWithCourses > 0) {
             System.out.println("Average courses per enrolled student: " + 
                 String.format("%.2f", (double) totalStudentCourses / studentsWithCourses));

@@ -17,8 +17,7 @@ public class ProfessorDataInitializer extends BaseDataInitializer {
     public void initialize() {
         ServicioProfesor servicioProfesor = context.getBean(ServicioProfesor.class);
         
-        // Initialize password encoder
-        initializePasswordEncoder();
+        // Password service is now injected automatically
         
         System.out.println("Creating hardcoded professor and " + NUM_PROFESSORS + " additional professors...");
         
@@ -70,7 +69,6 @@ public class ProfessorDataInitializer extends BaseDataInitializer {
             try {
                 DTOProfesor profesor = servicioProfesor.crearProfesor(dto);
                 createdProfessors.add(profesor);
-                System.out.println("✓ Created professor: " + username + " with encoded password");
             } catch (Exception e) {
                 System.err.println("✗ Error creating professor: " + e.getMessage());
             }

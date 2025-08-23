@@ -11,8 +11,7 @@ public class AdminDataInitializer extends BaseDataInitializer {
     public void initialize() {
         RepositorioUsuario repositorioUsuario = context.getBean(RepositorioUsuario.class);
         
-        // Initialize password encoder from base class
-        initializePasswordEncoder();
+        // Password service is now injected automatically
         
         // Check if admin already exists
         if (repositorioUsuario.findByUsuario("admin").isEmpty()) {

@@ -20,7 +20,7 @@
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build",
 		"machine-translate": "inlang machine translate --project project.inlang",
-		"generate-api": "openapi-generator-cli generate -i http://localhost:8080/v3/api-docs -g typescript-fetch -o src/lib/generated/api --additional-properties=typescriptThreePlus=true --auth admin:admin",
+		"api": "openapi-generator-cli generate -i http://localhost:8080/v3/api-docs -g typescript-fetch -o src/lib/generated/api --additional-properties=typescriptThreePlus=true --auth admin:admin",
 		"postinstall": "npm run generate-api || echo 'Backend not running, skipping API generation'"
 	},
 	"devDependencies": {

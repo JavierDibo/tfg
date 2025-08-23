@@ -8,6 +8,7 @@ import app.dtos.DTORespuestaPaginada;
 import app.entidades.Alumno;
 import app.excepciones.EntidadNoEncontradaException;
 import app.repositorios.RepositorioAlumno;
+import app.servicios.ServicioCachePassword;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +41,9 @@ class ServicioAlumnoTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private ServicioCachePassword servicioCachePassword;
 
     @InjectMocks
     private ServicioAlumno servicioAlumno;
@@ -205,7 +209,7 @@ class ServicioAlumnoTest {
         when(repositorioAlumno.existsByUsuario("nuevo")).thenReturn(false);
         when(repositorioAlumno.existsByEmail("nuevo@ejemplo.com")).thenReturn(false);
         when(repositorioAlumno.existsByDni("99999999A")).thenReturn(false);
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+        when(servicioCachePassword.encodePassword("password123")).thenReturn("encodedPassword");
         when(repositorioAlumno.save(any(Alumno.class))).thenReturn(alumno1);
 
         DTOAlumno resultado = servicioAlumno.crearAlumno(peticion);
@@ -215,7 +219,7 @@ class ServicioAlumnoTest {
         verify(repositorioAlumno).existsByUsuario("nuevo");
         verify(repositorioAlumno).existsByEmail("nuevo@ejemplo.com");
         verify(repositorioAlumno).existsByDni("99999999A");
-        verify(passwordEncoder).encode("password123");
+        verify(servicioCachePassword).encodePassword("password123");
         verify(repositorioAlumno).save(any(Alumno.class));
     }
 

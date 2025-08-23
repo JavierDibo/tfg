@@ -14,111 +14,108 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface DTOMetadatosPaginacion
  */
 export interface DTOMetadatosPaginacion {
-	/**
-	 * Número de página actual (0-indexed)
-	 * @type {number}
-	 * @memberof DTOMetadatosPaginacion
-	 */
-	number?: number;
-	/**
-	 * Tamaño de la página
-	 * @type {number}
-	 * @memberof DTOMetadatosPaginacion
-	 */
-	size?: number;
-	/**
-	 * Total de elementos en todas las páginas
-	 * @type {number}
-	 * @memberof DTOMetadatosPaginacion
-	 */
-	totalElements?: number;
-	/**
-	 * Total de páginas
-	 * @type {number}
-	 * @memberof DTOMetadatosPaginacion
-	 */
-	totalPages?: number;
-	/**
-	 * Indica si es la primera página
-	 * @type {boolean}
-	 * @memberof DTOMetadatosPaginacion
-	 */
-	first?: boolean;
-	/**
-	 * Indica si es la última página
-	 * @type {boolean}
-	 * @memberof DTOMetadatosPaginacion
-	 */
-	last?: boolean;
-	/**
-	 * Indica si hay página siguiente
-	 * @type {boolean}
-	 * @memberof DTOMetadatosPaginacion
-	 */
-	hasNext?: boolean;
-	/**
-	 * Indica si hay página anterior
-	 * @type {boolean}
-	 * @memberof DTOMetadatosPaginacion
-	 */
-	hasPrevious?: boolean;
+    /**
+     * Número de página actual (0-indexed)
+     * @type {number}
+     * @memberof DTOMetadatosPaginacion
+     */
+    number?: number;
+    /**
+     * Tamaño de la página
+     * @type {number}
+     * @memberof DTOMetadatosPaginacion
+     */
+    size?: number;
+    /**
+     * Total de elementos en todas las páginas
+     * @type {number}
+     * @memberof DTOMetadatosPaginacion
+     */
+    totalElements?: number;
+    /**
+     * Total de páginas
+     * @type {number}
+     * @memberof DTOMetadatosPaginacion
+     */
+    totalPages?: number;
+    /**
+     * Indica si es la primera página
+     * @type {boolean}
+     * @memberof DTOMetadatosPaginacion
+     */
+    first?: boolean;
+    /**
+     * Indica si es la última página
+     * @type {boolean}
+     * @memberof DTOMetadatosPaginacion
+     */
+    last?: boolean;
+    /**
+     * Indica si hay página siguiente
+     * @type {boolean}
+     * @memberof DTOMetadatosPaginacion
+     */
+    hasNext?: boolean;
+    /**
+     * Indica si hay página anterior
+     * @type {boolean}
+     * @memberof DTOMetadatosPaginacion
+     */
+    hasPrevious?: boolean;
 }
 
 /**
  * Check if a given object implements the DTOMetadatosPaginacion interface.
  */
 export function instanceOfDTOMetadatosPaginacion(value: object): value is DTOMetadatosPaginacion {
-	return true;
+    return true;
 }
 
 export function DTOMetadatosPaginacionFromJSON(json: any): DTOMetadatosPaginacion {
-	return DTOMetadatosPaginacionFromJSONTyped(json, false);
+    return DTOMetadatosPaginacionFromJSONTyped(json, false);
 }
 
-export function DTOMetadatosPaginacionFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTOMetadatosPaginacion {
-	if (json == null) {
-		return json;
-	}
-	return {
-		number: json['number'] == null ? undefined : json['number'],
-		size: json['size'] == null ? undefined : json['size'],
-		totalElements: json['totalElements'] == null ? undefined : json['totalElements'],
-		totalPages: json['totalPages'] == null ? undefined : json['totalPages'],
-		first: json['first'] == null ? undefined : json['first'],
-		last: json['last'] == null ? undefined : json['last'],
-		hasNext: json['hasNext'] == null ? undefined : json['hasNext'],
-		hasPrevious: json['hasPrevious'] == null ? undefined : json['hasPrevious']
-	};
+export function DTOMetadatosPaginacionFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOMetadatosPaginacion {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'number': json['number'] == null ? undefined : json['number'],
+        'size': json['size'] == null ? undefined : json['size'],
+        'totalElements': json['totalElements'] == null ? undefined : json['totalElements'],
+        'totalPages': json['totalPages'] == null ? undefined : json['totalPages'],
+        'first': json['first'] == null ? undefined : json['first'],
+        'last': json['last'] == null ? undefined : json['last'],
+        'hasNext': json['hasNext'] == null ? undefined : json['hasNext'],
+        'hasPrevious': json['hasPrevious'] == null ? undefined : json['hasPrevious'],
+    };
 }
 
 export function DTOMetadatosPaginacionToJSON(json: any): DTOMetadatosPaginacion {
-	return DTOMetadatosPaginacionToJSONTyped(json, false);
+    return DTOMetadatosPaginacionToJSONTyped(json, false);
 }
 
-export function DTOMetadatosPaginacionToJSONTyped(
-	value?: DTOMetadatosPaginacion | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTOMetadatosPaginacionToJSONTyped(value?: DTOMetadatosPaginacion | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		number: value['number'],
-		size: value['size'],
-		totalElements: value['totalElements'],
-		totalPages: value['totalPages'],
-		first: value['first'],
-		last: value['last'],
-		hasNext: value['hasNext'],
-		hasPrevious: value['hasPrevious']
-	};
+    return {
+        
+        'number': value['number'],
+        'size': value['size'],
+        'totalElements': value['totalElements'],
+        'totalPages': value['totalPages'],
+        'first': value['first'],
+        'last': value['last'],
+        'hasNext': value['hasNext'],
+        'hasPrevious': value['hasPrevious'],
+    };
 }
+

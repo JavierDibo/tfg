@@ -35,6 +35,7 @@ public class ServicioAlumno {
     private final RepositorioAlumno repositorioAlumno;
     private final RepositorioClase repositorioClase;
     private final PasswordEncoder passwordEncoder;
+    private final ServicioCachePassword servicioCachePassword;
 
     public List<DTOAlumno> obtenerAlumnos() {
         return repositorioAlumno.findAllOrderedById()
@@ -120,7 +121,7 @@ public class ServicioAlumno {
         // Crear el alumno
         Alumno alumno = new Alumno(
             peticion.usuario(),
-            passwordEncoder.encode(peticion.password()),
+            servicioCachePassword.encodePassword(peticion.password()),
             peticion.nombre(),
             peticion.apellidos(),
             peticion.dni(),

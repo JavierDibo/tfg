@@ -8,6 +8,7 @@ import app.entidades.Curso;
 import app.excepciones.EntidadNoEncontradaException;
 import app.repositorios.RepositorioProfesor;
 import app.repositorios.RepositorioClase;
+import app.servicios.ServicioCachePassword;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +41,9 @@ class ServicioProfesorTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private ServicioCachePassword servicioCachePassword;
 
     @InjectMocks
     private ServicioProfesor servicioProfesor;
@@ -415,7 +419,7 @@ class ServicioProfesorTest {
         DTOPeticionRegistroProfesor peticion = new DTOPeticionRegistroProfesor(
                 "nuevo", "password123", "Nuevo", "Profesor", "98765432X", "nuevo@ejemplo.com", "555123456");
         
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+        when(servicioCachePassword.encodePassword("password123")).thenReturn("encodedPassword");
         when(repositorioProfesor.save(any(Profesor.class))).thenAnswer(invocation -> {
             Profesor profesorGuardado = invocation.getArgument(0);
             profesorGuardado.setId(4L);
@@ -437,7 +441,7 @@ class ServicioProfesorTest {
         assertNotNull(resultado.clasesId());
         assertTrue(resultado.clasesId().isEmpty());
         
-        verify(passwordEncoder).encode("password123");
+        verify(servicioCachePassword).encodePassword("password123");
         verify(repositorioProfesor).save(any(Profesor.class));
     }
 
@@ -506,7 +510,7 @@ class ServicioProfesorTest {
         when(repositorioProfesor.findByUsuario("nuevo")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByEmail("nuevo@ejemplo.com")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByDni("99999999A")).thenReturn(Optional.empty());
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+        when(servicioCachePassword.encodePassword("password123")).thenReturn("encodedPassword");
         when(repositorioProfesor.save(any(Profesor.class))).thenAnswer(invocation -> {
             Profesor savedProfesor = invocation.getArgument(0);
             return savedProfesor;

@@ -17,8 +17,7 @@ public class StudentDataInitializer extends BaseDataInitializer {
     public void initialize() {
         ServicioAlumno servicioAlumno = context.getBean(ServicioAlumno.class);
         
-        // Initialize password encoder
-        initializePasswordEncoder();
+        // Password service is now injected automatically
         
         System.out.println("Creating hardcoded student and " + NUM_STUDENTS + " additional students...");
         
@@ -53,7 +52,6 @@ public class StudentDataInitializer extends BaseDataInitializer {
             // Note: The service will handle password encoding internally,
             // but we can also encode it here for consistency
             String rawPassword = "password";
-            String encodedPassword = encodePassword(rawPassword);
                 
             DTOPeticionRegistroAlumno dto = new DTOPeticionRegistroAlumno(
                 username, // username without accents
@@ -68,7 +66,6 @@ public class StudentDataInitializer extends BaseDataInitializer {
             try {
                 DTOAlumno alumno = servicioAlumno.crearAlumno(dto);
                 createdStudents.add(alumno);
-                System.out.println("✓ Created student: " + username + " with encoded password");
             } catch (Exception e) {
                 System.err.println("✗ Error creating student: " + e.getMessage());
             }
