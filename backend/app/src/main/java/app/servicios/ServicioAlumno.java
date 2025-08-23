@@ -1,21 +1,8 @@
 package app.servicios;
 
-import app.dtos.DTOActualizacionAlumno;
-import app.dtos.DTOAlumno;
-import app.dtos.DTOAlumnoPublico;
-import app.dtos.DTOClase;
-import app.dtos.DTOParametrosBusquedaAlumno;
-import app.dtos.DTOPerfilAlumno;
-import app.dtos.DTOPeticionRegistroAlumno;
-import app.dtos.DTORespuestaPaginada;
-import app.dtos.DTORespuestaAlumnosClase;
-import app.entidades.Alumno;
-import app.entidades.Clase;
-import app.excepciones.EntidadNoEncontradaException;
-import app.repositorios.RepositorioAlumno;
-import app.repositorios.RepositorioClase;
-import app.util.ExceptionUtils;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +11,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import app.dtos.DTOActualizacionAlumno;
+import app.dtos.DTOAlumno;
+import app.dtos.DTOAlumnoPublico;
+import app.dtos.DTOClase;
+import app.dtos.DTOParametrosBusquedaAlumno;
+import app.dtos.DTOPerfilAlumno;
+import app.dtos.DTOPeticionRegistroAlumno;
+import app.dtos.DTORespuestaAlumnosClase;
+import app.dtos.DTORespuestaPaginada;
+import app.entidades.Alumno;
+import app.entidades.Clase;
+import app.repositorios.RepositorioAlumno;
+import app.repositorios.RepositorioClase;
+import app.util.ExceptionUtils;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +37,7 @@ public class ServicioAlumno {
     private final PasswordEncoder passwordEncoder;
     private final ServicioCachePassword servicioCachePassword;
 
+    @Transactional(readOnly = true)
     public List<DTOAlumno> obtenerAlumnos() {
         return repositorioAlumno.findAllOrderedById()
                 .stream()
@@ -44,18 +45,21 @@ public class ServicioAlumno {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorId(Long id) {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
         return new DTOAlumno(alumno);
     }
 
+    @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorEmail(String email) {
         Alumno alumno = repositorioAlumno.findByEmail(email).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "email", email);
         return new DTOAlumno(alumno);
     }
 
+    @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorUsuario(String usuario) {
         Alumno alumno = repositorioAlumno.findByUsuario(usuario).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "usuario", usuario);
@@ -67,18 +71,21 @@ public class ServicioAlumno {
      * @param usuario Usuario del alumno
      * @return DTOPerfilAlumno
      */
+    @Transactional(readOnly = true)
     public DTOPerfilAlumno obtenerPerfilAlumnoPorUsuario(String usuario) {
         Alumno alumno = repositorioAlumno.findByUsuario(usuario).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "usuario", usuario);
         return new DTOPerfilAlumno(alumno);
     }
 
+    @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorDni(String dni) {
         Alumno alumno = repositorioAlumno.findByDni(dni).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "DNI", dni);
         return new DTOAlumno(alumno);
     }
 
+    @Transactional(readOnly = true)
     public List<DTOAlumno> buscarAlumnosPorParametros(DTOParametrosBusquedaAlumno parametros) {
         // Si todos los parámetros son nulos, devolver todos los alumnos
         if (parametros.nombre() == null && parametros.apellidos() == null && 
@@ -327,6 +334,7 @@ public class ServicioAlumno {
      * @param sortDirection dirección del ordenamiento (por defecto: ASC)
      * @return DTORespuestaPaginada con los alumnos y metadatos de paginación
      */
+    @Transactional
     public DTORespuestaPaginada<DTOAlumno> obtenerAlumnosPaginados(
             int page, int size, String sortBy, String sortDirection) {
         
@@ -354,6 +362,7 @@ public class ServicioAlumno {
     /**
      * Busca alumnos por parámetros con paginación
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOAlumno> buscarAlumnosPorParametrosPaginados(
             DTOParametrosBusquedaAlumno parametros, int page, int size, String sortBy, String sortDirection) {
         
@@ -397,6 +406,7 @@ public class ServicioAlumno {
     /**
      * Obtiene alumnos matriculados/no matriculados con paginación
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOAlumno> obtenerAlumnosPorMatriculadoPaginados(
             boolean matriculado, int page, int size, String sortBy, String sortDirection) {
         
@@ -424,6 +434,7 @@ public class ServicioAlumno {
     /**
      * Obtiene alumnos inscritos en una clase específica con paginación
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOAlumno> obtenerAlumnosPorClasePaginados(
             Long claseId, int page, int size, String sortBy, String sortDirection) {
         

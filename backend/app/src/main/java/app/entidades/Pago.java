@@ -3,6 +3,7 @@ package app.entidades;
 import app.entidades.enums.EMetodoPago;
 import app.entidades.enums.EEstadoPago;
 import jakarta.persistence.*;
+import jakarta.persistence.FetchType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -53,7 +54,7 @@ public class Pago {
     private Boolean facturaCreada = false;
     
     // Items del pago embebidos
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "pago_items", joinColumns = @JoinColumn(name = "pago_id"))
     private List<ItemPago> items = new ArrayList<>();
     

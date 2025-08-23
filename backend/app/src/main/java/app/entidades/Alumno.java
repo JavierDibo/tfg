@@ -1,13 +1,19 @@
 package app.entidades;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Entidad Alumno
@@ -28,19 +34,19 @@ public class Alumno extends Usuario {
     private boolean matriculado = false;
     
     // Lista de clases a las que está inscrito el alumno
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "alumno_clases", joinColumns = @JoinColumn(name = "alumno_id"))
     @Column(name = "clase_id")
     private List<String> clasesId = new ArrayList<>();
     
     // Lista de pagos realizados por el alumno
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "alumno_pagos", joinColumns = @JoinColumn(name = "alumno_id"))
     @Column(name = "pago_id")
     private List<String> pagosId = new ArrayList<>();
     
     // Lista de entregas de ejercicios del alumno
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "alumno_entregas", joinColumns = @JoinColumn(name = "alumno_id"))
     @Column(name = "entrega_id")
     private List<String> entregasId = new ArrayList<>();

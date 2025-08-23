@@ -6,6 +6,7 @@ spring:
     password: admin-jfdg-admin
     driver-class-name: org.postgresql.Driver
   jpa:
+    open-in-view: false
     properties:
       jakarta:
         persistence:
@@ -38,6 +39,7 @@ logging:
   level:
     root: INFO
     app: INFO
+    app.config.ApiLoggingInterceptor: DEBUG
     org.springframework.security: WARN
     org.springframework.web: WARN
     org.hibernate.SQL: WARN
@@ -48,5 +50,11 @@ logging:
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
   file:
     name: logs/application.log
-    max-size: 10MB
-    max-history: 30
+
+# Application-specific logging configuration
+app:
+  logging:
+    response-body:
+      enabled: true          # Enable/disable response body logging
+      max-length: 2000       # Maximum characters to log before truncating
+      include-size: true     # Whether to include response size in logs

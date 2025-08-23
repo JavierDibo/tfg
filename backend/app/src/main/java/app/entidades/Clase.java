@@ -3,6 +3,7 @@ package app.entidades;
 import app.entidades.enums.EPresencialidad;
 import app.entidades.enums.ENivel;
 import jakarta.persistence.*;
+import jakarta.persistence.FetchType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -55,23 +56,23 @@ public abstract class Clase {
     
     // Relaciones como listas de IDs (según UML)
     // TODO: Estas se refactorizarán a relaciones JPA cuando sea necesario
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "clase_alumnos", joinColumns = @JoinColumn(name = "clase_id"))
     @Column(name = "alumno_id")
     private List<String> alumnosId = new ArrayList<>();
     
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "clase_profesores", joinColumns = @JoinColumn(name = "clase_id"))
     @Column(name = "profesor_id")
     private List<String> profesoresId = new ArrayList<>();
     
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "clase_ejercicios", joinColumns = @JoinColumn(name = "clase_id"))
     @Column(name = "ejercicio_id")
     private List<String> ejerciciosId = new ArrayList<>();
     
     // Material embebido
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "clase_materiales", joinColumns = @JoinColumn(name = "clase_id"))
     private List<Material> material = new ArrayList<>();
     

@@ -1,15 +1,8 @@
 package app.servicios;
 
-import app.dtos.*;
-import app.entidades.Clase;
-import app.entidades.Profesor;
-//import app.entidades.Usuario;
-import app.excepciones.EntidadNoEncontradaException;
-import app.repositorios.RepositorioClase;
-import app.repositorios.RepositorioProfesor;
-import app.util.ExceptionUtils;
-//import app.repositorios.RepositorioUsuario;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -19,8 +12,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import app.dtos.DTOActualizacionProfesor;
+import app.dtos.DTOClase;
+import app.dtos.DTOParametrosBusquedaProfesor;
+import app.dtos.DTOPeticionRegistroProfesor;
+import app.dtos.DTOProfesor;
+import app.dtos.DTORespuestaPaginada;
+import app.entidades.Clase;
+import app.entidades.Profesor;
+import app.excepciones.EntidadNoEncontradaException;
+import app.repositorios.RepositorioClase;
+import app.repositorios.RepositorioProfesor;
+import app.util.ExceptionUtils;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Servicio para la gestión de profesores
@@ -42,6 +46,7 @@ public class ServicioProfesor {
      * Obtiene todos los profesores
      * @return Lista de DTOProfesor
      */
+    @Transactional(readOnly = true)
     public List<DTOProfesor> obtenerProfesores() {
         return repositorioProfesor.findAllOrderedById()
                 .stream()
@@ -55,6 +60,7 @@ public class ServicioProfesor {
      * @return DTOProfesor
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
+    @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorId(Long id) {
         Profesor profesor = repositorioProfesor.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
@@ -67,6 +73,7 @@ public class ServicioProfesor {
      * @return DTOProfesor
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
+    @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorEmail(String email) {
         Profesor profesor = repositorioProfesor.findByEmail(email).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "email", email);
@@ -79,6 +86,7 @@ public class ServicioProfesor {
      * @return DTOProfesor
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
+    @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorUsuario(String usuario) {
         Profesor profesor = repositorioProfesor.findByUsuario(usuario).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "usuario", usuario);
@@ -91,6 +99,7 @@ public class ServicioProfesor {
      * @return DTOProfesor
      * @throws EntidadNoEncontradaException si no se encuentra el profesor
      */
+    @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorDni(String dni) {
         Profesor profesor = repositorioProfesor.findByDni(dni).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "DNI", dni);
@@ -468,6 +477,7 @@ public class ServicioProfesor {
     /**
      * Busca profesores por parámetros con paginación
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOProfesor> buscarProfesoresPorParametrosPaginados(
             DTOParametrosBusquedaProfesor parametros, int page, int size, String sortBy, String sortDirection) {
         
@@ -534,6 +544,7 @@ public class ServicioProfesor {
      * @param sortDirection dirección de ordenamiento (ASC/DESC)
      * @return DTORespuestaPaginada con los profesores que imparten la clase
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOProfesor> obtenerProfesoresPorClasePaginados(
             String claseId, int page, int size, String sortBy, String sortDirection) {
         
@@ -603,6 +614,7 @@ public class ServicioProfesor {
      * @param sortDirection dirección del ordenamiento (por defecto: ASC)
      * @return DTORespuestaPaginada con los profesores habilitados y metadatos de paginación
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOProfesor> obtenerProfesoresHabilitadosPaginados(
             int page, int size, String sortBy, String sortDirection) {
         

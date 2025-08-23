@@ -1,21 +1,13 @@
 package app.servicios;
 
-import app.dtos.*;
-import app.dtos.DTOPeticionEnrollment;
-import app.dtos.DTORespuestaEnrollment;
-import app.entidades.Alumno;
-import app.entidades.Clase;
-import app.entidades.Curso;
-import app.entidades.Material;
-import app.entidades.Taller;
-import app.entidades.Profesor;
-import app.excepciones.EntidadNoEncontradaException;
-import app.repositorios.RepositorioAlumno;
-import app.repositorios.RepositorioClase;
-import app.repositorios.RepositorioProfesor;
-import app.util.ExceptionUtils;
-import app.util.SecurityUtils;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,17 +16,35 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import app.dtos.DTOAlumnoPublico;
+import app.dtos.DTOClase;
+import app.dtos.DTOClaseConDetalles;
+import app.dtos.DTOClaseInscrita;
+import app.dtos.DTOCurso;
+import app.dtos.DTOEstadoInscripcion;
+import app.dtos.DTOParametrosBusquedaClase;
+import app.dtos.DTOPeticionCrearClase;
+import app.dtos.DTOPeticionEnrollment;
+import app.dtos.DTOProfesor;
+import app.dtos.DTORespuestaEnrollment;
+import app.dtos.DTORespuestaPaginada;
+import app.dtos.DTOTaller;
+import app.entidades.Alumno;
+import app.entidades.Clase;
+import app.entidades.Curso;
+import app.entidades.Material;
+import app.entidades.Profesor;
+import app.entidades.Taller;
+import app.excepciones.EntidadNoEncontradaException;
+import app.repositorios.RepositorioAlumno;
+import app.repositorios.RepositorioClase;
+import app.repositorios.RepositorioProfesor;
+import app.util.ExceptionUtils;
+import app.util.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Servicio para la gestión de clases
@@ -54,6 +64,7 @@ public class ServicioClase {
      * Obtiene todas las clases
      * @return Lista de DTOClase
      */
+    @Transactional(readOnly = true)
     public List<DTOClase> obtenerClases() {
         return repositorioClase.findAllOrderedById().stream()
                 .map(DTOClase::new)
@@ -67,6 +78,7 @@ public class ServicioClase {
      * - ALUMNO: todas las clases (para ver el catálogo)
      * @return Lista de DTOClase filtrada según el rol
      */
+    @Transactional(readOnly = true)
     public List<DTOClase> obtenerClasesSegunRol() {
         if (securityUtils.isAdmin()) {
             // Los administradores pueden ver todas las clases
@@ -108,6 +120,7 @@ public class ServicioClase {
      * @param parametros Parámetros de búsqueda
      * @return DTORespuestaPaginada con las clases encontradas filtradas según el rol
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOClase> buscarClasesSegunRol(DTOParametrosBusquedaClase parametros) {
         if (securityUtils.isAdmin()) {
             // Los administradores pueden buscar en todas las clases
@@ -176,6 +189,7 @@ public class ServicioClase {
      * @return DTOClase
      * @throws EntidadNoEncontradaException si no se encuentra la clase o no tiene acceso
      */
+    @Transactional(readOnly = true)
     public DTOClase obtenerClasePorId(Long id) {
         Clase clase = repositorioClase.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", id);
@@ -212,6 +226,7 @@ public class ServicioClase {
      * @return DTOClase
      * @throws EntidadNoEncontradaException si no se encuentra la clase o no tiene acceso
      */
+    @Transactional(readOnly = true)
     public DTOClase obtenerClasePorTitulo(String titulo) {
         Clase clase = repositorioClase.findByTitulo(titulo).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "título", titulo);
@@ -368,6 +383,7 @@ public class ServicioClase {
      * @param parametros Parámetros de búsqueda
      * @return DTORespuestaPaginada con las clases encontradas
      */
+    @Transactional(readOnly = true)
     public DTORespuestaPaginada<DTOClase> buscarClases(DTOParametrosBusquedaClase parametros) {
         // Configurar paginación
         Pageable pageable = PageRequest.of(
