@@ -4,6 +4,9 @@
 // Main data display component for entities with support for sorting, loading states, and actions
 export { default as EntityDataTable } from './EntityDataTable.svelte';
 
+// Enhanced data table component with beautiful styling and flexible themes
+export { default as EnhancedDataTable } from './EnhancedDataTable.svelte';
+
 // Search section with simple/advanced modes and export functionality
 export { default as EntitySearchSection } from './EntitySearchSection.svelte';
 
@@ -18,6 +21,9 @@ export { default as EntityMessages } from './EntityMessages.svelte';
 
 // Error display component for showing detailed error information
 export { default as ErrorDisplay } from './ErrorDisplay.svelte';
+
+// Table utilities for creating beautiful columns and formatters
+export * from './tableUtils';
 
 // Re-export all types for easier imports
 export * from './types';

@@ -22,6 +22,8 @@
 	export let showRowNumbers: boolean = false;
 	export let stripedRows: boolean = true;
 	export let hoverEffects: boolean = true;
+	export let compactMode: boolean = false;
+	export let theme: 'default' | 'modern' | 'minimal' = 'default';
 
 	function formatValue(
 		entity: Record<string, unknown>,
@@ -72,28 +74,78 @@
 	// Generate skeleton rows based on current page size
 	$: skeletonCount = currentPagination?.size || 5;
 
-	// Enhanced styling classes
-	const tableClasses = {
-		wrapper: 'overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg',
-		header: 'bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50',
-		headerCell:
-			'px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 uppercase border-b border-gray-200',
-		row: (index: number, hover: boolean) => `
-			transition-all duration-200 
-			${hover ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:shadow-sm' : ''}
-			${stripedRows && index % 2 === 1 ? 'bg-gray-50/50' : 'bg-white'}
-		`,
-		cell: 'px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-b border-gray-100',
-		actionCell: 'px-6 py-4 text-sm whitespace-nowrap text-gray-500 border-b border-gray-100',
-		actionButton: (color: string, hoverColor: string) => `
-			inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium 
-			transition-all duration-200 
-			text-${color}-700 bg-${color}-50 
-			hover:bg-${hoverColor}-100 hover:text-${hoverColor}-800 
-			focus:ring-2 focus:outline-none focus:ring-${color}-500 focus:ring-offset-2
-			shadow-sm hover:shadow-md
-		`
+	// Theme-based styling classes
+	const themes = {
+		default: {
+			wrapper: 'overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg',
+			header: 'bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50',
+			headerCell:
+				'px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 uppercase border-b border-gray-200',
+			row: (index: number, hover: boolean) => `
+				transition-all duration-200 
+				${hover ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:shadow-sm' : ''}
+				${stripedRows && index % 2 === 1 ? 'bg-gray-50/50' : 'bg-white'}
+			`,
+			cell: 'px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-b border-gray-100',
+			actionCell: 'px-6 py-4 text-sm whitespace-nowrap text-gray-500 border-b border-gray-100',
+			actionButton: (color: string, hoverColor: string) => `
+				inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium 
+				transition-all duration-200 
+				text-${color}-700 bg-${color}-50 
+				hover:bg-${hoverColor}-100 hover:text-${hoverColor}-800 
+				focus:ring-2 focus:outline-none focus:ring-${color}-500 focus:ring-offset-2
+				shadow-sm hover:shadow-md
+			`
+		},
+		modern: {
+			wrapper: 'overflow-hidden rounded-2xl border-0 bg-white shadow-xl',
+			header: 'bg-gradient-to-r from-slate-800 to-slate-900',
+			headerCell: 'px-6 py-4 text-left text-xs font-semibold tracking-wider text-white uppercase',
+			row: (index: number, hover: boolean) => `
+				transition-all duration-300 
+				${hover ? 'hover:bg-gradient-to-r hover:from-slate-50 hover:to-blue-50 hover:shadow-lg hover:scale-[1.01]' : ''}
+				${stripedRows && index % 2 === 1 ? 'bg-slate-50/30' : 'bg-white'}
+			`,
+			cell: 'px-6 py-4 whitespace-nowrap text-sm text-slate-700',
+			actionCell: 'px-6 py-4 text-sm whitespace-nowrap text-slate-500',
+			actionButton: (color: string, hoverColor: string) => `
+				inline-flex items-center rounded-xl px-4 py-2 text-xs font-semibold 
+				transition-all duration-300 
+				text-${color}-700 bg-${color}-50 
+				hover:bg-${hoverColor}-100 hover:text-${hoverColor}-800 
+				focus:ring-2 focus:outline-none focus:ring-${color}-500 focus:ring-offset-2
+				shadow-md hover:shadow-lg hover:scale-105
+			`
+		},
+		minimal: {
+			wrapper: 'overflow-hidden border border-gray-100 bg-white',
+			header: 'bg-gray-50',
+			headerCell: 'px-4 py-3 text-left text-xs font-medium tracking-wide text-gray-600 uppercase',
+			row: (index: number, hover: boolean) => `
+				transition-colors duration-200 
+				${hover ? 'hover:bg-gray-50' : ''}
+				${stripedRows && index % 2 === 1 ? 'bg-gray-25' : 'bg-white'}
+			`,
+			cell: 'px-4 py-3 whitespace-nowrap text-sm text-gray-700',
+			actionCell: 'px-4 py-3 text-sm whitespace-nowrap text-gray-500',
+			actionButton: (color: string, hoverColor: string) => `
+				inline-flex items-center rounded px-2 py-1 text-xs font-medium 
+				transition-colors duration-200 
+				text-${color}-600 bg-transparent 
+				hover:bg-${hoverColor}-50 hover:text-${hoverColor}-700 
+				focus:outline-none focus:ring-1 focus:ring-${color}-500
+			`
+		}
 	};
+
+	$: tableClasses = themes[theme];
+	$: compactClasses = compactMode
+		? {
+				headerCell: tableClasses.headerCell.replace('px-6 py-4', 'px-4 py-3'),
+				cell: tableClasses.cell.replace('px-6 py-4', 'px-4 py-3'),
+				actionCell: tableClasses.actionCell.replace('px-6 py-4', 'px-4 py-3')
+			}
+		: tableClasses;
 </script>
 
 <div class={tableClasses.wrapper}>
@@ -131,15 +183,11 @@
 				<thead class={tableClasses.header}>
 					<tr>
 						{#if showRowNumbers}
-							<th
-								class="w-16 border-b border-gray-200 px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 uppercase"
-							>
-								#
-							</th>
+							<th class="{compactClasses.headerCell} w-16"> # </th>
 						{/if}
 						{#each columns as column (column.key)}
 							<th
-								class="{tableClasses.headerCell} {column.class || ''}"
+								class="{compactClasses.headerCell} {column.class || ''}"
 								style={column.width ? `width: ${column.width}` : ''}
 							>
 								{#if column.sortable}
@@ -162,11 +210,7 @@
 							</th>
 						{/each}
 						{#if actions.length > 0}
-							<th
-								class="border-b border-gray-200 px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 uppercase"
-							>
-								Acciones
-							</th>
+							<th class={compactClasses.headerCell}> Acciones </th>
 						{/if}
 					</tr>
 				</thead>
@@ -176,17 +220,17 @@
 						{#each Array(skeletonCount), i (i)}
 							<tr class="animate-pulse">
 								{#if showRowNumbers}
-									<td class="px-6 py-4 whitespace-nowrap">
+									<td class={compactClasses.cell}>
 										<div class="h-4 w-8 rounded bg-gray-200"></div>
 									</td>
 								{/if}
 								{#each columns as column (column.key)}
-									<td class="px-6 py-4 whitespace-nowrap">
+									<td class={compactClasses.cell}>
 										<div class="h-4 w-24 rounded bg-gray-200"></div>
 									</td>
 								{/each}
 								{#if actions.length > 0}
-									<td class="px-6 py-4 whitespace-nowrap">
+									<td class={compactClasses.actionCell}>
 										<div class="flex space-x-2">
 											{#each actions as action (action.label)}
 												<div class="h-8 w-20 rounded bg-gray-200"></div>
@@ -200,12 +244,12 @@
 						{#each paginatedData.content as entity, index (entity.id)}
 							<tr class={tableClasses.row(index, hoverEffects)}>
 								{#if showRowNumbers}
-									<td class="px-6 py-4 font-mono text-sm whitespace-nowrap text-gray-500">
+									<td class="{compactClasses.cell} font-mono text-gray-500">
 										{index + 1}
 									</td>
 								{/if}
 								{#each columns as column (column.key)}
-									<td class="{tableClasses.cell} {column.class || ''}">
+									<td class="{compactClasses.cell} {column.class || ''}">
 										{#if shouldRenderAsHtml(column)}
 											<div class="text-sm text-gray-900">
 												<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -219,7 +263,7 @@
 									</td>
 								{/each}
 								{#if actions.length > 0}
-									<td class={tableClasses.actionCell}>
+									<td class={compactClasses.actionCell}>
 										<div class="flex space-x-2">
 											{#each actions as action (action.label)}
 												{#if !action.condition || action.condition(entity)}

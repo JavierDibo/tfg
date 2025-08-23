@@ -7,11 +7,13 @@
 	import type { PageData } from './$types';
 	import { getPageDisplayInfo, type PaginatedData } from '$lib/types/pagination';
 	import {
-		EntityDataTable,
+		EnhancedDataTable,
 		EntitySearchSection,
 		EntityPaginationControls,
 		EntityDeleteModal,
 		EntityMessages,
+		createColumns,
+		commonColumns,
 		type EntityColumn,
 		type EntityAction,
 		type PaginatedEntities
@@ -361,47 +363,14 @@
 	const pageSizeOptions = [10, 20, 50, 100];
 
 	// Table columns configuration
-	const tableColumns: EntityColumn<DTOProfesor>[] = [
-		{
-			key: 'id',
-			header: 'ID',
-			sortable: true
-		},
-		{
-			key: 'nombreCompleto',
-			header: 'Nombre',
-			sortable: true,
-			formatter: (_, profesor) =>
-				profesor.nombreCompleto || `${profesor.nombre} ${profesor.apellidos}`
-		},
-		{
-			key: 'email',
-			header: 'Email',
-			sortable: true
-		},
-		{
-			key: 'dni',
-			header: 'DNI',
-			sortable: true
-		},
-		{
-			key: 'enabled',
-			header: 'Estado',
-			sortable: true,
-			html: true,
-			formatter: (_, profesor) => {
-				return profesor.enabled
-					? '<span class="inline-flex rounded-full bg-green-100 px-2 text-xs leading-5 font-semibold text-green-800">Habilitado</span>'
-					: '<span class="inline-flex rounded-full bg-red-100 px-2 text-xs leading-5 font-semibold text-red-800">Deshabilitado</span>';
-			}
-		},
-		{
-			key: 'fechaCreacion',
-			header: 'Fecha de Creación',
-			sortable: true,
-			formatter: (date) => formatDate(date as string | Date | undefined)
-		}
-	];
+	const tableColumns = createColumns({
+		id: commonColumns.teacher.id,
+		name: commonColumns.teacher.name,
+		email: commonColumns.teacher.email,
+		dni: commonColumns.teacher.dni,
+		enabled: commonColumns.teacher.enabled,
+		createdAt: commonColumns.teacher.createdAt
+	});
 
 	// Table actions
 	const tableActions: EntityAction<DTOProfesor>[] = [
@@ -493,7 +462,7 @@
 		/>
 	</div>
 
-	<EntityDataTable
+	<EnhancedDataTable
 		{loading}
 		paginatedData={paginatedData as PaginatedEntities<Record<string, unknown>>}
 		{currentPagination}
@@ -502,6 +471,8 @@
 		actions={tableActions as unknown as EntityAction<Record<string, unknown>>[]}
 		entityName="profesor"
 		entityNamePlural="profesores"
+		theme="modern"
+		showRowNumbers={true}
 		on:changeSorting={(e) => changeSorting(e.detail)}
 	/>
 

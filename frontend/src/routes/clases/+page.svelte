@@ -9,9 +9,12 @@
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import {
 		EntitySearchSection,
-		EntityDataTable,
+		EnhancedDataTable,
 		EntityPaginationControls,
-		EntityMessages
+		EntityMessages,
+		EntityDeleteModal,
+		createColumns,
+		commonColumns
 	} from '$lib/components/common';
 	import type {
 		EntityFilters,
@@ -30,6 +33,8 @@
 	let totalPages = $state(0);
 	let currentPage = $state(0);
 	let pageSize = $state(20);
+	let sortBy = $state('id');
+	let sortDirection = $state<'ASC' | 'DESC'>('ASC');
 
 	// Search configuration
 	const searchConfig = getSearchConfig('clases');
@@ -74,8 +79,8 @@
 			const params: Record<string, unknown> = {
 				page: currentPage,
 				size: pageSize,
-				sortBy: 'titulo',
-				sortDirection: 'ASC'
+				sortBy: sortBy,
+				sortDirection: sortDirection
 			};
 
 			// Add search parameters
@@ -204,27 +209,28 @@
 		claseToDelete = null;
 	}
 
-	// Table configuration
-	const tableColumns = [
-		{ key: 'titulo', header: 'Título', sortable: true },
-		{ key: 'descripcion', header: 'Descripción', sortable: true },
-		{ key: 'nivel', header: 'Nivel', sortable: true },
-		{ key: 'presencialidad', header: 'Presencialidad', sortable: true },
-		{ key: 'precio', header: 'Precio', sortable: true }
-	];
+	// Enhanced table configuration using utilities
+	const tableColumns = createColumns({
+		id: commonColumns.class.id,
+		title: commonColumns.class.title,
+		description: commonColumns.class.description,
+		level: commonColumns.class.level,
+		presenciality: commonColumns.class.presenciality,
+		price: commonColumns.class.price
+	});
 
 	const tableActions = [
 		{
 			label: 'Ver',
 			color: 'blue',
-			hoverColor: 'blue-700',
+			hoverColor: 'blue',
 			action: (clase: DTOClase) => goto(`/clases/${clase.id}`),
 			condition: () => true
 		},
 		{
 			label: 'Eliminar',
 			color: 'red',
-			hoverColor: 'red-700',
+			hoverColor: 'red',
 			action: (clase: DTOClase) => openDeleteModal(clase),
 			condition: () => authStore.isAdmin
 		}
@@ -241,11 +247,12 @@
 	const currentPagination = $derived({
 		page: currentPage,
 		size: pageSize,
-		sortBy: 'titulo',
-		sortDirection: 'ASC' as const
+		sortBy: sortBy,
+		sortDirection: sortDirection
 	});
 
 	const sortFields = [
+		{ value: 'id', label: 'ID' },
 		{ value: 'titulo', label: 'Título' },
 		{ value: 'descripcion', label: 'Descripción' },
 		{ value: 'nivel', label: 'Nivel' },
@@ -255,9 +262,22 @@
 
 	const pageSizeOptions = [10, 20, 50, 100];
 
-	function changeSorting(field: string) {
-		// Implement sorting logic
-		console.log('Sorting by:', field);
+	function changeSorting(field: string | { value: string; direction: 'ASC' | 'DESC' }) {
+		if (typeof field === 'string') {
+			// Toggle direction if same field, otherwise set to ASC
+			if (sortBy === field) {
+				sortDirection = sortDirection === 'ASC' ? 'DESC' : 'ASC';
+			} else {
+				sortBy = field;
+				sortDirection = 'ASC';
+			}
+		} else {
+			sortBy = field.value;
+			sortDirection = field.direction;
+		}
+
+		currentPage = 0; // Reset to first page when sorting
+		loadClases();
 	}
 
 	function exportResults() {
@@ -331,8 +351,8 @@
 				<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
 			</div>
 		{:else}
-			<!-- Classes Grid -->
-			<EntityDataTable
+			<!-- Enhanced Classes Table -->
+			<EnhancedDataTable
 				{loading}
 				paginatedData={{
 					content: clases as unknown as Record<string, unknown>[],
@@ -346,6 +366,8 @@
 				actions={tableActions as unknown as EntityAction<Record<string, unknown>>[]}
 				entityName="clase"
 				entityNamePlural="clases"
+				theme="modern"
+				showRowNumbers={true}
 				on:changeSorting={(e) => changeSorting(e.detail)}
 			/>
 
@@ -363,31 +385,12 @@
 	</div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-{#if showDeleteModal}
-	<div class="bg-opacity-50 fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600">
-		<div class="relative top-20 mx-auto w-96 rounded-md border bg-white p-5 shadow-lg">
-			<div class="mt-3 text-center">
-				<h3 class="mb-4 text-lg font-medium text-gray-900">Confirmar eliminación</h3>
-				<p class="mb-6 text-sm text-gray-500">
-					¿Estás seguro de que quieres eliminar la clase "{claseToDelete?.titulo}"? Esta acción no
-					se puede deshacer.
-				</p>
-				<div class="flex justify-center space-x-4">
-					<button
-						onclick={cancelDelete}
-						class="rounded-md bg-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-400"
-					>
-						Cancelar
-					</button>
-					<button
-						onclick={deleteClase}
-						class="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-					>
-						Eliminar
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-{/if}
+<EntityDeleteModal
+	showModal={showDeleteModal}
+	entity={claseToDelete as unknown as Record<string, unknown>}
+	entityName="clase"
+	entityNameCapitalized="Clase"
+	displayNameField="titulo"
+	on:cancelDelete={cancelDelete}
+	on:confirmDelete={deleteClase}
+/>

@@ -5,9 +5,12 @@
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import {
 		EntitySearchSection,
-		EntityDataTable,
+		EnhancedDataTable,
 		EntityPaginationControls,
-		EntityMessages
+		EntityMessages,
+		EntityDeleteModal,
+		createColumns,
+		commonColumns
 	} from '$lib/components/common';
 	import type {
 		EntityFilters,
@@ -26,6 +29,8 @@
 	let totalPages = $state(0);
 	let currentPage = $state(0);
 	let pageSize = $state(20);
+	let sortBy = $state('id');
+	let sortDirection = $state<'ASC' | 'DESC'>('ASC');
 
 	// Search configuration
 	const searchConfig = getSearchConfig('alumnos');
@@ -74,8 +79,8 @@
 			const params: Record<string, unknown> = {
 				page: currentPage,
 				size: pageSize,
-				sortBy: 'nombre',
-				sortDirection: 'ASC'
+				sortBy: sortBy,
+				sortDirection: sortDirection
 			};
 
 			// Add search parameters
@@ -218,44 +223,56 @@
 		}
 	}
 
-	// Table configuration
-	const tableColumns = [
-		{ key: 'nombre', label: 'Nombre', sortable: true },
-		{ key: 'apellidos', label: 'Apellidos', sortable: true },
-		{ key: 'dni', label: 'DNI', sortable: true },
-		{ key: 'email', label: 'Email', sortable: true },
-		{ key: 'matriculado', label: 'Estado de Matrícula', sortable: true },
-		{ key: 'enabled', label: 'Estado', sortable: true }
-	];
+	// Enhanced table configuration using utilities
+	const tableColumns = createColumns({
+		id: commonColumns.student.id,
+		name: commonColumns.student.name,
+		email: commonColumns.student.email,
+		dni: commonColumns.student.dni,
+		enrollment: commonColumns.student.enrollment,
+		enabled: commonColumns.student.enabled
+	});
 
 	const tableActions = [
 		{
 			label: 'Ver',
+			color: 'blue',
+			hoverColor: 'blue',
 			action: (alumno: DTOAlumno) => goto(`/alumnos/${alumno.id}`),
 			condition: () => true
 		},
 		{
 			label: 'Matricular',
+			color: 'green',
+			hoverColor: 'green',
 			action: toggleEnrollmentStatus,
 			condition: (alumno: DTOAlumno) => !alumno.matriculado && authStore.isAdmin
 		},
 		{
 			label: 'Desmatricular',
+			color: 'yellow',
+			hoverColor: 'yellow',
 			action: toggleEnrollmentStatus,
 			condition: (alumno: DTOAlumno) => alumno.matriculado && authStore.isAdmin
 		},
 		{
 			label: 'Activar',
+			color: 'green',
+			hoverColor: 'green',
 			action: toggleEnabledStatus,
 			condition: (alumno: DTOAlumno) => !alumno.enabled && authStore.isAdmin
 		},
 		{
 			label: 'Desactivar',
+			color: 'red',
+			hoverColor: 'red',
 			action: toggleEnabledStatus,
 			condition: (alumno: DTOAlumno) => alumno.enabled && authStore.isAdmin
 		},
 		{
 			label: 'Eliminar',
+			color: 'red',
+			hoverColor: 'red',
 			action: openDeleteModal,
 			condition: () => authStore.isAdmin
 		}
@@ -272,11 +289,12 @@
 	const currentPagination = $derived({
 		page: currentPage,
 		size: pageSize,
-		sortBy: 'nombre',
-		sortDirection: 'ASC' as const
+		sortBy: sortBy,
+		sortDirection: sortDirection
 	});
 
 	const sortFields = [
+		{ value: 'id', label: 'ID' },
 		{ value: 'nombre', label: 'Nombre' },
 		{ value: 'apellidos', label: 'Apellidos' },
 		{ value: 'dni', label: 'DNI' },
@@ -287,9 +305,22 @@
 
 	const pageSizeOptions = [10, 20, 50, 100];
 
-	function changeSorting(field: string) {
-		// Implement sorting logic
-		console.log('Sorting by:', field);
+	function changeSorting(field: string | { value: string; direction: 'ASC' | 'DESC' }) {
+		if (typeof field === 'string') {
+			// Toggle direction if same field, otherwise set to ASC
+			if (sortBy === field) {
+				sortDirection = sortDirection === 'ASC' ? 'DESC' : 'ASC';
+			} else {
+				sortBy = field;
+				sortDirection = 'ASC';
+			}
+		} else {
+			sortBy = field.value;
+			sortDirection = field.direction;
+		}
+
+		currentPage = 0; // Reset to first page when sorting
+		loadAlumnos();
 	}
 
 	function exportResults() {
@@ -349,7 +380,7 @@
 		/>
 	</div>
 
-	<EntityDataTable
+	<EnhancedDataTable
 		{loading}
 		paginatedData={{
 			content: alumnos as unknown as Record<string, unknown>[],
@@ -363,6 +394,8 @@
 		actions={tableActions as unknown as EntityAction<Record<string, unknown>>[]}
 		entityName="alumno"
 		entityNamePlural="alumnos"
+		theme="modern"
+		showRowNumbers={true}
 		on:changeSorting={(e) => changeSorting(e.detail)}
 	/>
 
@@ -381,29 +414,15 @@
 	{/if}
 </div>
 
-<!-- Delete Modal -->
-{#if showDeleteModal && alumnoToDelete}
-	<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-		<div class="rounded-lg bg-white p-6 shadow-xl">
-			<h3 class="mb-4 text-lg font-semibold">Confirmar eliminación</h3>
-			<p class="mb-6 text-gray-600">
-				¿Estás seguro de que quieres eliminar al alumno {alumnoToDelete.nombre}
-				{alumnoToDelete.apellidos}? Esta acción no se puede deshacer.
-			</p>
-			<div class="flex justify-end space-x-3">
-				<button
-					onclick={() => (showDeleteModal = false)}
-					class="rounded-md bg-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-400"
-				>
-					Cancelar
-				</button>
-				<button
-					onclick={deleteAlumno}
-					class="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-				>
-					Eliminar
-				</button>
-			</div>
-		</div>
-	</div>
-{/if}
+<EntityDeleteModal
+	showModal={showDeleteModal}
+	entity={alumnoToDelete as unknown as Record<string, unknown>}
+	entityName="alumno"
+	entityNameCapitalized="Alumno"
+	displayNameField="nombreCompleto"
+	on:cancelDelete={() => {
+		showDeleteModal = false;
+		alumnoToDelete = null;
+	}}
+	on:confirmDelete={deleteAlumno}
+/>
