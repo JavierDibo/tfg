@@ -7,23 +7,45 @@
 	} from '$lib/generated/api';
 	import { ClaseService } from '$lib/services/claseService';
 	import { authStore } from '$lib/stores/authStore.svelte';
+	import {
+		EntitySearchSection,
+		EntityDataTable,
+		EntityPaginationControls,
+		EntityMessages
+	} from '$lib/components/common';
+	import type {
+		EntityFilters,
+		PaginatedEntities,
+		EntityColumn,
+		EntityAction,
+		EntityPagination
+	} from '$lib/components/common/types';
+	import { getSearchConfig } from '$lib/components/common/searchConfigs';
 
 	// State
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
 	let clases = $state<DTOClase[]>([]);
-
+	let totalElements = $state(0);
 	let totalPages = $state(0);
 	let currentPage = $state(0);
 	let pageSize = $state(20);
 
+	// Search configuration
+	const searchConfig = getSearchConfig('clases');
+
 	// Search and filters
-	let searchTerm = $state('');
-	let nivelFilter = $state<DTOParametrosBusquedaClaseNivelEnum | null>(null);
-	let presencialidadFilter = $state<DTOParametrosBusquedaClasePresencialidadEnum | null>(null);
-	let precioMinFilter = $state<number | null>(null);
-	let precioMaxFilter = $state<number | null>(null);
+	let currentFilters = $state<EntityFilters>({
+		searchMode: 'simple',
+		q: '',
+		titulo: '',
+		descripcion: '',
+		nivel: '',
+		presencialidad: '',
+		precioMinimo: '',
+		precioMaximo: ''
+	});
 
 	// Modal state
 	let showDeleteModal = $state(false);
@@ -44,7 +66,7 @@
 		}
 	});
 
-	// Data loading
+	// Data loading with new search parameters
 	async function loadClases() {
 		loading = true;
 		error = null;
@@ -57,26 +79,58 @@
 				sortDirection: 'ASC'
 			};
 
-			// Add filters
-			if (searchTerm.trim()) {
-				params.titulo = searchTerm.trim();
+			// Add search parameters
+			if (currentFilters.q && typeof currentFilters.q === 'string' && currentFilters.q.trim()) {
+				params.q = currentFilters.q.trim();
 			}
-			if (nivelFilter) {
-				params.nivel = nivelFilter;
+			if (
+				currentFilters.titulo &&
+				typeof currentFilters.titulo === 'string' &&
+				currentFilters.titulo.trim()
+			) {
+				params.titulo = currentFilters.titulo.trim();
 			}
-			if (presencialidadFilter) {
-				params.presencialidad = presencialidadFilter;
+			if (
+				currentFilters.descripcion &&
+				typeof currentFilters.descripcion === 'string' &&
+				currentFilters.descripcion.trim()
+			) {
+				params.descripcion = currentFilters.descripcion.trim();
 			}
-			if (precioMinFilter !== null) {
-				params.precioMin = precioMinFilter;
+			if (
+				currentFilters.nivel &&
+				typeof currentFilters.nivel === 'string' &&
+				currentFilters.nivel.trim()
+			) {
+				params.nivel = currentFilters.nivel.trim() as DTOParametrosBusquedaClaseNivelEnum;
 			}
-			if (precioMaxFilter !== null) {
-				params.precioMax = precioMaxFilter;
+			if (
+				currentFilters.presencialidad &&
+				typeof currentFilters.presencialidad === 'string' &&
+				currentFilters.presencialidad.trim()
+			) {
+				params.presencialidad =
+					currentFilters.presencialidad.trim() as DTOParametrosBusquedaClasePresencialidadEnum;
+			}
+			if (
+				currentFilters.precioMinimo &&
+				typeof currentFilters.precioMinimo === 'string' &&
+				currentFilters.precioMinimo.trim()
+			) {
+				params.precioMin = parseFloat(currentFilters.precioMinimo);
+			}
+			if (
+				currentFilters.precioMaximo &&
+				typeof currentFilters.precioMaximo === 'string' &&
+				currentFilters.precioMaximo.trim()
+			) {
+				params.precioMax = parseFloat(currentFilters.precioMaximo);
 			}
 
 			const response = await ClaseService.getPaginatedClases(params);
 
 			clases = response.contenido || [];
+			totalElements = response.totalElementos || 0;
 			totalPages = response.totalPaginas || 0;
 			currentPage = response.numeroPagina || 0;
 		} catch (err) {
@@ -93,24 +147,40 @@
 		loadClases();
 	}
 
+	function changePageSize(newSize: number) {
+		pageSize = newSize;
+		currentPage = 0;
+		loadClases();
+	}
+
 	// Search and filter functions
-	function handleSearch() {
+	function updateFilters(filters: Record<string, unknown>) {
+		Object.assign(currentFilters, filters);
 		currentPage = 0;
 		loadClases();
 	}
 
 	function clearFilters() {
-		searchTerm = '';
-		nivelFilter = null;
-		presencialidadFilter = null;
-		precioMinFilter = null;
-		precioMaxFilter = null;
+		currentFilters = {
+			searchMode: 'simple',
+			q: '',
+			titulo: '',
+			descripcion: '',
+			nivel: '',
+			presencialidad: '',
+			precioMinimo: '',
+			precioMaximo: ''
+		};
 		currentPage = 0;
 		loadClases();
 	}
 
+	function switchSearchMode(mode: 'simple' | 'advanced') {
+		currentFilters.searchMode = mode;
+	}
+
 	// Delete functions
-	function confirmDelete(clase: DTOClase) {
+	function openDeleteModal(clase: DTOClase) {
 		claseToDelete = clase;
 		showDeleteModal = true;
 	}
@@ -164,6 +234,67 @@
 				return 'bg-gray-100 text-gray-800';
 		}
 	}
+
+	// Table configuration
+	const tableColumns = [
+		{ key: 'titulo', header: 'Título', sortable: true },
+		{ key: 'descripcion', header: 'Descripción', sortable: true },
+		{ key: 'nivel', header: 'Nivel', sortable: true },
+		{ key: 'presencialidad', header: 'Presencialidad', sortable: true },
+		{ key: 'precio', header: 'Precio', sortable: true }
+	];
+
+	const tableActions = [
+		{
+			label: 'Ver',
+			color: 'blue',
+			hoverColor: 'blue-700',
+			action: (clase: DTOClase) => goto(`/clases/${clase.id}`),
+			condition: () => true
+		},
+		{
+			label: 'Eliminar',
+			color: 'red',
+			hoverColor: 'red-700',
+			action: (clase: DTOClase) => openDeleteModal(clase),
+			condition: () => authStore.isAdmin
+		}
+	];
+
+	// Pagination configuration
+	const pageDisplayInfo = $derived({
+		currentPage,
+		totalPages,
+		totalElements,
+		pageSize
+	});
+
+	const currentPagination = $derived({
+		page: currentPage,
+		size: pageSize,
+		sortBy: 'titulo',
+		sortDirection: 'ASC' as const
+	});
+
+	const sortFields = [
+		{ value: 'titulo', label: 'Título' },
+		{ value: 'descripcion', label: 'Descripción' },
+		{ value: 'nivel', label: 'Nivel' },
+		{ value: 'presencialidad', label: 'Presencialidad' },
+		{ value: 'precio', label: 'Precio' }
+	];
+
+	const pageSizeOptions = [10, 20, 50, 100];
+
+	function changeSorting(field: string) {
+		// Implement sorting logic
+		console.log('Sorting by:', field);
+	}
+
+	function exportResults() {
+		// Implement export functionality
+		console.log('Export functionality to be implemented');
+	}
 </script>
 
 <svelte:head>
@@ -196,102 +327,33 @@
 
 		<!-- Search and Filters Section -->
 		<div class="mb-6 rounded-lg bg-white p-6 shadow-md">
-			<div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-				<!-- Search -->
-				<div>
-					<label for="search" class="mb-1 block text-sm font-medium text-gray-700">Buscar</label>
-					<input
-						id="search"
-						type="text"
-						bind:value={searchTerm}
-						placeholder="Buscar por título..."
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-						onkeydown={(e) => e.key === 'Enter' && handleSearch()}
-					/>
-				</div>
-
-				<!-- Nivel Filter -->
-				<div>
-					<label for="nivel" class="mb-1 block text-sm font-medium text-gray-700">Nivel</label>
-					<select
-						id="nivel"
-						bind:value={nivelFilter}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-					>
-						<option value={null}>Todos los niveles</option>
-						<option value="PRINCIPIANTE">Principiante</option>
-						<option value="INTERMEDIO">Intermedio</option>
-						<option value="AVANZADO">Avanzado</option>
-					</select>
-				</div>
-
-				<!-- Presencialidad Filter -->
-				<div>
-					<label for="presencialidad" class="mb-1 block text-sm font-medium text-gray-700"
-						>Presencialidad</label
-					>
-					<select
-						id="presencialidad"
-						bind:value={presencialidadFilter}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-					>
-						<option value={null}>Todas</option>
-						<option value="ONLINE">Online</option>
-						<option value="PRESENCIAL">Presencial</option>
-					</select>
-				</div>
-
-				<!-- Price Range -->
-				<div>
-					<fieldset>
-						<legend class="mb-1 block text-sm font-medium text-gray-700">Precio</legend>
-						<div class="flex gap-2">
-							<input
-								id="precioMin"
-								type="number"
-								bind:value={precioMinFilter}
-								placeholder="Min"
-								class="w-1/2 rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-							/>
-							<input
-								id="precioMax"
-								type="number"
-								bind:value={precioMaxFilter}
-								placeholder="Max"
-								class="w-1/2 rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-							/>
-						</div>
-					</fieldset>
-				</div>
-			</div>
-
-			<div class="flex gap-2">
-				<button
-					onclick={handleSearch}
-					class="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-				>
-					Buscar
-				</button>
-				<button
-					onclick={clearFilters}
-					class="rounded-md bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
-				>
-					Limpiar
-				</button>
-			</div>
+			<EntitySearchSection
+				{currentFilters}
+				paginatedData={{
+					content: clases as unknown as Record<string, unknown>[],
+					totalElements,
+					totalPages,
+					currentPage
+				} as PaginatedEntities<Record<string, unknown>>}
+				{loading}
+				entityNamePlural={searchConfig.entityNamePlural}
+				advancedFields={searchConfig.advancedFields}
+				statusField={searchConfig.statusField}
+				entityType={searchConfig.entityType}
+				on:updateFilters={(e) => updateFilters(e.detail)}
+				on:clearFilters={clearFilters}
+				on:switchSearchMode={(e) => switchSearchMode(e.detail)}
+				on:exportResults={exportResults}
+			/>
 		</div>
 
 		<!-- Messages -->
 		{#if error}
-			<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
-				{error}
-			</div>
+			<EntityMessages {error} on:clearError={() => (error = null)} />
 		{/if}
 
 		{#if successMessage}
-			<div class="mb-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700">
-				{successMessage}
-			</div>
+			<EntityMessages {successMessage} on:clearSuccess={() => (successMessage = null)} />
 		{/if}
 
 		<!-- Loading State -->
@@ -301,124 +363,33 @@
 			</div>
 		{:else}
 			<!-- Classes Grid -->
-			<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{#each clases as clase (clase.id)}
-					<div
-						class="overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg"
-					>
-						{#if clase.imagenPortada}
-							<img src={clase.imagenPortada} alt={clase.titulo} class="h-48 w-full object-cover" />
-						{:else}
-							<div class="flex h-48 w-full items-center justify-center bg-gray-200">
-								<span class="text-gray-500">Sin imagen</span>
-							</div>
-						{/if}
-
-						<div class="p-6">
-							<div class="mb-2 flex items-start justify-between">
-								<h3 class="line-clamp-2 text-xl font-semibold text-gray-900">
-									{clase.titulo || 'Sin título'}
-								</h3>
-								<span class="text-lg font-bold text-blue-600">
-									{formatPrice(clase.precio)}
-								</span>
-							</div>
-
-							<p class="mb-4 line-clamp-3 text-gray-600">
-								{clase.descripcion || 'Sin descripción'}
-							</p>
-
-							<div class="mb-4 flex flex-wrap gap-2">
-								<span
-									class="rounded-full px-2 py-1 text-xs font-medium {getNivelColor(clase.nivel)}"
-								>
-									{clase.nivel || 'N/A'}
-								</span>
-								<span
-									class="rounded-full px-2 py-1 text-xs font-medium {getPresencialidadColor(
-										clase.presencialidad
-									)}"
-								>
-									{clase.presencialidad || 'N/A'}
-								</span>
-								{#if clase.tipoClase}
-									<span
-										class="rounded-full bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800"
-									>
-										{clase.tipoClase}
-									</span>
-								{/if}
-							</div>
-
-							<div class="mb-4 flex items-center justify-between text-sm text-gray-500">
-								<span>👥 {clase.numeroAlumnos || 0} alumnos</span>
-								<span>👨‍🏫 {clase.numeroProfesores || 0} profesores</span>
-								<span>📚 {clase.numeroMateriales || 0} materiales</span>
-							</div>
-
-							<div class="flex gap-2">
-								<a
-									href="/clases/{clase.id}"
-									class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-center text-white hover:bg-blue-700"
-								>
-									Ver detalles
-								</a>
-								{#if (authStore.isAdmin || authStore.isProfesor) && clase.id}
-									<button
-										onclick={() => confirmDelete(clase)}
-										class="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-									>
-										Eliminar
-									</button>
-								{/if}
-							</div>
-						</div>
-					</div>
-				{/each}
-			</div>
-
-			<!-- Empty State -->
-			{#if clases.length === 0 && !loading}
-				<div class="py-12 text-center">
-					<div class="mb-4 text-6xl text-gray-400">📚</div>
-					<h3 class="mb-2 text-lg font-medium text-gray-900">No se encontraron clases</h3>
-					<p class="text-gray-500">Intenta ajustar los filtros de búsqueda</p>
-				</div>
-			{/if}
+			<EntityDataTable
+				{loading}
+				paginatedData={{
+					content: clases as unknown as Record<string, unknown>[],
+					totalElements,
+					totalPages,
+					currentPage
+				} as PaginatedEntities<Record<string, unknown>>}
+				{currentPagination}
+				{authStore}
+				columns={tableColumns as unknown as EntityColumn<Record<string, unknown>>[]}
+				actions={tableActions as unknown as EntityAction<Record<string, unknown>>[]}
+				entityName="clase"
+				entityNamePlural="clases"
+				on:changeSorting={(e) => changeSorting(e.detail)}
+			/>
 
 			<!-- Pagination -->
-			{#if totalPages > 1}
-				<div class="mt-8 flex justify-center">
-					<nav class="flex items-center space-x-2">
-						<button
-							onclick={() => goToPage(currentPage - 1)}
-							disabled={currentPage === 0}
-							class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-						>
-							Anterior
-						</button>
-
-						{#each Array.from({ length: totalPages }, (_, i) => i) as page (page)}
-							<button
-								onclick={() => goToPage(page)}
-								class="rounded-md px-3 py-2 text-sm font-medium {currentPage === page
-									? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-									: 'border border-gray-300 bg-white text-gray-500 hover:bg-gray-50'}"
-							>
-								{page + 1}
-							</button>
-						{/each}
-
-						<button
-							onclick={() => goToPage(currentPage + 1)}
-							disabled={currentPage === totalPages - 1}
-							class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-						>
-							Siguiente
-						</button>
-					</nav>
-				</div>
-			{/if}
+			<EntityPaginationControls
+				{pageDisplayInfo}
+				{currentPagination}
+				{sortFields}
+				{pageSizeOptions}
+				on:goToPage={(e) => goToPage(e.detail)}
+				on:changePageSize={(e) => changePageSize(e.detail)}
+				on:changeSorting={(e) => changeSorting(e.detail)}
+			/>
 		{/if}
 	</div>
 </div>
@@ -451,21 +422,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.line-clamp-2 {
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
-	.line-clamp-3 {
-		display: -webkit-box;
-		-webkit-line-clamp: 3;
-		line-clamp: 3;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-</style>

@@ -2,7 +2,14 @@
 	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import { goto } from '$app/navigation';
-	import { enrollmentApi, claseApi, autenticacionApi, alumnoApi, profesorApi, userOperationsApi } from '$lib/api';
+	import {
+		enrollmentApi,
+		claseApi,
+		autenticacionApi,
+		alumnoApi,
+		profesorApi,
+		userOperationsApi
+	} from '$lib/api';
 
 	// Test state
 	let loading = $state(false);
@@ -12,13 +19,15 @@
 	let accessDeniedLoading = $state(false);
 
 	// Enhanced access denied testing
-	let accessDeniedResults = $state<Array<{
-		testName: string;
-		status: 'success' | 'error' | 'info';
-		message: string;
-		errorDetails?: any;
-		timestamp: string;
-	}>>([]);
+	let accessDeniedResults = $state<
+		Array<{
+			testName: string;
+			status: 'success' | 'error' | 'info';
+			message: string;
+			errorDetails?: any;
+			timestamp: string;
+		}>
+	>([]);
 
 	// Data state
 	let students = $state<
@@ -74,15 +83,23 @@
 		console.log(message);
 	}
 
-	function addAccessDeniedResult(testName: string, status: 'success' | 'error' | 'info', message: string, errorDetails?: any) {
+	function addAccessDeniedResult(
+		testName: string,
+		status: 'success' | 'error' | 'info',
+		message: string,
+		errorDetails?: any
+	) {
 		const timestamp = new Date().toLocaleTimeString();
-		accessDeniedResults = [...accessDeniedResults, {
-			testName,
-			status,
-			message,
-			errorDetails,
-			timestamp
-		}];
+		accessDeniedResults = [
+			...accessDeniedResults,
+			{
+				testName,
+				status,
+				message,
+				errorDetails,
+				timestamp
+			}
+		];
 	}
 
 	async function testEnhancedAccessDenied() {
@@ -91,14 +108,22 @@
 
 		try {
 			addAccessDeniedResult('Test Setup', 'info', '🚀 Starting Enhanced Access Denied Testing...');
-			
+
 			const userRoles = authStore.user?.roles;
 			const currentUser = authStore.user?.sub;
-			
-			addAccessDeniedResult('User Info', 'info', `Current user: ${currentUser}, Roles: ${userRoles}`);
+
+			addAccessDeniedResult(
+				'User Info',
+				'info',
+				`Current user: ${currentUser}, Roles: ${userRoles}`
+			);
 
 			// Test 1: Try to create a course (requires ADMIN or PROFESOR)
-			addAccessDeniedResult('Test 1', 'info', '📝 Testing course creation (requires ADMIN/PROFESOR)...');
+			addAccessDeniedResult(
+				'Test 1',
+				'info',
+				'📝 Testing course creation (requires ADMIN/PROFESOR)...'
+			);
 			try {
 				await claseApi.crearCurso({
 					dTOPeticionCrearCurso: {
@@ -111,7 +136,11 @@
 						fechaFin: new Date('2025-06-01')
 					}
 				});
-				addAccessDeniedResult('Test 1', 'success', '✅ Course creation successful (user has required permissions)');
+				addAccessDeniedResult(
+					'Test 1',
+					'success',
+					'✅ Course creation successful (user has required permissions)'
+				);
 			} catch (error: any) {
 				if (error.response?.status === 403) {
 					const errorData = error.response.data;
@@ -136,7 +165,11 @@
 			try {
 				// Use a test ID that likely doesn't exist
 				await claseApi.borrarClasePorId({ id: 999999 });
-				addAccessDeniedResult('Test 2', 'success', '✅ Class deletion successful (user has admin permissions)');
+				addAccessDeniedResult(
+					'Test 2',
+					'success',
+					'✅ Class deletion successful (user has admin permissions)'
+				);
 			} catch (error: any) {
 				if (error.response?.status === 403) {
 					const errorData = error.response.data;
@@ -152,14 +185,22 @@
 						path: errorData.path
 					});
 				} else if (error.response?.status === 404) {
-					addAccessDeniedResult('Test 2', 'info', 'ℹ️ 404 Not Found - Class not found (but deletion permission granted)');
+					addAccessDeniedResult(
+						'Test 2',
+						'info',
+						'ℹ️ 404 Not Found - Class not found (but deletion permission granted)'
+					);
 				} else {
 					addAccessDeniedResult('Test 2', 'error', `❌ Unexpected error: ${error}`, error);
 				}
 			}
 
 			// Test 3: Try to manage enrollments (requires ADMIN or PROFESOR)
-			addAccessDeniedResult('Test 3', 'info', '👥 Testing enrollment management (requires ADMIN/PROFESOR)...');
+			addAccessDeniedResult(
+				'Test 3',
+				'info',
+				'👥 Testing enrollment management (requires ADMIN/PROFESOR)...'
+			);
 			try {
 				// Try to enroll a student in a class (requires ADMIN or PROFESOR)
 				await enrollmentApi.inscribirAlumnoEnClase({
@@ -168,31 +209,48 @@
 						claseId: 1
 					}
 				});
-				addAccessDeniedResult('Test 3', 'success', '✅ Enrollment management successful (user has required permissions)');
+				addAccessDeniedResult(
+					'Test 3',
+					'success',
+					'✅ Enrollment management successful (user has required permissions)'
+				);
 			} catch (error: any) {
 				if (error.response?.status === 403) {
 					const errorData = error.response.data;
-					addAccessDeniedResult('Test 3', 'error', '❌ 403 Forbidden - Enrollment management denied', {
-						status: errorData.status,
-						message: errorData.message,
-						errorCode: errorData.errorCode,
-						requiredRole: errorData.requiredRole,
-						currentUserRole: errorData.currentUserRole,
-						resourceType: errorData.resourceType,
-						action: errorData.action,
-						suggestion: errorData.suggestion,
-						path: errorData.path
-					});
+					addAccessDeniedResult(
+						'Test 3',
+						'error',
+						'❌ 403 Forbidden - Enrollment management denied',
+						{
+							status: errorData.status,
+							message: errorData.message,
+							errorCode: errorData.errorCode,
+							requiredRole: errorData.requiredRole,
+							currentUserRole: errorData.currentUserRole,
+							resourceType: errorData.resourceType,
+							action: errorData.action,
+							suggestion: errorData.suggestion,
+							path: errorData.path
+						}
+					);
 				} else {
 					addAccessDeniedResult('Test 3', 'error', `❌ Unexpected error: ${error}`, error);
 				}
 			}
 
 			// Test 4: Try to access teacher-specific endpoint (requires PROFESOR)
-			addAccessDeniedResult('Test 4', 'info', '👨‍🏫 Testing teacher-specific endpoint (requires PROFESOR)...');
+			addAccessDeniedResult(
+				'Test 4',
+				'info',
+				'👨‍🏫 Testing teacher-specific endpoint (requires PROFESOR)...'
+			);
 			try {
 				await userOperationsApi.obtenerMisClases();
-				addAccessDeniedResult('Test 4', 'success', '✅ Teacher endpoint successful (user has professor permissions)');
+				addAccessDeniedResult(
+					'Test 4',
+					'success',
+					'✅ Teacher endpoint successful (user has professor permissions)'
+				);
 			} catch (error: any) {
 				if (error.response?.status === 403) {
 					const errorData = error.response.data;
@@ -213,10 +271,18 @@
 			}
 
 			// Test 5: Try to access student-specific endpoint (requires ALUMNO)
-			addAccessDeniedResult('Test 5', 'info', '👨‍🎓 Testing student-specific endpoint (requires ALUMNO)...');
+			addAccessDeniedResult(
+				'Test 5',
+				'info',
+				'👨‍🎓 Testing student-specific endpoint (requires ALUMNO)...'
+			);
 			try {
 				await userOperationsApi.obtenerMisClasesInscritas();
-				addAccessDeniedResult('Test 5', 'success', '✅ Student endpoint successful (user has student permissions)');
+				addAccessDeniedResult(
+					'Test 5',
+					'success',
+					'✅ Student endpoint successful (user has student permissions)'
+				);
 			} catch (error: any) {
 				if (error.response?.status === 403) {
 					const errorData = error.response.data;
@@ -236,8 +302,11 @@
 				}
 			}
 
-			addAccessDeniedResult('Test Complete', 'info', '✅ Enhanced Access Denied Testing completed!');
-
+			addAccessDeniedResult(
+				'Test Complete',
+				'info',
+				'✅ Enhanced Access Denied Testing completed!'
+			);
 		} catch (error) {
 			addAccessDeniedResult('Test Error', 'error', `❌ Test failed: ${error}`, error);
 		} finally {
@@ -447,12 +516,12 @@
 	async function loginAsSpecificStudent(username: string, studentName: string) {
 		loginLoading = true;
 		addResult(`🔄 Logging in as student: ${studentName}...`);
-		
+
 		try {
 			// First logout current user
 			authStore.logout();
 			addResult(`     Logged out current user`);
-			
+
 			// Then login with student credentials
 			const loginResponse = await autenticacionApi.login({
 				dTOPeticionLogin: {
@@ -460,17 +529,16 @@
 					password: 'password' // All students use "password"
 				}
 			});
-			
+
 			// Store the authentication data
 			authStore.login(loginResponse.token);
 			addResult(`     ✅ Successfully logged in as student: ${studentName}`);
 			addResult(`     Token received and stored`);
-			
+
 			// Redirect to test page after successful login
 			setTimeout(() => {
 				goto('/test');
 			}, 100); // Small delay to show the success message
-			
 		} catch (error) {
 			addResult(`     ❌ Login failed for student ${studentName}: ${error}`);
 			console.error('Login error:', error);
@@ -509,12 +577,12 @@
 	async function loadClasses() {
 		try {
 			const userRoles = authStore.user?.roles;
-			
+
 			if (userRoles && userRoles.includes('ROLE_ALUMNO')) {
 				// If student, load their enrolled classes
 				const enrolledClasses = await userOperationsApi.obtenerMisClasesInscritas();
 				// Convert DTOClaseInscrita to DTOClase format
-				classes = enrolledClasses.slice(0, 10).map(claseInscrita => ({
+				classes = enrolledClasses.slice(0, 10).map((claseInscrita) => ({
 					id: claseInscrita.id,
 					titulo: claseInscrita.titulo,
 					descripcion: claseInscrita.descripcion,
@@ -677,7 +745,11 @@
 										</span>
 										{#if student.usuario}
 											<button
-												onclick={() => loginAsSpecificStudent(student.usuario!, `${student.nombre} ${student.apellidos}`)}
+												onclick={() =>
+													loginAsSpecificStudent(
+														student.usuario!,
+														`${student.nombre} ${student.apellidos}`
+													)}
 												disabled={loginLoading}
 												class="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
 											>
@@ -741,7 +813,9 @@
 		<div class="rounded-lg bg-white shadow-lg">
 			<div class="border-b border-gray-200 bg-purple-50 p-4">
 				<h2 class="text-lg font-semibold text-purple-900">
-					📚 {authStore.user?.roles?.includes('ROLE_ALUMNO') ? 'My Enrolled Classes' : 'All Classes'} ({classes.length})
+					📚 {authStore.user?.roles?.includes('ROLE_ALUMNO')
+						? 'My Enrolled Classes'
+						: 'All Classes'} ({classes.length})
 				</h2>
 			</div>
 			<div class="max-h-96 overflow-y-auto p-4">
@@ -756,7 +830,7 @@
 					<div class="py-8 text-center text-gray-500">
 						{#if authStore.user?.roles?.includes('ROLE_ALUMNO')}
 							<p>No enrolled classes</p>
-							<p class="text-xs mt-1">This student is not enrolled in any classes yet</p>
+							<p class="mt-1 text-xs">This student is not enrolled in any classes yet</p>
 						{:else}
 							<p>No classes found</p>
 						{/if}
@@ -823,62 +897,102 @@
 			{#if accessDeniedResults.length === 0}
 				<div class="py-8 text-center text-gray-500">
 					<p>No access denied tests run yet.</p>
-					<p class="text-sm mt-1">Click "Test Access Denied" to start testing enhanced error responses.</p>
+					<p class="mt-1 text-sm">
+						Click "Test Access Denied" to start testing enhanced error responses.
+					</p>
 				</div>
 			{:else}
 				<div class="space-y-4">
 					{#each accessDeniedResults as result (result.timestamp + result.testName)}
-						<div class="rounded-lg border p-4 {result.status === 'success' 
-							? 'border-green-200 bg-green-50' 
-							: result.status === 'error' 
-								? 'border-red-200 bg-red-50' 
-								: 'border-blue-200 bg-blue-50'}">
+						<div
+							class="rounded-lg border p-4 {result.status === 'success'
+								? 'border-green-200 bg-green-50'
+								: result.status === 'error'
+									? 'border-red-200 bg-red-50'
+									: 'border-blue-200 bg-blue-50'}"
+						>
 							<div class="flex items-start justify-between">
 								<div class="flex-1">
-									<div class="flex items-center gap-2 mb-2">
+									<div class="mb-2 flex items-center gap-2">
 										<span class="font-semibold text-gray-900">{result.testName}</span>
 										<span class="text-xs text-gray-500">{result.timestamp}</span>
 									</div>
-									<p class="text-sm {result.status === 'success' 
-										? 'text-green-800' 
-										: result.status === 'error' 
-											? 'text-red-800' 
-											: 'text-blue-800'}">
+									<p
+										class="text-sm {result.status === 'success'
+											? 'text-green-800'
+											: result.status === 'error'
+												? 'text-red-800'
+												: 'text-blue-800'}"
+									>
 										{result.message}
 									</p>
-									
+
 									{#if result.errorDetails}
-										<div class="mt-3 rounded bg-white p-3 border">
-											<h4 class="text-xs font-semibold text-gray-700 mb-2">Error Details:</h4>
+										<div class="mt-3 rounded border bg-white p-3">
+											<h4 class="mb-2 text-xs font-semibold text-gray-700">Error Details:</h4>
 											<div class="space-y-1 text-xs">
 												{#if result.errorDetails.status}
-													<div><span class="font-medium">Status:</span> {result.errorDetails.status}</div>
+													<div>
+														<span class="font-medium">Status:</span>
+														{result.errorDetails.status}
+													</div>
 												{/if}
 												{#if result.errorDetails.message}
-													<div><span class="font-medium">Message:</span> {result.errorDetails.message}</div>
+													<div>
+														<span class="font-medium">Message:</span>
+														{result.errorDetails.message}
+													</div>
 												{/if}
 												{#if result.errorDetails.errorCode}
-													<div><span class="font-medium">Error Code:</span> <code class="bg-gray-100 px-1 rounded">{result.errorDetails.errorCode}</code></div>
+													<div>
+														<span class="font-medium">Error Code:</span>
+														<code class="rounded bg-gray-100 px-1"
+															>{result.errorDetails.errorCode}</code
+														>
+													</div>
 												{/if}
 												{#if result.errorDetails.requiredRole}
-													<div><span class="font-medium">Required Role:</span> <span class="bg-yellow-100 px-1 rounded">{result.errorDetails.requiredRole}</span></div>
+													<div>
+														<span class="font-medium">Required Role:</span>
+														<span class="rounded bg-yellow-100 px-1"
+															>{result.errorDetails.requiredRole}</span
+														>
+													</div>
 												{/if}
 												{#if result.errorDetails.currentUserRole}
-													<div><span class="font-medium">Current Role:</span> <span class="bg-blue-100 px-1 rounded">{result.errorDetails.currentUserRole}</span></div>
+													<div>
+														<span class="font-medium">Current Role:</span>
+														<span class="rounded bg-blue-100 px-1"
+															>{result.errorDetails.currentUserRole}</span
+														>
+													</div>
 												{/if}
 												{#if result.errorDetails.resourceType}
-													<div><span class="font-medium">Resource:</span> <code class="bg-gray-100 px-1 rounded">{result.errorDetails.resourceType}</code></div>
+													<div>
+														<span class="font-medium">Resource:</span>
+														<code class="rounded bg-gray-100 px-1"
+															>{result.errorDetails.resourceType}</code
+														>
+													</div>
 												{/if}
 												{#if result.errorDetails.action}
-													<div><span class="font-medium">Action:</span> <code class="bg-gray-100 px-1 rounded">{result.errorDetails.action}</code></div>
+													<div>
+														<span class="font-medium">Action:</span>
+														<code class="rounded bg-gray-100 px-1"
+															>{result.errorDetails.action}</code
+														>
+													</div>
 												{/if}
 												{#if result.errorDetails.path}
-													<div><span class="font-medium">Path:</span> <code class="bg-gray-100 px-1 rounded">{result.errorDetails.path}</code></div>
+													<div>
+														<span class="font-medium">Path:</span>
+														<code class="rounded bg-gray-100 px-1">{result.errorDetails.path}</code>
+													</div>
 												{/if}
 												{#if result.errorDetails.suggestion}
-													<div class="mt-2 p-2 bg-blue-50 rounded border-l-4 border-blue-400">
+													<div class="mt-2 rounded border-l-4 border-blue-400 bg-blue-50 p-2">
 														<span class="font-medium text-blue-800">Suggestion:</span>
-														<p class="text-blue-700 mt-1">{result.errorDetails.suggestion}</p>
+														<p class="mt-1 text-blue-700">{result.errorDetails.suggestion}</p>
 													</div>
 												{/if}
 											</div>

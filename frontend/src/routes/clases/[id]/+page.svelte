@@ -64,7 +64,7 @@
 
 	async function checkEnrollmentStatus() {
 		if (!claseId) return;
-		
+
 		try {
 			enrollmentStatus = await EnrollmentService.checkMyEnrollmentStatus(claseId);
 		} catch (err) {
@@ -76,21 +76,21 @@
 
 	async function handleEnrollment() {
 		if (!claseId) return;
-		
+
 		enrollmentLoading = true;
 		enrollmentError = null;
 
 		try {
 			const result = await EnrollmentService.toggleEnrollment(claseId);
 			enrollmentStatus = { isEnrolled: result.isEnrolled, claseId, alumnoId: authStore.user?.id };
-			
+
 			// Refresh student count
 			if (clase?.id) {
 				numeroAlumnos = await ClaseService.contarAlumnosEnClase(clase.id);
 			}
 		} catch (err) {
-			enrollmentError = enrollmentStatus?.isEnrolled 
-				? `Error al darse de baja: ${err}` 
+			enrollmentError = enrollmentStatus?.isEnrolled
+				? `Error al darse de baja: ${err}`
 				: `Error al inscribirse: ${err}`;
 		} finally {
 			enrollmentLoading = false;
@@ -285,7 +285,11 @@
 							class="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50"
 							disabled={enrollmentLoading}
 						>
-							{enrollmentLoading ? 'Cargando...' : enrollmentStatus?.isEnrolled ? 'Desinscribirse' : 'Inscribirse en la clase'}
+							{enrollmentLoading
+								? 'Cargando...'
+								: enrollmentStatus?.isEnrolled
+									? 'Desinscribirse'
+									: 'Inscribirse en la clase'}
 						</button>
 					{/if}
 					{#if authStore.isAdmin || authStore.isProfesor}
@@ -302,7 +306,7 @@
 						</button>
 					{/if}
 				</div>
-				
+
 				<!-- Enrollment Error Message -->
 				{#if enrollmentError}
 					<div class="mt-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">

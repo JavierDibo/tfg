@@ -392,34 +392,58 @@ public class ServicioClase {
                 Sort.by(Sort.Direction.fromString(parametros.ordenDireccion()), parametros.ordenCampo())
         );
         
-        // Realizar búsqueda según criterios proporcionados
+        // Enhanced search logic with "q" parameter support
         Page<Clase> resultado;
         
-        if (parametros.titulo() != null && !parametros.titulo().isEmpty()) {
-            // Aplicar paginación manualmente ya que el repositorio no tiene sobrecarga con Pageable
-            List<Clase> clases = repositorioClase.findByTituloContainingIgnoreCase(parametros.titulo());
-            resultado = convertirListaAPagina(clases, pageable);
-        } else if (parametros.descripcion() != null && !parametros.descripcion().isEmpty()) {
-            List<Clase> clases = repositorioClase.findByDescripcionContainingIgnoreCase(parametros.descripcion());
-            resultado = convertirListaAPagina(clases, pageable);
-        } else if (parametros.presencialidad() != null) {
-            List<Clase> clases = repositorioClase.findByPresencialidad(parametros.presencialidad());
-            resultado = convertirListaAPagina(clases, pageable);
-        } else if (parametros.nivel() != null) {
-            List<Clase> clases = repositorioClase.findByNivel(parametros.nivel());
-            resultado = convertirListaAPagina(clases, pageable);
-        } else if (parametros.precioMaximo() != null && parametros.precioMinimo() == null) {
-            List<Clase> clases = repositorioClase.findByPrecioLessThanEqual(parametros.precioMaximo());
-            resultado = convertirListaAPagina(clases, pageable);
-        } else if (parametros.precioMinimo() != null && parametros.precioMaximo() != null) {
-            List<Clase> clases = repositorioClase.findByPrecioBetween(parametros.precioMinimo(), parametros.precioMaximo());
-            resultado = convertirListaAPagina(clases, pageable);
+        if (parametros.hasGeneralSearch()) {
+            if (parametros.hasSpecificFilters()) {
+                // Use combined search (general + specific filters)
+                resultado = repositorioClase.findByGeneralAndSpecificFilters(
+                    parametros.q(),
+                    parametros.titulo(),
+                    parametros.descripcion(),
+                    parametros.presencialidad(),
+                    parametros.nivel(),
+                    parametros.precioMinimo(),
+                    parametros.precioMaximo(),
+                    pageable
+                );
+            } else {
+                // Use only general search
+                resultado = repositorioClase.findByGeneralSearch(parametros.q(), pageable);
+            }
         } else {
-            resultado = repositorioClase.findAll(pageable);
+            // Use existing specific search logic
+            if (parametros.titulo() != null && !parametros.titulo().isEmpty()) {
+                // Aplicar paginación manualmente ya que el repositorio no tiene sobrecarga con Pageable
+                List<Clase> clases = repositorioClase.findByTituloContainingIgnoreCase(parametros.titulo());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else if (parametros.descripcion() != null && !parametros.descripcion().isEmpty()) {
+                List<Clase> clases = repositorioClase.findByDescripcionContainingIgnoreCase(parametros.descripcion());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else if (parametros.presencialidad() != null) {
+                List<Clase> clases = repositorioClase.findByPresencialidad(parametros.presencialidad());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else if (parametros.nivel() != null) {
+                List<Clase> clases = repositorioClase.findByNivel(parametros.nivel());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else if (parametros.precioMinimo() != null && parametros.precioMaximo() != null) {
+                List<Clase> clases = repositorioClase.findByPrecioBetween(parametros.precioMinimo(), parametros.precioMaximo());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else if (parametros.precioMaximo() != null) {
+                List<Clase> clases = repositorioClase.findByPrecioLessThanEqual(parametros.precioMaximo());
+                resultado = convertirListaAPagina(clases, pageable);
+            } else {
+                // Si no hay criterios específicos, obtener todas las clases
+                List<Clase> todasLasClases = repositorioClase.findAllOrderedById();
+                resultado = convertirListaAPagina(todasLasClases, pageable);
+            }
         }
         
-        // Construir respuesta paginada usando el constructor que acepta un Page
-        return DTORespuestaPaginada.fromPage(resultado.map(clase -> new DTOClase(clase)), "id", "ASC");
+        // Convertir a DTOs
+        Page<DTOClase> pageDTOs = resultado.map(DTOClase::new);
+        
+        return DTORespuestaPaginada.fromPage(pageDTOs, parametros.ordenCampo(), parametros.ordenDireccion());
     }
 
     /**

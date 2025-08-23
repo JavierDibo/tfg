@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Repositorio para la entidad Clase
@@ -89,6 +91,49 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      */
     @Query("SELECT c FROM Clase c ORDER BY c.titulo ASC")
     List<Clase> findAllOrderedByTitulo();
+    
+    // NEW: General search methods for "q" parameter
+    
+    /**
+     * General search across multiple fields using the "q" parameter
+     * Searches in titulo and descripcion fields
+     */
+    @Query("SELECT c FROM Clase c WHERE " +
+           "UPPER(c.titulo) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(c.descripcion) LIKE UPPER(CONCAT('%', :searchTerm, '%'))")
+    List<Clase> findByGeneralSearch(@Param("searchTerm") String searchTerm);
+    
+    /**
+     * General search with pagination
+     */
+    @Query("SELECT c FROM Clase c WHERE " +
+           "UPPER(c.titulo) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(c.descripcion) LIKE UPPER(CONCAT('%', :searchTerm, '%'))")
+    Page<Clase> findByGeneralSearch(@Param("searchTerm") String searchTerm, Pageable pageable);
+    
+    /**
+     * Combined search with general term and specific filters
+     */
+    @Query("SELECT c FROM Clase c WHERE " +
+           "(:searchTerm IS NULL OR (" +
+           "UPPER(c.titulo) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(c.descripcion) LIKE UPPER(CONCAT('%', :searchTerm, '%')))) AND " +
+           "(:titulo IS NULL OR UPPER(c.titulo) LIKE UPPER(CONCAT('%', :titulo, '%'))) AND " +
+           "(:descripcion IS NULL OR UPPER(c.descripcion) LIKE UPPER(CONCAT('%', :descripcion, '%'))) AND " +
+           "(:presencialidad IS NULL OR c.presencialidad = :presencialidad) AND " +
+           "(:nivel IS NULL OR c.nivel = :nivel) AND " +
+           "(:precioMinimo IS NULL OR c.precio >= :precioMinimo) AND " +
+           "(:precioMaximo IS NULL OR c.precio <= :precioMaximo)")
+    Page<Clase> findByGeneralAndSpecificFilters(
+        @Param("searchTerm") String searchTerm,
+        @Param("titulo") String titulo,
+        @Param("descripcion") String descripcion,
+        @Param("presencialidad") EPresencialidad presencialidad,
+        @Param("nivel") ENivel nivel,
+        @Param("precioMinimo") BigDecimal precioMinimo,
+        @Param("precioMaximo") BigDecimal precioMaximo,
+        Pageable pageable
+    );
     
     /**
      * Busca clases que tienen un alumno específico inscrito

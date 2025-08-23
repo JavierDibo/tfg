@@ -136,27 +136,70 @@ public class ServicioProfesor {
      * @return Lista de DTOProfesor
      */
     public List<DTOProfesor> buscarProfesoresPorParametros(DTOParametrosBusquedaProfesor parametros) {
-        // Si todos los parámetros son nulos, devolver todos los profesores
-        if (parametros.nombre() == null && parametros.apellidos() == null && 
-            parametros.dni() == null && parametros.email() == null) {
-            return obtenerProfesores();
+        // Enhanced search logic with "q" parameter support
+        if (parametros.hasGeneralSearch()) {
+            if (parametros.hasSpecificFilters()) {
+                // Use combined search (general + specific filters) without pagination
+                List<Profesor> profesores = repositorioProfesor.findAll().stream()
+                    .filter(p -> {
+                        String searchTerm = parametros.q().toLowerCase();
+                        boolean generalMatch = p.getNombre().toLowerCase().contains(searchTerm) ||
+                                             p.getApellidos().toLowerCase().contains(searchTerm) ||
+                                             p.getEmail().toLowerCase().contains(searchTerm) ||
+                                             p.getUsuario().toLowerCase().contains(searchTerm) ||
+                                             p.getDni().toLowerCase().contains(searchTerm);
+                        
+                        boolean specificMatch = (parametros.nombre() == null || 
+                                               p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())) &&
+                                              (parametros.apellidos() == null || 
+                                               p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())) &&
+                                              (parametros.dni() == null || 
+                                               p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())) &&
+                                              (parametros.email() == null || 
+                                               p.getEmail().toLowerCase().contains(parametros.email().toLowerCase()));
+                        
+                        return generalMatch && specificMatch;
+                    })
+                    .collect(Collectors.toList());
+                
+                return profesores.stream().map(DTOProfesor::new).toList();
+            } else {
+                // Use only general search without pagination
+                List<Profesor> profesores = repositorioProfesor.findAll().stream()
+                    .filter(p -> {
+                        String searchTerm = parametros.q().toLowerCase();
+                        return p.getNombre().toLowerCase().contains(searchTerm) ||
+                               p.getApellidos().toLowerCase().contains(searchTerm) ||
+                               p.getEmail().toLowerCase().contains(searchTerm) ||
+                               p.getUsuario().toLowerCase().contains(searchTerm) ||
+                               p.getDni().toLowerCase().contains(searchTerm);
+                    })
+                    .collect(Collectors.toList());
+                
+                return profesores.stream().map(DTOProfesor::new).toList();
+            }
+        } else {
+            // Use existing specific search logic
+            if (parametros.hasSpecificFilters()) {
+                // Buscar por filtros básicos
+                List<Profesor> profesores = repositorioProfesor.findAll().stream()
+                        .filter(p -> (parametros.nombre() == null || 
+                                      p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())))
+                        .filter(p -> (parametros.apellidos() == null || 
+                                      p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())))
+                        .filter(p -> (parametros.dni() == null || 
+                                      p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())))
+                        .filter(p -> (parametros.email() == null || 
+                                      p.getEmail().toLowerCase().contains(parametros.email().toLowerCase())))
+                        .collect(Collectors.toList());
+                
+                return profesores.stream()
+                        .map(DTOProfesor::new)
+                        .toList();
+            } else {
+                return obtenerProfesores();
+            }
         }
-        
-        // Buscar por filtros básicos
-        List<Profesor> profesores = repositorioProfesor.findAll().stream()
-                .filter(p -> (parametros.nombre() == null || 
-                              p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())))
-                .filter(p -> (parametros.apellidos() == null || 
-                              p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())))
-                .filter(p -> (parametros.dni() == null || 
-                              p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())))
-                .filter(p -> (parametros.email() == null || 
-                              p.getEmail().toLowerCase().contains(parametros.email().toLowerCase())))
-                .collect(Collectors.toList());
-        
-        return profesores.stream()
-                .map(DTOProfesor::new)
-                .toList();
     }
 
     /**
@@ -494,40 +537,78 @@ public class ServicioProfesor {
         }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<Profesor> pageProfesores;
         
-        // Filtrar profesores según parámetros
-        List<Profesor> profesoresFiltrados;
-        
-        // Si todos los parámetros son nulos, obtener todos
-        if (parametros.nombre() == null && parametros.apellidos() == null && 
-            parametros.dni() == null && parametros.email() == null) {
-            profesoresFiltrados = repositorioProfesor.findAll(Sort.by(direction, sortBy));
+        // Enhanced search logic with "q" parameter support
+        if (parametros.hasGeneralSearch()) {
+            if (parametros.hasSpecificFilters()) {
+                // Use combined search (general + specific filters)
+                pageProfesores = repositorioProfesor.findByGeneralAndSpecificFilters(
+                    parametros.q(),
+                    parametros.nombre(),
+                    parametros.apellidos(),
+                    parametros.email(),
+                    parametros.usuario(),
+                    parametros.dni(),
+                    parametros.habilitado(),
+                    pageable
+                );
+            } else {
+                // Use only general search
+                pageProfesores = repositorioProfesor.findByGeneralSearch(parametros.q(), pageable);
+            }
         } else {
-            // Filtrar según parámetros
-            profesoresFiltrados = repositorioProfesor.findAll(Sort.by(direction, sortBy))
-                .stream()
-                .filter(p -> (parametros.nombre() == null || 
-                            p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())))
-                .filter(p -> (parametros.apellidos() == null || 
-                            p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())))
-                .filter(p -> (parametros.dni() == null || 
-                            p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())))
-                .filter(p -> (parametros.email() == null || 
-                            p.getEmail().toLowerCase().contains(parametros.email().toLowerCase())))
-                .collect(Collectors.toList());
+            // Use existing specific search logic
+            if (parametros.hasSpecificFilters()) {
+                // Filtrar profesores según parámetros
+                List<Profesor> profesoresFiltrados;
+                
+                // Si todos los parámetros son nulos, obtener todos
+                if (parametros.nombre() == null && parametros.apellidos() == null && 
+                    parametros.dni() == null && parametros.email() == null) {
+                    profesoresFiltrados = repositorioProfesor.findAll(Sort.by(direction, sortBy));
+                } else {
+                    // Filtrar según parámetros
+                    profesoresFiltrados = repositorioProfesor.findAll(Sort.by(direction, sortBy))
+                        .stream()
+                        .filter(p -> (parametros.nombre() == null || 
+                                    p.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())))
+                        .filter(p -> (parametros.apellidos() == null || 
+                                    p.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())))
+                        .filter(p -> (parametros.dni() == null || 
+                                    p.getDni().toLowerCase().contains(parametros.dni().toLowerCase())))
+                        .filter(p -> (parametros.email() == null || 
+                                    p.getEmail().toLowerCase().contains(parametros.email().toLowerCase())))
+                        .collect(Collectors.toList());
+                }
+                
+                // Aplicar paginación
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), profesoresFiltrados.size());
+                
+                if (start > end) {
+                    start = 0;
+                    end = 0;
+                }
+                
+                List<Profesor> pageContent = profesoresFiltrados.subList(start, end);
+                pageProfesores = new PageImpl<>(pageContent, pageable, profesoresFiltrados.size());
+            } else {
+                // Implementar paginación manualmente
+                List<Profesor> allProfesores = repositorioProfesor.findAll(Sort.by(direction, sortBy));
+                
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), allProfesores.size());
+                
+                if (start > end) {
+                    start = 0;
+                    end = 0;
+                }
+                
+                List<Profesor> pageContent = allProfesores.subList(start, end);
+                pageProfesores = new PageImpl<>(pageContent, pageable, allProfesores.size());
+            }
         }
-        
-        // Aplicar paginación
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), profesoresFiltrados.size());
-        
-        if (start > end) {
-            start = 0;
-            end = 0;
-        }
-        
-        List<Profesor> pageContent = profesoresFiltrados.subList(start, end);
-        Page<Profesor> pageProfesores = new PageImpl<>(pageContent, pageable, profesoresFiltrados.size());
         
         // Convertir a DTOs
         Page<DTOProfesor> pageDTOs = pageProfesores.map(DTOProfesor::new);

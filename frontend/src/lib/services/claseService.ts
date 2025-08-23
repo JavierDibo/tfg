@@ -190,6 +190,7 @@ export class ClaseService {
 	static async getPaginatedClases(params: {
 		page?: number;
 		size?: number;
+		q?: string; // General search parameter
 		titulo?: string;
 		nivel?: DTOParametrosBusquedaClaseNivelEnum;
 		presencialidad?: DTOParametrosBusquedaClasePresencialidadEnum;
@@ -206,7 +207,10 @@ export class ClaseService {
 				ordenDireccion: params.sortDirection || 'ASC'
 			};
 
-			// Add filters if provided
+			// Add general search parameter
+			if (params.q) searchParams.q = params.q;
+
+			// Add specific filters if provided
 			if (params.titulo) searchParams.titulo = params.titulo;
 			if (params.nivel) searchParams.nivel = params.nivel;
 			if (params.presencialidad) searchParams.presencialidad = params.presencialidad;

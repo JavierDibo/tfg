@@ -32,7 +32,7 @@ export interface EntityColumn<T = Record<string, unknown>> {
  */
 export interface EntityFilters {
 	searchMode: 'simple' | 'advanced' | string;
-	busquedaGeneral?: string;
+	q?: string; // General search parameter
 	[key: string]: unknown;
 }
 

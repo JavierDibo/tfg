@@ -11,7 +11,7 @@ export const load: PageLoad = ({ url }: { url: URL }) => {
 
 	// Filters
 	const searchMode = (url.searchParams.get('searchMode') ?? 'simple') as 'simple' | 'advanced';
-	const busquedaGeneral = url.searchParams.get('busquedaGeneral') ?? undefined;
+	const q = url.searchParams.get('q') ?? undefined;
 	const nombre = url.searchParams.get('nombre') ?? undefined;
 	const apellidos = url.searchParams.get('apellidos') ?? undefined;
 	const dni = url.searchParams.get('dni') ?? undefined;
@@ -29,7 +29,7 @@ export const load: PageLoad = ({ url }: { url: URL }) => {
 		},
 		filters: {
 			searchMode,
-			busquedaGeneral,
+			q,
 			nombre,
 			apellidos,
 			dni,

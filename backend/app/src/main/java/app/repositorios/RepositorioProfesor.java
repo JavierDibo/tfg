@@ -95,6 +95,47 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
     @Query("SELECT p FROM Profesor p")
     Page<Profesor> findAllOrderedById(Pageable pageable);
     
+    // NEW: General search methods for "q" parameter
+    
+    /**
+     * General search across multiple fields using the "q" parameter
+     * Searches in nombre, apellidos, email, usuario, and dni fields
+     */
+    @Query("SELECT p FROM Profesor p WHERE " +
+           "UPPER(p.nombre) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(p.apellidos) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(p.email) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(p.usuario) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(p.dni) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    Page<Profesor> findByGeneralSearch(@Param("searchTerm") String searchTerm, Pageable pageable);
+    
+    /**
+     * Combined search with general term and specific filters
+     */
+    @Query("SELECT p FROM Profesor p WHERE " +
+           "(:searchTerm IS NULL OR (" +
+           "UPPER(p.nombre) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(p.apellidos) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(p.email) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(p.usuario) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(p.dni) LIKE LOWER(CONCAT('%', :searchTerm, '%')))) AND " +
+           "(:nombre IS NULL OR UPPER(p.nombre) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
+           "(:apellidos IS NULL OR UPPER(p.apellidos) LIKE UPPER(CONCAT('%', :apellidos, '%'))) AND " +
+           "(:email IS NULL OR UPPER(p.email) LIKE UPPER(CONCAT('%', :email, '%'))) AND " +
+           "(:usuario IS NULL OR UPPER(p.usuario) LIKE UPPER(CONCAT('%', :usuario, '%'))) AND " +
+           "(:dni IS NULL OR LOWER(p.dni) LIKE LOWER(CONCAT('%', :dni, '%'))) AND " +
+           "(:habilitado IS NULL OR p.enabled = :habilitado)")
+    Page<Profesor> findByGeneralAndSpecificFilters(
+        @Param("searchTerm") String searchTerm,
+        @Param("nombre") String nombre,
+        @Param("apellidos") String apellidos,
+        @Param("email") String email,
+        @Param("usuario") String usuario,
+        @Param("dni") String dni,
+        @Param("habilitado") Boolean habilitado,
+        Pageable pageable
+    );
+    
     /**
      * Busca profesores que tienen una clase específica asignada
      * @param claseId ID de la clase

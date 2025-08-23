@@ -12,431 +12,539 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
 import type {
-  DTOClase,
-  DTOClaseConDetalles,
-  DTOClaseInscrita,
-  DTOEstadoInscripcion,
-  DTOPeticionEnrollment,
-  DTORespuestaEnrollment,
+	DTOClase,
+	DTOClaseConDetalles,
+	DTOClaseInscrita,
+	DTOEstadoInscripcion,
+	DTOPeticionEnrollment,
+	DTORespuestaEnrollment
 } from '../models/index';
 import {
-    DTOClaseFromJSON,
-    DTOClaseToJSON,
-    DTOClaseConDetallesFromJSON,
-    DTOClaseConDetallesToJSON,
-    DTOClaseInscritaFromJSON,
-    DTOClaseInscritaToJSON,
-    DTOEstadoInscripcionFromJSON,
-    DTOEstadoInscripcionToJSON,
-    DTOPeticionEnrollmentFromJSON,
-    DTOPeticionEnrollmentToJSON,
-    DTORespuestaEnrollmentFromJSON,
-    DTORespuestaEnrollmentToJSON,
+	DTOClaseFromJSON,
+	DTOClaseToJSON,
+	DTOClaseConDetallesFromJSON,
+	DTOClaseConDetallesToJSON,
+	DTOClaseInscritaFromJSON,
+	DTOClaseInscritaToJSON,
+	DTOEstadoInscripcionFromJSON,
+	DTOEstadoInscripcionToJSON,
+	DTOPeticionEnrollmentFromJSON,
+	DTOPeticionEnrollmentToJSON,
+	DTORespuestaEnrollmentFromJSON,
+	DTORespuestaEnrollmentToJSON
 } from '../models/index';
 
 export interface DarDeBajaAlumnoDeClaseRequest {
-    dTOPeticionEnrollment: DTOPeticionEnrollment;
+	dTOPeticionEnrollment: DTOPeticionEnrollment;
 }
 
 export interface DarseDeBajaDeClaseRequest {
-    claseId: number;
+	claseId: number;
 }
 
 export interface InscribirAlumnoEnClaseRequest {
-    dTOPeticionEnrollment: DTOPeticionEnrollment;
+	dTOPeticionEnrollment: DTOPeticionEnrollment;
 }
 
 export interface InscribirseEnClaseRequest {
-    claseId: number;
+	claseId: number;
 }
 
 export interface ObtenerClaseConDetallesParaEstudianteRequest {
-    claseId: number;
-    alumnoId: number;
+	claseId: number;
+	alumnoId: number;
 }
 
 export interface ObtenerClaseConDetallesParaMiRequest {
-    claseId: number;
+	claseId: number;
 }
 
 export interface VerificarEstadoInscripcionRequest {
-    claseId: number;
-    alumnoId: number;
+	claseId: number;
+	alumnoId: number;
 }
 
 export interface VerificarMiEstadoInscripcionRequest {
-    claseId: number;
+	claseId: number;
 }
 
 /**
- * 
+ *
  */
 export class InscripcionesApi extends runtime.BaseAPI {
-
-    /**
-     * Permite a profesores y administradores dar de baja alumnos de clases
-     * Dar de baja alumno de clase
-     */
-    async darDeBajaAlumnoDeClaseRaw(requestParameters: DarDeBajaAlumnoDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
-        if (requestParameters['dTOPeticionEnrollment'] == null) {
-            throw new runtime.RequiredError(
-                'dTOPeticionEnrollment',
-                'Required parameter "dTOPeticionEnrollment" was null or undefined when calling darDeBajaAlumnoDeClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/api/enrollments`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaEnrollmentFromJSON(jsonValue));
-    }
-
-    /**
-     * Permite a profesores y administradores dar de baja alumnos de clases
-     * Dar de baja alumno de clase
-     */
-    async darDeBajaAlumnoDeClase(requestParameters: DarDeBajaAlumnoDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaEnrollment> {
-        const response = await this.darDeBajaAlumnoDeClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Permite a un alumno darse de baja de una clase
-     * Auto-baja de clase
-     */
-    async darseDeBajaDeClaseRaw(requestParameters: DarseDeBajaDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling darseDeBajaDeClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/enrollments/{claseId}/self-unenroll`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
-    }
-
-    /**
-     * Permite a un alumno darse de baja de una clase
-     * Auto-baja de clase
-     */
-    async darseDeBajaDeClase(requestParameters: DarseDeBajaDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
-        const response = await this.darseDeBajaDeClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Permite a profesores y administradores inscribir alumnos en clases
-     * Inscribir alumno en clase
-     */
-    async inscribirAlumnoEnClaseRaw(requestParameters: InscribirAlumnoEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
-        if (requestParameters['dTOPeticionEnrollment'] == null) {
-            throw new runtime.RequiredError(
-                'dTOPeticionEnrollment',
-                'Required parameter "dTOPeticionEnrollment" was null or undefined when calling inscribirAlumnoEnClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/api/enrollments`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaEnrollmentFromJSON(jsonValue));
-    }
-
-    /**
-     * Permite a profesores y administradores inscribir alumnos en clases
-     * Inscribir alumno en clase
-     */
-    async inscribirAlumnoEnClase(requestParameters: InscribirAlumnoEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaEnrollment> {
-        const response = await this.inscribirAlumnoEnClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Permite a un alumno inscribirse en una clase
-     * Auto-inscripción en clase
-     */
-    async inscribirseEnClaseRaw(requestParameters: InscribirseEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling inscribirseEnClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/enrollments/{claseId}/self-enroll`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
-    }
-
-    /**
-     * Permite a un alumno inscribirse en una clase
-     * Auto-inscripción en clase
-     */
-    async inscribirseEnClase(requestParameters: InscribirseEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
-        const response = await this.inscribirseEnClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Obtiene información detallada de una clase para un estudiante específico
-     * Obtener detalles de clase para estudiante
-     */
-    async obtenerClaseConDetallesParaEstudianteRaw(requestParameters: ObtenerClaseConDetallesParaEstudianteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClaseConDetalles>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling obtenerClaseConDetallesParaEstudiante().'
-            );
-        }
-
-        if (requestParameters['alumnoId'] == null) {
-            throw new runtime.RequiredError(
-                'alumnoId',
-                'Required parameter "alumnoId" was null or undefined when calling obtenerClaseConDetallesParaEstudiante().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/enrollments/{claseId}/details-for-student/{alumnoId}`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-        urlPath = urlPath.replace(`{${"alumnoId"}}`, encodeURIComponent(String(requestParameters['alumnoId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseConDetallesFromJSON(jsonValue));
-    }
-
-    /**
-     * Obtiene información detallada de una clase para un estudiante específico
-     * Obtener detalles de clase para estudiante
-     */
-    async obtenerClaseConDetallesParaEstudiante(requestParameters: ObtenerClaseConDetallesParaEstudianteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClaseConDetalles> {
-        const response = await this.obtenerClaseConDetallesParaEstudianteRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Obtiene información detallada de una clase para el estudiante autenticado
-     * Obtener detalles de clase para mí
-     */
-    async obtenerClaseConDetallesParaMiRaw(requestParameters: ObtenerClaseConDetallesParaMiRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClaseConDetalles>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling obtenerClaseConDetallesParaMi().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/enrollments/{claseId}/details-for-me`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseConDetallesFromJSON(jsonValue));
-    }
-
-    /**
-     * Obtiene información detallada de una clase para el estudiante autenticado
-     * Obtener detalles de clase para mí
-     */
-    async obtenerClaseConDetallesParaMi(requestParameters: ObtenerClaseConDetallesParaMiRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClaseConDetalles> {
-        const response = await this.obtenerClaseConDetallesParaMiRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Obtiene las clases en las que está inscrito el estudiante autenticado
-     * Obtener mis clases inscritas
-     */
-    async obtenerMisClasesInscritas1Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOClaseInscrita>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/enrollments/my-enrolled-classes`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOClaseInscritaFromJSON));
-    }
-
-    /**
-     * Obtiene las clases en las que está inscrito el estudiante autenticado
-     * Obtener mis clases inscritas
-     */
-    async obtenerMisClasesInscritas1(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOClaseInscrita>> {
-        const response = await this.obtenerMisClasesInscritas1Raw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Verifica si un estudiante está inscrito en una clase específica
-     * Verificar estado de inscripción
-     */
-    async verificarEstadoInscripcionRaw(requestParameters: VerificarEstadoInscripcionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEstadoInscripcion>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling verificarEstadoInscripcion().'
-            );
-        }
-
-        if (requestParameters['alumnoId'] == null) {
-            throw new runtime.RequiredError(
-                'alumnoId',
-                'Required parameter "alumnoId" was null or undefined when calling verificarEstadoInscripcion().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/enrollments/{claseId}/status/{alumnoId}`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-        urlPath = urlPath.replace(`{${"alumnoId"}}`, encodeURIComponent(String(requestParameters['alumnoId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEstadoInscripcionFromJSON(jsonValue));
-    }
-
-    /**
-     * Verifica si un estudiante está inscrito en una clase específica
-     * Verificar estado de inscripción
-     */
-    async verificarEstadoInscripcion(requestParameters: VerificarEstadoInscripcionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEstadoInscripcion> {
-        const response = await this.verificarEstadoInscripcionRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Verifica si el estudiante autenticado está inscrito en una clase
-     * Verificar mi estado de inscripción
-     */
-    async verificarMiEstadoInscripcionRaw(requestParameters: VerificarMiEstadoInscripcionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEstadoInscripcion>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling verificarMiEstadoInscripcion().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/enrollments/{claseId}/my-status`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEstadoInscripcionFromJSON(jsonValue));
-    }
-
-    /**
-     * Verifica si el estudiante autenticado está inscrito en una clase
-     * Verificar mi estado de inscripción
-     */
-    async verificarMiEstadoInscripcion(requestParameters: VerificarMiEstadoInscripcionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEstadoInscripcion> {
-        const response = await this.verificarMiEstadoInscripcionRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
+	/**
+	 * Permite a profesores y administradores dar de baja alumnos de clases
+	 * Dar de baja alumno de clase
+	 */
+	async darDeBajaAlumnoDeClaseRaw(
+		requestParameters: DarDeBajaAlumnoDeClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
+		if (requestParameters['dTOPeticionEnrollment'] == null) {
+			throw new runtime.RequiredError(
+				'dTOPeticionEnrollment',
+				'Required parameter "dTOPeticionEnrollment" was null or undefined when calling darDeBajaAlumnoDeClase().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		headerParameters['Content-Type'] = 'application/json';
+
+		let urlPath = `/api/enrollments`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'DELETE',
+				headers: headerParameters,
+				query: queryParameters,
+				body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment'])
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTORespuestaEnrollmentFromJSON(jsonValue)
+		);
+	}
+
+	/**
+	 * Permite a profesores y administradores dar de baja alumnos de clases
+	 * Dar de baja alumno de clase
+	 */
+	async darDeBajaAlumnoDeClase(
+		requestParameters: DarDeBajaAlumnoDeClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTORespuestaEnrollment> {
+		const response = await this.darDeBajaAlumnoDeClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 * Permite a un alumno darse de baja de una clase
+	 * Auto-baja de clase
+	 */
+	async darseDeBajaDeClaseRaw(
+		requestParameters: DarseDeBajaDeClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOClase>> {
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling darseDeBajaDeClase().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/enrollments/{claseId}/self-unenroll`;
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'DELETE',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
+	}
+
+	/**
+	 * Permite a un alumno darse de baja de una clase
+	 * Auto-baja de clase
+	 */
+	async darseDeBajaDeClase(
+		requestParameters: DarseDeBajaDeClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOClase> {
+		const response = await this.darseDeBajaDeClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 * Permite a profesores y administradores inscribir alumnos en clases
+	 * Inscribir alumno en clase
+	 */
+	async inscribirAlumnoEnClaseRaw(
+		requestParameters: InscribirAlumnoEnClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
+		if (requestParameters['dTOPeticionEnrollment'] == null) {
+			throw new runtime.RequiredError(
+				'dTOPeticionEnrollment',
+				'Required parameter "dTOPeticionEnrollment" was null or undefined when calling inscribirAlumnoEnClase().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		headerParameters['Content-Type'] = 'application/json';
+
+		let urlPath = `/api/enrollments`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'POST',
+				headers: headerParameters,
+				query: queryParameters,
+				body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment'])
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTORespuestaEnrollmentFromJSON(jsonValue)
+		);
+	}
+
+	/**
+	 * Permite a profesores y administradores inscribir alumnos en clases
+	 * Inscribir alumno en clase
+	 */
+	async inscribirAlumnoEnClase(
+		requestParameters: InscribirAlumnoEnClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTORespuestaEnrollment> {
+		const response = await this.inscribirAlumnoEnClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 * Permite a un alumno inscribirse en una clase
+	 * Auto-inscripción en clase
+	 */
+	async inscribirseEnClaseRaw(
+		requestParameters: InscribirseEnClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOClase>> {
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling inscribirseEnClase().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/enrollments/{claseId}/self-enroll`;
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'POST',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
+	}
+
+	/**
+	 * Permite a un alumno inscribirse en una clase
+	 * Auto-inscripción en clase
+	 */
+	async inscribirseEnClase(
+		requestParameters: InscribirseEnClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOClase> {
+		const response = await this.inscribirseEnClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 * Obtiene información detallada de una clase para un estudiante específico
+	 * Obtener detalles de clase para estudiante
+	 */
+	async obtenerClaseConDetallesParaEstudianteRaw(
+		requestParameters: ObtenerClaseConDetallesParaEstudianteRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOClaseConDetalles>> {
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling obtenerClaseConDetallesParaEstudiante().'
+			);
+		}
+
+		if (requestParameters['alumnoId'] == null) {
+			throw new runtime.RequiredError(
+				'alumnoId',
+				'Required parameter "alumnoId" was null or undefined when calling obtenerClaseConDetallesParaEstudiante().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/enrollments/{claseId}/details-for-student/{alumnoId}`;
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+		urlPath = urlPath.replace(
+			`{${'alumnoId'}}`,
+			encodeURIComponent(String(requestParameters['alumnoId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTOClaseConDetallesFromJSON(jsonValue)
+		);
+	}
+
+	/**
+	 * Obtiene información detallada de una clase para un estudiante específico
+	 * Obtener detalles de clase para estudiante
+	 */
+	async obtenerClaseConDetallesParaEstudiante(
+		requestParameters: ObtenerClaseConDetallesParaEstudianteRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOClaseConDetalles> {
+		const response = await this.obtenerClaseConDetallesParaEstudianteRaw(
+			requestParameters,
+			initOverrides
+		);
+		return await response.value();
+	}
+
+	/**
+	 * Obtiene información detallada de una clase para el estudiante autenticado
+	 * Obtener detalles de clase para mí
+	 */
+	async obtenerClaseConDetallesParaMiRaw(
+		requestParameters: ObtenerClaseConDetallesParaMiRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOClaseConDetalles>> {
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling obtenerClaseConDetallesParaMi().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/enrollments/{claseId}/details-for-me`;
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTOClaseConDetallesFromJSON(jsonValue)
+		);
+	}
+
+	/**
+	 * Obtiene información detallada de una clase para el estudiante autenticado
+	 * Obtener detalles de clase para mí
+	 */
+	async obtenerClaseConDetallesParaMi(
+		requestParameters: ObtenerClaseConDetallesParaMiRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOClaseConDetalles> {
+		const response = await this.obtenerClaseConDetallesParaMiRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 * Obtiene las clases en las que está inscrito el estudiante autenticado
+	 * Obtener mis clases inscritas
+	 */
+	async obtenerMisClasesInscritas1Raw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<Array<DTOClaseInscrita>>> {
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/enrollments/my-enrolled-classes`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			jsonValue.map(DTOClaseInscritaFromJSON)
+		);
+	}
+
+	/**
+	 * Obtiene las clases en las que está inscrito el estudiante autenticado
+	 * Obtener mis clases inscritas
+	 */
+	async obtenerMisClasesInscritas1(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<Array<DTOClaseInscrita>> {
+		const response = await this.obtenerMisClasesInscritas1Raw(initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 * Verifica si un estudiante está inscrito en una clase específica
+	 * Verificar estado de inscripción
+	 */
+	async verificarEstadoInscripcionRaw(
+		requestParameters: VerificarEstadoInscripcionRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOEstadoInscripcion>> {
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling verificarEstadoInscripcion().'
+			);
+		}
+
+		if (requestParameters['alumnoId'] == null) {
+			throw new runtime.RequiredError(
+				'alumnoId',
+				'Required parameter "alumnoId" was null or undefined when calling verificarEstadoInscripcion().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/enrollments/{claseId}/status/{alumnoId}`;
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+		urlPath = urlPath.replace(
+			`{${'alumnoId'}}`,
+			encodeURIComponent(String(requestParameters['alumnoId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTOEstadoInscripcionFromJSON(jsonValue)
+		);
+	}
+
+	/**
+	 * Verifica si un estudiante está inscrito en una clase específica
+	 * Verificar estado de inscripción
+	 */
+	async verificarEstadoInscripcion(
+		requestParameters: VerificarEstadoInscripcionRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOEstadoInscripcion> {
+		const response = await this.verificarEstadoInscripcionRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 * Verifica si el estudiante autenticado está inscrito en una clase
+	 * Verificar mi estado de inscripción
+	 */
+	async verificarMiEstadoInscripcionRaw(
+		requestParameters: VerificarMiEstadoInscripcionRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOEstadoInscripcion>> {
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling verificarMiEstadoInscripcion().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/enrollments/{claseId}/my-status`;
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTOEstadoInscripcionFromJSON(jsonValue)
+		);
+	}
+
+	/**
+	 * Verifica si el estudiante autenticado está inscrito en una clase
+	 * Verificar mi estado de inscripción
+	 */
+	async verificarMiEstadoInscripcion(
+		requestParameters: VerificarMiEstadoInscripcionRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOEstadoInscripcion> {
+		const response = await this.verificarMiEstadoInscripcionRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
 }

@@ -14,76 +14,81 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ *
  * @export
  * @interface DTOEstadoInscripcion
  */
 export interface DTOEstadoInscripcion {
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOEstadoInscripcion
-     */
-    alumnoId?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOEstadoInscripcion
-     */
-    claseId?: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DTOEstadoInscripcion
-     */
-    isEnrolled?: boolean;
-    /**
-     * 
-     * @type {Date}
-     * @memberof DTOEstadoInscripcion
-     */
-    fechaInscripcion?: Date;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOEstadoInscripcion
+	 */
+	alumnoId?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOEstadoInscripcion
+	 */
+	claseId?: number;
+	/**
+	 *
+	 * @type {boolean}
+	 * @memberof DTOEstadoInscripcion
+	 */
+	isEnrolled?: boolean;
+	/**
+	 *
+	 * @type {Date}
+	 * @memberof DTOEstadoInscripcion
+	 */
+	fechaInscripcion?: Date;
 }
 
 /**
  * Check if a given object implements the DTOEstadoInscripcion interface.
  */
 export function instanceOfDTOEstadoInscripcion(value: object): value is DTOEstadoInscripcion {
-    return true;
+	return true;
 }
 
 export function DTOEstadoInscripcionFromJSON(json: any): DTOEstadoInscripcion {
-    return DTOEstadoInscripcionFromJSONTyped(json, false);
+	return DTOEstadoInscripcionFromJSONTyped(json, false);
 }
 
-export function DTOEstadoInscripcionFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOEstadoInscripcion {
-    if (json == null) {
-        return json;
-    }
-    return {
-        
-        'alumnoId': json['alumnoId'] == null ? undefined : json['alumnoId'],
-        'claseId': json['claseId'] == null ? undefined : json['claseId'],
-        'isEnrolled': json['isEnrolled'] == null ? undefined : json['isEnrolled'],
-        'fechaInscripcion': json['fechaInscripcion'] == null ? undefined : (new Date(json['fechaInscripcion'])),
-    };
+export function DTOEstadoInscripcionFromJSONTyped(
+	json: any,
+	ignoreDiscriminator: boolean
+): DTOEstadoInscripcion {
+	if (json == null) {
+		return json;
+	}
+	return {
+		alumnoId: json['alumnoId'] == null ? undefined : json['alumnoId'],
+		claseId: json['claseId'] == null ? undefined : json['claseId'],
+		isEnrolled: json['isEnrolled'] == null ? undefined : json['isEnrolled'],
+		fechaInscripcion:
+			json['fechaInscripcion'] == null ? undefined : new Date(json['fechaInscripcion'])
+	};
 }
 
 export function DTOEstadoInscripcionToJSON(json: any): DTOEstadoInscripcion {
-    return DTOEstadoInscripcionToJSONTyped(json, false);
+	return DTOEstadoInscripcionToJSONTyped(json, false);
 }
 
-export function DTOEstadoInscripcionToJSONTyped(value?: DTOEstadoInscripcion | null, ignoreDiscriminator: boolean = false): any {
-    if (value == null) {
-        return value;
-    }
+export function DTOEstadoInscripcionToJSONTyped(
+	value?: DTOEstadoInscripcion | null,
+	ignoreDiscriminator: boolean = false
+): any {
+	if (value == null) {
+		return value;
+	}
 
-    return {
-        
-        'alumnoId': value['alumnoId'],
-        'claseId': value['claseId'],
-        'isEnrolled': value['isEnrolled'],
-        'fechaInscripcion': value['fechaInscripcion'] == null ? undefined : ((value['fechaInscripcion']).toISOString()),
-    };
+	return {
+		alumnoId: value['alumnoId'],
+		claseId: value['claseId'],
+		isEnrolled: value['isEnrolled'],
+		fechaInscripcion:
+			value['fechaInscripcion'] == null ? undefined : value['fechaInscripcion'].toISOString()
+	};
 }
-

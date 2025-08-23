@@ -13,6 +13,9 @@ import java.math.BigDecimal;
  * Contiene filtros y criterios de ordenación
  */
 public record DTOParametrosBusquedaClase(
+        // General search term
+        String q,                    // General search term across title and description
+        
         // Filtros de búsqueda
         String titulo,
         String descripcion,
@@ -41,13 +44,24 @@ public record DTOParametrosBusquedaClase(
         String ordenDireccion
 ) {
     /**
-     * Constructor con valores por defecto para paginación y ordenación
+     * Constructor with default values for backward compatibility
      */
     public DTOParametrosBusquedaClase(String titulo, String descripcion, EPresencialidad presencialidad,
                                      ENivel nivel, BigDecimal precioMinimo, BigDecimal precioMaximo,
                                      Boolean soloConPlazasDisponibles, Boolean soloProximas) {
-        this(titulo, descripcion, presencialidad, nivel, precioMinimo, precioMaximo,
+        this(null, titulo, descripcion, presencialidad, nivel, precioMinimo, precioMaximo,
              soloConPlazasDisponibles, soloProximas, 0, 10, "id", "ASC");
+    }
+    
+    /**
+     * Constructor with values for pagination and ordering
+     */
+    public DTOParametrosBusquedaClase(String titulo, String descripcion, EPresencialidad presencialidad,
+                                     ENivel nivel, BigDecimal precioMinimo, BigDecimal precioMaximo,
+                                     Boolean soloConPlazasDisponibles, Boolean soloProximas,
+                                     Integer pagina, Integer tamanoPagina, String ordenCampo, String ordenDireccion) {
+        this(null, titulo, descripcion, presencialidad, nivel, precioMinimo, precioMaximo,
+             soloConPlazasDisponibles, soloProximas, pagina, tamanoPagina, ordenCampo, ordenDireccion);
     }
     
     /**
@@ -72,5 +86,31 @@ public record DTOParametrosBusquedaClase(
     public DTOParametrosBusquedaClase() {
         this(null, null, null, null, null, null, null, null,
              0, 10, "id", "ASC");
+    }
+    
+    /**
+     * Checks if general search should be used
+     * @return true if general search term is provided
+     */
+    public boolean hasGeneralSearch() {
+        return q != null && !q.trim().isEmpty();
+    }
+    
+    /**
+     * Checks if specific filters are provided
+     * @return true if any specific filter is provided
+     */
+    public boolean hasSpecificFilters() {
+        return titulo != null || descripcion != null || presencialidad != null || 
+               nivel != null || precioMinimo != null || precioMaximo != null || 
+               soloConPlazasDisponibles != null || soloProximas != null;
+    }
+    
+    /**
+     * Checks if all search parameters are empty
+     * @return true if no search criteria are provided
+     */
+    public boolean estaVacio() {
+        return !hasGeneralSearch() && !hasSpecificFilters();
     }
 }

@@ -15,216 +15,221 @@
 import { mapValues } from '../runtime';
 import type { Material } from './Material';
 import {
-    MaterialFromJSON,
-    MaterialFromJSONTyped,
-    MaterialToJSON,
-    MaterialToJSONTyped,
+	MaterialFromJSON,
+	MaterialFromJSONTyped,
+	MaterialToJSON,
+	MaterialToJSONTyped
 } from './Material';
 
 /**
- * 
+ *
  * @export
  * @interface DTOCurso
  */
 export interface DTOCurso {
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    id?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOCurso
-     */
-    titulo?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOCurso
-     */
-    descripcion?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    precio?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOCurso
-     */
-    presencialidad?: DTOCursoPresencialidadEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOCurso
-     */
-    imagenPortada?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOCurso
-     */
-    nivel?: DTOCursoNivelEnum;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof DTOCurso
-     */
-    alumnosId?: Array<string>;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof DTOCurso
-     */
-    profesoresId?: Array<string>;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof DTOCurso
-     */
-    ejerciciosId?: Array<string>;
-    /**
-     * 
-     * @type {Array<Material>}
-     * @memberof DTOCurso
-     */
-    material?: Array<Material>;
-    /**
-     * 
-     * @type {Date}
-     * @memberof DTOCurso
-     */
-    fechaInicio?: Date;
-    /**
-     * 
-     * @type {Date}
-     * @memberof DTOCurso
-     */
-    fechaFin?: Date;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    duracionEnSemanas?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    porcentajeProgreso?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    duracionEnDias?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    numeroAlumnos?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    numeroProfesores?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOCurso
+	 */
+	id?: number;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOCurso
+	 */
+	titulo?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOCurso
+	 */
+	descripcion?: string;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOCurso
+	 */
+	precio?: number;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOCurso
+	 */
+	presencialidad?: DTOCursoPresencialidadEnum;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOCurso
+	 */
+	imagenPortada?: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOCurso
+	 */
+	nivel?: DTOCursoNivelEnum;
+	/**
+	 *
+	 * @type {Array<string>}
+	 * @memberof DTOCurso
+	 */
+	alumnosId?: Array<string>;
+	/**
+	 *
+	 * @type {Array<string>}
+	 * @memberof DTOCurso
+	 */
+	profesoresId?: Array<string>;
+	/**
+	 *
+	 * @type {Array<string>}
+	 * @memberof DTOCurso
+	 */
+	ejerciciosId?: Array<string>;
+	/**
+	 *
+	 * @type {Array<Material>}
+	 * @memberof DTOCurso
+	 */
+	material?: Array<Material>;
+	/**
+	 *
+	 * @type {Date}
+	 * @memberof DTOCurso
+	 */
+	fechaInicio?: Date;
+	/**
+	 *
+	 * @type {Date}
+	 * @memberof DTOCurso
+	 */
+	fechaFin?: Date;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOCurso
+	 */
+	duracionEnSemanas?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOCurso
+	 */
+	porcentajeProgreso?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOCurso
+	 */
+	duracionEnDias?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOCurso
+	 */
+	numeroProfesores?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOCurso
+	 */
+	numeroAlumnos?: number;
 }
-
 
 /**
  * @export
  */
 export const DTOCursoPresencialidadEnum = {
-    Online: 'ONLINE',
-    Presencial: 'PRESENCIAL'
+	Online: 'ONLINE',
+	Presencial: 'PRESENCIAL'
 } as const;
-export type DTOCursoPresencialidadEnum = typeof DTOCursoPresencialidadEnum[keyof typeof DTOCursoPresencialidadEnum];
+export type DTOCursoPresencialidadEnum =
+	(typeof DTOCursoPresencialidadEnum)[keyof typeof DTOCursoPresencialidadEnum];
 
 /**
  * @export
  */
 export const DTOCursoNivelEnum = {
-    Principiante: 'PRINCIPIANTE',
-    Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
+	Principiante: 'PRINCIPIANTE',
+	Intermedio: 'INTERMEDIO',
+	Avanzado: 'AVANZADO'
 } as const;
-export type DTOCursoNivelEnum = typeof DTOCursoNivelEnum[keyof typeof DTOCursoNivelEnum];
-
+export type DTOCursoNivelEnum = (typeof DTOCursoNivelEnum)[keyof typeof DTOCursoNivelEnum];
 
 /**
  * Check if a given object implements the DTOCurso interface.
  */
 export function instanceOfDTOCurso(value: object): value is DTOCurso {
-    return true;
+	return true;
 }
 
 export function DTOCursoFromJSON(json: any): DTOCurso {
-    return DTOCursoFromJSONTyped(json, false);
+	return DTOCursoFromJSONTyped(json, false);
 }
 
 export function DTOCursoFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOCurso {
-    if (json == null) {
-        return json;
-    }
-    return {
-        
-        'id': json['id'] == null ? undefined : json['id'],
-        'titulo': json['titulo'] == null ? undefined : json['titulo'],
-        'descripcion': json['descripcion'] == null ? undefined : json['descripcion'],
-        'precio': json['precio'] == null ? undefined : json['precio'],
-        'presencialidad': json['presencialidad'] == null ? undefined : json['presencialidad'],
-        'imagenPortada': json['imagenPortada'] == null ? undefined : json['imagenPortada'],
-        'nivel': json['nivel'] == null ? undefined : json['nivel'],
-        'alumnosId': json['alumnosId'] == null ? undefined : json['alumnosId'],
-        'profesoresId': json['profesoresId'] == null ? undefined : json['profesoresId'],
-        'ejerciciosId': json['ejerciciosId'] == null ? undefined : json['ejerciciosId'],
-        'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(MaterialFromJSON)),
-        'fechaInicio': json['fechaInicio'] == null ? undefined : (new Date(json['fechaInicio'])),
-        'fechaFin': json['fechaFin'] == null ? undefined : (new Date(json['fechaFin'])),
-        'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
-        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
-        'duracionEnDias': json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
-        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
-        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
-    };
+	if (json == null) {
+		return json;
+	}
+	return {
+		id: json['id'] == null ? undefined : json['id'],
+		titulo: json['titulo'] == null ? undefined : json['titulo'],
+		descripcion: json['descripcion'] == null ? undefined : json['descripcion'],
+		precio: json['precio'] == null ? undefined : json['precio'],
+		presencialidad: json['presencialidad'] == null ? undefined : json['presencialidad'],
+		imagenPortada: json['imagenPortada'] == null ? undefined : json['imagenPortada'],
+		nivel: json['nivel'] == null ? undefined : json['nivel'],
+		alumnosId: json['alumnosId'] == null ? undefined : json['alumnosId'],
+		profesoresId: json['profesoresId'] == null ? undefined : json['profesoresId'],
+		ejerciciosId: json['ejerciciosId'] == null ? undefined : json['ejerciciosId'],
+		material:
+			json['material'] == null ? undefined : (json['material'] as Array<any>).map(MaterialFromJSON),
+		fechaInicio: json['fechaInicio'] == null ? undefined : new Date(json['fechaInicio']),
+		fechaFin: json['fechaFin'] == null ? undefined : new Date(json['fechaFin']),
+		duracionEnSemanas: json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
+		porcentajeProgreso: json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
+		duracionEnDias: json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
+		numeroProfesores: json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
+		numeroAlumnos: json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos']
+	};
 }
 
 export function DTOCursoToJSON(json: any): DTOCurso {
-    return DTOCursoToJSONTyped(json, false);
+	return DTOCursoToJSONTyped(json, false);
 }
 
-export function DTOCursoToJSONTyped(value?: DTOCurso | null, ignoreDiscriminator: boolean = false): any {
-    if (value == null) {
-        return value;
-    }
+export function DTOCursoToJSONTyped(
+	value?: DTOCurso | null,
+	ignoreDiscriminator: boolean = false
+): any {
+	if (value == null) {
+		return value;
+	}
 
-    return {
-        
-        'id': value['id'],
-        'titulo': value['titulo'],
-        'descripcion': value['descripcion'],
-        'precio': value['precio'],
-        'presencialidad': value['presencialidad'],
-        'imagenPortada': value['imagenPortada'],
-        'nivel': value['nivel'],
-        'alumnosId': value['alumnosId'],
-        'profesoresId': value['profesoresId'],
-        'ejerciciosId': value['ejerciciosId'],
-        'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(MaterialToJSON)),
-        'fechaInicio': value['fechaInicio'] == null ? undefined : ((value['fechaInicio']).toISOString().substring(0,10)),
-        'fechaFin': value['fechaFin'] == null ? undefined : ((value['fechaFin']).toISOString().substring(0,10)),
-        'duracionEnSemanas': value['duracionEnSemanas'],
-        'porcentajeProgreso': value['porcentajeProgreso'],
-        'duracionEnDias': value['duracionEnDias'],
-        'numeroAlumnos': value['numeroAlumnos'],
-        'numeroProfesores': value['numeroProfesores'],
-    };
+	return {
+		id: value['id'],
+		titulo: value['titulo'],
+		descripcion: value['descripcion'],
+		precio: value['precio'],
+		presencialidad: value['presencialidad'],
+		imagenPortada: value['imagenPortada'],
+		nivel: value['nivel'],
+		alumnosId: value['alumnosId'],
+		profesoresId: value['profesoresId'],
+		ejerciciosId: value['ejerciciosId'],
+		material:
+			value['material'] == null ? undefined : (value['material'] as Array<any>).map(MaterialToJSON),
+		fechaInicio:
+			value['fechaInicio'] == null
+				? undefined
+				: value['fechaInicio'].toISOString().substring(0, 10),
+		fechaFin:
+			value['fechaFin'] == null ? undefined : value['fechaFin'].toISOString().substring(0, 10),
+		duracionEnSemanas: value['duracionEnSemanas'],
+		porcentajeProgreso: value['porcentajeProgreso'],
+		duracionEnDias: value['duracionEnDias'],
+		numeroProfesores: value['numeroProfesores'],
+		numeroAlumnos: value['numeroAlumnos']
+	};
 }
-

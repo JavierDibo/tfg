@@ -12,1079 +12,1304 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
 import type {
-  DTOActualizacionProfesor,
-  DTOPeticionEnrollment,
-  DTOPeticionRegistroProfesor,
-  DTOProfesor,
-  DTORespuestaEnrollment,
-  DTORespuestaPaginadaDTOProfesor,
+	DTOActualizacionProfesor,
+	DTOPeticionEnrollment,
+	DTOPeticionRegistroProfesor,
+	DTOProfesor,
+	DTORespuestaEnrollment,
+	DTORespuestaPaginadaDTOProfesor
 } from '../models/index';
 import {
-    DTOActualizacionProfesorFromJSON,
-    DTOActualizacionProfesorToJSON,
-    DTOPeticionEnrollmentFromJSON,
-    DTOPeticionEnrollmentToJSON,
-    DTOPeticionRegistroProfesorFromJSON,
-    DTOPeticionRegistroProfesorToJSON,
-    DTOProfesorFromJSON,
-    DTOProfesorToJSON,
-    DTORespuestaEnrollmentFromJSON,
-    DTORespuestaEnrollmentToJSON,
-    DTORespuestaPaginadaDTOProfesorFromJSON,
-    DTORespuestaPaginadaDTOProfesorToJSON,
+	DTOActualizacionProfesorFromJSON,
+	DTOActualizacionProfesorToJSON,
+	DTOPeticionEnrollmentFromJSON,
+	DTOPeticionEnrollmentToJSON,
+	DTOPeticionRegistroProfesorFromJSON,
+	DTOPeticionRegistroProfesorToJSON,
+	DTOProfesorFromJSON,
+	DTOProfesorToJSON,
+	DTORespuestaEnrollmentFromJSON,
+	DTORespuestaEnrollmentToJSON,
+	DTORespuestaPaginadaDTOProfesorFromJSON,
+	DTORespuestaPaginadaDTOProfesorToJSON
 } from '../models/index';
 
 export interface ActualizarProfesorRequest {
-    id: number;
-    dTOActualizacionProfesor: DTOActualizacionProfesor;
+	id: number;
+	dTOActualizacionProfesor: DTOActualizacionProfesor;
 }
 
 export interface AsignarClaseRequest {
-    id: number;
-    claseId: string;
+	id: number;
+	claseId: string;
 }
 
 export interface BorrarProfesorPorIdRequest {
-    id: number;
+	id: number;
 }
 
 export interface BuscarProfesoresPorApellidosRequest {
-    apellidos: string;
+	apellidos: string;
 }
 
 export interface BuscarProfesoresPorNombreRequest {
-    nombre: string;
+	nombre: string;
 }
 
 export interface CambiarEstadoProfesorRequest {
-    id: number;
-    requestBody: { [key: string]: boolean; };
+	id: number;
+	requestBody: { [key: string]: boolean };
 }
 
 export interface ContarClasesProfesorRequest {
-    id: number;
+	id: number;
 }
 
 export interface CrearProfesorRequest {
-    dTOPeticionRegistroProfesor: DTOPeticionRegistroProfesor;
+	dTOPeticionRegistroProfesor: DTOPeticionRegistroProfesor;
 }
 
 export interface DarDeBajaAlumnoDeMiClaseRequest {
-    profesorId: number;
-    claseId: string;
-    dTOPeticionEnrollment: DTOPeticionEnrollment;
+	profesorId: number;
+	claseId: string;
+	dTOPeticionEnrollment: DTOPeticionEnrollment;
 }
 
 export interface InscribirAlumnoEnMiClaseRequest {
-    profesorId: number;
-    claseId: string;
-    dTOPeticionEnrollment: DTOPeticionEnrollment;
+	profesorId: number;
+	claseId: string;
+	dTOPeticionEnrollment: DTOPeticionEnrollment;
 }
 
 export interface ObtenerProfesorPorDniRequest {
-    dni: string;
+	dni: string;
 }
 
 export interface ObtenerProfesorPorEmailRequest {
-    email: string;
+	email: string;
 }
 
 export interface ObtenerProfesorPorIdRequest {
-    id: number;
+	id: number;
 }
 
 export interface ObtenerProfesorPorUsuarioRequest {
-    usuario: string;
+	usuario: string;
 }
 
 export interface ObtenerProfesoresRequest {
-    nombre?: string;
-    apellidos?: string;
-    email?: string;
-    habilitado?: boolean;
+	q?: string;
+	nombre?: string;
+	apellidos?: string;
+	email?: string;
+	habilitado?: boolean;
 }
 
 export interface ObtenerProfesoresHabilitadosPaginadosRequest {
-    page?: number;
-    size?: number;
-    sortBy?: string;
-    sortDirection?: string;
+	page?: number;
+	size?: number;
+	sortBy?: string;
+	sortDirection?: string;
 }
 
 export interface ObtenerProfesoresPaginadosRequest {
-    nombre?: string;
-    apellidos?: string;
-    email?: string;
-    usuario?: string;
-    dni?: string;
-    habilitado?: boolean;
-    claseId?: string;
-    sinClases?: boolean;
-    page?: number;
-    size?: number;
-    sortBy?: string;
-    sortDirection?: string;
+	q?: string;
+	nombre?: string;
+	apellidos?: string;
+	email?: string;
+	usuario?: string;
+	dni?: string;
+	habilitado?: boolean;
+	claseId?: string;
+	sinClases?: boolean;
+	page?: number;
+	size?: number;
+	sortBy?: string;
+	sortDirection?: string;
 }
 
 export interface ObtenerProfesoresPorClaseRequest {
-    claseId: string;
+	claseId: string;
 }
 
 export interface RemoverClaseRequest {
-    id: number;
-    claseId: string;
+	id: number;
+	claseId: string;
 }
 
 /**
- * 
+ *
  */
 export class ProfesorRestApi extends runtime.BaseAPI {
-
-    /**
-     */
-    async actualizarProfesorRaw(requestParameters: ActualizarProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling actualizarProfesor().'
-            );
-        }
-
-        if (requestParameters['dTOActualizacionProfesor'] == null) {
-            throw new runtime.RequiredError(
-                'dTOActualizacionProfesor',
-                'Required parameter "dTOActualizacionProfesor" was null or undefined when calling actualizarProfesor().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/api/profesores/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'PATCH',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOActualizacionProfesorToJSON(requestParameters['dTOActualizacionProfesor']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async actualizarProfesor(requestParameters: ActualizarProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.actualizarProfesorRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async asignarClaseRaw(requestParameters: AsignarClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling asignarClase().'
-            );
-        }
-
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling asignarClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/{id}/clases/{claseId}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'PUT',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async asignarClase(requestParameters: AsignarClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.asignarClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async borrarProfesorPorIdRaw(requestParameters: BorrarProfesorPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling borrarProfesorPorId().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     */
-    async borrarProfesorPorId(requestParameters: BorrarProfesorPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
-        const response = await this.borrarProfesorPorIdRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async buscarProfesoresPorApellidosRaw(requestParameters: BuscarProfesoresPorApellidosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
-        if (requestParameters['apellidos'] == null) {
-            throw new runtime.RequiredError(
-                'apellidos',
-                'Required parameter "apellidos" was null or undefined when calling buscarProfesoresPorApellidos().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters['apellidos'] != null) {
-            queryParameters['apellidos'] = requestParameters['apellidos'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/buscar/apellidos`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
-    }
-
-    /**
-     */
-    async buscarProfesoresPorApellidos(requestParameters: BuscarProfesoresPorApellidosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOProfesor>> {
-        const response = await this.buscarProfesoresPorApellidosRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async buscarProfesoresPorNombreRaw(requestParameters: BuscarProfesoresPorNombreRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
-        if (requestParameters['nombre'] == null) {
-            throw new runtime.RequiredError(
-                'nombre',
-                'Required parameter "nombre" was null or undefined when calling buscarProfesoresPorNombre().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters['nombre'] != null) {
-            queryParameters['nombre'] = requestParameters['nombre'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/buscar/nombre`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
-    }
-
-    /**
-     */
-    async buscarProfesoresPorNombre(requestParameters: BuscarProfesoresPorNombreRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOProfesor>> {
-        const response = await this.buscarProfesoresPorNombreRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async cambiarEstadoProfesorRaw(requestParameters: CambiarEstadoProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling cambiarEstadoProfesor().'
-            );
-        }
-
-        if (requestParameters['requestBody'] == null) {
-            throw new runtime.RequiredError(
-                'requestBody',
-                'Required parameter "requestBody" was null or undefined when calling cambiarEstadoProfesor().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/api/profesores/{id}/estado`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'PATCH',
-            headers: headerParameters,
-            query: queryParameters,
-            body: requestParameters['requestBody'],
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async cambiarEstadoProfesor(requestParameters: CambiarEstadoProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.cambiarEstadoProfesorRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async contarClasesProfesorRaw(requestParameters: ContarClasesProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling contarClasesProfesor().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/{id}/clases/count`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     */
-    async contarClasesProfesor(requestParameters: ContarClasesProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
-        const response = await this.contarClasesProfesorRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async crearProfesorRaw(requestParameters: CrearProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
-        if (requestParameters['dTOPeticionRegistroProfesor'] == null) {
-            throw new runtime.RequiredError(
-                'dTOPeticionRegistroProfesor',
-                'Required parameter "dTOPeticionRegistroProfesor" was null or undefined when calling crearProfesor().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/api/profesores`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOPeticionRegistroProfesorToJSON(requestParameters['dTOPeticionRegistroProfesor']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async crearProfesor(requestParameters: CrearProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.crearProfesorRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async darDeBajaAlumnoDeMiClaseRaw(requestParameters: DarDeBajaAlumnoDeMiClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
-        if (requestParameters['profesorId'] == null) {
-            throw new runtime.RequiredError(
-                'profesorId',
-                'Required parameter "profesorId" was null or undefined when calling darDeBajaAlumnoDeMiClase().'
-            );
-        }
-
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling darDeBajaAlumnoDeMiClase().'
-            );
-        }
-
-        if (requestParameters['dTOPeticionEnrollment'] == null) {
-            throw new runtime.RequiredError(
-                'dTOPeticionEnrollment',
-                'Required parameter "dTOPeticionEnrollment" was null or undefined when calling darDeBajaAlumnoDeMiClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/api/profesores/{profesorId}/clases/{claseId}/alumnos`;
-        urlPath = urlPath.replace(`{${"profesorId"}}`, encodeURIComponent(String(requestParameters['profesorId'])));
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaEnrollmentFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async darDeBajaAlumnoDeMiClase(requestParameters: DarDeBajaAlumnoDeMiClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaEnrollment> {
-        const response = await this.darDeBajaAlumnoDeMiClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async inscribirAlumnoEnMiClaseRaw(requestParameters: InscribirAlumnoEnMiClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
-        if (requestParameters['profesorId'] == null) {
-            throw new runtime.RequiredError(
-                'profesorId',
-                'Required parameter "profesorId" was null or undefined when calling inscribirAlumnoEnMiClase().'
-            );
-        }
-
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling inscribirAlumnoEnMiClase().'
-            );
-        }
-
-        if (requestParameters['dTOPeticionEnrollment'] == null) {
-            throw new runtime.RequiredError(
-                'dTOPeticionEnrollment',
-                'Required parameter "dTOPeticionEnrollment" was null or undefined when calling inscribirAlumnoEnMiClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/api/profesores/{profesorId}/clases/{claseId}/alumnos`;
-        urlPath = urlPath.replace(`{${"profesorId"}}`, encodeURIComponent(String(requestParameters['profesorId'])));
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaEnrollmentFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async inscribirAlumnoEnMiClase(requestParameters: InscribirAlumnoEnMiClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaEnrollment> {
-        const response = await this.inscribirAlumnoEnMiClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async obtenerEstadisticasHabilitacionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: number; }>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/estadisticas/habilitacion`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     */
-    async obtenerEstadisticasHabilitacion(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }> {
-        const response = await this.obtenerEstadisticasHabilitacionRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async obtenerProfesorPorDniRaw(requestParameters: ObtenerProfesorPorDniRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
-        if (requestParameters['dni'] == null) {
-            throw new runtime.RequiredError(
-                'dni',
-                'Required parameter "dni" was null or undefined when calling obtenerProfesorPorDni().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/dni/{dni}`;
-        urlPath = urlPath.replace(`{${"dni"}}`, encodeURIComponent(String(requestParameters['dni'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async obtenerProfesorPorDni(requestParameters: ObtenerProfesorPorDniRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.obtenerProfesorPorDniRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async obtenerProfesorPorEmailRaw(requestParameters: ObtenerProfesorPorEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
-        if (requestParameters['email'] == null) {
-            throw new runtime.RequiredError(
-                'email',
-                'Required parameter "email" was null or undefined when calling obtenerProfesorPorEmail().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/email/{email}`;
-        urlPath = urlPath.replace(`{${"email"}}`, encodeURIComponent(String(requestParameters['email'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async obtenerProfesorPorEmail(requestParameters: ObtenerProfesorPorEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.obtenerProfesorPorEmailRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async obtenerProfesorPorIdRaw(requestParameters: ObtenerProfesorPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling obtenerProfesorPorId().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async obtenerProfesorPorId(requestParameters: ObtenerProfesorPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.obtenerProfesorPorIdRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async obtenerProfesorPorUsuarioRaw(requestParameters: ObtenerProfesorPorUsuarioRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
-        if (requestParameters['usuario'] == null) {
-            throw new runtime.RequiredError(
-                'usuario',
-                'Required parameter "usuario" was null or undefined when calling obtenerProfesorPorUsuario().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/usuario/{usuario}`;
-        urlPath = urlPath.replace(`{${"usuario"}}`, encodeURIComponent(String(requestParameters['usuario'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async obtenerProfesorPorUsuario(requestParameters: ObtenerProfesorPorUsuarioRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.obtenerProfesorPorUsuarioRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @deprecated
-     */
-    async obtenerProfesoresRaw(requestParameters: ObtenerProfesoresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
-        const queryParameters: any = {};
-
-        if (requestParameters['nombre'] != null) {
-            queryParameters['nombre'] = requestParameters['nombre'];
-        }
-
-        if (requestParameters['apellidos'] != null) {
-            queryParameters['apellidos'] = requestParameters['apellidos'];
-        }
-
-        if (requestParameters['email'] != null) {
-            queryParameters['email'] = requestParameters['email'];
-        }
-
-        if (requestParameters['habilitado'] != null) {
-            queryParameters['habilitado'] = requestParameters['habilitado'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
-    }
-
-    /**
-     * @deprecated
-     */
-    async obtenerProfesores(requestParameters: ObtenerProfesoresRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOProfesor>> {
-        const response = await this.obtenerProfesoresRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @deprecated
-     */
-    async obtenerProfesoresHabilitadosRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/habilitados`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
-    }
-
-    /**
-     * @deprecated
-     */
-    async obtenerProfesoresHabilitados(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOProfesor>> {
-        const response = await this.obtenerProfesoresHabilitadosRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async obtenerProfesoresHabilitadosPaginadosRaw(requestParameters: ObtenerProfesoresHabilitadosPaginadosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOProfesor>> {
-        const queryParameters: any = {};
-
-        if (requestParameters['page'] != null) {
-            queryParameters['page'] = requestParameters['page'];
-        }
-
-        if (requestParameters['size'] != null) {
-            queryParameters['size'] = requestParameters['size'];
-        }
-
-        if (requestParameters['sortBy'] != null) {
-            queryParameters['sortBy'] = requestParameters['sortBy'];
-        }
-
-        if (requestParameters['sortDirection'] != null) {
-            queryParameters['sortDirection'] = requestParameters['sortDirection'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/habilitados/paged`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaDTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async obtenerProfesoresHabilitadosPaginados(requestParameters: ObtenerProfesoresHabilitadosPaginadosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginadaDTOProfesor> {
-        const response = await this.obtenerProfesoresHabilitadosPaginadosRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async obtenerProfesoresPaginadosRaw(requestParameters: ObtenerProfesoresPaginadosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOProfesor>> {
-        const queryParameters: any = {};
-
-        if (requestParameters['nombre'] != null) {
-            queryParameters['nombre'] = requestParameters['nombre'];
-        }
-
-        if (requestParameters['apellidos'] != null) {
-            queryParameters['apellidos'] = requestParameters['apellidos'];
-        }
-
-        if (requestParameters['email'] != null) {
-            queryParameters['email'] = requestParameters['email'];
-        }
-
-        if (requestParameters['usuario'] != null) {
-            queryParameters['usuario'] = requestParameters['usuario'];
-        }
-
-        if (requestParameters['dni'] != null) {
-            queryParameters['dni'] = requestParameters['dni'];
-        }
-
-        if (requestParameters['habilitado'] != null) {
-            queryParameters['habilitado'] = requestParameters['habilitado'];
-        }
-
-        if (requestParameters['claseId'] != null) {
-            queryParameters['claseId'] = requestParameters['claseId'];
-        }
-
-        if (requestParameters['sinClases'] != null) {
-            queryParameters['sinClases'] = requestParameters['sinClases'];
-        }
-
-        if (requestParameters['page'] != null) {
-            queryParameters['page'] = requestParameters['page'];
-        }
-
-        if (requestParameters['size'] != null) {
-            queryParameters['size'] = requestParameters['size'];
-        }
-
-        if (requestParameters['sortBy'] != null) {
-            queryParameters['sortBy'] = requestParameters['sortBy'];
-        }
-
-        if (requestParameters['sortDirection'] != null) {
-            queryParameters['sortDirection'] = requestParameters['sortDirection'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/paged`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaDTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async obtenerProfesoresPaginados(requestParameters: ObtenerProfesoresPaginadosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginadaDTOProfesor> {
-        const response = await this.obtenerProfesoresPaginadosRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async obtenerProfesoresPorClaseRaw(requestParameters: ObtenerProfesoresPorClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling obtenerProfesoresPorClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/clase/{claseId}`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
-    }
-
-    /**
-     */
-    async obtenerProfesoresPorClase(requestParameters: ObtenerProfesoresPorClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOProfesor>> {
-        const response = await this.obtenerProfesoresPorClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async obtenerProfesoresSinClasesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/sin-clases`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
-    }
-
-    /**
-     */
-    async obtenerProfesoresSinClases(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DTOProfesor>> {
-        const response = await this.obtenerProfesoresSinClasesRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async obtenerTotalProfesoresRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: number; }>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/estadisticas/total`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     */
-    async obtenerTotalProfesores(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }> {
-        const response = await this.obtenerTotalProfesoresRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async removerClaseRaw(requestParameters: RemoverClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling removerClase().'
-            );
-        }
-
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling removerClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/{id}/clases/{claseId}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async removerClase(requestParameters: RemoverClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.removerClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     */
-    async testRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/test`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
-
-    /**
-     */
-    async test(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.testRaw(initOverrides);
-        return await response.value();
-    }
-
+	/**
+	 */
+	async actualizarProfesorRaw(
+		requestParameters: ActualizarProfesorRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOProfesor>> {
+		if (requestParameters['id'] == null) {
+			throw new runtime.RequiredError(
+				'id',
+				'Required parameter "id" was null or undefined when calling actualizarProfesor().'
+			);
+		}
+
+		if (requestParameters['dTOActualizacionProfesor'] == null) {
+			throw new runtime.RequiredError(
+				'dTOActualizacionProfesor',
+				'Required parameter "dTOActualizacionProfesor" was null or undefined when calling actualizarProfesor().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		headerParameters['Content-Type'] = 'application/json';
+
+		let urlPath = `/api/profesores/{id}`;
+		urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'PATCH',
+				headers: headerParameters,
+				query: queryParameters,
+				body: DTOActualizacionProfesorToJSON(requestParameters['dTOActualizacionProfesor'])
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
+	}
+
+	/**
+	 */
+	async actualizarProfesor(
+		requestParameters: ActualizarProfesorRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOProfesor> {
+		const response = await this.actualizarProfesorRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async asignarClaseRaw(
+		requestParameters: AsignarClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOProfesor>> {
+		if (requestParameters['id'] == null) {
+			throw new runtime.RequiredError(
+				'id',
+				'Required parameter "id" was null or undefined when calling asignarClase().'
+			);
+		}
+
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling asignarClase().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/{id}/clases/{claseId}`;
+		urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'PUT',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
+	}
+
+	/**
+	 */
+	async asignarClase(
+		requestParameters: AsignarClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOProfesor> {
+		const response = await this.asignarClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async borrarProfesorPorIdRaw(
+		requestParameters: BorrarProfesorPorIdRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<{ [key: string]: any }>> {
+		if (requestParameters['id'] == null) {
+			throw new runtime.RequiredError(
+				'id',
+				'Required parameter "id" was null or undefined when calling borrarProfesorPorId().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/{id}`;
+		urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'DELETE',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse<any>(response);
+	}
+
+	/**
+	 */
+	async borrarProfesorPorId(
+		requestParameters: BorrarProfesorPorIdRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<{ [key: string]: any }> {
+		const response = await this.borrarProfesorPorIdRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async buscarProfesoresPorApellidosRaw(
+		requestParameters: BuscarProfesoresPorApellidosRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
+		if (requestParameters['apellidos'] == null) {
+			throw new runtime.RequiredError(
+				'apellidos',
+				'Required parameter "apellidos" was null or undefined when calling buscarProfesoresPorApellidos().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		if (requestParameters['apellidos'] != null) {
+			queryParameters['apellidos'] = requestParameters['apellidos'];
+		}
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/buscar/apellidos`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
+	}
+
+	/**
+	 */
+	async buscarProfesoresPorApellidos(
+		requestParameters: BuscarProfesoresPorApellidosRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<Array<DTOProfesor>> {
+		const response = await this.buscarProfesoresPorApellidosRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async buscarProfesoresPorNombreRaw(
+		requestParameters: BuscarProfesoresPorNombreRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
+		if (requestParameters['nombre'] == null) {
+			throw new runtime.RequiredError(
+				'nombre',
+				'Required parameter "nombre" was null or undefined when calling buscarProfesoresPorNombre().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		if (requestParameters['nombre'] != null) {
+			queryParameters['nombre'] = requestParameters['nombre'];
+		}
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/buscar/nombre`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
+	}
+
+	/**
+	 */
+	async buscarProfesoresPorNombre(
+		requestParameters: BuscarProfesoresPorNombreRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<Array<DTOProfesor>> {
+		const response = await this.buscarProfesoresPorNombreRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async cambiarEstadoProfesorRaw(
+		requestParameters: CambiarEstadoProfesorRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOProfesor>> {
+		if (requestParameters['id'] == null) {
+			throw new runtime.RequiredError(
+				'id',
+				'Required parameter "id" was null or undefined when calling cambiarEstadoProfesor().'
+			);
+		}
+
+		if (requestParameters['requestBody'] == null) {
+			throw new runtime.RequiredError(
+				'requestBody',
+				'Required parameter "requestBody" was null or undefined when calling cambiarEstadoProfesor().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		headerParameters['Content-Type'] = 'application/json';
+
+		let urlPath = `/api/profesores/{id}/estado`;
+		urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'PATCH',
+				headers: headerParameters,
+				query: queryParameters,
+				body: requestParameters['requestBody']
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
+	}
+
+	/**
+	 */
+	async cambiarEstadoProfesor(
+		requestParameters: CambiarEstadoProfesorRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOProfesor> {
+		const response = await this.cambiarEstadoProfesorRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async contarClasesProfesorRaw(
+		requestParameters: ContarClasesProfesorRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<{ [key: string]: any }>> {
+		if (requestParameters['id'] == null) {
+			throw new runtime.RequiredError(
+				'id',
+				'Required parameter "id" was null or undefined when calling contarClasesProfesor().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/{id}/clases/count`;
+		urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse<any>(response);
+	}
+
+	/**
+	 */
+	async contarClasesProfesor(
+		requestParameters: ContarClasesProfesorRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<{ [key: string]: any }> {
+		const response = await this.contarClasesProfesorRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async crearProfesorRaw(
+		requestParameters: CrearProfesorRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOProfesor>> {
+		if (requestParameters['dTOPeticionRegistroProfesor'] == null) {
+			throw new runtime.RequiredError(
+				'dTOPeticionRegistroProfesor',
+				'Required parameter "dTOPeticionRegistroProfesor" was null or undefined when calling crearProfesor().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		headerParameters['Content-Type'] = 'application/json';
+
+		let urlPath = `/api/profesores`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'POST',
+				headers: headerParameters,
+				query: queryParameters,
+				body: DTOPeticionRegistroProfesorToJSON(requestParameters['dTOPeticionRegistroProfesor'])
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
+	}
+
+	/**
+	 */
+	async crearProfesor(
+		requestParameters: CrearProfesorRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOProfesor> {
+		const response = await this.crearProfesorRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async darDeBajaAlumnoDeMiClaseRaw(
+		requestParameters: DarDeBajaAlumnoDeMiClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
+		if (requestParameters['profesorId'] == null) {
+			throw new runtime.RequiredError(
+				'profesorId',
+				'Required parameter "profesorId" was null or undefined when calling darDeBajaAlumnoDeMiClase().'
+			);
+		}
+
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling darDeBajaAlumnoDeMiClase().'
+			);
+		}
+
+		if (requestParameters['dTOPeticionEnrollment'] == null) {
+			throw new runtime.RequiredError(
+				'dTOPeticionEnrollment',
+				'Required parameter "dTOPeticionEnrollment" was null or undefined when calling darDeBajaAlumnoDeMiClase().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		headerParameters['Content-Type'] = 'application/json';
+
+		let urlPath = `/api/profesores/{profesorId}/clases/{claseId}/alumnos`;
+		urlPath = urlPath.replace(
+			`{${'profesorId'}}`,
+			encodeURIComponent(String(requestParameters['profesorId']))
+		);
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'DELETE',
+				headers: headerParameters,
+				query: queryParameters,
+				body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment'])
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTORespuestaEnrollmentFromJSON(jsonValue)
+		);
+	}
+
+	/**
+	 */
+	async darDeBajaAlumnoDeMiClase(
+		requestParameters: DarDeBajaAlumnoDeMiClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTORespuestaEnrollment> {
+		const response = await this.darDeBajaAlumnoDeMiClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async inscribirAlumnoEnMiClaseRaw(
+		requestParameters: InscribirAlumnoEnMiClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
+		if (requestParameters['profesorId'] == null) {
+			throw new runtime.RequiredError(
+				'profesorId',
+				'Required parameter "profesorId" was null or undefined when calling inscribirAlumnoEnMiClase().'
+			);
+		}
+
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling inscribirAlumnoEnMiClase().'
+			);
+		}
+
+		if (requestParameters['dTOPeticionEnrollment'] == null) {
+			throw new runtime.RequiredError(
+				'dTOPeticionEnrollment',
+				'Required parameter "dTOPeticionEnrollment" was null or undefined when calling inscribirAlumnoEnMiClase().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		headerParameters['Content-Type'] = 'application/json';
+
+		let urlPath = `/api/profesores/{profesorId}/clases/{claseId}/alumnos`;
+		urlPath = urlPath.replace(
+			`{${'profesorId'}}`,
+			encodeURIComponent(String(requestParameters['profesorId']))
+		);
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'POST',
+				headers: headerParameters,
+				query: queryParameters,
+				body: DTOPeticionEnrollmentToJSON(requestParameters['dTOPeticionEnrollment'])
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTORespuestaEnrollmentFromJSON(jsonValue)
+		);
+	}
+
+	/**
+	 */
+	async inscribirAlumnoEnMiClase(
+		requestParameters: InscribirAlumnoEnMiClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTORespuestaEnrollment> {
+		const response = await this.inscribirAlumnoEnMiClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async obtenerEstadisticasHabilitacionRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<{ [key: string]: number }>> {
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/estadisticas/habilitacion`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse<any>(response);
+	}
+
+	/**
+	 */
+	async obtenerEstadisticasHabilitacion(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<{ [key: string]: number }> {
+		const response = await this.obtenerEstadisticasHabilitacionRaw(initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async obtenerProfesorPorDniRaw(
+		requestParameters: ObtenerProfesorPorDniRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOProfesor>> {
+		if (requestParameters['dni'] == null) {
+			throw new runtime.RequiredError(
+				'dni',
+				'Required parameter "dni" was null or undefined when calling obtenerProfesorPorDni().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/dni/{dni}`;
+		urlPath = urlPath.replace(`{${'dni'}}`, encodeURIComponent(String(requestParameters['dni'])));
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
+	}
+
+	/**
+	 */
+	async obtenerProfesorPorDni(
+		requestParameters: ObtenerProfesorPorDniRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOProfesor> {
+		const response = await this.obtenerProfesorPorDniRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async obtenerProfesorPorEmailRaw(
+		requestParameters: ObtenerProfesorPorEmailRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOProfesor>> {
+		if (requestParameters['email'] == null) {
+			throw new runtime.RequiredError(
+				'email',
+				'Required parameter "email" was null or undefined when calling obtenerProfesorPorEmail().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/email/{email}`;
+		urlPath = urlPath.replace(
+			`{${'email'}}`,
+			encodeURIComponent(String(requestParameters['email']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
+	}
+
+	/**
+	 */
+	async obtenerProfesorPorEmail(
+		requestParameters: ObtenerProfesorPorEmailRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOProfesor> {
+		const response = await this.obtenerProfesorPorEmailRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async obtenerProfesorPorIdRaw(
+		requestParameters: ObtenerProfesorPorIdRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOProfesor>> {
+		if (requestParameters['id'] == null) {
+			throw new runtime.RequiredError(
+				'id',
+				'Required parameter "id" was null or undefined when calling obtenerProfesorPorId().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/{id}`;
+		urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
+	}
+
+	/**
+	 */
+	async obtenerProfesorPorId(
+		requestParameters: ObtenerProfesorPorIdRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOProfesor> {
+		const response = await this.obtenerProfesorPorIdRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async obtenerProfesorPorUsuarioRaw(
+		requestParameters: ObtenerProfesorPorUsuarioRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOProfesor>> {
+		if (requestParameters['usuario'] == null) {
+			throw new runtime.RequiredError(
+				'usuario',
+				'Required parameter "usuario" was null or undefined when calling obtenerProfesorPorUsuario().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/usuario/{usuario}`;
+		urlPath = urlPath.replace(
+			`{${'usuario'}}`,
+			encodeURIComponent(String(requestParameters['usuario']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
+	}
+
+	/**
+	 */
+	async obtenerProfesorPorUsuario(
+		requestParameters: ObtenerProfesorPorUsuarioRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOProfesor> {
+		const response = await this.obtenerProfesorPorUsuarioRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 * @deprecated
+	 */
+	async obtenerProfesoresRaw(
+		requestParameters: ObtenerProfesoresRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
+		const queryParameters: any = {};
+
+		if (requestParameters['q'] != null) {
+			queryParameters['q'] = requestParameters['q'];
+		}
+
+		if (requestParameters['nombre'] != null) {
+			queryParameters['nombre'] = requestParameters['nombre'];
+		}
+
+		if (requestParameters['apellidos'] != null) {
+			queryParameters['apellidos'] = requestParameters['apellidos'];
+		}
+
+		if (requestParameters['email'] != null) {
+			queryParameters['email'] = requestParameters['email'];
+		}
+
+		if (requestParameters['habilitado'] != null) {
+			queryParameters['habilitado'] = requestParameters['habilitado'];
+		}
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
+	}
+
+	/**
+	 * @deprecated
+	 */
+	async obtenerProfesores(
+		requestParameters: ObtenerProfesoresRequest = {},
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<Array<DTOProfesor>> {
+		const response = await this.obtenerProfesoresRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 * @deprecated
+	 */
+	async obtenerProfesoresHabilitadosRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/habilitados`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
+	}
+
+	/**
+	 * @deprecated
+	 */
+	async obtenerProfesoresHabilitados(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<Array<DTOProfesor>> {
+		const response = await this.obtenerProfesoresHabilitadosRaw(initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async obtenerProfesoresHabilitadosPaginadosRaw(
+		requestParameters: ObtenerProfesoresHabilitadosPaginadosRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOProfesor>> {
+		const queryParameters: any = {};
+
+		if (requestParameters['page'] != null) {
+			queryParameters['page'] = requestParameters['page'];
+		}
+
+		if (requestParameters['size'] != null) {
+			queryParameters['size'] = requestParameters['size'];
+		}
+
+		if (requestParameters['sortBy'] != null) {
+			queryParameters['sortBy'] = requestParameters['sortBy'];
+		}
+
+		if (requestParameters['sortDirection'] != null) {
+			queryParameters['sortDirection'] = requestParameters['sortDirection'];
+		}
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/habilitados/paged`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTORespuestaPaginadaDTOProfesorFromJSON(jsonValue)
+		);
+	}
+
+	/**
+	 */
+	async obtenerProfesoresHabilitadosPaginados(
+		requestParameters: ObtenerProfesoresHabilitadosPaginadosRequest = {},
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTORespuestaPaginadaDTOProfesor> {
+		const response = await this.obtenerProfesoresHabilitadosPaginadosRaw(
+			requestParameters,
+			initOverrides
+		);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async obtenerProfesoresPaginadosRaw(
+		requestParameters: ObtenerProfesoresPaginadosRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOProfesor>> {
+		const queryParameters: any = {};
+
+		if (requestParameters['q'] != null) {
+			queryParameters['q'] = requestParameters['q'];
+		}
+
+		if (requestParameters['nombre'] != null) {
+			queryParameters['nombre'] = requestParameters['nombre'];
+		}
+
+		if (requestParameters['apellidos'] != null) {
+			queryParameters['apellidos'] = requestParameters['apellidos'];
+		}
+
+		if (requestParameters['email'] != null) {
+			queryParameters['email'] = requestParameters['email'];
+		}
+
+		if (requestParameters['usuario'] != null) {
+			queryParameters['usuario'] = requestParameters['usuario'];
+		}
+
+		if (requestParameters['dni'] != null) {
+			queryParameters['dni'] = requestParameters['dni'];
+		}
+
+		if (requestParameters['habilitado'] != null) {
+			queryParameters['habilitado'] = requestParameters['habilitado'];
+		}
+
+		if (requestParameters['claseId'] != null) {
+			queryParameters['claseId'] = requestParameters['claseId'];
+		}
+
+		if (requestParameters['sinClases'] != null) {
+			queryParameters['sinClases'] = requestParameters['sinClases'];
+		}
+
+		if (requestParameters['page'] != null) {
+			queryParameters['page'] = requestParameters['page'];
+		}
+
+		if (requestParameters['size'] != null) {
+			queryParameters['size'] = requestParameters['size'];
+		}
+
+		if (requestParameters['sortBy'] != null) {
+			queryParameters['sortBy'] = requestParameters['sortBy'];
+		}
+
+		if (requestParameters['sortDirection'] != null) {
+			queryParameters['sortDirection'] = requestParameters['sortDirection'];
+		}
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/paged`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) =>
+			DTORespuestaPaginadaDTOProfesorFromJSON(jsonValue)
+		);
+	}
+
+	/**
+	 */
+	async obtenerProfesoresPaginados(
+		requestParameters: ObtenerProfesoresPaginadosRequest = {},
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTORespuestaPaginadaDTOProfesor> {
+		const response = await this.obtenerProfesoresPaginadosRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async obtenerProfesoresPorClaseRaw(
+		requestParameters: ObtenerProfesoresPorClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling obtenerProfesoresPorClase().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/clase/{claseId}`;
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
+	}
+
+	/**
+	 */
+	async obtenerProfesoresPorClase(
+		requestParameters: ObtenerProfesoresPorClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<Array<DTOProfesor>> {
+		const response = await this.obtenerProfesoresPorClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async obtenerProfesoresSinClasesRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<Array<DTOProfesor>>> {
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/sin-clases`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DTOProfesorFromJSON));
+	}
+
+	/**
+	 */
+	async obtenerProfesoresSinClases(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<Array<DTOProfesor>> {
+		const response = await this.obtenerProfesoresSinClasesRaw(initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async obtenerTotalProfesoresRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<{ [key: string]: number }>> {
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/estadisticas/total`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse<any>(response);
+	}
+
+	/**
+	 */
+	async obtenerTotalProfesores(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<{ [key: string]: number }> {
+		const response = await this.obtenerTotalProfesoresRaw(initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async removerClaseRaw(
+		requestParameters: RemoverClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<DTOProfesor>> {
+		if (requestParameters['id'] == null) {
+			throw new runtime.RequiredError(
+				'id',
+				'Required parameter "id" was null or undefined when calling removerClase().'
+			);
+		}
+
+		if (requestParameters['claseId'] == null) {
+			throw new runtime.RequiredError(
+				'claseId',
+				'Required parameter "claseId" was null or undefined when calling removerClase().'
+			);
+		}
+
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/{id}/clases/{claseId}`;
+		urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+		urlPath = urlPath.replace(
+			`{${'claseId'}}`,
+			encodeURIComponent(String(requestParameters['claseId']))
+		);
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'DELETE',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
+	}
+
+	/**
+	 */
+	async removerClase(
+		requestParameters: RemoverClaseRequest,
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<DTOProfesor> {
+		const response = await this.removerClaseRaw(requestParameters, initOverrides);
+		return await response.value();
+	}
+
+	/**
+	 */
+	async testRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<string>> {
+		const queryParameters: any = {};
+
+		const headerParameters: runtime.HTTPHeaders = {};
+
+		let urlPath = `/api/profesores/test`;
+
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
+
+		if (this.isJsonMime(response.headers.get('content-type'))) {
+			return new runtime.JSONApiResponse<string>(response);
+		} else {
+			return new runtime.TextApiResponse(response) as any;
+		}
+	}
+
+	/**
+	 */
+	async test(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+		const response = await this.testRaw(initOverrides);
+		return await response.value();
+	}
 }

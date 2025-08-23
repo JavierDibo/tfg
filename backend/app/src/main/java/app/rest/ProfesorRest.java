@@ -40,6 +40,7 @@ public class ProfesorRest {
     /**
      * Obtiene todos los profesores paginados o busca con parámetros
      * GET /api/profesores/paged
+     * @param q Término de búsqueda general (busca en nombre, apellidos, email, usuario, DNI)
      * @param nombre Nombre a buscar (opcional)
      * @param apellidos Apellidos a buscar (opcional)
      * @param email Email a buscar (opcional)
@@ -56,6 +57,7 @@ public class ProfesorRest {
      */
     @GetMapping("/paged")
     public ResponseEntity<DTORespuestaPaginada<DTOProfesor>> obtenerProfesoresPaginados(
+            @RequestParam(required = false) @Size(max = 100) String q,
             @RequestParam(required = false) @Size(max = 100) String nombre,
             @RequestParam(required = false) @Size(max = 100) String apellidos,
             @RequestParam(required = false) @Size(max = 100) String email,
@@ -70,7 +72,7 @@ public class ProfesorRest {
             @RequestParam(defaultValue = "ASC") String sortDirection) {
         
         DTOParametrosBusquedaProfesor parametros = new DTOParametrosBusquedaProfesor(
-                nombre, apellidos, email, usuario, dni, habilitado, claseId, sinClases);
+                q, nombre, apellidos, email, usuario, dni, habilitado, claseId, sinClases);
         
         System.out.println("Obteniendo profesores paginados con parámetros: " + parametros);
         DTORespuestaPaginada<DTOProfesor> respuesta = servicioProfesor.buscarProfesoresPorParametrosPaginados(
@@ -82,6 +84,7 @@ public class ProfesorRest {
     /**
      * Obtiene todos los profesores o busca con parámetros (sin paginación - DEPRECATED)
      * GET /api/profesores
+     * @param q Término de búsqueda general (busca en nombre, apellidos, email, usuario, DNI)
      * @param nombre Nombre a buscar (opcional)
      * @param apellidos Apellidos a buscar (opcional)
      * @param email Email a buscar (opcional)
@@ -91,23 +94,18 @@ public class ProfesorRest {
     @GetMapping
     @Deprecated(since = "1.1", forRemoval = true)
     public ResponseEntity<List<DTOProfesor>> obtenerProfesores(
+            @RequestParam(required = false) @Size(max = 100) String q,
             @RequestParam(required = false) @Size(max = 100) String nombre,
             @RequestParam(required = false) @Size(max = 100) String apellidos,
             @RequestParam(required = false) @Size(max = 100) String email,
             @RequestParam(required = false) Boolean habilitado) {
         
         DTOParametrosBusquedaProfesor parametros = new DTOParametrosBusquedaProfesor(
-                nombre, apellidos, email, null, null, habilitado, null, null);
+                q, nombre, apellidos, email, null, null, habilitado, null, null);
         
-        if (parametros.estaVacio()) {
-            // System.out.println("Obteniendo todos los profesores");
-            List<DTOProfesor> profesores = servicioProfesor.obtenerProfesores();
-            return new ResponseEntity<>(profesores, HttpStatus.OK);
-        } else {
-            // System.out.println("Buscando profesores con parámetros: " + parametros);
-            List<DTOProfesor> profesores = servicioProfesor.buscarProfesoresPorParametros(parametros);
-            return new ResponseEntity<>(profesores, HttpStatus.OK);
-        }
+        System.out.println("Obteniendo profesores con parámetros: " + parametros);
+        List<DTOProfesor> profesores = servicioProfesor.buscarProfesoresPorParametros(parametros);
+        return new ResponseEntity<>(profesores, HttpStatus.OK);
     }
 
     /**

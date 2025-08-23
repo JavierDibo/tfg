@@ -10,7 +10,8 @@
 		loading = false,
 		entityNamePlural = 'elementos',
 		advancedFields = [],
-		statusField = null
+		statusField = null,
+		entityType = 'generic' // 'alumnos', 'profesores', 'clases', 'generic'
 	} = $props<{
 		currentFilters: EntityFilters;
 		paginatedData?: PaginatedEntities<Record<string, unknown>> | null;
@@ -19,14 +20,16 @@
 		advancedFields?: Array<{
 			key: string;
 			label: string;
-			type?: 'text' | 'email' | 'number' | 'tel' | 'date' | string;
+			type?: 'text' | 'email' | 'number' | 'tel' | 'date' | 'select' | string;
 			placeholder?: string;
+			options?: Array<{ value: string | number | boolean; label: string }>;
 		}>;
 		statusField?: {
 			key: string;
 			label: string;
 			options: Array<{ value: string | number | boolean; label: string }>;
 		} | null;
+		entityType?: 'alumnos' | 'profesores' | 'clases' | 'generic';
 	}>();
 
 	// Local state for input values to prevent focus loss
@@ -70,6 +73,34 @@
 		event.preventDefault();
 		updateFilters(localFilters);
 	}
+
+	// Get entity-specific placeholder text
+	function getGeneralSearchPlaceholder(): string {
+		switch (entityType) {
+			case 'alumnos':
+				return 'Buscar por nombre, apellidos, DNI, email...';
+			case 'profesores':
+				return 'Buscar por nombre, apellidos, email, usuario, DNI...';
+			case 'clases':
+				return 'Buscar por título, descripción...';
+			default:
+				return 'Buscar...';
+		}
+	}
+
+	// Get entity-specific help text
+	function getGeneralSearchHelpText(): string {
+		switch (entityType) {
+			case 'alumnos':
+				return 'Búsqueda general: nombre, apellidos, DNI, email';
+			case 'profesores':
+				return 'Búsqueda general: nombre, apellidos, email, usuario, DNI';
+			case 'clases':
+				return 'Búsqueda general: título, descripción';
+			default:
+				return 'Búsqueda general en todos los campos relevantes';
+		}
+	}
 </script>
 
 <div class="mb-6 rounded-lg bg-white p-6 shadow-md">
@@ -110,22 +141,22 @@
 						<input
 							id="busquedaGeneral"
 							type="text"
-							bind:value={localFilters.busquedaGeneral}
+							bind:value={localFilters.q}
 							oninput={() => {
-								debouncedSearch(localFilters.busquedaGeneral || '', 'busquedaGeneral');
+								debouncedSearch(localFilters.q || '', 'q');
 							}}
 							onkeydown={(e) => {
 								if (e.key === 'Enter') {
 									if (searchTimeout) clearTimeout(searchTimeout);
-									updateFilters({ busquedaGeneral: localFilters.busquedaGeneral });
+									updateFilters({ q: localFilters.q });
 								}
 							}}
 							onblur={() => {
 								if (searchTimeout) clearTimeout(searchTimeout);
-								updateFilters({ busquedaGeneral: localFilters.busquedaGeneral });
+								updateFilters({ q: localFilters.q });
 							}}
 							class="w-full rounded-lg border border-gray-300 py-3 pr-4 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
-							placeholder="Buscar por nombre, apellidos, DNI, email..."
+							placeholder={getGeneralSearchPlaceholder()}
 						/>
 						<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 							<svg
@@ -143,6 +174,7 @@
 							</svg>
 						</div>
 					</div>
+					<p class="mt-1 text-xs text-gray-500">{getGeneralSearchHelpText()}</p>
 				</div>
 
 				<!-- Status Filter -->
@@ -167,32 +199,77 @@
 		{:else}
 			<!-- Advanced Search Mode -->
 			<div class="space-y-6">
+				<!-- General Search in Advanced Mode -->
 				<div>
-					<h3 class="text-md mb-3 font-medium text-gray-800">📝 Campos de Texto</h3>
-					<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-						{#each advancedFields as field (field.key)}
-							<div>
-								<label for={field.key} class="mb-1 block text-sm font-medium text-gray-700"
-									>{field.label}</label
-								>
-								<input
-									id={field.key}
-									type={field.type || 'text'}
-									bind:value={localFilters[field.key]}
-									onblur={() => updateFilters({ [field.key]: localFilters[field.key] })}
-									onkeydown={(e) => {
-										if (e.key === 'Enter') {
-											updateFilters({ [field.key]: localFilters[field.key] });
-										}
-									}}
-									class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-									placeholder={field.placeholder || `Ej: ${field.label}`}
-								/>
-							</div>
-						{/each}
+					<h3 class="text-md mb-3 font-medium text-gray-800">🔍 Búsqueda General</h3>
+					<div>
+						<label
+							for="busquedaGeneralAdvanced"
+							class="mb-1 block text-sm font-medium text-gray-700"
+						>
+							Término de búsqueda general
+						</label>
+						<input
+							id="busquedaGeneralAdvanced"
+							type="text"
+							bind:value={localFilters.q}
+							onblur={() => updateFilters({ q: localFilters.q })}
+							onkeydown={(e) => {
+								if (e.key === 'Enter') {
+									updateFilters({ q: localFilters.q });
+								}
+							}}
+							class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+							placeholder={getGeneralSearchPlaceholder()}
+						/>
+						<p class="mt-1 text-xs text-gray-500">{getGeneralSearchHelpText()}</p>
 					</div>
 				</div>
 
+				<!-- Specific Fields -->
+				{#if advancedFields.length > 0}
+					<div>
+						<h3 class="text-md mb-3 font-medium text-gray-800">📝 Campos Específicos</h3>
+						<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+							{#each advancedFields as field (field.key)}
+								<div>
+									<label for={field.key} class="mb-1 block text-sm font-medium text-gray-700"
+										>{field.label}</label
+									>
+									{#if field.type === 'select' && field.options}
+										<select
+											id={field.key}
+											bind:value={localFilters[field.key]}
+											onchange={() => updateFilters({ [field.key]: localFilters[field.key] })}
+											class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+										>
+											<option value="">Todos</option>
+											{#each field.options as option (option.value)}
+												<option value={option.value}>{option.label}</option>
+											{/each}
+										</select>
+									{:else}
+										<input
+											id={field.key}
+											type={field.type || 'text'}
+											bind:value={localFilters[field.key]}
+											onblur={() => updateFilters({ [field.key]: localFilters[field.key] })}
+											onkeydown={(e) => {
+												if (e.key === 'Enter') {
+													updateFilters({ [field.key]: localFilters[field.key] });
+												}
+											}}
+											class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+											placeholder={field.placeholder || `Ej: ${field.label}`}
+										/>
+									{/if}
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
+				<!-- Status Filter in Advanced Mode -->
 				{#if statusField}
 					<div>
 						<h3 class="text-md mb-3 font-medium text-gray-800">⚙️ Estados</h3>

@@ -1,0 +1,207 @@
+package app.rest;
+
+import app.dtos.DTOAlumno;
+import app.dtos.DTOParametrosBusquedaAlumno;
+import app.dtos.DTORespuestaPaginada;
+import app.entidades.Usuario;
+import app.servicios.ServicioAlumno;
+import app.servicios.ServicioJwt;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@ExtendWith(MockitoExtension.class)
+public class AlumnoRestTest {
+
+    private MockMvc mockMvc;
+
+    @Mock
+    private ServicioAlumno servicioAlumno;
+    
+    @Mock
+    private ServicioJwt servicioJwt;
+
+    @InjectMocks
+    private AlumnoRest alumnoRest;
+    
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(alumnoRest)
+                .setControllerAdvice(new app.excepciones.GlobalExceptionHandler())
+                .build();
+    }
+    
+    // Utility method to generate valid DNIs using the same algorithm as the system
+    private String generateValidDNI(int index) {
+        StringBuilder dni = new StringBuilder();
+        String indexStr = String.valueOf(index);
+        
+        // Fill with random digits to make it 8 digits
+        while (dni.length() + indexStr.length() < 8) {
+            dni.append((int)(Math.random() * 10));
+        }
+        dni.append(indexStr);
+        
+        // Ensure it's exactly 8 digits
+        if (dni.length() > 8) {
+            dni.setLength(8);
+        }
+        
+        char[] letras = "TRWAGMYFPDXBNJZSQVHLCKE".toCharArray();
+        int numero = Integer.parseInt(dni.toString());
+        dni.append(letras[numero % 23]);
+        return dni.toString();
+    }
+
+    @Test
+    public void testObtenerAlumnosPaginadosConParametroQ() throws Exception {
+        // Given
+        String searchTerm = "john";
+        List<DTOAlumno> mockAlumnos = Arrays.asList(
+            new DTOAlumno(1L, "alumno1", "John", "Doe", generateValidDNI(1), "john.doe@email.com", 
+                         "+34612345678", LocalDateTime.now(), true, true, 
+                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Rol.ALUMNO),
+            new DTOAlumno(2L, "alumno2", "Johnny", "Smith", generateValidDNI(2), "johnny.smith@email.com", 
+                         "+34687654321", LocalDateTime.now(), true, true, 
+                         Arrays.asList("1"), Arrays.asList("2"), Arrays.asList("2"), Usuario.Rol.ALUMNO)
+        );
+        
+        DTORespuestaPaginada<DTOAlumno> mockResponse = DTORespuestaPaginada.of(
+            mockAlumnos, 0, 20, 2L, "id", "ASC"
+        );
+        
+        when(servicioAlumno.buscarAlumnosPorParametrosPaginados(
+            any(DTOParametrosBusquedaAlumno.class), anyInt(), anyInt(), anyString(), anyString()
+        )).thenReturn(mockResponse);
+        
+        // When & Then
+        mockMvc.perform(get("/api/alumnos/paged")
+                .param("q", searchTerm)
+                .param("page", "0")
+                .param("size", "20")
+                .param("sortBy", "id")
+                .param("sortDirection", "ASC"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido").isArray())
+                .andExpect(jsonPath("$.contenido.length()").value(2))
+                .andExpect(jsonPath("$.numeroPagina").value(0))
+                .andExpect(jsonPath("$.tamanoPagina").value(20))
+                .andExpect(jsonPath("$.totalElementos").value(2))
+                .andExpect(jsonPath("$.totalPaginas").value(1));
+        
+        // Verify that the service was called with the correct parameters
+        verify(servicioAlumno).buscarAlumnosPorParametrosPaginados(
+            argThat(parametros -> parametros.hasGeneralSearch() && parametros.q().equals(searchTerm)),
+            eq(0), eq(20), eq("id"), eq("ASC")
+        );
+    }
+    
+    @Test
+    public void testObtenerAlumnosPaginadosConParametroQYFiltrosEspecificos() throws Exception {
+        // Given
+        String searchTerm = "john";
+        String nombre = "John";
+        Boolean matriculado = true;
+        
+        List<DTOAlumno> mockAlumnos = Arrays.asList(
+            new DTOAlumno(1L, "alumno1", "John", "Doe", generateValidDNI(1), "john.doe@email.com", 
+                         "+34612345678", LocalDateTime.now(), true, true, 
+                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Rol.ALUMNO)
+        );
+        
+        DTORespuestaPaginada<DTOAlumno> mockResponse = DTORespuestaPaginada.of(
+            mockAlumnos, 0, 20, 1L, "id", "ASC"
+        );
+        
+        when(servicioAlumno.buscarAlumnosPorParametrosPaginados(
+            any(DTOParametrosBusquedaAlumno.class), anyInt(), anyInt(), anyString(), anyString()
+        )).thenReturn(mockResponse);
+        
+        // When & Then
+        mockMvc.perform(get("/api/alumnos/paged")
+                .param("q", searchTerm)
+                .param("nombre", nombre)
+                .param("matriculado", matriculado.toString())
+                .param("page", "0")
+                .param("size", "20")
+                .param("sortBy", "id")
+                .param("sortDirection", "ASC"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido").isArray())
+                .andExpect(jsonPath("$.contenido.length()").value(1))
+                .andExpect(jsonPath("$.numeroPagina").value(0))
+                .andExpect(jsonPath("$.tamanoPagina").value(20));
+        
+        // Verify that the service was called with the correct parameters
+        verify(servicioAlumno).buscarAlumnosPorParametrosPaginados(
+            argThat(parametros -> 
+                parametros.hasGeneralSearch() && 
+                parametros.q().equals(searchTerm) &&
+                parametros.hasSpecificFilters() &&
+                parametros.nombre().equals(nombre) &&
+                parametros.matriculado().equals(matriculado)
+            ),
+            eq(0), eq(20), eq("id"), eq("ASC")
+        );
+    }
+    
+    @Test
+    public void testObtenerAlumnosPaginadosSinParametroQ() throws Exception {
+        // Given
+        String nombre = "John";
+        
+        List<DTOAlumno> mockAlumnos = Arrays.asList(
+            new DTOAlumno(1L, "alumno1", "John", "Doe", generateValidDNI(1), "john.doe@email.com", 
+                         "+34612345678", LocalDateTime.now(), true, true, 
+                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Rol.ALUMNO)
+        );
+        
+        DTORespuestaPaginada<DTOAlumno> mockResponse = DTORespuestaPaginada.of(
+            mockAlumnos, 0, 20, 1L, "id", "ASC"
+        );
+        
+        when(servicioAlumno.buscarAlumnosPorParametrosPaginados(
+            any(DTOParametrosBusquedaAlumno.class), anyInt(), anyInt(), anyString(), anyString()
+        )).thenReturn(mockResponse);
+        
+        // When & Then
+        mockMvc.perform(get("/api/alumnos/paged")
+                .param("nombre", nombre)
+                .param("page", "0")
+                .param("size", "20")
+                .param("sortBy", "id")
+                .param("sortDirection", "ASC"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido").isArray())
+                .andExpect(jsonPath("$.contenido.length()").value(1));
+        
+        // Verify that the service was called with the correct parameters
+        verify(servicioAlumno).buscarAlumnosPorParametrosPaginados(
+            argThat(parametros -> 
+                !parametros.hasGeneralSearch() && 
+                parametros.hasSpecificFilters() &&
+                parametros.nombre().equals(nombre)
+            ),
+            eq(0), eq(20), eq("id"), eq("ASC")
+        );
+    }
+}
+
+
+

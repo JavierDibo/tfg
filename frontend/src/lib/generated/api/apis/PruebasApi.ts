@@ -12,152 +12,167 @@
  * Do not edit the class manually.
  */
 
-
 import * as runtime from '../runtime';
 
 /**
- * 
+ *
  */
 export class PruebasApi extends runtime.BaseAPI {
+	/**
+	 * Endpoint de prueba que requiere rol de administrador
+	 * Endpoint de administrador
+	 */
+	async adminRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<string>> {
+		const queryParameters: any = {};
 
-    /**
-     * Endpoint de prueba que requiere rol de administrador
-     * Endpoint de administrador
-     */
-    async adminRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const queryParameters: any = {};
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		let urlPath = `/api/test/admin`;
 
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
-        let urlPath = `/api/test/admin`;
+		if (this.isJsonMime(response.headers.get('content-type'))) {
+			return new runtime.JSONApiResponse<string>(response);
+		} else {
+			return new runtime.TextApiResponse(response) as any;
+		}
+	}
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
+	/**
+	 * Endpoint de prueba que requiere rol de administrador
+	 * Endpoint de administrador
+	 */
+	async admin(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+		const response = await this.adminRaw(initOverrides);
+		return await response.value();
+	}
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
+	/**
+	 * Obtiene información detallada del usuario autenticado
+	 * Información del usuario
+	 */
+	async obtenerInfoUsuarioRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<string>> {
+		const queryParameters: any = {};
 
-    /**
-     * Endpoint de prueba que requiere rol de administrador
-     * Endpoint de administrador
-     */
-    async admin(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.adminRaw(initOverrides);
-        return await response.value();
-    }
+		const headerParameters: runtime.HTTPHeaders = {};
 
-    /**
-     * Obtiene información detallada del usuario autenticado
-     * Información del usuario
-     */
-    async obtenerInfoUsuarioRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const queryParameters: any = {};
+		let urlPath = `/api/test/user-info`;
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
+		if (this.isJsonMime(response.headers.get('content-type'))) {
+			return new runtime.JSONApiResponse<string>(response);
+		} else {
+			return new runtime.TextApiResponse(response) as any;
+		}
+	}
 
-        let urlPath = `/api/test/user-info`;
+	/**
+	 * Obtiene información detallada del usuario autenticado
+	 * Información del usuario
+	 */
+	async obtenerInfoUsuario(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<string> {
+		const response = await this.obtenerInfoUsuarioRaw(initOverrides);
+		return await response.value();
+	}
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
+	/**
+	 * Endpoint de prueba que no requiere autenticación
+	 * Endpoint público
+	 */
+	async publicoRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<string>> {
+		const queryParameters: any = {};
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
+		const headerParameters: runtime.HTTPHeaders = {};
 
-    /**
-     * Obtiene información detallada del usuario autenticado
-     * Información del usuario
-     */
-    async obtenerInfoUsuario(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.obtenerInfoUsuarioRaw(initOverrides);
-        return await response.value();
-    }
+		let urlPath = `/api/test/public`;
 
-    /**
-     * Endpoint de prueba que no requiere autenticación
-     * Endpoint público
-     */
-    async publicoRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const queryParameters: any = {};
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
-        const headerParameters: runtime.HTTPHeaders = {};
+		if (this.isJsonMime(response.headers.get('content-type'))) {
+			return new runtime.JSONApiResponse<string>(response);
+		} else {
+			return new runtime.TextApiResponse(response) as any;
+		}
+	}
 
+	/**
+	 * Endpoint de prueba que no requiere autenticación
+	 * Endpoint público
+	 */
+	async publico(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+		const response = await this.publicoRaw(initOverrides);
+		return await response.value();
+	}
 
-        let urlPath = `/api/test/public`;
+	/**
+	 * Endpoint de prueba que requiere autenticación de usuario
+	 * Endpoint protegido
+	 */
+	async usuarioRaw(
+		initOverrides?: RequestInit | runtime.InitOverrideFunction
+	): Promise<runtime.ApiResponse<string>> {
+		const queryParameters: any = {};
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
+		const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
+		let urlPath = `/api/test/protected`;
 
-    /**
-     * Endpoint de prueba que no requiere autenticación
-     * Endpoint público
-     */
-    async publico(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.publicoRaw(initOverrides);
-        return await response.value();
-    }
+		const response = await this.request(
+			{
+				path: urlPath,
+				method: 'GET',
+				headers: headerParameters,
+				query: queryParameters
+			},
+			initOverrides
+		);
 
-    /**
-     * Endpoint de prueba que requiere autenticación de usuario
-     * Endpoint protegido
-     */
-    async usuarioRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        const queryParameters: any = {};
+		if (this.isJsonMime(response.headers.get('content-type'))) {
+			return new runtime.JSONApiResponse<string>(response);
+		} else {
+			return new runtime.TextApiResponse(response) as any;
+		}
+	}
 
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/test/protected`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
-
-    /**
-     * Endpoint de prueba que requiere autenticación de usuario
-     * Endpoint protegido
-     */
-    async usuario(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.usuarioRaw(initOverrides);
-        return await response.value();
-    }
-
+	/**
+	 * Endpoint de prueba que requiere autenticación de usuario
+	 * Endpoint protegido
+	 */
+	async usuario(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+		const response = await this.usuarioRaw(initOverrides);
+		return await response.value();
+	}
 }

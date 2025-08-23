@@ -110,7 +110,7 @@ export class EnrollmentService {
 			// Use the dedicated endpoint for enrolled classes
 			const enrolledClasses = await userOperationsApi.obtenerMisClasesInscritas();
 			// Convert DTOClaseInscrita to DTOClase if needed
-			return enrolledClasses.map(claseInscrita => ({
+			return enrolledClasses.map((claseInscrita) => ({
 				id: claseInscrita.id,
 				titulo: claseInscrita.titulo,
 				descripcion: claseInscrita.descripcion,
@@ -120,8 +120,10 @@ export class EnrollmentService {
 				tipoClase: claseInscrita.tipoClase,
 				imagenPortada: claseInscrita.imagenPortada,
 				material: claseInscrita.material,
-				numeroMateriales: claseInscrita.numeroMateriales,
-				numeroEjercicios: claseInscrita.numeroEjercicios,
+				numeroMateriales: claseInscrita.material?.length || 0,
+				numeroEjercicios: claseInscrita.ejerciciosId?.length || 0,
+				numeroProfesores: claseInscrita.numeroProfesores,
+				numeroAlumnos: claseInscrita.numeroAlumnos
 				// Map other fields as needed
 			})) as DTOClase[];
 		} catch (error) {
@@ -139,7 +141,7 @@ export class EnrollmentService {
 			// Use the dedicated endpoint for admin to get student's enrolled classes
 			const enrolledClasses = await alumnoApi.obtenerClasesInscritasConDetalles({ alumnoId });
 			// Convert DTOClaseInscrita to DTOClase if needed
-			return enrolledClasses.map(claseInscrita => ({
+			return enrolledClasses.map((claseInscrita) => ({
 				id: claseInscrita.id,
 				titulo: claseInscrita.titulo,
 				descripcion: claseInscrita.descripcion,
@@ -149,8 +151,10 @@ export class EnrollmentService {
 				tipoClase: claseInscrita.tipoClase,
 				imagenPortada: claseInscrita.imagenPortada,
 				material: claseInscrita.material,
-				numeroMateriales: claseInscrita.numeroMateriales,
-				numeroEjercicios: claseInscrita.numeroEjercicios,
+				numeroMateriales: claseInscrita.material?.length || 0,
+				numeroEjercicios: claseInscrita.ejerciciosId?.length || 0,
+				numeroProfesores: claseInscrita.numeroProfesores,
+				numeroAlumnos: claseInscrita.numeroAlumnos
 				// Map other fields as needed
 			})) as DTOClase[];
 		} catch (error) {
@@ -163,11 +167,13 @@ export class EnrollmentService {
 	 * Toggle enrollment status for the current student
 	 * Returns the new enrollment status
 	 */
-	static async toggleEnrollment(claseId: number): Promise<{ isEnrolled: boolean; clase: DTOClase }> {
+	static async toggleEnrollment(
+		claseId: number
+	): Promise<{ isEnrolled: boolean; clase: DTOClase }> {
 		try {
 			// Check current enrollment status
 			const currentStatus = await this.checkMyEnrollmentStatus(claseId);
-			
+
 			if (currentStatus.isEnrolled) {
 				// Unenroll
 				const clase = await this.unenrollFromClass(claseId);

@@ -19,205 +19,205 @@ import { mapValues } from '../runtime';
  * @interface DTOAlumno
  */
 export interface DTOAlumno {
-    /**
-     * ID único del alumno
-     * @type {number}
-     * @memberof DTOAlumno
-     */
-    id: number;
-    /**
-     * Nombre de usuario único
-     * @type {string}
-     * @memberof DTOAlumno
-     */
-    usuario: string;
-    /**
-     * Nombre del alumno
-     * @type {string}
-     * @memberof DTOAlumno
-     */
-    nombre: string;
-    /**
-     * Apellidos del alumno
-     * @type {string}
-     * @memberof DTOAlumno
-     */
-    apellidos: string;
-    /**
-     * DNI del alumno
-     * @type {string}
-     * @memberof DTOAlumno
-     */
-    dni: string;
-    /**
-     * Email del alumno
-     * @type {string}
-     * @memberof DTOAlumno
-     */
-    email: string;
-    /**
-     * Número de teléfono
-     * @type {string}
-     * @memberof DTOAlumno
-     */
-    numeroTelefono?: string;
-    /**
-     * Fecha de inscripción
-     * @type {Date}
-     * @memberof DTOAlumno
-     */
-    fechaInscripcion?: Date;
-    /**
-     * Indica si el alumno está matriculado
-     * @type {boolean}
-     * @memberof DTOAlumno
-     */
-    matriculado: boolean;
-    /**
-     * Indica si la cuenta está habilitada
-     * @type {boolean}
-     * @memberof DTOAlumno
-     */
-    enabled: boolean;
-    /**
-     * Lista de IDs de clases en las que está inscrito
-     * @type {Array<string>}
-     * @memberof DTOAlumno
-     */
-    clasesId?: Array<string>;
-    /**
-     * Lista de IDs de pagos realizados
-     * @type {Array<string>}
-     * @memberof DTOAlumno
-     */
-    pagosId?: Array<string>;
-    /**
-     * Lista de IDs de entregas de ejercicios
-     * @type {Array<string>}
-     * @memberof DTOAlumno
-     */
-    entregasId?: Array<string>;
-    /**
-     * Rol del usuario
-     * @type {string}
-     * @memberof DTOAlumno
-     */
-    rol: DTOAlumnoRolEnum;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOAlumno
-     */
-    numeroClases?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOAlumno
-     */
-    numeroEntregas?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOAlumno
-     */
-    numeroPagos?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOAlumno
-     */
-    nombreCompleto?: string;
+	/**
+	 * ID único del alumno
+	 * @type {number}
+	 * @memberof DTOAlumno
+	 */
+	id: number;
+	/**
+	 * Nombre de usuario único
+	 * @type {string}
+	 * @memberof DTOAlumno
+	 */
+	usuario: string;
+	/**
+	 * Nombre del alumno
+	 * @type {string}
+	 * @memberof DTOAlumno
+	 */
+	nombre: string;
+	/**
+	 * Apellidos del alumno
+	 * @type {string}
+	 * @memberof DTOAlumno
+	 */
+	apellidos: string;
+	/**
+	 * DNI del alumno
+	 * @type {string}
+	 * @memberof DTOAlumno
+	 */
+	dni: string;
+	/**
+	 * Email del alumno
+	 * @type {string}
+	 * @memberof DTOAlumno
+	 */
+	email: string;
+	/**
+	 * Número de teléfono
+	 * @type {string}
+	 * @memberof DTOAlumno
+	 */
+	numeroTelefono?: string;
+	/**
+	 * Fecha de inscripción
+	 * @type {Date}
+	 * @memberof DTOAlumno
+	 */
+	fechaInscripcion?: Date;
+	/**
+	 * Indica si el alumno está matriculado
+	 * @type {boolean}
+	 * @memberof DTOAlumno
+	 */
+	matriculado: boolean;
+	/**
+	 * Indica si la cuenta está habilitada
+	 * @type {boolean}
+	 * @memberof DTOAlumno
+	 */
+	enabled: boolean;
+	/**
+	 * Lista de IDs de clases en las que está inscrito
+	 * @type {Array<string>}
+	 * @memberof DTOAlumno
+	 */
+	clasesId?: Array<string>;
+	/**
+	 * Lista de IDs de pagos realizados
+	 * @type {Array<string>}
+	 * @memberof DTOAlumno
+	 */
+	pagosId?: Array<string>;
+	/**
+	 * Lista de IDs de entregas de ejercicios
+	 * @type {Array<string>}
+	 * @memberof DTOAlumno
+	 */
+	entregasId?: Array<string>;
+	/**
+	 * Rol del usuario
+	 * @type {string}
+	 * @memberof DTOAlumno
+	 */
+	rol: DTOAlumnoRolEnum;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOAlumno
+	 */
+	numeroClases?: number;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOAlumno
+	 */
+	nombreCompleto?: string;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOAlumno
+	 */
+	numeroPagos?: number;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOAlumno
+	 */
+	numeroEntregas?: number;
 }
-
 
 /**
  * @export
  */
 export const DTOAlumnoRolEnum = {
-    Admin: 'ADMIN',
-    Profesor: 'PROFESOR',
-    Alumno: 'ALUMNO',
-    Usuario: 'USUARIO'
+	Admin: 'ADMIN',
+	Profesor: 'PROFESOR',
+	Alumno: 'ALUMNO',
+	Usuario: 'USUARIO'
 } as const;
-export type DTOAlumnoRolEnum = typeof DTOAlumnoRolEnum[keyof typeof DTOAlumnoRolEnum];
-
+export type DTOAlumnoRolEnum = (typeof DTOAlumnoRolEnum)[keyof typeof DTOAlumnoRolEnum];
 
 /**
  * Check if a given object implements the DTOAlumno interface.
  */
 export function instanceOfDTOAlumno(value: object): value is DTOAlumno {
-    if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('usuario' in value) || value['usuario'] === undefined) return false;
-    if (!('nombre' in value) || value['nombre'] === undefined) return false;
-    if (!('apellidos' in value) || value['apellidos'] === undefined) return false;
-    if (!('dni' in value) || value['dni'] === undefined) return false;
-    if (!('email' in value) || value['email'] === undefined) return false;
-    if (!('matriculado' in value) || value['matriculado'] === undefined) return false;
-    if (!('enabled' in value) || value['enabled'] === undefined) return false;
-    if (!('rol' in value) || value['rol'] === undefined) return false;
-    return true;
+	if (!('id' in value) || value['id'] === undefined) return false;
+	if (!('usuario' in value) || value['usuario'] === undefined) return false;
+	if (!('nombre' in value) || value['nombre'] === undefined) return false;
+	if (!('apellidos' in value) || value['apellidos'] === undefined) return false;
+	if (!('dni' in value) || value['dni'] === undefined) return false;
+	if (!('email' in value) || value['email'] === undefined) return false;
+	if (!('matriculado' in value) || value['matriculado'] === undefined) return false;
+	if (!('enabled' in value) || value['enabled'] === undefined) return false;
+	if (!('rol' in value) || value['rol'] === undefined) return false;
+	return true;
 }
 
 export function DTOAlumnoFromJSON(json: any): DTOAlumno {
-    return DTOAlumnoFromJSONTyped(json, false);
+	return DTOAlumnoFromJSONTyped(json, false);
 }
 
 export function DTOAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOAlumno {
-    if (json == null) {
-        return json;
-    }
-    return {
-        
-        'id': json['id'],
-        'usuario': json['usuario'],
-        'nombre': json['nombre'],
-        'apellidos': json['apellidos'],
-        'dni': json['dni'],
-        'email': json['email'],
-        'numeroTelefono': json['numeroTelefono'] == null ? undefined : json['numeroTelefono'],
-        'fechaInscripcion': json['fechaInscripcion'] == null ? undefined : (new Date(json['fechaInscripcion'])),
-        'matriculado': json['matriculado'],
-        'enabled': json['enabled'],
-        'clasesId': json['clasesId'] == null ? undefined : json['clasesId'],
-        'pagosId': json['pagosId'] == null ? undefined : json['pagosId'],
-        'entregasId': json['entregasId'] == null ? undefined : json['entregasId'],
-        'rol': json['rol'],
-        'numeroClases': json['numeroClases'] == null ? undefined : json['numeroClases'],
-        'numeroEntregas': json['numeroEntregas'] == null ? undefined : json['numeroEntregas'],
-        'numeroPagos': json['numeroPagos'] == null ? undefined : json['numeroPagos'],
-        'nombreCompleto': json['nombreCompleto'] == null ? undefined : json['nombreCompleto'],
-    };
+	if (json == null) {
+		return json;
+	}
+	return {
+		id: json['id'],
+		usuario: json['usuario'],
+		nombre: json['nombre'],
+		apellidos: json['apellidos'],
+		dni: json['dni'],
+		email: json['email'],
+		numeroTelefono: json['numeroTelefono'] == null ? undefined : json['numeroTelefono'],
+		fechaInscripcion:
+			json['fechaInscripcion'] == null ? undefined : new Date(json['fechaInscripcion']),
+		matriculado: json['matriculado'],
+		enabled: json['enabled'],
+		clasesId: json['clasesId'] == null ? undefined : json['clasesId'],
+		pagosId: json['pagosId'] == null ? undefined : json['pagosId'],
+		entregasId: json['entregasId'] == null ? undefined : json['entregasId'],
+		rol: json['rol'],
+		numeroClases: json['numeroClases'] == null ? undefined : json['numeroClases'],
+		nombreCompleto: json['nombreCompleto'] == null ? undefined : json['nombreCompleto'],
+		numeroPagos: json['numeroPagos'] == null ? undefined : json['numeroPagos'],
+		numeroEntregas: json['numeroEntregas'] == null ? undefined : json['numeroEntregas']
+	};
 }
 
 export function DTOAlumnoToJSON(json: any): DTOAlumno {
-    return DTOAlumnoToJSONTyped(json, false);
+	return DTOAlumnoToJSONTyped(json, false);
 }
 
-export function DTOAlumnoToJSONTyped(value?: DTOAlumno | null, ignoreDiscriminator: boolean = false): any {
-    if (value == null) {
-        return value;
-    }
+export function DTOAlumnoToJSONTyped(
+	value?: DTOAlumno | null,
+	ignoreDiscriminator: boolean = false
+): any {
+	if (value == null) {
+		return value;
+	}
 
-    return {
-        
-        'id': value['id'],
-        'usuario': value['usuario'],
-        'nombre': value['nombre'],
-        'apellidos': value['apellidos'],
-        'dni': value['dni'],
-        'email': value['email'],
-        'numeroTelefono': value['numeroTelefono'],
-        'fechaInscripcion': value['fechaInscripcion'] == null ? undefined : ((value['fechaInscripcion']).toISOString()),
-        'matriculado': value['matriculado'],
-        'enabled': value['enabled'],
-        'clasesId': value['clasesId'],
-        'pagosId': value['pagosId'],
-        'entregasId': value['entregasId'],
-        'rol': value['rol'],
-        'numeroClases': value['numeroClases'],
-        'numeroEntregas': value['numeroEntregas'],
-        'numeroPagos': value['numeroPagos'],
-        'nombreCompleto': value['nombreCompleto'],
-    };
+	return {
+		id: value['id'],
+		usuario: value['usuario'],
+		nombre: value['nombre'],
+		apellidos: value['apellidos'],
+		dni: value['dni'],
+		email: value['email'],
+		numeroTelefono: value['numeroTelefono'],
+		fechaInscripcion:
+			value['fechaInscripcion'] == null ? undefined : value['fechaInscripcion'].toISOString(),
+		matriculado: value['matriculado'],
+		enabled: value['enabled'],
+		clasesId: value['clasesId'],
+		pagosId: value['pagosId'],
+		entregasId: value['entregasId'],
+		rol: value['rol'],
+		numeroClases: value['numeroClases'],
+		nombreCompleto: value['nombreCompleto'],
+		numeroPagos: value['numeroPagos'],
+		numeroEntregas: value['numeroEntregas']
+	};
 }
-

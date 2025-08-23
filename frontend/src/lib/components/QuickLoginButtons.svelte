@@ -9,11 +9,11 @@
 	async function quickLogin(username: string, password: string, role: string, redirectTo?: string) {
 		loginLoading = true;
 		message = `Logging in as ${role}...`;
-		
+
 		try {
 			// First logout current user
 			authStore.logout();
-			
+
 			// Then login with new credentials
 			const loginResponse = await autenticacionApi.login({
 				dTOPeticionLogin: {
@@ -21,18 +21,17 @@
 					password
 				}
 			});
-			
+
 			// Store the authentication data
 			authStore.login(loginResponse.token);
 			message = `✅ Successfully logged in as ${role}`;
-			
+
 			// Redirect if specified
 			if (redirectTo) {
 				setTimeout(() => {
 					goto(redirectTo);
 				}, 50);
 			}
-			
 		} catch (error) {
 			message = `❌ Login failed for ${role}: ${error}`;
 			console.error('Login error:', error);
@@ -54,14 +53,14 @@
 	}
 </script>
 
-<div class="p-4 rounded-lg bg-purple-50 border border-purple-200">
-	<h3 class="text-lg font-semibold text-purple-900 mb-3">🚀 Quick Login (for Testing)</h3>
-	
-	<div class="flex flex-wrap gap-3 mb-3">
+<div class="rounded-lg border border-purple-200 bg-purple-50 p-4">
+	<h3 class="mb-3 text-lg font-semibold text-purple-900">🚀 Quick Login (for Testing)</h3>
+
+	<div class="mb-3 flex flex-wrap gap-3">
 		<button
 			onclick={loginAsAdmin}
 			disabled={loginLoading}
-			class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+			class="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			{loginLoading ? '🔄 Logging in...' : '👨‍💼 Admin'}
 		</button>
@@ -69,7 +68,7 @@
 		<button
 			onclick={loginAsStudent}
 			disabled={loginLoading}
-			class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+			class="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			{loginLoading ? '🔄 Logging in...' : '👨‍🎓 Student'}
 		</button>
@@ -77,19 +76,17 @@
 		<button
 			onclick={loginAsProfessor}
 			disabled={loginLoading}
-			class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+			class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			{loginLoading ? '🔄 Logging in...' : '👨‍🏫 Professor'}
 		</button>
 	</div>
-	
+
 	{#if message}
-		<div class="text-sm text-purple-700 p-2 bg-white rounded border">
+		<div class="rounded border bg-white p-2 text-sm text-purple-700">
 			{message}
 		</div>
 	{/if}
-	
-	<p class="text-xs text-purple-600 mt-2">
-		Auto-redirects to /test after login
-	</p>
+
+	<p class="mt-2 text-xs text-purple-600">Auto-redirects to /test after login</p>
 </div>

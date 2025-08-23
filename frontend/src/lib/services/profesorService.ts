@@ -40,6 +40,7 @@ export const ProfesorService = {
 
 	async getProfesoresPaginados(
 		filters: {
+			q?: string; // General search parameter
 			nombre?: string;
 			apellidos?: string;
 			email?: string;

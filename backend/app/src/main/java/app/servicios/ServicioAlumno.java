@@ -87,21 +87,64 @@ public class ServicioAlumno {
 
     @Transactional(readOnly = true)
     public List<DTOAlumno> buscarAlumnosPorParametros(DTOParametrosBusquedaAlumno parametros) {
-        // Si todos los parámetros son nulos, devolver todos los alumnos
-        if (parametros.nombre() == null && parametros.apellidos() == null && 
-            parametros.dni() == null && parametros.email() == null && parametros.matriculado() == null) {
-            return obtenerAlumnos();
+        // Enhanced search logic with "q" parameter support
+        if (parametros.hasGeneralSearch()) {
+            if (parametros.hasSpecificFilters()) {
+                // Use combined search (general + specific filters) without pagination
+                List<Alumno> alumnos = repositorioAlumno.findAll().stream()
+                    .filter(a -> {
+                        String searchTerm = parametros.q().toLowerCase();
+                        boolean generalMatch = a.getNombre().toLowerCase().contains(searchTerm) ||
+                                             a.getApellidos().toLowerCase().contains(searchTerm) ||
+                                             a.getDni().toLowerCase().contains(searchTerm) ||
+                                             a.getEmail().toLowerCase().contains(searchTerm);
+                        
+                        boolean specificMatch = (parametros.nombre() == null || 
+                                               a.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())) &&
+                                              (parametros.apellidos() == null || 
+                                               a.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())) &&
+                                              (parametros.dni() == null || 
+                                               a.getDni().toLowerCase().contains(parametros.dni().toLowerCase())) &&
+                                              (parametros.email() == null || 
+                                               a.getEmail().toLowerCase().contains(parametros.email().toLowerCase())) &&
+                                              (parametros.matriculado() == null || 
+                                               a.isMatriculado() == parametros.matriculado());
+                        
+                        return generalMatch && specificMatch;
+                    })
+                    .collect(Collectors.toList());
+                
+                return alumnos.stream().map(DTOAlumno::new).toList();
+            } else {
+                // Use only general search without pagination
+                List<Alumno> alumnos = repositorioAlumno.findAll().stream()
+                    .filter(a -> {
+                        String searchTerm = parametros.q().toLowerCase();
+                        return a.getNombre().toLowerCase().contains(searchTerm) ||
+                               a.getApellidos().toLowerCase().contains(searchTerm) ||
+                               a.getDni().toLowerCase().contains(searchTerm) ||
+                               a.getEmail().toLowerCase().contains(searchTerm);
+                    })
+                    .collect(Collectors.toList());
+                
+                return alumnos.stream().map(DTOAlumno::new).toList();
+            }
+        } else {
+            // Use existing specific search logic
+            if (parametros.hasSpecificFilters()) {
+                return repositorioAlumno.findByFiltros(
+                        parametros.nombre(), 
+                        parametros.apellidos(),
+                        parametros.dni(),
+                        parametros.email(),
+                        parametros.matriculado())
+                        .stream()
+                        .map(DTOAlumno::new)
+                        .toList();
+            } else {
+                return obtenerAlumnos();
+            }
         }
-        
-        return repositorioAlumno.findByFiltros(
-                parametros.nombre(), 
-                parametros.apellidos(),
-                parametros.dni(),
-                parametros.email(),
-                parametros.matriculado())
-                .stream()
-                .map(DTOAlumno::new)
-                .toList();
     }
 
     public List<DTOAlumno> obtenerAlumnosPorMatriculado(boolean matriculado) {
@@ -379,22 +422,39 @@ public class ServicioAlumno {
         }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        
         Page<Alumno> pageAlumnos;
         
-        // Si todos los parámetros son nulos, usar findAllPaged
-        if (parametros.nombre() == null && parametros.apellidos() == null && 
-            parametros.dni() == null && parametros.email() == null && parametros.matriculado() == null) {
-            pageAlumnos = repositorioAlumno.findAllPaged(pageable);
+        // Enhanced search logic with "q" parameter support
+        if (parametros.hasGeneralSearch()) {
+            if (parametros.hasSpecificFilters()) {
+                // Use combined search (general + specific filters)
+                pageAlumnos = repositorioAlumno.findByGeneralAndSpecificFilters(
+                    parametros.q(),
+                    parametros.nombre(),
+                    parametros.apellidos(),
+                    parametros.dni(),
+                    parametros.email(),
+                    parametros.matriculado(),
+                    pageable
+                );
+            } else {
+                // Use only general search
+                pageAlumnos = repositorioAlumno.findByGeneralSearch(parametros.q(), pageable);
+            }
         } else {
-            pageAlumnos = repositorioAlumno.findByFiltrosPaged(
-                parametros.nombre(), 
-                parametros.apellidos(),
-                parametros.dni(),
-                parametros.email(),
-                parametros.matriculado(),
-                pageable
-            );
+            // Use existing specific search logic
+            if (parametros.hasSpecificFilters()) {
+                pageAlumnos = repositorioAlumno.findByFiltrosPaged(
+                    parametros.nombre(),
+                    parametros.apellidos(),
+                    parametros.dni(),
+                    parametros.email(),
+                    parametros.matriculado(),
+                    pageable
+                );
+            } else {
+                pageAlumnos = repositorioAlumno.findAllPaged(pageable);
+            }
         }
         
         // Convertir a DTOs

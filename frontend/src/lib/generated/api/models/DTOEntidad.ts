@@ -14,70 +14,70 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ *
  * @export
  * @interface DTOEntidad
  */
 export interface DTOEntidad {
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOEntidad
-     */
-    id?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOEntidad
-     */
-    info: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOEntidad
-     */
-    otraInfo: string;
+	/**
+	 *
+	 * @type {number}
+	 * @memberof DTOEntidad
+	 */
+	id?: number;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOEntidad
+	 */
+	info: string;
+	/**
+	 *
+	 * @type {string}
+	 * @memberof DTOEntidad
+	 */
+	otraInfo: string;
 }
 
 /**
  * Check if a given object implements the DTOEntidad interface.
  */
 export function instanceOfDTOEntidad(value: object): value is DTOEntidad {
-    if (!('info' in value) || value['info'] === undefined) return false;
-    if (!('otraInfo' in value) || value['otraInfo'] === undefined) return false;
-    return true;
+	if (!('info' in value) || value['info'] === undefined) return false;
+	if (!('otraInfo' in value) || value['otraInfo'] === undefined) return false;
+	return true;
 }
 
 export function DTOEntidadFromJSON(json: any): DTOEntidad {
-    return DTOEntidadFromJSONTyped(json, false);
+	return DTOEntidadFromJSONTyped(json, false);
 }
 
 export function DTOEntidadFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOEntidad {
-    if (json == null) {
-        return json;
-    }
-    return {
-        
-        'id': json['id'] == null ? undefined : json['id'],
-        'info': json['info'],
-        'otraInfo': json['otraInfo'],
-    };
+	if (json == null) {
+		return json;
+	}
+	return {
+		id: json['id'] == null ? undefined : json['id'],
+		info: json['info'],
+		otraInfo: json['otraInfo']
+	};
 }
 
 export function DTOEntidadToJSON(json: any): DTOEntidad {
-    return DTOEntidadToJSONTyped(json, false);
+	return DTOEntidadToJSONTyped(json, false);
 }
 
-export function DTOEntidadToJSONTyped(value?: DTOEntidad | null, ignoreDiscriminator: boolean = false): any {
-    if (value == null) {
-        return value;
-    }
+export function DTOEntidadToJSONTyped(
+	value?: DTOEntidad | null,
+	ignoreDiscriminator: boolean = false
+): any {
+	if (value == null) {
+		return value;
+	}
 
-    return {
-        
-        'id': value['id'],
-        'info': value['info'],
-        'otraInfo': value['otraInfo'],
-    };
+	return {
+		id: value['id'],
+		info: value['info'],
+		otraInfo: value['otraInfo']
+	};
 }
-
