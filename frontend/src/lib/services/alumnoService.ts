@@ -6,7 +6,6 @@ import type {
 	DTOPeticionRegistroAlumno
 } from '$lib/generated/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
-import { authStore } from '$lib/stores/authStore.svelte';
 
 export class AlumnoService {
 	// ==================== BASIC CRUD OPERATIONS ====================

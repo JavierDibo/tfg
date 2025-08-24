@@ -6,6 +6,7 @@
 	import { AlumnoService } from '$lib/services/alumnoService';
 	import { EnrollmentService } from '$lib/services/enrollmentService';
 	import { authStore } from '$lib/stores/authStore.svelte';
+	import { alumnoApi } from '$lib/api';
 
 	// Props and derived state
 	const studentId = $derived(parseInt($page.params.id));
@@ -130,8 +131,8 @@
 				// Student viewing their own profile - use the enrollment service
 				enrolledClasses = await EnrollmentService.getMyEnrolledClasses();
 			} else if (authStore.isAdmin) {
-				// Admin viewing any student's profile - use the enrollment service
-				enrolledClasses = await EnrollmentService.getStudentEnrolledClasses(alumno.id);
+				// Admin viewing any student's profile - use the student API directly
+				enrolledClasses = await alumnoApi.obtenerClasesInscritas({ id: alumno.id });
 			}
 		} catch (err) {
 			console.error('Error loading enrolled classes:', err);

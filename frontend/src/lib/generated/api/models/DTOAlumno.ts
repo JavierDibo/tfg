@@ -105,10 +105,16 @@ export interface DTOAlumno {
     role: DTOAlumnoRoleEnum;
     /**
      * 
+     * @type {string}
+     * @memberof DTOAlumno
+     */
+    fullName?: string;
+    /**
+     * 
      * @type {number}
      * @memberof DTOAlumno
      */
-    paymentCount?: number;
+    submissionCount?: number;
     /**
      * 
      * @type {number}
@@ -120,13 +126,7 @@ export interface DTOAlumno {
      * @type {number}
      * @memberof DTOAlumno
      */
-    submissionCount?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOAlumno
-     */
-    fullName?: string;
+    paymentCount?: number;
 }
 
 
@@ -182,10 +182,10 @@ export function DTOAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'paymentIds': json['paymentIds'] == null ? undefined : json['paymentIds'],
         'submissionIds': json['submissionIds'] == null ? undefined : json['submissionIds'],
         'role': json['role'],
-        'paymentCount': json['paymentCount'] == null ? undefined : json['paymentCount'],
-        'classCount': json['classCount'] == null ? undefined : json['classCount'],
-        'submissionCount': json['submissionCount'] == null ? undefined : json['submissionCount'],
         'fullName': json['fullName'] == null ? undefined : json['fullName'],
+        'submissionCount': json['submissionCount'] == null ? undefined : json['submissionCount'],
+        'classCount': json['classCount'] == null ? undefined : json['classCount'],
+        'paymentCount': json['paymentCount'] == null ? undefined : json['paymentCount'],
     };
 }
 
@@ -214,10 +214,10 @@ export function DTOAlumnoToJSONTyped(value?: DTOAlumno | null, ignoreDiscriminat
         'paymentIds': value['paymentIds'],
         'submissionIds': value['submissionIds'],
         'role': value['role'],
-        'paymentCount': value['paymentCount'],
-        'classCount': value['classCount'],
-        'submissionCount': value['submissionCount'],
         'fullName': value['fullName'],
+        'submissionCount': value['submissionCount'],
+        'classCount': value['classCount'],
+        'paymentCount': value['paymentCount'],
     };
 }
 

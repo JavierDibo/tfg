@@ -4,9 +4,9 @@ import {
 	StudentsApi,
 	ProfessorsApi,
 	ClassesApi,
-	EnrollmentsApi,
+	ClassManagementApi,
 	AuthenticationApi,
-	OperacionesDeUsuarioApi
+	UserOperationsApi
 } from './generated/api';
 import { authStore } from './stores/authStore.svelte';
 
@@ -38,6 +38,6 @@ const config = new Configuration({
 export const alumnoApi = new StudentsApi(config);
 export const profesorApi = new ProfessorsApi(config);
 export const claseApi = new ClassesApi(config);
-export const enrollmentApi = new EnrollmentsApi(config);
+export const classManagementApi = new ClassManagementApi(config);
 export const autenticacionApi = new AuthenticationApi(config);
-export const userOperationsApi = new OperacionesDeUsuarioApi(config);
+export const userOperationsApi = new UserOperationsApi(config);

@@ -45,14 +45,11 @@
 			// Load class details
 			clase = await ClaseService.getClaseById(claseId);
 
-			// Load additional statistics
+			// Load additional statistics - these methods no longer exist in the new API
+			// The statistics are now included in the class details response
 			if (clase?.id) {
-				try {
-					numeroAlumnos = await ClaseService.contarAlumnosEnClase(clase.id);
-					numeroProfesores = await ClaseService.contarProfesoresEnClase(clase.id);
-				} catch (err) {
-					console.warn('Error loading class statistics:', err);
-				}
+				numeroAlumnos = clase.numeroAlumnos || 0;
+				numeroProfesores = clase.numeroProfesores || 0;
 			}
 		} catch (err) {
 			error = `Error al cargar la clase: ${err}`;
@@ -81,12 +78,21 @@
 		enrollmentError = null;
 
 		try {
-			const result = await EnrollmentService.toggleEnrollment(claseId);
-			enrollmentStatus = { isEnrolled: result.isEnrolled, claseId, alumnoId: authStore.user?.id };
+			if (enrollmentStatus?.isEnrolled) {
+				// Unenroll
+				await EnrollmentService.unenrollFromClass(claseId);
+				enrollmentStatus = { isEnrolled: false, claseId, alumnoId: authStore.user?.id };
+			} else {
+				// Enroll
+				await EnrollmentService.enrollInClass(claseId);
+				enrollmentStatus = { isEnrolled: true, claseId, alumnoId: authStore.user?.id };
+			}
 
-			// Refresh student count
+			// Refresh student count - use the class details from the response
 			if (clase?.id) {
-				numeroAlumnos = await ClaseService.contarAlumnosEnClase(clase.id);
+				// Reload the class to get updated statistics
+				const updatedClase = await ClaseService.getClaseById(clase.id);
+				numeroAlumnos = updatedClase.numeroAlumnos || 0;
 			}
 		} catch (err) {
 			enrollmentError = enrollmentStatus?.isEnrolled

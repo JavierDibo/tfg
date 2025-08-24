@@ -26,6 +26,7 @@ import app.dtos.DTOPeticionRegistroProfesor;
 import app.dtos.DTOProfesor;
 import app.dtos.DTORespuestaEnrollment;
 import app.dtos.DTORespuestaPaginada;
+import app.dtos.DTOClase;
 import app.servicios.ServicioClase;
 import app.servicios.ServicioProfesor;
 import app.util.SecurityUtils;
@@ -325,6 +326,37 @@ public class ProfesorRest extends BaseRestController {
 
     // Class management endpoints
 
+    @GetMapping("/{id}/clases")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @Operation(
+        summary = "Get professor's classes",
+        description = "Gets all classes assigned to a specific professor"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Classes found successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClase.class, type = "array")
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Professor not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view this professor's classes"
+        )
+    })
+    public ResponseEntity<List<DTOClase>> obtenerClasesProfesor(
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        List<DTOClase> clases = servicioClase.obtenerClasesPorProfesor(id.toString());
+        return new ResponseEntity<>(clases, HttpStatus.OK);
+    }
+
     @PutMapping("/{id}/clases/{claseId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
@@ -402,15 +434,15 @@ public class ProfesorRest extends BaseRestController {
     // Class-specific endpoints
 
     @GetMapping("/clase/{claseId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Get professors by class",
-        description = "Gets the professors who teach a specific class"
+        description = "Gets all professors assigned to a specific class"
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Professors of the class obtained successfully",
+            description = "Professors found successfully",
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = DTOProfesor.class, type = "array")
@@ -422,51 +454,17 @@ public class ProfesorRest extends BaseRestController {
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Access denied - Not authorized to view these professors"
+            description = "Access denied"
         )
     })
     public ResponseEntity<List<DTOProfesor>> obtenerProfesoresPorClase(
-            @Parameter(description = "Class ID", required = true)
             @PathVariable String claseId) {
         
         List<DTOProfesor> profesores = servicioProfesor.obtenerProfesoresPorClase(claseId);
         return new ResponseEntity<>(profesores, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/clases/count")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(
-        summary = "Count professor's classes",
-        description = "Gets the number of classes assigned to a professor"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Number of classes counted successfully"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Professor not found"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied - Not authorized to view this professor"
-        )
-    })
-    public ResponseEntity<Map<String, Object>> contarClasesProfesor(
-            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
-        
-        Integer numeroClases = servicioProfesor.contarClasesProfesor(id);
-        
-        Map<String, Object> response = Map.of(
-            "professorId", id,
-            "numeroClases", numeroClases
-        );
-        
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    // ===== ENDPOINTS DE BÚSQUEDA ESPECÍFICA =====
+    // ===== SPECIFIC SEARCH ENDPOINTS =====
 
     @GetMapping("/email/{email}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")

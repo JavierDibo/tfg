@@ -273,9 +273,7 @@ public class AlumnoRest extends BaseRestController {
         return new ResponseEntity<>(dtoAlumno, HttpStatus.OK);
     }
 
-    // Specialized endpoints for specific use cases that don't fit standard CRUD
-
-    @GetMapping("/{id}/clases-inscritas")
+    @GetMapping("/{id}/clases")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #id == authentication.principal.id)")
     @Operation(
         summary = "Get classes enrolled by student",

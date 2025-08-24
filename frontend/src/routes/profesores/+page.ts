@@ -12,13 +12,12 @@ export const load: PageLoad = ({ url }: { url: URL }) => {
 	// Filters
 	const searchMode = (url.searchParams.get('searchMode') ?? 'simple') as 'simple' | 'advanced';
 	const q = url.searchParams.get('q') ?? undefined;
-	const nombre = url.searchParams.get('nombre') ?? undefined;
-	const apellidos = url.searchParams.get('apellidos') ?? undefined;
+	const firstName = url.searchParams.get('firstName') ?? undefined;
+	const lastName = url.searchParams.get('lastName') ?? undefined;
 	const dni = url.searchParams.get('dni') ?? undefined;
 	const email = url.searchParams.get('email') ?? undefined;
-	const habilitadoParam = url.searchParams.get('habilitado');
-	const habilitado =
-		habilitadoParam === 'true' ? true : habilitadoParam === 'false' ? false : undefined;
+	const enabledParam = url.searchParams.get('enabled');
+	const enabled = enabledParam === 'true' ? true : enabledParam === 'false' ? false : undefined;
 
 	return {
 		pagination: {
@@ -30,11 +29,11 @@ export const load: PageLoad = ({ url }: { url: URL }) => {
 		filters: {
 			searchMode,
 			q,
-			nombre,
-			apellidos,
+			firstName,
+			lastName,
 			dni,
 			email,
-			habilitado
+			enabled
 		}
 	};
 };

@@ -1,11 +1,10 @@
 apis/AuthenticationApi.ts
+apis/ClassManagementApi.ts
 apis/ClassesApi.ts
-apis/EnrollmentsApi.ts
-apis/GestinDeClasesApi.ts
-apis/OperacionesDeUsuarioApi.ts
 apis/ProfessorsApi.ts
 apis/PruebasApi.ts
 apis/StudentsApi.ts
+apis/UserOperationsApi.ts
 apis/index.ts
 index.ts
 models/DTOActualizacionAlumno.ts
@@ -18,7 +17,6 @@ models/DTOClaseInscrita.ts
 models/DTOCurso.ts
 models/DTOEstadoInscripcion.ts
 models/DTOMetadatosPaginacion.ts
-models/DTOParametrosBusquedaClase.ts
 models/DTOPeticionCrearCurso.ts
 models/DTOPeticionCrearTaller.ts
 models/DTOPeticionEnrollment.ts

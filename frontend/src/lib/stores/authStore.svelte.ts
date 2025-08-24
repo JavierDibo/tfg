@@ -15,9 +15,9 @@ interface LoginResponse {
 	id?: number;
 	username?: string;
 	email?: string;
-	nombre?: string;
-	apellidos?: string;
-	rol?: string;
+	firstName?: string;
+	lastName?: string;
+	role?: string;
 }
 
 // State
@@ -66,7 +66,7 @@ function login(jwtOrResponse: string | LoginResponse) {
 		};
 
 		// Validate required fields
-		if (!response.token || !response.username || !response.rol) {
+		if (!response.token || !response.username || !response.role) {
 			console.error('Invalid login response:', response);
 			throw new Error('Invalid login response from server');
 		}
@@ -76,7 +76,7 @@ function login(jwtOrResponse: string | LoginResponse) {
 			sub: response.username,
 			usuario: response.username,
 			id: response.id,
-			roles: [roleMapping[response.rol as keyof typeof roleMapping] || `ROLE_${response.rol}`]
+			roles: [roleMapping[response.role as keyof typeof roleMapping] || `ROLE_${response.role}`]
 		};
 
 		console.log('Created user object:', user);

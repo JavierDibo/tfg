@@ -197,15 +197,15 @@ export const commonColumns = {
 	student: {
 		id: { key: 'id', header: 'ID', sortable: true, width: '80px' },
 		name: {
-			key: 'nombre',
+			key: 'firstName',
 			header: 'Nombre',
 			sortable: true,
-			formatter: createNameFormatter('nombre', 'apellidos')
+			formatter: createNameFormatter('firstName', 'lastName')
 		},
 		email: { key: 'email', header: 'Email', sortable: true, formatter: createEmailFormatter() },
 		dni: { key: 'dni', header: 'DNI', sortable: true, formatter: createDNIFormatter() },
 		enrollment: {
-			key: 'matriculado',
+			key: 'enrolled',
 			header: 'Matriculación',
 			sortable: true,
 			html: true,
@@ -222,10 +222,10 @@ export const commonColumns = {
 	teacher: {
 		id: { key: 'id', header: 'ID', sortable: true, width: '80px' },
 		name: {
-			key: 'nombre',
+			key: 'firstName',
 			header: 'Nombre',
 			sortable: true,
-			formatter: createNameFormatter('nombre', 'apellidos')
+			formatter: createNameFormatter('firstName', 'lastName')
 		},
 		email: { key: 'email', header: 'Email', sortable: true, formatter: createEmailFormatter() },
 		dni: { key: 'dni', header: 'DNI', sortable: true, formatter: createDNIFormatter() },
@@ -237,7 +237,7 @@ export const commonColumns = {
 			formatter: createEnabledBadge
 		},
 		createdAt: {
-			key: 'fechaCreacion',
+			key: 'createdAt',
 			header: 'Fecha de Creación',
 			sortable: true,
 			formatter: createDateFormatter()

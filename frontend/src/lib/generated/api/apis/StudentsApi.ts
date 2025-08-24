@@ -342,7 +342,7 @@ export class StudentsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/api/alumnos/{id}/clases-inscritas`;
+        let urlPath = `/api/alumnos/{id}/clases`;
         urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
 
         const response = await this.request({

@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type {
-		DTOClase,
-		DTOParametrosBusquedaClaseNivelEnum,
-		DTOParametrosBusquedaClasePresencialidadEnum
-	} from '$lib/generated/api';
+	import type { DTOClase } from '$lib/generated/api';
 	import { ClaseService } from '$lib/services/claseService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import {
@@ -106,15 +102,14 @@
 				typeof currentFilters.nivel === 'string' &&
 				currentFilters.nivel.trim()
 			) {
-				params.nivel = currentFilters.nivel.trim() as DTOParametrosBusquedaClaseNivelEnum;
+				params.nivel = currentFilters.nivel.trim();
 			}
 			if (
 				currentFilters.presencialidad &&
 				typeof currentFilters.presencialidad === 'string' &&
 				currentFilters.presencialidad.trim()
 			) {
-				params.presencialidad =
-					currentFilters.presencialidad.trim() as DTOParametrosBusquedaClasePresencialidadEnum;
+				params.presencialidad = currentFilters.presencialidad.trim();
 			}
 			if (
 				currentFilters.precioMinimo &&
@@ -131,7 +126,13 @@
 				params.precioMax = parseFloat(currentFilters.precioMaximo);
 			}
 
-			const response = await ClaseService.getPaginatedClases(params);
+			const response = await ClaseService.buscarClasesConPaginacion(
+				params.page as number,
+				params.size as number,
+				params.sortBy as string,
+				params.sortDirection as string,
+				params
+			);
 
 			clases = response.content || [];
 			totalElements = response.totalElements || 0;

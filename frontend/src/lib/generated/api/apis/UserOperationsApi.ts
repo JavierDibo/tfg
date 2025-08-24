@@ -46,11 +46,11 @@ export interface ObtenerAlumnosPublicosDeClaseRequest {
 /**
  * 
  */
-export class OperacionesDeUsuarioApi extends runtime.BaseAPI {
+export class UserOperationsApi extends runtime.BaseAPI {
 
     /**
-     * Obtiene la lista de alumnos inscritos en una clase específica. El nivel de detalle de la información depende del rol del usuario: - ADMIN: información completa de todos los alumnos - PROFESOR: información completa si es profesor de la clase, información pública si no - ALUMNO: solo información pública de los alumnos
-     * Obtener alumnos de una clase
+     * Gets the list of students enrolled in a specific class. The level of detail of the information depends on the user\'s role: - ADMIN: complete information of all students - PROFESOR: complete information if they are the professor of the class, public information if not - ALUMNO: only public information of the students
+     * Get students in a class
      */
     async obtenerAlumnosDeClaseRaw(requestParameters: ObtenerAlumnosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaAlumnosClase>> {
         if (requestParameters['claseId'] == null) {
@@ -95,8 +95,8 @@ export class OperacionesDeUsuarioApi extends runtime.BaseAPI {
     }
 
     /**
-     * Obtiene la lista de alumnos inscritos en una clase específica. El nivel de detalle de la información depende del rol del usuario: - ADMIN: información completa de todos los alumnos - PROFESOR: información completa si es profesor de la clase, información pública si no - ALUMNO: solo información pública de los alumnos
-     * Obtener alumnos de una clase
+     * Gets the list of students enrolled in a specific class. The level of detail of the information depends on the user\'s role: - ADMIN: complete information of all students - PROFESOR: complete information if they are the professor of the class, public information if not - ALUMNO: only public information of the students
+     * Get students in a class
      */
     async obtenerAlumnosDeClase(requestParameters: ObtenerAlumnosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaAlumnosClase> {
         const response = await this.obtenerAlumnosDeClaseRaw(requestParameters, initOverrides);
@@ -104,8 +104,8 @@ export class OperacionesDeUsuarioApi extends runtime.BaseAPI {
     }
 
     /**
-     * Obtiene la lista de alumnos inscritos en una clase con solo información pública (nombre y apellidos). Este endpoint siempre devuelve información pública independientemente del rol del usuario.
-     * Obtener información pública de alumnos de una clase
+     * Gets the list of students enrolled in a class with only public information (first name and last name). This endpoint always returns public information regardless of the user\'s role.
+     * Get public information of students in a class
      */
     async obtenerAlumnosPublicosDeClaseRaw(requestParameters: ObtenerAlumnosPublicosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumnoPublico<any>>> {
         if (requestParameters['claseId'] == null) {
@@ -134,8 +134,8 @@ export class OperacionesDeUsuarioApi extends runtime.BaseAPI {
     }
 
     /**
-     * Obtiene la lista de alumnos inscritos en una clase con solo información pública (nombre y apellidos). Este endpoint siempre devuelve información pública independientemente del rol del usuario.
-     * Obtener información pública de alumnos de una clase
+     * Gets the list of students enrolled in a class with only public information (first name and last name). This endpoint always returns public information regardless of the user\'s role.
+     * Get public information of students in a class
      */
     async obtenerAlumnosPublicosDeClase(requestParameters: ObtenerAlumnosPublicosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumnoPublico<any>> {
         const response = await this.obtenerAlumnosPublicosDeClaseRaw(requestParameters, initOverrides);
@@ -143,8 +143,8 @@ export class OperacionesDeUsuarioApi extends runtime.BaseAPI {
     }
 
     /**
-     * Obtiene las clases del profesor autenticado
-     * Obtener mis clases
+     * Gets the classes of the authenticated professor
+     * Get my classes
      */
     async obtenerMisClasesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase<any>>> {
         const queryParameters: any = {};
@@ -165,8 +165,8 @@ export class OperacionesDeUsuarioApi extends runtime.BaseAPI {
     }
 
     /**
-     * Obtiene las clases del profesor autenticado
-     * Obtener mis clases
+     * Gets the classes of the authenticated professor
+     * Get my classes
      */
     async obtenerMisClases(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase<any>> {
         const response = await this.obtenerMisClasesRaw(initOverrides);
@@ -174,8 +174,8 @@ export class OperacionesDeUsuarioApi extends runtime.BaseAPI {
     }
 
     /**
-     * Obtiene las clases en las que está inscrito el estudiante autenticado
-     * Obtener mis clases inscritas
+     * Gets the classes in which the authenticated student is enrolled
+     * Get my enrolled classes
      */
     async obtenerMisClasesInscritasRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClaseInscrita<any>>> {
         const queryParameters: any = {};
@@ -183,7 +183,7 @@ export class OperacionesDeUsuarioApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/api/my/enrolled-classes`;
+        let urlPath = `/api/my/enrollments`;
 
         const response = await this.request({
             path: urlPath,
@@ -196,8 +196,8 @@ export class OperacionesDeUsuarioApi extends runtime.BaseAPI {
     }
 
     /**
-     * Obtiene las clases en las que está inscrito el estudiante autenticado
-     * Obtener mis clases inscritas
+     * Gets the classes in which the authenticated student is enrolled
+     * Get my enrolled classes
      */
     async obtenerMisClasesInscritas(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClaseInscrita<any>> {
         const response = await this.obtenerMisClasesInscritasRaw(initOverrides);

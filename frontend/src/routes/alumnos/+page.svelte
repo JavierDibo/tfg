@@ -39,11 +39,11 @@
 	let currentFilters = $state<EntityFilters>({
 		searchMode: 'simple',
 		q: '',
-		nombre: '',
-		apellidos: '',
+		firstName: '',
+		lastName: '',
 		dni: '',
 		email: '',
-		matriculado: ''
+		enrolled: ''
 	});
 
 	// Modal state
@@ -88,18 +88,18 @@
 				params.q = currentFilters.q.trim();
 			}
 			if (
-				currentFilters.nombre &&
-				typeof currentFilters.nombre === 'string' &&
-				currentFilters.nombre.trim()
+				currentFilters.firstName &&
+				typeof currentFilters.firstName === 'string' &&
+				currentFilters.firstName.trim()
 			) {
-				params.nombre = currentFilters.nombre.trim();
+				params.firstName = currentFilters.firstName.trim();
 			}
 			if (
-				currentFilters.apellidos &&
-				typeof currentFilters.apellidos === 'string' &&
-				currentFilters.apellidos.trim()
+				currentFilters.lastName &&
+				typeof currentFilters.lastName === 'string' &&
+				currentFilters.lastName.trim()
 			) {
-				params.apellidos = currentFilters.apellidos.trim();
+				params.lastName = currentFilters.lastName.trim();
 			}
 			if (
 				currentFilters.dni &&
@@ -115,8 +115,8 @@
 			) {
 				params.email = currentFilters.email.trim();
 			}
-			if (currentFilters.matriculado !== '' && currentFilters.matriculado !== null) {
-				params.matriculado = currentFilters.matriculado === 'true';
+			if (currentFilters.enrolled !== '' && currentFilters.enrolled !== null) {
+				params.enrolled = currentFilters.enrolled === 'true';
 			}
 
 			const response = await AlumnoService.getAlumnos(params);
@@ -156,11 +156,11 @@
 		currentFilters = {
 			searchMode: 'simple',
 			q: '',
-			nombre: '',
-			apellidos: '',
+			firstName: '',
+			lastName: '',
 			dni: '',
 			email: '',
-			matriculado: ''
+			enrolled: ''
 		};
 		currentPage = 0;
 		loadAlumnos();
@@ -295,11 +295,11 @@
 
 	const sortFields = [
 		{ value: 'id', label: 'ID' },
-		{ value: 'nombre', label: 'Nombre' },
-		{ value: 'apellidos', label: 'Apellidos' },
+		{ value: 'firstName', label: 'Nombre' },
+		{ value: 'lastName', label: 'Apellidos' },
 		{ value: 'dni', label: 'DNI' },
 		{ value: 'email', label: 'Email' },
-		{ value: 'matriculado', label: 'Estado de Matrícula' },
+		{ value: 'enrolled', label: 'Estado de Matrícula' },
 		{ value: 'enabled', label: 'Estado' }
 	];
 

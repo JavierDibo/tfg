@@ -17,9 +17,9 @@ import * as runtime from '../runtime';
 import type {
   DTOClase,
   DTOCurso,
-  DTOParametrosBusquedaClase,
   DTOPeticionCrearCurso,
   DTOPeticionCrearTaller,
+  DTORespuestaPaginada,
   DTORespuestaPaginadaDTOClase,
   DTOTaller,
 } from '../models/index';
@@ -28,12 +28,12 @@ import {
     DTOClaseToJSON,
     DTOCursoFromJSON,
     DTOCursoToJSON,
-    DTOParametrosBusquedaClaseFromJSON,
-    DTOParametrosBusquedaClaseToJSON,
     DTOPeticionCrearCursoFromJSON,
     DTOPeticionCrearCursoToJSON,
     DTOPeticionCrearTallerFromJSON,
     DTOPeticionCrearTallerToJSON,
+    DTORespuestaPaginadaFromJSON,
+    DTORespuestaPaginadaToJSON,
     DTORespuestaPaginadaDTOClaseFromJSON,
     DTORespuestaPaginadaDTOClaseToJSON,
     DTOTallerFromJSON,
@@ -42,30 +42,6 @@ import {
 
 export interface BorrarClasePorIdRequest {
     id: number;
-}
-
-export interface BorrarClasePorTituloRequest {
-    titulo: string;
-}
-
-export interface BuscarClasesRequest {
-    dTOParametrosBusquedaClase: DTOParametrosBusquedaClase;
-}
-
-export interface BuscarClasesPorTerminoGeneralRequest {
-    q: string;
-}
-
-export interface BuscarClasesPorTituloRequest {
-    titulo: string;
-}
-
-export interface ContarAlumnosEnClaseRequest {
-    claseId: number;
-}
-
-export interface ContarProfesoresEnClaseRequest {
-    claseId: number;
 }
 
 export interface CrearCursoRequest {
@@ -80,16 +56,20 @@ export interface ObtenerClasePorIdRequest {
     id: number;
 }
 
-export interface ObtenerClasePorTituloRequest {
-    titulo: string;
-}
-
-export interface ObtenerClasesPorAlumnoRequest {
-    alumnoId: string;
-}
-
-export interface ObtenerClasesPorProfesorRequest {
-    profesorId: string;
+export interface ObtenerClasesRequest {
+    q?: string;
+    titulo?: string;
+    descripcion?: string;
+    presencialidad?: ObtenerClasesPresencialidadEnum;
+    nivel?: ObtenerClasesNivelEnum;
+    precioMinimo?: number;
+    precioMaximo?: number;
+    soloConPlazasDisponibles?: boolean;
+    soloProximas?: boolean;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
 }
 
 /**
@@ -98,7 +78,7 @@ export interface ObtenerClasesPorProfesorRequest {
 export class ClassesApi extends runtime.BaseAPI {
 
     /**
-     * Deletes a class by its ID
+     * Deletes a class by its ID. Requires ADMIN permissions
      * Delete class by ID
      */
     async borrarClasePorIdRaw(requestParameters: BorrarClasePorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -128,260 +108,11 @@ export class ClassesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Deletes a class by its ID
+     * Deletes a class by its ID. Requires ADMIN permissions
      * Delete class by ID
      */
     async borrarClasePorId(requestParameters: BorrarClasePorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.borrarClasePorIdRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Deletes a class by its title
-     * Delete class by title
-     */
-    async borrarClasePorTituloRaw(requestParameters: BorrarClasePorTituloRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['titulo'] == null) {
-            throw new runtime.RequiredError(
-                'titulo',
-                'Required parameter "titulo" was null or undefined when calling borrarClasePorTitulo().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/titulo/{titulo}`;
-        urlPath = urlPath.replace(`{${"titulo"}}`, encodeURIComponent(String(requestParameters['titulo'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Deletes a class by its title
-     * Delete class by title
-     */
-    async borrarClasePorTitulo(requestParameters: BorrarClasePorTituloRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.borrarClasePorTituloRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Searches for classes with pagination and advanced filters
-     * Search classes with filters
-     */
-    async buscarClasesRaw(requestParameters: BuscarClasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginadaDTOClase>> {
-        if (requestParameters['dTOParametrosBusquedaClase'] == null) {
-            throw new runtime.RequiredError(
-                'dTOParametrosBusquedaClase',
-                'Required parameter "dTOParametrosBusquedaClase" was null or undefined when calling buscarClases().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/api/clases/buscar`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DTOParametrosBusquedaClaseToJSON(requestParameters['dTOParametrosBusquedaClase']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaDTOClaseFromJSON(jsonValue));
-    }
-
-    /**
-     * Searches for classes with pagination and advanced filters
-     * Search classes with filters
-     */
-    async buscarClases(requestParameters: BuscarClasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginadaDTOClase> {
-        const response = await this.buscarClasesRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Searches for classes with general term in title and description
-     * Search classes with general term
-     */
-    async buscarClasesPorTerminoGeneralRaw(requestParameters: BuscarClasesPorTerminoGeneralRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase<any>>> {
-        if (requestParameters['q'] == null) {
-            throw new runtime.RequiredError(
-                'q',
-                'Required parameter "q" was null or undefined when calling buscarClasesPorTerminoGeneral().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters['q'] != null) {
-            queryParameters['q'] = requestParameters['q'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/buscar/general`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     * Searches for classes with general term in title and description
-     * Search classes with general term
-     */
-    async buscarClasesPorTerminoGeneral(requestParameters: BuscarClasesPorTerminoGeneralRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase<any>> {
-        const response = await this.buscarClasesPorTerminoGeneralRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Searches for classes by title filtered according to the role
-     * Search classes by title
-     */
-    async buscarClasesPorTituloRaw(requestParameters: BuscarClasesPorTituloRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase<any>>> {
-        if (requestParameters['titulo'] == null) {
-            throw new runtime.RequiredError(
-                'titulo',
-                'Required parameter "titulo" was null or undefined when calling buscarClasesPorTitulo().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters['titulo'] != null) {
-            queryParameters['titulo'] = requestParameters['titulo'];
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/buscar`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     * Searches for classes by title filtered according to the role
-     * Search classes by title
-     */
-    async buscarClasesPorTitulo(requestParameters: BuscarClasesPorTituloRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase<any>> {
-        const response = await this.buscarClasesPorTituloRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Gets the number of students enrolled in a class
-     * Count students in class
-     */
-    async contarAlumnosEnClaseRaw(requestParameters: ContarAlumnosEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<number>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling contarAlumnosEnClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/{claseId}/alumnos/contar`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<number>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
-
-    /**
-     * Gets the number of students enrolled in a class
-     * Count students in class
-     */
-    async contarAlumnosEnClase(requestParameters: ContarAlumnosEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<number> {
-        const response = await this.contarAlumnosEnClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Gets the number of teachers in a class
-     * Count teachers in class
-     */
-    async contarProfesoresEnClaseRaw(requestParameters: ContarProfesoresEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<number>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling contarProfesoresEnClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/{claseId}/profesores/contar`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<number>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
-
-    /**
-     * Gets the number of teachers in a class
-     * Count teachers in class
-     */
-    async contarProfesoresEnClase(requestParameters: ContarProfesoresEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<number> {
-        const response = await this.contarProfesoresEnClaseRaw(requestParameters, initOverrides);
-        return await response.value();
     }
 
     /**
@@ -426,7 +157,7 @@ export class ClassesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates a new workshop
+     * Creates a new workshop. Requires ADMIN or PROFESOR permissions
      * Create workshop
      */
     async crearTallerRaw(requestParameters: CrearTallerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOTaller>> {
@@ -458,7 +189,7 @@ export class ClassesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates a new workshop
+     * Creates a new workshop. Requires ADMIN or PROFESOR permissions
      * Create workshop
      */
     async crearTaller(requestParameters: CrearTallerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOTaller> {
@@ -506,50 +237,63 @@ export class ClassesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets a specific class by its title
-     * Get class by title
+     * Gets a paginated list of classes filtered according to the user\'s role
+     * Get paginated classes
      */
-    async obtenerClasePorTituloRaw(requestParameters: ObtenerClasePorTituloRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
-        if (requestParameters['titulo'] == null) {
-            throw new runtime.RequiredError(
-                'titulo',
-                'Required parameter "titulo" was null or undefined when calling obtenerClasePorTitulo().'
-            );
+    async obtenerClasesRaw(requestParameters: ObtenerClasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginada>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
         }
 
-        const queryParameters: any = {};
+        if (requestParameters['titulo'] != null) {
+            queryParameters['titulo'] = requestParameters['titulo'];
+        }
 
-        const headerParameters: runtime.HTTPHeaders = {};
+        if (requestParameters['descripcion'] != null) {
+            queryParameters['descripcion'] = requestParameters['descripcion'];
+        }
 
+        if (requestParameters['presencialidad'] != null) {
+            queryParameters['presencialidad'] = requestParameters['presencialidad'];
+        }
 
-        let urlPath = `/api/clases/titulo/{titulo}`;
-        urlPath = urlPath.replace(`{${"titulo"}}`, encodeURIComponent(String(requestParameters['titulo'])));
+        if (requestParameters['nivel'] != null) {
+            queryParameters['nivel'] = requestParameters['nivel'];
+        }
 
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
+        if (requestParameters['precioMinimo'] != null) {
+            queryParameters['precioMinimo'] = requestParameters['precioMinimo'];
+        }
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
-    }
+        if (requestParameters['precioMaximo'] != null) {
+            queryParameters['precioMaximo'] = requestParameters['precioMaximo'];
+        }
 
-    /**
-     * Gets a specific class by its title
-     * Get class by title
-     */
-    async obtenerClasePorTitulo(requestParameters: ObtenerClasePorTituloRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
-        const response = await this.obtenerClasePorTituloRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
+        if (requestParameters['soloConPlazasDisponibles'] != null) {
+            queryParameters['soloConPlazasDisponibles'] = requestParameters['soloConPlazasDisponibles'];
+        }
 
-    /**
-     * Gets classes filtered according to the user\'s role
-     * Get classes
-     */
-    async obtenerClasesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase<any>>> {
-        const queryParameters: any = {};
+        if (requestParameters['soloProximas'] != null) {
+            queryParameters['soloProximas'] = requestParameters['soloProximas'];
+        }
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -563,94 +307,34 @@ export class ClassesApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaFromJSON(jsonValue));
     }
 
     /**
-     * Gets classes filtered according to the user\'s role
-     * Get classes
+     * Gets a paginated list of classes filtered according to the user\'s role
+     * Get paginated classes
      */
-    async obtenerClases(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase<any>> {
-        const response = await this.obtenerClasesRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Gets all classes for a specific student
-     * Get classes by student
-     */
-    async obtenerClasesPorAlumnoRaw(requestParameters: ObtenerClasesPorAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase<any>>> {
-        if (requestParameters['alumnoId'] == null) {
-            throw new runtime.RequiredError(
-                'alumnoId',
-                'Required parameter "alumnoId" was null or undefined when calling obtenerClasesPorAlumno().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/alumno/{alumnoId}`;
-        urlPath = urlPath.replace(`{${"alumnoId"}}`, encodeURIComponent(String(requestParameters['alumnoId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     * Gets all classes for a specific student
-     * Get classes by student
-     */
-    async obtenerClasesPorAlumno(requestParameters: ObtenerClasesPorAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase<any>> {
-        const response = await this.obtenerClasesPorAlumnoRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Gets all classes for a specific teacher
-     * Get classes by teacher
-     */
-    async obtenerClasesPorProfesorRaw(requestParameters: ObtenerClasesPorProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase<any>>> {
-        if (requestParameters['profesorId'] == null) {
-            throw new runtime.RequiredError(
-                'profesorId',
-                'Required parameter "profesorId" was null or undefined when calling obtenerClasesPorProfesor().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/profesor/{profesorId}`;
-        urlPath = urlPath.replace(`{${"profesorId"}}`, encodeURIComponent(String(requestParameters['profesorId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     * Gets all classes for a specific teacher
-     * Get classes by teacher
-     */
-    async obtenerClasesPorProfesor(requestParameters: ObtenerClasesPorProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase<any>> {
-        const response = await this.obtenerClasesPorProfesorRaw(requestParameters, initOverrides);
+    async obtenerClases(requestParameters: ObtenerClasesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
+        const response = await this.obtenerClasesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
 }
+
+/**
+ * @export
+ */
+export const ObtenerClasesPresencialidadEnum = {
+    Online: 'ONLINE',
+    Presencial: 'PRESENCIAL'
+} as const;
+export type ObtenerClasesPresencialidadEnum = typeof ObtenerClasesPresencialidadEnum[keyof typeof ObtenerClasesPresencialidadEnum];
+/**
+ * @export
+ */
+export const ObtenerClasesNivelEnum = {
+    Principiante: 'PRINCIPIANTE',
+    Intermedio: 'INTERMEDIO',
+    Avanzado: 'AVANZADO'
+} as const;
+export type ObtenerClasesNivelEnum = typeof ObtenerClasesNivelEnum[keyof typeof ObtenerClasesNivelEnum];

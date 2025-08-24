@@ -77,14 +77,14 @@
 					return searchWords.every((word) => searchableText.includes(word));
 				});
 			}
-			if (currentFilters.nombre) {
+			if (currentFilters.firstName) {
 				result = result.filter((p) =>
-					normalizeText(p.firstName || '').includes(normalizeText(currentFilters.nombre!))
+					normalizeText(p.firstName || '').includes(normalizeText(currentFilters.firstName!))
 				);
 			}
-			if (currentFilters.apellidos) {
+			if (currentFilters.lastName) {
 				result = result.filter((p) =>
-					normalizeText(p.lastName || '').includes(normalizeText(currentFilters.apellidos!))
+					normalizeText(p.lastName || '').includes(normalizeText(currentFilters.lastName!))
 				);
 			}
 			if (currentFilters.dni) {
@@ -98,8 +98,8 @@
 				);
 			}
 		}
-		if (currentFilters.habilitado !== undefined) {
-			result = result.filter((p) => p.enabled === currentFilters.habilitado);
+		if (currentFilters.enabled !== undefined) {
+			result = result.filter((p) => p.enabled === currentFilters.enabled);
 		}
 
 		// Sorting
@@ -222,7 +222,7 @@
 
 	function clearFilters() {
 		const url = new URL(currentUrl);
-		['nombre', 'apellidos', 'dni', 'email', 'habilitado', 'busquedaGeneral'].forEach((key) => {
+		['firstName', 'lastName', 'dni', 'email', 'enabled', 'busquedaGeneral'].forEach((key) => {
 			url.searchParams.delete(key);
 		});
 		url.searchParams.set('page', '0');
@@ -235,7 +235,7 @@
 		url.searchParams.set('searchMode', mode);
 		url.searchParams.set('page', '0');
 		if (mode === 'simple') {
-			['nombre', 'apellidos', 'dni', 'email'].forEach((k) => url.searchParams.delete(k));
+			['firstName', 'lastName', 'dni', 'email'].forEach((k) => url.searchParams.delete(k));
 		} else {
 			url.searchParams.delete('busquedaGeneral');
 		}
@@ -407,7 +407,7 @@
 
 	// Status field configuration
 	const statusField = {
-		key: 'habilitado',
+		key: 'enabled',
 		label: 'Estado de la cuenta',
 		options: [
 			{ value: '', label: 'Todos' },
@@ -498,7 +498,7 @@
 	entity={profesorToDelete as unknown as Record<string, unknown>}
 	entityName="profesor"
 	entityNameCapitalized="Profesor"
-	displayNameField="nombreCompleto"
+	displayNameField="fullName"
 	on:cancelDelete={() => {
 		showDeleteModal = false;
 		profesorToDelete = null;

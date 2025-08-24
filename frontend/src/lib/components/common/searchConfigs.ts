@@ -23,13 +23,13 @@ export const searchConfigs: Record<string, EntitySearchConfig> = {
 		entityNamePlural: 'alumnos',
 		advancedFields: [
 			{
-				key: 'nombre',
+				key: 'firstName',
 				label: 'Nombre',
 				type: 'text',
 				placeholder: 'Ej: Juan'
 			},
 			{
-				key: 'apellidos',
+				key: 'lastName',
 				label: 'Apellidos',
 				type: 'text',
 				placeholder: 'Ej: García López'
@@ -48,7 +48,7 @@ export const searchConfigs: Record<string, EntitySearchConfig> = {
 			}
 		],
 		statusField: {
-			key: 'matriculado',
+			key: 'enrolled',
 			label: 'Estado de matrícula',
 			options: [
 				{ value: '', label: 'Todos' },
@@ -62,13 +62,13 @@ export const searchConfigs: Record<string, EntitySearchConfig> = {
 		entityNamePlural: 'profesores',
 		advancedFields: [
 			{
-				key: 'nombre',
+				key: 'firstName',
 				label: 'Nombre',
 				type: 'text',
 				placeholder: 'Ej: María'
 			},
 			{
-				key: 'apellidos',
+				key: 'lastName',
 				label: 'Apellidos',
 				type: 'text',
 				placeholder: 'Ej: Rodríguez Sánchez'
@@ -80,7 +80,7 @@ export const searchConfigs: Record<string, EntitySearchConfig> = {
 				placeholder: 'Ej: maria@email.com'
 			},
 			{
-				key: 'usuario',
+				key: 'username',
 				label: 'Usuario',
 				type: 'text',
 				placeholder: 'Ej: mrodriguez'
@@ -93,7 +93,7 @@ export const searchConfigs: Record<string, EntitySearchConfig> = {
 			}
 		],
 		statusField: {
-			key: 'habilitado',
+			key: 'enabled',
 			label: 'Estado de la cuenta',
 			options: [
 				{ value: '', label: 'Todos' },

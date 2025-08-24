@@ -41,6 +41,7 @@ export default ts.config(
 	{
 		ignores: [
 			'src/lib/generated/**/*',
+			'src/lib/paraglide/**/*',
 			'src/paraglide/**/*',
 			'node_modules/**/*',
 			'.svelte-kit/**/*',
@@ -73,11 +74,13 @@ export default ts.config(
 			'**/*.stories.ts',
 			'**/*.stories.js',
 			'**/*.stories.mdx',
-			'**/*.stories.mdx',
 			'**/*.test.tsx',
 			'**/*.spec.tsx',
 			'**/*.test.jsx',
-			'**/*.spec.jsx'
+			'**/*.spec.jsx',
+			'docs/**/*',
+			'static/**/*',
+			'src/lib/assets/**/*',
 		]
 	}
 );

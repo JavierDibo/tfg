@@ -7,7 +7,7 @@
 	export let entity: Record<string, unknown> | null = null;
 	export let entityName: string = 'elemento';
 	export let entityNameCapitalized: string = 'Elemento';
-	export let displayNameField: string = 'nombre';
+	export let displayNameField: string = 'firstName';
 	export let confirmText: string = 'Eliminar';
 	export let cancelText: string = 'Cancelar';
 	export let warningText: string = 'Esta acción no se puede deshacer.';
@@ -16,12 +16,12 @@
 		if (!entity) return '';
 
 		// Try to generate a display name from common name fields
-		const nameFields = [displayNameField, 'nombreCompleto', 'nombre', 'title', 'label', 'id'];
+		const nameFields = [displayNameField, 'fullName', 'firstName', 'title', 'label', 'id'];
 
 		for (const field of nameFields) {
 			if (entity[field]) {
-				if (field === 'nombre' && entity['apellidos']) {
-					return `${entity.nombre} ${entity.apellidos}`;
+				if (field === 'firstName' && entity['lastName']) {
+					return `${entity.firstName} ${entity.lastName}`;
 				}
 				return String(entity[field]);
 			}

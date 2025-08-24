@@ -1,12 +1,10 @@
 import type {
-	DTOClase,
 	DTOEstadoInscripcion,
 	DTORespuestaEnrollment,
-	DTOPeticionEnrollment
+	DTOClaseConDetalles
 } from '$lib/generated/api';
-import { enrollmentApi, userOperationsApi, alumnoApi } from '$lib/api';
+import { classManagementApi, userOperationsApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
-import { authStore } from '$lib/stores/authStore.svelte';
 
 export class EnrollmentService {
 	/**
@@ -14,7 +12,7 @@ export class EnrollmentService {
 	 */
 	static async checkMyEnrollmentStatus(claseId: number): Promise<DTOEstadoInscripcion> {
 		try {
-			return await enrollmentApi.verificarMiEstadoInscripcion({ claseId });
+			return await classManagementApi.obtenerMiInscripcion({ claseId });
 		} catch (error) {
 			ErrorHandler.logError(error, 'checkMyEnrollmentStatus');
 			throw await ErrorHandler.parseError(error);
@@ -29,7 +27,10 @@ export class EnrollmentService {
 		alumnoId: number
 	): Promise<DTOEstadoInscripcion> {
 		try {
-			return await enrollmentApi.verificarEstadoInscripcion({ claseId, alumnoId });
+			return await classManagementApi.obtenerInscripcionEstudiante({
+				claseId,
+				studentId: alumnoId
+			});
 		} catch (error) {
 			ErrorHandler.logError(error, 'checkStudentEnrollmentStatus');
 			throw await ErrorHandler.parseError(error);
@@ -41,7 +42,7 @@ export class EnrollmentService {
 	 */
 	static async enrollInClass(claseId: number): Promise<DTORespuestaEnrollment> {
 		try {
-			return await enrollmentApi.inscribirseEnClase({ claseId });
+			return await classManagementApi.inscribirseEnClase({ claseId });
 		} catch (error) {
 			ErrorHandler.logError(error, 'enrollInClass');
 			throw await ErrorHandler.parseError(error);
@@ -53,7 +54,7 @@ export class EnrollmentService {
 	 */
 	static async unenrollFromClass(claseId: number): Promise<DTORespuestaEnrollment> {
 		try {
-			return await enrollmentApi.darseDeBajaDeClase({ claseId });
+			return await classManagementApi.darseDeBajaDeClase({ claseId });
 		} catch (error) {
 			ErrorHandler.logError(error, 'unenrollFromClass');
 			throw await ErrorHandler.parseError(error);
@@ -68,13 +69,7 @@ export class EnrollmentService {
 		claseId: number
 	): Promise<DTORespuestaEnrollment> {
 		try {
-			const enrollmentRequest: DTOPeticionEnrollment = {
-				studentId: alumnoId,
-				classId: claseId
-			};
-			return await enrollmentApi.inscribirAlumnoEnClase({
-				dTOPeticionEnrollment: enrollmentRequest
-			});
+			return await classManagementApi.inscribirAlumnoEnClase({ claseId, studentId: alumnoId });
 		} catch (error) {
 			ErrorHandler.logError(error, 'enrollStudentInClass');
 			throw await ErrorHandler.parseError(error);
@@ -89,13 +84,7 @@ export class EnrollmentService {
 		claseId: number
 	): Promise<DTORespuestaEnrollment> {
 		try {
-			const enrollmentRequest: DTOPeticionEnrollment = {
-				studentId: alumnoId,
-				classId: claseId
-			};
-			return await enrollmentApi.darDeBajaAlumnoDeClase({
-				dTOPeticionEnrollment: enrollmentRequest
-			});
+			return await classManagementApi.darDeBajaAlumnoDeClase({ claseId, studentId: alumnoId });
 		} catch (error) {
 			ErrorHandler.logError(error, 'unenrollStudentFromClass');
 			throw await ErrorHandler.parseError(error);
@@ -103,30 +92,77 @@ export class EnrollmentService {
 	}
 
 	/**
-	 * Get enrolled classes for the current student
-	 * Uses the dedicated API endpoint for efficiency
+	 * Get class details for the current student
 	 */
-	static async getMyEnrolledClasses(): Promise<DTOClase[]> {
+	static async getMyClassDetails(claseId: number): Promise<DTOClaseConDetalles> {
 		try {
-			// Use the dedicated endpoint for enrolled classes
-			const enrolledClasses = await userOperationsApi.obtenerMisClasesInscritas();
-			// Convert DTOClaseInscrita to DTOClase if needed
-			return enrolledClasses.map((claseInscrita: any) => ({
-				id: claseInscrita.id,
-				titulo: claseInscrita.titulo,
-				descripcion: claseInscrita.descripcion,
-				precio: claseInscrita.precio,
-				nivel: claseInscrita.nivel,
-				presencialidad: claseInscrita.presencialidad,
-				tipoClase: claseInscrita.tipoClase,
-				imagenPortada: claseInscrita.imagenPortada,
-				material: claseInscrita.material,
-				numeroMateriales: claseInscrita.material?.length || 0,
-				numeroEjercicios: claseInscrita.ejerciciosId?.length || 0,
-				numeroProfesores: claseInscrita.numeroProfesores,
-				numeroAlumnos: claseInscrita.numeroAlumnos
-				// Map other fields as needed
-			})) as DTOClase[];
+			return await classManagementApi.obtenerMisDetallesClase({ claseId });
+		} catch (error) {
+			ErrorHandler.logError(error, 'getMyClassDetails');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get class details for a specific student (for admins/professors)
+	 */
+	static async getStudentClassDetails(
+		claseId: number,
+		alumnoId: number
+	): Promise<DTOClaseConDetalles> {
+		try {
+			return await classManagementApi.obtenerDetallesClaseParaEstudiante({
+				claseId,
+				studentId: alumnoId
+			});
+		} catch (error) {
+			ErrorHandler.logError(error, 'getStudentClassDetails');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get all students enrolled in a class
+	 */
+	static async getStudentsInClass(
+		claseId: number,
+		page: number = 0,
+		size: number = 10,
+		sortBy?: string,
+		sortDirection?: string
+	) {
+		try {
+			return await userOperationsApi.obtenerAlumnosDeClase({
+				claseId,
+				page,
+				size,
+				sortBy,
+				sortDirection
+			});
+		} catch (error) {
+			ErrorHandler.logError(error, 'getStudentsInClass');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get public information of students in a class
+	 */
+	static async getPublicStudentsInClass(claseId: number) {
+		try {
+			return await userOperationsApi.obtenerAlumnosPublicosDeClase({ claseId });
+		} catch (error) {
+			ErrorHandler.logError(error, 'getPublicStudentsInClass');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get all classes where the current user is enrolled
+	 */
+	static async getMyEnrolledClasses() {
+		try {
+			return await userOperationsApi.obtenerMisClasesInscritas();
 		} catch (error) {
 			ErrorHandler.logError(error, 'getMyEnrolledClasses');
 			throw await ErrorHandler.parseError(error);
@@ -134,67 +170,26 @@ export class EnrollmentService {
 	}
 
 	/**
-	 * Get enrolled classes for a specific student (for admins/professors)
-	 * Uses the generated API with proper array handling
+	 * Get all classes where the current user is teaching (for professors)
 	 */
-	static async getStudentEnrolledClasses(alumnoId: number): Promise<DTOClase[]> {
+	static async getMyTeachingClasses() {
 		try {
-			// Use the generated API - it should now work correctly with the backend fixes
-			const response = await alumnoApi.obtenerClasesInscritas({ id: alumnoId });
-			
-			console.log('Raw response from obtenerClasesInscritas:', response);
-			
-			// Handle the response as an array (which is what the backend returns)
-			const enrolledClasses = Array.isArray(response) ? response : [response];
-			console.log('Processed enrolledClasses:', enrolledClasses);
-			
-			// Convert DTOClaseInscrita to DTOClase
-			return enrolledClasses
-				.filter((clase) => clase && clase.id) // Filter out null/undefined entries
-				.map((claseInscrita: any) => ({
-					id: claseInscrita.id,
-					titulo: claseInscrita.titulo,
-					descripcion: claseInscrita.descripcion,
-					precio: claseInscrita.precio,
-					nivel: claseInscrita.nivel,
-					presencialidad: claseInscrita.presencialidad,
-					tipoClase: claseInscrita.tipoClase,
-					imagenPortada: claseInscrita.imagenPortada,
-					material: claseInscrita.material,
-					numeroMateriales: claseInscrita.material?.length || 0,
-					numeroEjercicios: claseInscrita.ejerciciosId?.length || 0,
-					numeroProfesores: claseInscrita.numeroProfesores,
-					numeroAlumnos: claseInscrita.numeroAlumnos
-					// Map other fields as needed
-				})) as DTOClase[];
+			return await userOperationsApi.obtenerMisClases();
 		} catch (error) {
-			ErrorHandler.logError(error, 'getStudentEnrolledClasses');
+			ErrorHandler.logError(error, 'getMyTeachingClasses');
 			throw await ErrorHandler.parseError(error);
 		}
 	}
 
 	/**
-	 * Toggle enrollment status for the current student
-	 * Returns the new enrollment status
+	 * Get all classes (for admins) - use the classes API instead
 	 */
-	static async toggleEnrollment(
-		claseId: number
-	): Promise<{ isEnrolled: boolean; response: DTORespuestaEnrollment }> {
+	static async getAllClasses() {
 		try {
-			// Check current enrollment status
-			const currentStatus = await this.checkMyEnrollmentStatus(claseId);
-
-			if (currentStatus.isEnrolled) {
-				// Unenroll
-				const response = await this.unenrollFromClass(claseId);
-				return { isEnrolled: false, response };
-			} else {
-				// Enroll
-				const response = await this.enrollInClass(claseId);
-				return { isEnrolled: true, response };
-			}
+			const { ClaseService } = await import('./claseService');
+			return await ClaseService.getClases();
 		} catch (error) {
-			ErrorHandler.logError(error, 'toggleEnrollment');
+			ErrorHandler.logError(error, 'getAllClasses');
 			throw await ErrorHandler.parseError(error);
 		}
 	}

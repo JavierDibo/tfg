@@ -33,13 +33,11 @@ export function createValidPaginationParams(searchParams: URLSearchParams) {
 		sortBy: searchParams.get('sortBy') || 'id',
 		sortDirection: (searchParams.get('sortDirection') || 'ASC') as SortDirection,
 		// Filters
-		nombre: searchParams.get('nombre') || undefined,
-		apellidos: searchParams.get('apellidos') || undefined,
+		firstName: searchParams.get('firstName') || undefined,
+		lastName: searchParams.get('lastName') || undefined,
 		dni: searchParams.get('dni') || undefined,
 		email: searchParams.get('email') || undefined,
-		matriculado: searchParams.get('matriculado')
-			? searchParams.get('matriculado') === 'true'
-			: undefined
+		enrolled: searchParams.get('enrolled') ? searchParams.get('enrolled') === 'true' : undefined
 	};
 }
 

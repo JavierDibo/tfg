@@ -3,13 +3,43 @@
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import { goto } from '$app/navigation';
 	import {
-		enrollmentApi,
+		classManagementApi,
 		claseApi,
 		autenticacionApi,
 		alumnoApi,
 		profesorApi,
 		userOperationsApi
 	} from '$lib/api';
+
+	// Type definitions for error handling
+	interface ApiErrorResponse {
+		status: number;
+		message: string;
+		errorCode?: string;
+		requiredRole?: string;
+		currentUserRole?: string;
+		resourceType?: string;
+		action?: string;
+		suggestion?: string;
+		path?: string;
+	}
+
+	interface ApiError {
+		response?: {
+			status: number;
+			data: ApiErrorResponse;
+		};
+		message?: string;
+	}
+
+	interface ClaseInscrita {
+		id: number;
+		titulo: string;
+		descripcion: string;
+		precio: number;
+		nivel: string;
+		presencialidad: string;
+	}
 
 	// Test state
 	let loading = $state(false);
@@ -24,7 +54,7 @@
 			testName: string;
 			status: 'success' | 'error' | 'info';
 			message: string;
-			errorDetails?: any;
+			errorDetails?: ApiErrorResponse | ApiError | string;
 			timestamp: string;
 		}>
 	>([]);
@@ -87,7 +117,7 @@
 		testName: string,
 		status: 'success' | 'error' | 'info',
 		message: string,
-		errorDetails?: any
+		errorDetails?: ApiErrorResponse | ApiError | string
 	) {
 		const timestamp = new Date().toLocaleTimeString();
 		accessDeniedResults = [
@@ -141,9 +171,10 @@
 					'success',
 					'✅ Course creation successful (user has required permissions)'
 				);
-			} catch (error: any) {
-				if (error.response?.status === 403) {
-					const errorData = error.response.data;
+			} catch (error: unknown) {
+				const apiError = error as ApiError;
+				if (apiError.response?.status === 403) {
+					const errorData = apiError.response.data;
 					addAccessDeniedResult('Test 1', 'error', '❌ 403 Forbidden - Course creation denied', {
 						status: errorData.status,
 						message: errorData.message,
@@ -156,7 +187,12 @@
 						path: errorData.path
 					});
 				} else {
-					addAccessDeniedResult('Test 1', 'error', `❌ Unexpected error: ${error}`, error);
+					addAccessDeniedResult(
+						'Test 1',
+						'error',
+						`❌ Unexpected error: ${String(error)}`,
+						String(error)
+					);
 				}
 			}
 
@@ -170,9 +206,10 @@
 					'success',
 					'✅ Class deletion successful (user has admin permissions)'
 				);
-			} catch (error: any) {
-				if (error.response?.status === 403) {
-					const errorData = error.response.data;
+			} catch (error: unknown) {
+				const apiError = error as ApiError;
+				if (apiError.response?.status === 403) {
+					const errorData = apiError.response.data;
 					addAccessDeniedResult('Test 2', 'error', '❌ 403 Forbidden - Class deletion denied', {
 						status: errorData.status,
 						message: errorData.message,
@@ -184,14 +221,19 @@
 						suggestion: errorData.suggestion,
 						path: errorData.path
 					});
-				} else if (error.response?.status === 404) {
+				} else if (apiError.response?.status === 404) {
 					addAccessDeniedResult(
 						'Test 2',
 						'info',
 						'ℹ️ 404 Not Found - Class not found (but deletion permission granted)'
 					);
 				} else {
-					addAccessDeniedResult('Test 2', 'error', `❌ Unexpected error: ${error}`, error);
+					addAccessDeniedResult(
+						'Test 2',
+						'error',
+						`❌ Unexpected error: ${String(error)}`,
+						String(error)
+					);
 				}
 			}
 
@@ -203,20 +245,19 @@
 			);
 			try {
 				// Try to enroll a student in a class (requires ADMIN or PROFESOR)
-				await enrollmentApi.inscribirAlumnoEnClase({
-													dTOPeticionEnrollment: {
-									studentId: 1,
-									classId: 1
-								}
+				await classManagementApi.inscribirAlumnoEnClase({
+					claseId: 1,
+					studentId: 1
 				});
 				addAccessDeniedResult(
 					'Test 3',
 					'success',
 					'✅ Enrollment management successful (user has required permissions)'
 				);
-			} catch (error: any) {
-				if (error.response?.status === 403) {
-					const errorData = error.response.data;
+			} catch (error: unknown) {
+				const apiError = error as ApiError;
+				if (apiError.response?.status === 403) {
+					const errorData = apiError.response.data;
 					addAccessDeniedResult(
 						'Test 3',
 						'error',
@@ -234,7 +275,12 @@
 						}
 					);
 				} else {
-					addAccessDeniedResult('Test 3', 'error', `❌ Unexpected error: ${error}`, error);
+					addAccessDeniedResult(
+						'Test 3',
+						'error',
+						`❌ Unexpected error: ${String(error)}`,
+						String(error)
+					);
 				}
 			}
 
@@ -251,9 +297,10 @@
 					'success',
 					'✅ Teacher endpoint successful (user has professor permissions)'
 				);
-			} catch (error: any) {
-				if (error.response?.status === 403) {
-					const errorData = error.response.data;
+			} catch (error: unknown) {
+				const apiError = error as ApiError;
+				if (apiError.response?.status === 403) {
+					const errorData = apiError.response.data;
 					addAccessDeniedResult('Test 4', 'error', '❌ 403 Forbidden - Teacher endpoint denied', {
 						status: errorData.status,
 						message: errorData.message,
@@ -266,7 +313,12 @@
 						path: errorData.path
 					});
 				} else {
-					addAccessDeniedResult('Test 4', 'error', `❌ Unexpected error: ${error}`, error);
+					addAccessDeniedResult(
+						'Test 4',
+						'error',
+						`❌ Unexpected error: ${String(error)}`,
+						String(error)
+					);
 				}
 			}
 
@@ -283,9 +335,10 @@
 					'success',
 					'✅ Student endpoint successful (user has student permissions)'
 				);
-			} catch (error: any) {
-				if (error.response?.status === 403) {
-					const errorData = error.response.data;
+			} catch (error: unknown) {
+				const apiError = error as ApiError;
+				if (apiError.response?.status === 403) {
+					const errorData = apiError.response.data;
 					addAccessDeniedResult('Test 5', 'error', '❌ 403 Forbidden - Student endpoint denied', {
 						status: errorData.status,
 						message: errorData.message,
@@ -298,7 +351,12 @@
 						path: errorData.path
 					});
 				} else {
-					addAccessDeniedResult('Test 5', 'error', `❌ Unexpected error: ${error}`, error);
+					addAccessDeniedResult(
+						'Test 5',
+						'error',
+						`❌ Unexpected error: ${String(error)}`,
+						String(error)
+					);
 				}
 			}
 
@@ -308,7 +366,12 @@
 				'✅ Enhanced Access Denied Testing completed!'
 			);
 		} catch (error) {
-			addAccessDeniedResult('Test Error', 'error', `❌ Test failed: ${error}`, error);
+			addAccessDeniedResult(
+				'Test Error',
+				'error',
+				`❌ Test failed: ${String(error)}`,
+				String(error)
+			);
 		} finally {
 			accessDeniedLoading = false;
 		}
@@ -337,7 +400,8 @@
 
 			// Test 1: Get all classes
 			addResult('📚 Test 1: Getting all classes...');
-			const allClasses = await claseApi.obtenerClases();
+			const allClassesResponse = await claseApi.obtenerClases();
+			const allClasses = allClassesResponse.content || [];
 			addResult(`     Found ${allClasses.length} classes`);
 
 			if (allClasses.length === 0) {
@@ -351,7 +415,7 @@
 			// Test 2: Check enrollment status
 			addResult('🔍 Test 2: Checking enrollment status...');
 			try {
-				const status = await enrollmentApi.verificarMiEstadoInscripcion({ claseId: testClass.id! });
+				const status = await classManagementApi.obtenerMiInscripcion({ claseId: testClass.id! });
 				addResult(`     ✅ Current status: ${status.isEnrolled ? 'Enrolled' : 'Not enrolled'}`);
 			} catch (error) {
 				if (String(error).includes('403')) {
@@ -366,8 +430,10 @@
 			// Test 3: Try to enroll
 			addResult('➕ Test 3: Trying to enroll...');
 			try {
-				const enrollResult = await enrollmentApi.inscribirseEnClase({ claseId: testClass.id! });
-												addResult(`     ✅ Enrollment successful: ${enrollResult.className}`);
+				const enrollResult = await classManagementApi.inscribirseEnClase({
+					claseId: testClass.id!
+				});
+				addResult(`     ✅ Enrollment successful: ${enrollResult.className}`);
 			} catch (error) {
 				if (String(error).includes('403')) {
 					addResult(`     ❌ 403 Forbidden - User role ${userRoles} cannot enroll in classes`);
@@ -379,7 +445,7 @@
 			// Test 4: Check status after enrollment
 			addResult('🔍 Test 4: Checking status after enrollment...');
 			try {
-				const statusAfter = await enrollmentApi.verificarMiEstadoInscripcion({
+				const statusAfter = await classManagementApi.obtenerMiInscripcion({
 					claseId: testClass.id!
 				});
 				addResult(
@@ -398,8 +464,10 @@
 			// Test 5: Try to unenroll
 			addResult('➖ Test 5: Trying to unenroll...');
 			try {
-				const unenrollResult = await enrollmentApi.darseDeBajaDeClase({ claseId: testClass.id! });
-												addResult(`     ✅ Unenrollment successful: ${unenrollResult.className}`);
+				const unenrollResult = await classManagementApi.darseDeBajaDeClase({
+					claseId: testClass.id!
+				});
+				addResult(`     ✅ Unenrollment successful: ${unenrollResult.className}`);
 			} catch (error) {
 				if (String(error).includes('403')) {
 					addResult(`     ❌ 403 Forbidden - User role ${userRoles} cannot unenroll from classes`);
@@ -411,7 +479,7 @@
 			// Test 6: Final status check
 			addResult('🔍 Test 6: Final status check...');
 			try {
-				const finalStatus = await enrollmentApi.verificarMiEstadoInscripcion({
+				const finalStatus = await classManagementApi.obtenerMiInscripcion({
 					claseId: testClass.id!
 				});
 				addResult(`     ✅ Final status: ${finalStatus.isEnrolled ? 'Enrolled' : 'Not enrolled'}`);
@@ -449,7 +517,8 @@
 
 			// Test basic API connectivity
 			addResult('🌐 Test 1: Testing API connectivity...');
-			const classes = await claseApi.obtenerClases();
+			const classesResponse = await claseApi.obtenerClases();
+			const classes = classesResponse.content || [];
 			addResult(`     API is working. Found ${classes.length} classes.`);
 
 			// Test authentication
@@ -551,18 +620,18 @@
 		dataLoading = true;
 
 		try {
-									// Load students
-						const studentsResponse = await alumnoApi.obtenerAlumnos({
-							page: 0,
-							size: 10
-						});
+			// Load students
+			const studentsResponse = await alumnoApi.obtenerAlumnos({
+				page: 0,
+				size: 10
+			});
 			students = studentsResponse.content || [];
 
-									// Load teachers
-						const teachersResponse = await profesorApi.obtenerProfesores({
-							page: 0,
-							size: 10
-						});
+			// Load teachers
+			const teachersResponse = await profesorApi.obtenerProfesores({
+				page: 0,
+				size: 10
+			});
 			teachers = teachersResponse.content || [];
 
 			// Load classes - different based on user role
@@ -582,18 +651,20 @@
 				// If student, load their enrolled classes
 				const enrolledClasses = await userOperationsApi.obtenerMisClasesInscritas();
 				// Convert DTOClaseInscrita to DTOClase format
-				classes = enrolledClasses.slice(0, 10).map((claseInscrita) => ({
-					id: claseInscrita.id,
-					titulo: claseInscrita.titulo,
-					descripcion: claseInscrita.descripcion,
-					precio: claseInscrita.precio,
-					nivel: claseInscrita.nivel,
-					presencialidad: claseInscrita.presencialidad
-				}));
+				classes = (enrolledClasses as ClaseInscrita[])
+					.slice(0, 10)
+					.map((claseInscrita: ClaseInscrita) => ({
+						id: claseInscrita.id,
+						titulo: claseInscrita.titulo,
+						descripcion: claseInscrita.descripcion,
+						precio: claseInscrita.precio,
+						nivel: claseInscrita.nivel,
+						presencialidad: claseInscrita.presencialidad
+					}));
 			} else {
 				// If admin/professor, load all classes
 				const classesResponse = await claseApi.obtenerClases();
-				classes = classesResponse.slice(0, 10);
+				classes = (classesResponse.content || []).slice(0, 10);
 			}
 		} catch (error) {
 			console.error('Error loading classes:', error);
@@ -927,74 +998,85 @@
 										{result.message}
 									</p>
 
-									{#if result.errorDetails}
+									{#if result.errorDetails && typeof result.errorDetails === 'object'}
 										<div class="mt-3 rounded border bg-white p-3">
 											<h4 class="mb-2 text-xs font-semibold text-gray-700">Error Details:</h4>
 											<div class="space-y-1 text-xs">
-												{#if result.errorDetails.status}
+												{#if (result.errorDetails as ApiErrorResponse).status}
 													<div>
 														<span class="font-medium">Status:</span>
-														{result.errorDetails.status}
+														{(result.errorDetails as ApiErrorResponse).status}
 													</div>
 												{/if}
-												{#if result.errorDetails.message}
+												{#if (result.errorDetails as ApiErrorResponse).message}
 													<div>
 														<span class="font-medium">Message:</span>
-														{result.errorDetails.message}
+														{(result.errorDetails as ApiErrorResponse).message}
 													</div>
 												{/if}
-												{#if result.errorDetails.errorCode}
+												{#if (result.errorDetails as ApiErrorResponse).errorCode}
 													<div>
 														<span class="font-medium">Error Code:</span>
 														<code class="rounded bg-gray-100 px-1"
-															>{result.errorDetails.errorCode}</code
+															>{(result.errorDetails as ApiErrorResponse).errorCode}</code
 														>
 													</div>
 												{/if}
-												{#if result.errorDetails.requiredRole}
+												{#if (result.errorDetails as ApiErrorResponse).requiredRole}
 													<div>
 														<span class="font-medium">Required Role:</span>
 														<span class="rounded bg-yellow-100 px-1"
-															>{result.errorDetails.requiredRole}</span
+															>{(result.errorDetails as ApiErrorResponse).requiredRole}</span
 														>
 													</div>
 												{/if}
-												{#if result.errorDetails.currentUserRole}
+												{#if (result.errorDetails as ApiErrorResponse).currentUserRole}
 													<div>
 														<span class="font-medium">Current Role:</span>
 														<span class="rounded bg-blue-100 px-1"
-															>{result.errorDetails.currentUserRole}</span
+															>{(result.errorDetails as ApiErrorResponse).currentUserRole}</span
 														>
 													</div>
 												{/if}
-												{#if result.errorDetails.resourceType}
+												{#if (result.errorDetails as ApiErrorResponse).resourceType}
 													<div>
 														<span class="font-medium">Resource:</span>
 														<code class="rounded bg-gray-100 px-1"
-															>{result.errorDetails.resourceType}</code
+															>{(result.errorDetails as ApiErrorResponse).resourceType}</code
 														>
 													</div>
 												{/if}
-												{#if result.errorDetails.action}
+												{#if (result.errorDetails as ApiErrorResponse).action}
 													<div>
 														<span class="font-medium">Action:</span>
 														<code class="rounded bg-gray-100 px-1"
-															>{result.errorDetails.action}</code
+															>{(result.errorDetails as ApiErrorResponse).action}</code
 														>
 													</div>
 												{/if}
-												{#if result.errorDetails.path}
+												{#if (result.errorDetails as ApiErrorResponse).path}
 													<div>
 														<span class="font-medium">Path:</span>
-														<code class="rounded bg-gray-100 px-1">{result.errorDetails.path}</code>
+														<code class="rounded bg-gray-100 px-1"
+															>{(result.errorDetails as ApiErrorResponse).path}</code
+														>
 													</div>
 												{/if}
-												{#if result.errorDetails.suggestion}
+												{#if (result.errorDetails as ApiErrorResponse).suggestion}
 													<div class="mt-2 rounded border-l-4 border-blue-400 bg-blue-50 p-2">
 														<span class="font-medium text-blue-800">Suggestion:</span>
-														<p class="mt-1 text-blue-700">{result.errorDetails.suggestion}</p>
+														<p class="mt-1 text-blue-700">
+															{(result.errorDetails as ApiErrorResponse).suggestion}
+														</p>
 													</div>
 												{/if}
+											</div>
+										</div>
+									{:else if result.errorDetails}
+										<div class="mt-3 rounded border bg-white p-3">
+											<h4 class="mb-2 text-xs font-semibold text-gray-700">Error Details:</h4>
+											<div class="text-xs text-gray-600">
+												{String(result.errorDetails)}
 											</div>
 										</div>
 									{/if}

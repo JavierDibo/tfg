@@ -10,7 +10,6 @@ export * from './DTOClaseInscrita';
 export * from './DTOCurso';
 export * from './DTOEstadoInscripcion';
 export * from './DTOMetadatosPaginacion';
-export * from './DTOParametrosBusquedaClase';
 export * from './DTOPeticionCrearCurso';
 export * from './DTOPeticionCrearTaller';
 export * from './DTOPeticionEnrollment';
