@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
  */
 public record DTOEjercicio(
         Long id,
-        String nombre,
-        String enunciado,
-        LocalDateTime fechaInicioPlazo,
-        LocalDateTime fechaFinalPlazo,
-        String claseId,
+        String name,
+        String statement,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        String classId,
         int numeroEntregas,
         long entregasCalificadas
 ) {
@@ -25,11 +25,11 @@ public record DTOEjercicio(
     public DTOEjercicio(Ejercicio ejercicio) {
         this(
                 ejercicio.getId(),
-                ejercicio.getNombre(),
-                ejercicio.getEnunciado(),
-                ejercicio.getFechaInicioPlazo(),
-                ejercicio.getFechaFinalPlazo(),
-                ejercicio.getClaseId(),
+                ejercicio.getName(),
+                ejercicio.getStatement(),
+                ejercicio.getStartDate(),
+                ejercicio.getEndDate(),
+                ejercicio.getClassId(),
                 ejercicio.contarEntregas(),
                 ejercicio.contarEntregasCalificadas()
         );
@@ -47,21 +47,21 @@ public record DTOEjercicio(
      */
     public boolean estaEnPlazo() {
         LocalDateTime ahora = LocalDateTime.now();
-        return !ahora.isBefore(this.fechaInicioPlazo) && !ahora.isAfter(this.fechaFinalPlazo);
+        return !ahora.isBefore(this.startDate) && !ahora.isAfter(this.endDate);
     }
     
     /**
      * Verifica si el plazo del ejercicio ya ha vencido
      */
     public boolean haVencido() {
-        return LocalDateTime.now().isAfter(this.fechaFinalPlazo);
+        return LocalDateTime.now().isAfter(this.endDate);
     }
     
     /**
      * Verifica si el ejercicio aún no ha comenzado
      */
     public boolean noHaComenzado() {
-        return LocalDateTime.now().isBefore(this.fechaInicioPlazo);
+        return LocalDateTime.now().isBefore(this.startDate);
     }
     
     /**
@@ -103,7 +103,7 @@ public record DTOEjercicio(
         }
         
         LocalDateTime ahora = LocalDateTime.now();
-        return java.time.Duration.between(ahora, this.fechaFinalPlazo).toHours();
+        return java.time.Duration.between(ahora, this.endDate).toHours();
     }
     
     /**

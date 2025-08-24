@@ -22,7 +22,7 @@ public class Material {
     
     @NotNull
     @Size(max = 200)
-    private String nombre;
+    private String name;
     
     @NotNull
     @Size(max = 500)
@@ -30,9 +30,9 @@ public class Material {
     
     public Material() {}
     
-    public Material(String id, String nombre, String url) {
+    public Material(String id, String name, String url) {
         this.id = id;
-        this.nombre = nombre;
+        this.name = name;
         this.url = url;
     }
 }

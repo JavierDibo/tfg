@@ -27,21 +27,21 @@ public class Ejercicio {
     
     @NotNull
     @Size(max = 200)
-    private String nombre;
+    private String name;
     
     @NotNull
     @Size(max = 2000)
-    private String enunciado;
+    private String statement;
     
     @NotNull
-    private LocalDateTime fechaInicioPlazo;
+    private LocalDateTime startDate;
     
     @NotNull
-    private LocalDateTime fechaFinalPlazo;
+    private LocalDateTime endDate;
     
     @NotNull
     @Size(max = 255)
-    private String claseId;
+    private String classId;
     
     // Relación con entregas - por ahora como lista de entidades
     // TODO: Esta relación se puede refactorizar según necesidades
@@ -50,16 +50,16 @@ public class Ejercicio {
     
     public Ejercicio() {}
     
-    public Ejercicio(String nombre, String enunciado, LocalDateTime fechaInicioPlazo, 
-                    LocalDateTime fechaFinalPlazo, String claseId) {
-        this.nombre = nombre;
-        this.enunciado = enunciado;
-        this.fechaInicioPlazo = fechaInicioPlazo;
-        this.fechaFinalPlazo = fechaFinalPlazo;
-        this.claseId = claseId;
+    public Ejercicio(String name, String statement, LocalDateTime startDate, 
+                    LocalDateTime endDate, String classId) {
+        this.name = name;
+        this.statement = statement;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.classId = classId;
         
         // Validación: la fecha final debe ser posterior a la inicial
-        if (fechaFinalPlazo.isBefore(fechaInicioPlazo)) {
+        if (endDate.isBefore(startDate)) {
             throw new IllegalArgumentException("La fecha final del plazo no puede ser anterior a la fecha inicial");
         }
     }
@@ -70,7 +70,7 @@ public class Ejercicio {
      */
     public boolean estaEnPlazo() {
         LocalDateTime ahora = LocalDateTime.now();
-        return !ahora.isBefore(this.fechaInicioPlazo) && !ahora.isAfter(this.fechaFinalPlazo);
+        return !ahora.isBefore(this.startDate) && !ahora.isAfter(this.endDate);
     }
     
     /**
@@ -78,7 +78,7 @@ public class Ejercicio {
      * @return true si ha vencido, false en caso contrario
      */
     public boolean haVencido() {
-        return LocalDateTime.now().isAfter(this.fechaFinalPlazo);
+        return LocalDateTime.now().isAfter(this.endDate);
     }
     
     /**
@@ -86,7 +86,7 @@ public class Ejercicio {
      * @return true si no ha comenzado, false en caso contrario
      */
     public boolean noHaComenzado() {
-        return LocalDateTime.now().isBefore(this.fechaInicioPlazo);
+        return LocalDateTime.now().isBefore(this.startDate);
     }
     
     /**
@@ -131,12 +131,12 @@ public class Ejercicio {
     }
     
     /**
-     * Setter personalizado para fechaFinalPlazo que valida que sea posterior a fechaInicioPlazo
+     * Setter personalizado para endDate que valida que sea posterior a startDate
      */
-    public void setFechaFinalPlazo(LocalDateTime fechaFinalPlazo) {
-        if (this.fechaInicioPlazo != null && fechaFinalPlazo.isBefore(this.fechaInicioPlazo)) {
+    public void setEndDate(LocalDateTime endDate) {
+        if (this.startDate != null && endDate.isBefore(this.startDate)) {
             throw new IllegalArgumentException("La fecha final del plazo no puede ser anterior a la fecha inicial");
         }
-        this.fechaFinalPlazo = fechaFinalPlazo;
+        this.endDate = endDate;
     }
 }
