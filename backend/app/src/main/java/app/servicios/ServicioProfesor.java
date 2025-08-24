@@ -87,7 +87,7 @@ public class ServicioProfesor {
      */
     @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorUsuario(String usuario) {
-        Profesor profesor = repositorioProfesor.findByUsuario(usuario).orElse(null);
+        Profesor profesor = repositorioProfesor.findByUsername(usuario).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "usuario", usuario);
         return new DTOProfesor(profesor);
     }
@@ -216,7 +216,7 @@ public class ServicioProfesor {
      */
     public DTOProfesor crearProfesor(DTOPeticionRegistroProfesor peticion) {
         // Validar que no existan duplicados
-        if (repositorioProfesor.findByUsuario(peticion.username()).isPresent()) {
+        if (repositorioProfesor.findByUsername(peticion.username()).isPresent()) {
             ExceptionUtils.throwValidationError("Ya existe un profesor con el usuario: " + peticion.username());
         }
         

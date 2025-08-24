@@ -14,87 +14,100 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface DTOActualizacionAlumno
  */
 export interface DTOActualizacionAlumno {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOActualizacionAlumno
-	 */
-	nombre?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOActualizacionAlumno
-	 */
-	apellidos?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOActualizacionAlumno
-	 */
-	dni?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOActualizacionAlumno
-	 */
-	email?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOActualizacionAlumno
-	 */
-	numeroTelefono?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOActualizacionAlumno
+     */
+    firstName?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOActualizacionAlumno
+     */
+    lastName?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOActualizacionAlumno
+     */
+    dni?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOActualizacionAlumno
+     */
+    email?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOActualizacionAlumno
+     */
+    phoneNumber?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOActualizacionAlumno
+     */
+    enrolled?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOActualizacionAlumno
+     */
+    enabled?: boolean;
 }
 
 /**
  * Check if a given object implements the DTOActualizacionAlumno interface.
  */
 export function instanceOfDTOActualizacionAlumno(value: object): value is DTOActualizacionAlumno {
-	return true;
+    return true;
 }
 
 export function DTOActualizacionAlumnoFromJSON(json: any): DTOActualizacionAlumno {
-	return DTOActualizacionAlumnoFromJSONTyped(json, false);
+    return DTOActualizacionAlumnoFromJSONTyped(json, false);
 }
 
-export function DTOActualizacionAlumnoFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTOActualizacionAlumno {
-	if (json == null) {
-		return json;
-	}
-	return {
-		nombre: json['nombre'] == null ? undefined : json['nombre'],
-		apellidos: json['apellidos'] == null ? undefined : json['apellidos'],
-		dni: json['dni'] == null ? undefined : json['dni'],
-		email: json['email'] == null ? undefined : json['email'],
-		numeroTelefono: json['numeroTelefono'] == null ? undefined : json['numeroTelefono']
-	};
+export function DTOActualizacionAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOActualizacionAlumno {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'firstName': json['firstName'] == null ? undefined : json['firstName'],
+        'lastName': json['lastName'] == null ? undefined : json['lastName'],
+        'dni': json['dni'] == null ? undefined : json['dni'],
+        'email': json['email'] == null ? undefined : json['email'],
+        'phoneNumber': json['phoneNumber'] == null ? undefined : json['phoneNumber'],
+        'enrolled': json['enrolled'] == null ? undefined : json['enrolled'],
+        'enabled': json['enabled'] == null ? undefined : json['enabled'],
+    };
 }
 
 export function DTOActualizacionAlumnoToJSON(json: any): DTOActualizacionAlumno {
-	return DTOActualizacionAlumnoToJSONTyped(json, false);
+    return DTOActualizacionAlumnoToJSONTyped(json, false);
 }
 
-export function DTOActualizacionAlumnoToJSONTyped(
-	value?: DTOActualizacionAlumno | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTOActualizacionAlumnoToJSONTyped(value?: DTOActualizacionAlumno | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		nombre: value['nombre'],
-		apellidos: value['apellidos'],
-		dni: value['dni'],
-		email: value['email'],
-		numeroTelefono: value['numeroTelefono']
-	};
+    return {
+        
+        'firstName': value['firstName'],
+        'lastName': value['lastName'],
+        'dni': value['dni'],
+        'email': value['email'],
+        'phoneNumber': value['phoneNumber'],
+        'enrolled': value['enrolled'],
+        'enabled': value['enabled'],
+    };
 }
+

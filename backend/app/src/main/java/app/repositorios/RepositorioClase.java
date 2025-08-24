@@ -23,38 +23,38 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
     
     /**
      * Busca una clase por su título
-     * @param titulo Título de la clase
+     * @param title Título de la clase
      * @return Optional<Clase>
      */
-    Optional<Clase> findByTitulo(String titulo);
+    Optional<Clase> findByTitle(String title);
     
     /**
      * Busca clases por título (contiene, ignorando mayúsculas)
-     * @param titulo Título a buscar
+     * @param title Título a buscar
      * @return Lista de clases
      */
-    List<Clase> findByTituloContainingIgnoreCase(String titulo);
+    List<Clase> findByTitleContainingIgnoreCase(String title);
     
     /**
      * Busca clases por descripción (contiene, ignorando mayúsculas)
-     * @param descripcion Descripción a buscar
+     * @param description Descripción a buscar
      * @return Lista de clases
      */
-    List<Clase> findByDescripcionContainingIgnoreCase(String descripcion);
+    List<Clase> findByDescriptionContainingIgnoreCase(String description);
     
     /**
      * Busca clases por presencialidad
-     * @param presencialidad Tipo de presencialidad
+     * @param format Tipo de presencialidad
      * @return Lista de clases
      */
-    List<Clase> findByPresencialidad(EPresencialidad presencialidad);
+    List<Clase> findByFormat(EPresencialidad format);
     
     /**
      * Busca clases por nivel
-     * @param nivel Nivel de la clase
+     * @param difficulty Nivel de la clase
      * @return Lista de clases
      */
-    List<Clase> findByNivel(EDificultad nivel);
+    List<Clase> findByDifficulty(EDificultad difficulty);
     
     /**
      * Busca clases por rango de precio
@@ -62,14 +62,14 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @param precioMax Precio máximo
      * @return Lista de clases
      */
-    List<Clase> findByPrecioBetween(BigDecimal precioMin, BigDecimal precioMax);
+    List<Clase> findByPriceBetween(BigDecimal precioMin, BigDecimal precioMax);
     
     /**
      * Busca clases con precio menor o igual al especificado
      * @param precio Precio máximo
      * @return Lista de clases
      */
-    List<Clase> findByPrecioLessThanEqual(BigDecimal precio);
+    List<Clase> findByPriceLessThanEqual(BigDecimal precio);
     
     /**
      * Obtiene todas las clases ordenadas por ID
@@ -96,7 +96,7 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
     
     /**
      * General search across multiple fields using the "q" parameter
-     * Searches in titulo and descripcion fields
+     * Searches in title and description fields
      */
     @Query("SELECT c FROM Clase c WHERE " +
            "UPPER(c.title) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
@@ -118,18 +118,18 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
            "(:searchTerm IS NULL OR (" +
            "UPPER(c.title) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
            "UPPER(c.description) LIKE UPPER(CONCAT('%', :searchTerm, '%')))) AND " +
-           "(:titulo IS NULL OR UPPER(c.title) LIKE UPPER(CONCAT('%', :titulo, '%'))) AND " +
-           "(:descripcion IS NULL OR UPPER(c.description) LIKE UPPER(CONCAT('%', :descripcion, '%'))) AND " +
-           "(:presencialidad IS NULL OR c.format = :presencialidad) AND " +
-           "(:nivel IS NULL OR c.difficulty = :nivel) AND " +
+           "(:title IS NULL OR UPPER(c.title) LIKE UPPER(CONCAT('%', :title, '%'))) AND " +
+           "(:description IS NULL OR UPPER(c.description) LIKE UPPER(CONCAT('%', :description, '%'))) AND " +
+           "(:format IS NULL OR c.format = :format) AND " +
+           "(:difficulty IS NULL OR c.difficulty = :difficulty) AND " +
            "(:precioMinimo IS NULL OR c.price >= :precioMinimo) AND " +
            "(:precioMaximo IS NULL OR c.price <= :precioMaximo)")
     Page<Clase> findByGeneralAndSpecificFilters(
         @Param("searchTerm") String searchTerm,
-        @Param("titulo") String titulo,
-        @Param("descripcion") String descripcion,
-        @Param("presencialidad") EPresencialidad presencialidad,
-        @Param("nivel") EDificultad nivel,
+        @Param("title") String title,
+        @Param("description") String description,
+        @Param("format") EPresencialidad format,
+        @Param("difficulty") EDificultad difficulty,
         @Param("precioMinimo") BigDecimal precioMinimo,
         @Param("precioMaximo") BigDecimal precioMaximo,
         Pageable pageable

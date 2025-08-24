@@ -287,7 +287,7 @@ public class AlumnoRest extends BaseRestController {
             description = "Classes enrolled retrieved successfully",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = DTOClaseInscrita.class)
+                schema = @Schema(implementation = DTOClaseInscrita.class, type = "array")
             )
         ),
         @ApiResponse(

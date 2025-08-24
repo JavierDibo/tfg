@@ -15,80 +15,75 @@
 import { mapValues } from '../runtime';
 import type { DTOMetadatosPaginacion } from './DTOMetadatosPaginacion';
 import {
-	DTOMetadatosPaginacionFromJSON,
-	DTOMetadatosPaginacionFromJSONTyped,
-	DTOMetadatosPaginacionToJSON,
-	DTOMetadatosPaginacionToJSONTyped
+    DTOMetadatosPaginacionFromJSON,
+    DTOMetadatosPaginacionFromJSONTyped,
+    DTOMetadatosPaginacionToJSON,
+    DTOMetadatosPaginacionToJSONTyped,
 } from './DTOMetadatosPaginacion';
 
 /**
- * Respuesta paginada de alumnos de una clase con diferentes niveles de información según el rol del usuario
+ * Paginated response of class students with different information levels according to user role
  * @export
  * @interface DTORespuestaAlumnosClase
  */
 export interface DTORespuestaAlumnosClase {
-	/**
-	 * Lista de alumnos (información completa o pública según el rol)
-	 * @type {Array<any>}
-	 * @memberof DTORespuestaAlumnosClase
-	 */
-	content?: Array<any>;
-	/**
-	 * Metadatos de paginación
-	 * @type {DTOMetadatosPaginacion}
-	 * @memberof DTORespuestaAlumnosClase
-	 */
-	page?: DTOMetadatosPaginacion;
-	/**
-	 * Tipo de información devuelta: 'COMPLETA' para admin/profesor de la clase, 'PUBLICA' para otros
-	 * @type {string}
-	 * @memberof DTORespuestaAlumnosClase
-	 */
-	tipoInformacion?: string;
+    /**
+     * List of students (complete or public information according to role)
+     * @type {Array<any>}
+     * @memberof DTORespuestaAlumnosClase
+     */
+    content?: Array<any>;
+    /**
+     * Pagination metadata
+     * @type {DTOMetadatosPaginacion}
+     * @memberof DTORespuestaAlumnosClase
+     */
+    page?: DTOMetadatosPaginacion;
+    /**
+     * Type of information returned: 'COMPLETE' for admin/class professor, 'PUBLIC' for others
+     * @type {string}
+     * @memberof DTORespuestaAlumnosClase
+     */
+    informationType?: string;
 }
 
 /**
  * Check if a given object implements the DTORespuestaAlumnosClase interface.
  */
-export function instanceOfDTORespuestaAlumnosClase(
-	value: object
-): value is DTORespuestaAlumnosClase {
-	return true;
+export function instanceOfDTORespuestaAlumnosClase(value: object): value is DTORespuestaAlumnosClase {
+    return true;
 }
 
 export function DTORespuestaAlumnosClaseFromJSON(json: any): DTORespuestaAlumnosClase {
-	return DTORespuestaAlumnosClaseFromJSONTyped(json, false);
+    return DTORespuestaAlumnosClaseFromJSONTyped(json, false);
 }
 
-export function DTORespuestaAlumnosClaseFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTORespuestaAlumnosClase {
-	if (json == null) {
-		return json;
-	}
-	return {
-		content: json['content'] == null ? undefined : json['content'],
-		page: json['page'] == null ? undefined : DTOMetadatosPaginacionFromJSON(json['page']),
-		tipoInformacion: json['tipoInformacion'] == null ? undefined : json['tipoInformacion']
-	};
+export function DTORespuestaAlumnosClaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTORespuestaAlumnosClase {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'content': json['content'] == null ? undefined : json['content'],
+        'page': json['page'] == null ? undefined : DTOMetadatosPaginacionFromJSON(json['page']),
+        'informationType': json['informationType'] == null ? undefined : json['informationType'],
+    };
 }
 
 export function DTORespuestaAlumnosClaseToJSON(json: any): DTORespuestaAlumnosClase {
-	return DTORespuestaAlumnosClaseToJSONTyped(json, false);
+    return DTORespuestaAlumnosClaseToJSONTyped(json, false);
 }
 
-export function DTORespuestaAlumnosClaseToJSONTyped(
-	value?: DTORespuestaAlumnosClase | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTORespuestaAlumnosClaseToJSONTyped(value?: DTORespuestaAlumnosClase | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		content: value['content'],
-		page: DTOMetadatosPaginacionToJSON(value['page']),
-		tipoInformacion: value['tipoInformacion']
-	};
+    return {
+        
+        'content': value['content'],
+        'page': DTOMetadatosPaginacionToJSON(value['page']),
+        'informationType': value['informationType'],
+    };
 }
+

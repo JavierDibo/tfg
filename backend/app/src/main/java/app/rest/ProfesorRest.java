@@ -410,7 +410,11 @@ public class ProfesorRest extends BaseRestController {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Professors of the class obtained successfully"
+            description = "Professors of the class obtained successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOProfesor.class, type = "array")
+            )
         ),
         @ApiResponse(
             responseCode = "404",

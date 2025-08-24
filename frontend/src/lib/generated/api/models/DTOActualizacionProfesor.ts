@@ -14,97 +14,100 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface DTOActualizacionProfesor
  */
 export interface DTOActualizacionProfesor {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOActualizacionProfesor
-	 */
-	nombre?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOActualizacionProfesor
-	 */
-	apellidos?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOActualizacionProfesor
-	 */
-	dni?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOActualizacionProfesor
-	 */
-	email?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOActualizacionProfesor
-	 */
-	numeroTelefono?: string;
-	/**
-	 *
-	 * @type {Set<string>}
-	 * @memberof DTOActualizacionProfesor
-	 */
-	clasesId?: Set<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOActualizacionProfesor
+     */
+    firstName?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOActualizacionProfesor
+     */
+    lastName?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOActualizacionProfesor
+     */
+    dni?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOActualizacionProfesor
+     */
+    email?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOActualizacionProfesor
+     */
+    phoneNumber?: string;
+    /**
+     * 
+     * @type {Set<string>}
+     * @memberof DTOActualizacionProfesor
+     */
+    classIds?: Set<string>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOActualizacionProfesor
+     */
+    empty?: boolean;
 }
 
 /**
  * Check if a given object implements the DTOActualizacionProfesor interface.
  */
-export function instanceOfDTOActualizacionProfesor(
-	value: object
-): value is DTOActualizacionProfesor {
-	return true;
+export function instanceOfDTOActualizacionProfesor(value: object): value is DTOActualizacionProfesor {
+    return true;
 }
 
 export function DTOActualizacionProfesorFromJSON(json: any): DTOActualizacionProfesor {
-	return DTOActualizacionProfesorFromJSONTyped(json, false);
+    return DTOActualizacionProfesorFromJSONTyped(json, false);
 }
 
-export function DTOActualizacionProfesorFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTOActualizacionProfesor {
-	if (json == null) {
-		return json;
-	}
-	return {
-		nombre: json['nombre'] == null ? undefined : json['nombre'],
-		apellidos: json['apellidos'] == null ? undefined : json['apellidos'],
-		dni: json['dni'] == null ? undefined : json['dni'],
-		email: json['email'] == null ? undefined : json['email'],
-		numeroTelefono: json['numeroTelefono'] == null ? undefined : json['numeroTelefono'],
-		clasesId: json['clasesId'] == null ? undefined : new Set(json['clasesId'])
-	};
+export function DTOActualizacionProfesorFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOActualizacionProfesor {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'firstName': json['firstName'] == null ? undefined : json['firstName'],
+        'lastName': json['lastName'] == null ? undefined : json['lastName'],
+        'dni': json['dni'] == null ? undefined : json['dni'],
+        'email': json['email'] == null ? undefined : json['email'],
+        'phoneNumber': json['phoneNumber'] == null ? undefined : json['phoneNumber'],
+        'classIds': json['classIds'] == null ? undefined : new Set(json['classIds']),
+        'empty': json['empty'] == null ? undefined : json['empty'],
+    };
 }
 
 export function DTOActualizacionProfesorToJSON(json: any): DTOActualizacionProfesor {
-	return DTOActualizacionProfesorToJSONTyped(json, false);
+    return DTOActualizacionProfesorToJSONTyped(json, false);
 }
 
-export function DTOActualizacionProfesorToJSONTyped(
-	value?: DTOActualizacionProfesor | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTOActualizacionProfesorToJSONTyped(value?: DTOActualizacionProfesor | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		nombre: value['nombre'],
-		apellidos: value['apellidos'],
-		dni: value['dni'],
-		email: value['email'],
-		numeroTelefono: value['numeroTelefono'],
-		clasesId: value['clasesId'] == null ? undefined : Array.from(value['clasesId'] as Set<any>)
-	};
+    return {
+        
+        'firstName': value['firstName'],
+        'lastName': value['lastName'],
+        'dni': value['dni'],
+        'email': value['email'],
+        'phoneNumber': value['phoneNumber'],
+        'classIds': value['classIds'] == null ? undefined : Array.from(value['classIds'] as Set<any>),
+        'empty': value['empty'],
+    };
 }
+

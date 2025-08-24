@@ -8,8 +8,8 @@
 	let username = $state('');
 	let password = $state('');
 	let email = $state(''); // For registration
-	let nombre = $state(''); // For registration
-	let apellidos = $state(''); // For registration
+	let firstName = $state(''); // For registration
+	let lastName = $state(''); // For registration
 	let error = $state<string | null>(null);
 	let loading = $state(false);
 
@@ -24,7 +24,7 @@
 				authStore.login(response);
 			} else {
 				const response = await autenticacionApi.registro({
-					dTOPeticionRegistro: { username, password, email, nombre, apellidos }
+					dTOPeticionRegistro: { username, password, email, firstName, lastName }
 				});
 				authStore.login(response);
 			}
@@ -84,12 +84,14 @@
 
 		{#if !isLogin}
 			<div>
-				<label for="nombre" class="block text-sm leading-6 font-medium text-gray-900">Nombre</label>
+				<label for="firstName" class="block text-sm leading-6 font-medium text-gray-900"
+					>Nombre</label
+				>
 				<div class="mt-2">
 					<input
-						bind:value={nombre}
-						id="nombre"
-						name="nombre"
+						bind:value={firstName}
+						id="firstName"
+						name="firstName"
 						type="text"
 						autocomplete="given-name"
 						required
@@ -98,14 +100,14 @@
 				</div>
 			</div>
 			<div>
-				<label for="apellidos" class="block text-sm leading-6 font-medium text-gray-900"
+				<label for="lastName" class="block text-sm leading-6 font-medium text-gray-900"
 					>Apellidos</label
 				>
 				<div class="mt-2">
 					<input
-						bind:value={apellidos}
-						id="apellidos"
-						name="apellidos"
+						bind:value={lastName}
+						id="lastName"
+						name="lastName"
 						type="text"
 						autocomplete="family-name"
 						required

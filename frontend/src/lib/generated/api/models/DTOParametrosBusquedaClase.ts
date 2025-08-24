@@ -14,179 +14,173 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface DTOParametrosBusquedaClase
  */
 export interface DTOParametrosBusquedaClase {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	q?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	titulo?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	descripcion?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	presencialidad?: DTOParametrosBusquedaClasePresencialidadEnum;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	nivel?: DTOParametrosBusquedaClaseNivelEnum;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	precioMinimo?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	precioMaximo?: number;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	soloConPlazasDisponibles?: boolean;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	soloProximas?: boolean;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	pagina: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	tamanoPagina: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	ordenCampo: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOParametrosBusquedaClase
-	 */
-	ordenDireccion: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    q?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    titulo?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    descripcion?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    presencialidad?: DTOParametrosBusquedaClasePresencialidadEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    nivel?: DTOParametrosBusquedaClaseNivelEnum;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    precioMinimo?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    precioMaximo?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    soloConPlazasDisponibles?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    soloProximas?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    page: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    size: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    sortBy: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOParametrosBusquedaClase
+     */
+    sortDirection: string;
 }
+
 
 /**
  * @export
  */
 export const DTOParametrosBusquedaClasePresencialidadEnum = {
-	Online: 'ONLINE',
-	Presencial: 'PRESENCIAL'
+    Online: 'ONLINE',
+    Presencial: 'PRESENCIAL'
 } as const;
-export type DTOParametrosBusquedaClasePresencialidadEnum =
-	(typeof DTOParametrosBusquedaClasePresencialidadEnum)[keyof typeof DTOParametrosBusquedaClasePresencialidadEnum];
+export type DTOParametrosBusquedaClasePresencialidadEnum = typeof DTOParametrosBusquedaClasePresencialidadEnum[keyof typeof DTOParametrosBusquedaClasePresencialidadEnum];
 
 /**
  * @export
  */
 export const DTOParametrosBusquedaClaseNivelEnum = {
-	Principiante: 'PRINCIPIANTE',
-	Intermedio: 'INTERMEDIO',
-	Avanzado: 'AVANZADO'
+    Principiante: 'PRINCIPIANTE',
+    Intermedio: 'INTERMEDIO',
+    Avanzado: 'AVANZADO'
 } as const;
-export type DTOParametrosBusquedaClaseNivelEnum =
-	(typeof DTOParametrosBusquedaClaseNivelEnum)[keyof typeof DTOParametrosBusquedaClaseNivelEnum];
+export type DTOParametrosBusquedaClaseNivelEnum = typeof DTOParametrosBusquedaClaseNivelEnum[keyof typeof DTOParametrosBusquedaClaseNivelEnum];
+
 
 /**
  * Check if a given object implements the DTOParametrosBusquedaClase interface.
  */
-export function instanceOfDTOParametrosBusquedaClase(
-	value: object
-): value is DTOParametrosBusquedaClase {
-	if (!('pagina' in value) || value['pagina'] === undefined) return false;
-	if (!('tamanoPagina' in value) || value['tamanoPagina'] === undefined) return false;
-	if (!('ordenCampo' in value) || value['ordenCampo'] === undefined) return false;
-	if (!('ordenDireccion' in value) || value['ordenDireccion'] === undefined) return false;
-	return true;
+export function instanceOfDTOParametrosBusquedaClase(value: object): value is DTOParametrosBusquedaClase {
+    if (!('page' in value) || value['page'] === undefined) return false;
+    if (!('size' in value) || value['size'] === undefined) return false;
+    if (!('sortBy' in value) || value['sortBy'] === undefined) return false;
+    if (!('sortDirection' in value) || value['sortDirection'] === undefined) return false;
+    return true;
 }
 
 export function DTOParametrosBusquedaClaseFromJSON(json: any): DTOParametrosBusquedaClase {
-	return DTOParametrosBusquedaClaseFromJSONTyped(json, false);
+    return DTOParametrosBusquedaClaseFromJSONTyped(json, false);
 }
 
-export function DTOParametrosBusquedaClaseFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTOParametrosBusquedaClase {
-	if (json == null) {
-		return json;
-	}
-	return {
-		q: json['q'] == null ? undefined : json['q'],
-		titulo: json['titulo'] == null ? undefined : json['titulo'],
-		descripcion: json['descripcion'] == null ? undefined : json['descripcion'],
-		presencialidad: json['presencialidad'] == null ? undefined : json['presencialidad'],
-		nivel: json['nivel'] == null ? undefined : json['nivel'],
-		precioMinimo: json['precioMinimo'] == null ? undefined : json['precioMinimo'],
-		precioMaximo: json['precioMaximo'] == null ? undefined : json['precioMaximo'],
-		soloConPlazasDisponibles:
-			json['soloConPlazasDisponibles'] == null ? undefined : json['soloConPlazasDisponibles'],
-		soloProximas: json['soloProximas'] == null ? undefined : json['soloProximas'],
-		pagina: json['pagina'],
-		tamanoPagina: json['tamanoPagina'],
-		ordenCampo: json['ordenCampo'],
-		ordenDireccion: json['ordenDireccion']
-	};
+export function DTOParametrosBusquedaClaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOParametrosBusquedaClase {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'q': json['q'] == null ? undefined : json['q'],
+        'titulo': json['titulo'] == null ? undefined : json['titulo'],
+        'descripcion': json['descripcion'] == null ? undefined : json['descripcion'],
+        'presencialidad': json['presencialidad'] == null ? undefined : json['presencialidad'],
+        'nivel': json['nivel'] == null ? undefined : json['nivel'],
+        'precioMinimo': json['precioMinimo'] == null ? undefined : json['precioMinimo'],
+        'precioMaximo': json['precioMaximo'] == null ? undefined : json['precioMaximo'],
+        'soloConPlazasDisponibles': json['soloConPlazasDisponibles'] == null ? undefined : json['soloConPlazasDisponibles'],
+        'soloProximas': json['soloProximas'] == null ? undefined : json['soloProximas'],
+        'page': json['page'],
+        'size': json['size'],
+        'sortBy': json['sortBy'],
+        'sortDirection': json['sortDirection'],
+    };
 }
 
 export function DTOParametrosBusquedaClaseToJSON(json: any): DTOParametrosBusquedaClase {
-	return DTOParametrosBusquedaClaseToJSONTyped(json, false);
+    return DTOParametrosBusquedaClaseToJSONTyped(json, false);
 }
 
-export function DTOParametrosBusquedaClaseToJSONTyped(
-	value?: DTOParametrosBusquedaClase | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTOParametrosBusquedaClaseToJSONTyped(value?: DTOParametrosBusquedaClase | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		q: value['q'],
-		titulo: value['titulo'],
-		descripcion: value['descripcion'],
-		presencialidad: value['presencialidad'],
-		nivel: value['nivel'],
-		precioMinimo: value['precioMinimo'],
-		precioMaximo: value['precioMaximo'],
-		soloConPlazasDisponibles: value['soloConPlazasDisponibles'],
-		soloProximas: value['soloProximas'],
-		pagina: value['pagina'],
-		tamanoPagina: value['tamanoPagina'],
-		ordenCampo: value['ordenCampo'],
-		ordenDireccion: value['ordenDireccion']
-	};
+    return {
+        
+        'q': value['q'],
+        'titulo': value['titulo'],
+        'descripcion': value['descripcion'],
+        'presencialidad': value['presencialidad'],
+        'nivel': value['nivel'],
+        'precioMinimo': value['precioMinimo'],
+        'precioMaximo': value['precioMaximo'],
+        'soloConPlazasDisponibles': value['soloConPlazasDisponibles'],
+        'soloProximas': value['soloProximas'],
+        'page': value['page'],
+        'size': value['size'],
+        'sortBy': value['sortBy'],
+        'sortDirection': value['sortDirection'],
+    };
 }
+

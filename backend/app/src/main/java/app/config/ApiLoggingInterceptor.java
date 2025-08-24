@@ -146,7 +146,7 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
 
             // Log exception if present
             if (ex != null) {
-                log.error("{}{}{} {}[API-LOG]{} {}Exception occurred: {}{}", 
+                log.error("{}{}{} {}[API-LOG]{} {}[ERROR] Exception occurred: {}{}", 
                     colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
                     colorize(ANSI_CYAN, ""), ANSI_RESET,
                     colorize(ANSI_RED, ""), ex.getMessage(), ANSI_RESET, ex);
@@ -217,7 +217,7 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
                 }
             }
         } catch (Exception e) {
-            log.debug("Could not read request body: {}", e.getMessage());
+            log.debug("[ERROR] Could not read request body: {}", e.getMessage());
         }
         return null;
     }
@@ -300,7 +300,7 @@ public class ApiLoggingInterceptor implements HandlerInterceptor {
                 }
             }
         } catch (Exception e) {
-            log.warn("{}{}{} {}[API-LOG]{} {}Could not log response body: {}{}", 
+            log.warn("{}{}{} {}[API-LOG]{} {}[ERROR] Could not log response body: {}{}", 
                 colorize(ANSI_YELLOW, requestId), ANSI_RESET, " ",
                 colorize(ANSI_CYAN, ""), ANSI_RESET,
                 colorize(ANSI_RED, ""), e.getMessage(), ANSI_RESET);

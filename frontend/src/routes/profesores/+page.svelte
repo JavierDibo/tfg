@@ -54,7 +54,7 @@
 			const searchTerm = normalizeText(currentFilters.q);
 			const searchWords = searchTerm.split(/\s+/).filter(Boolean);
 			result = result.filter((p) => {
-				const searchableText = [p.nombre, p.apellidos, p.usuario, p.dni, p.email, p.numeroTelefono]
+				const searchableText = [p.firstName, p.lastName, p.username, p.dni, p.email, p.phoneNumber]
 					.map((field) => normalizeText(field || ''))
 					.join(' ');
 				return searchWords.every((word) => searchableText.includes(word));
@@ -65,12 +65,12 @@
 				const searchWords = searchTerm.split(/\s+/).filter(Boolean);
 				result = result.filter((p) => {
 					const searchableText = [
-						p.nombre,
-						p.apellidos,
-						p.usuario,
+						p.firstName,
+						p.lastName,
+						p.username,
 						p.dni,
 						p.email,
-						p.numeroTelefono
+						p.phoneNumber
 					]
 						.map((field) => normalizeText(field || ''))
 						.join(' ');
@@ -79,12 +79,12 @@
 			}
 			if (currentFilters.nombre) {
 				result = result.filter((p) =>
-					normalizeText(p.nombre || '').includes(normalizeText(currentFilters.nombre!))
+					normalizeText(p.firstName || '').includes(normalizeText(currentFilters.nombre!))
 				);
 			}
 			if (currentFilters.apellidos) {
 				result = result.filter((p) =>
-					normalizeText(p.apellidos || '').includes(normalizeText(currentFilters.apellidos!))
+					normalizeText(p.lastName || '').includes(normalizeText(currentFilters.apellidos!))
 				);
 			}
 			if (currentFilters.dni) {
@@ -105,8 +105,8 @@
 		// Sorting
 		const { sortBy, sortDirection } = currentPagination;
 		result.sort((a, b) => {
-			const aValue = (a as Record<string, unknown>)[sortBy];
-			const bValue = (b as Record<string, unknown>)[sortBy];
+			const aValue = (a as unknown as Record<string, unknown>)[sortBy];
+			const bValue = (b as unknown as Record<string, unknown>)[sortBy];
 			if (aValue == null || bValue == null) return 0;
 
 			let comparison = 0;
@@ -319,11 +319,11 @@
 		];
 		const rows = data.map((profesor) => [
 			profesor.id || '',
-			profesor.nombreCompleto || `${profesor.nombre} ${profesor.apellidos}`,
+			profesor.fullName || `${profesor.firstName} ${profesor.lastName}`,
 			profesor.dni,
 			profesor.email,
-			profesor.numeroTelefono || '',
-			profesor.fechaCreacion ? formatDate(profesor.fechaCreacion) : '',
+			profesor.phoneNumber || '',
+			profesor.createdAt ? formatDate(profesor.createdAt) : '',
 			profesor.enabled ? 'Sí' : 'No'
 		]);
 
@@ -351,13 +351,13 @@
 
 	const sortFields = [
 		{ value: 'id', label: 'ID' },
-		{ value: 'usuario', label: 'Usuario' },
-		{ value: 'nombre', label: 'Nombre' },
-		{ value: 'apellidos', label: 'Apellidos' },
+		{ value: 'username', label: 'Usuario' },
+		{ value: 'firstName', label: 'Nombre' },
+		{ value: 'lastName', label: 'Apellidos' },
 		{ value: 'dni', label: 'DNI' },
 		{ value: 'email', label: 'Email' },
 		{ value: 'enabled', label: 'Habilitado' },
-		{ value: 'fechaCreacion', label: 'Fecha Creación' }
+		{ value: 'createdAt', label: 'Fecha Creación' }
 	];
 
 	const pageSizeOptions = [10, 20, 50, 100];
@@ -399,8 +399,8 @@
 
 	// Search fields configuration
 	const advancedSearchFields = [
-		{ key: 'nombre', label: 'Nombre', type: 'text', placeholder: 'Ej: Juan' },
-		{ key: 'apellidos', label: 'Apellidos', type: 'text', placeholder: 'Ej: García López' },
+		{ key: 'firstName', label: 'Nombre', type: 'text', placeholder: 'Ej: Juan' },
+		{ key: 'lastName', label: 'Apellidos', type: 'text', placeholder: 'Ej: García López' },
 		{ key: 'dni', label: 'DNI', type: 'text', placeholder: 'Ej: 12345678Z' },
 		{ key: 'email', label: 'Email', type: 'email', placeholder: 'Ej: juan@universidad.es' }
 	];
@@ -439,7 +439,7 @@
 
 	<EntitySearchSection
 		{currentFilters}
-		paginatedData={paginatedData as PaginatedEntities<Record<string, unknown>>}
+		paginatedData={paginatedData as unknown as PaginatedEntities<Record<string, unknown>>}
 		{loading}
 		entityNamePlural="profesores"
 		advancedFields={advancedSearchFields}
@@ -464,7 +464,7 @@
 
 	<EnhancedDataTable
 		{loading}
-		paginatedData={paginatedData as PaginatedEntities<Record<string, unknown>>}
+		paginatedData={paginatedData as unknown as PaginatedEntities<Record<string, unknown>>}
 		{currentPagination}
 		{authStore}
 		columns={tableColumns as unknown as EntityColumn<Record<string, unknown>>[]}

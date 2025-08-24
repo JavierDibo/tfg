@@ -6,13 +6,13 @@
 
 	// Form state
 	let formData: DTOPeticionRegistroAlumno = $state({
-		usuario: '',
+		username: '',
 		password: '',
-		nombre: '',
-		apellidos: '',
+		firstName: '',
+		lastName: '',
 		dni: '',
 		email: '',
-		numeroTelefono: ''
+		phoneNumber: ''
 	});
 
 	// UI state
@@ -37,16 +37,16 @@
 		// Client-side validation - basic checks
 		const validationErrors: string[] = [];
 
-		if (!formData.usuario || formData.usuario.length < 3) {
+		if (!formData.username || formData.username.length < 3) {
 			validationErrors.push('El usuario debe tener al menos 3 caracteres');
 		}
 		if (!formData.password || formData.password.length < 6) {
 			validationErrors.push('La contraseña debe tener al menos 6 caracteres');
 		}
-		if (!formData.nombre || formData.nombre.length < 2) {
+		if (!formData.firstName || formData.firstName.length < 2) {
 			validationErrors.push('El nombre es obligatorio');
 		}
-		if (!formData.apellidos || formData.apellidos.length < 2) {
+		if (!formData.lastName || formData.lastName.length < 2) {
 			validationErrors.push('Los apellidos son obligatorios');
 		}
 		if (!formData.dni || formData.dni.length < 5) {
@@ -62,8 +62,8 @@
 		}
 
 		// Additional custom validations
-		if (formData.numeroTelefono && !/^\+?[\d\s-()]+$/.test(formData.numeroTelefono)) {
-			fieldErrors.numeroTelefono = 'El formato del teléfono no es válido';
+		if (formData.phoneNumber && !/^\+?[\d\s-()]+$/.test(formData.phoneNumber)) {
+			fieldErrors.phoneNumber = 'El formato del teléfono no es válido';
 			return false;
 		}
 
@@ -103,13 +103,13 @@
 
 	function resetForm() {
 		formData = {
-			usuario: '',
+			username: '',
 			password: '',
-			nombre: '',
-			apellidos: '',
+			firstName: '',
+			lastName: '',
 			dni: '',
 			email: '',
-			numeroTelefono: ''
+			phoneNumber: ''
 		};
 		errors = [];
 		fieldErrors = {};
@@ -120,9 +120,9 @@
 		delete fieldErrors[field];
 
 		switch (field) {
-			case 'usuario':
+			case 'username':
 				if (value && (value.length < 3 || value.length > 50)) {
-					fieldErrors.usuario = 'El usuario debe tener entre 3 y 50 caracteres';
+					fieldErrors.username = 'El usuario debe tener entre 3 y 50 caracteres';
 				}
 				break;
 			case 'password':
@@ -140,19 +140,19 @@
 					fieldErrors.dni = 'El DNI no puede superar 20 caracteres';
 				}
 				break;
-			case 'nombre':
+			case 'firstName':
 				if (value && value.length > 100) {
-					fieldErrors.nombre = 'El nombre no puede superar 100 caracteres';
+					fieldErrors.firstName = 'El nombre no puede superar 100 caracteres';
 				}
 				break;
-			case 'apellidos':
+			case 'lastName':
 				if (value && value.length > 100) {
-					fieldErrors.apellidos = 'Los apellidos no pueden superar 100 caracteres';
+					fieldErrors.lastName = 'Los apellidos no pueden superar 100 caracteres';
 				}
 				break;
-			case 'numeroTelefono':
+			case 'phoneNumber':
 				if (value && value.length > 15) {
-					fieldErrors.numeroTelefono = 'El teléfono no puede superar 15 caracteres';
+					fieldErrors.phoneNumber = 'El teléfono no puede superar 15 caracteres';
 				}
 				break;
 		}
@@ -198,18 +198,18 @@
 						Usuario *
 					</label>
 					<input
-						id="usuario"
+						id="username"
 						type="text"
-						bind:value={formData.usuario}
-						oninput={(e) => validateField('usuario', (e.target as HTMLInputElement).value)}
+						bind:value={formData.username}
+						oninput={(e) => validateField('username', (e.target as HTMLInputElement).value)}
 						required
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.usuario
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.username
 							? 'border-red-500'
 							: ''}"
 						placeholder="Nombre de usuario único"
 					/>
-					{#if fieldErrors.usuario}
-						<p class="mt-1 text-xs text-red-500">{fieldErrors.usuario}</p>
+					{#if fieldErrors.username}
+						<p class="mt-1 text-xs text-red-500">{fieldErrors.username}</p>
 					{/if}
 				</div>
 
@@ -256,18 +256,18 @@
 						Nombre *
 					</label>
 					<input
-						id="nombre"
+						id="firstName"
 						type="text"
-						bind:value={formData.nombre}
-						oninput={(e) => validateField('nombre', (e.target as HTMLInputElement).value)}
+						bind:value={formData.firstName}
+						oninput={(e) => validateField('firstName', (e.target as HTMLInputElement).value)}
 						required
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.nombre
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.firstName
 							? 'border-red-500'
 							: ''}"
 						placeholder="Nombre del alumno"
 					/>
-					{#if fieldErrors.nombre}
-						<p class="mt-1 text-xs text-red-500">{fieldErrors.nombre}</p>
+					{#if fieldErrors.firstName}
+						<p class="mt-1 text-xs text-red-500">{fieldErrors.firstName}</p>
 					{/if}
 				</div>
 
@@ -277,18 +277,18 @@
 						Apellidos *
 					</label>
 					<input
-						id="apellidos"
+						id="lastName"
 						type="text"
-						bind:value={formData.apellidos}
-						oninput={(e) => validateField('apellidos', (e.target as HTMLInputElement).value)}
+						bind:value={formData.lastName}
+						oninput={(e) => validateField('lastName', (e.target as HTMLInputElement).value)}
 						required
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.apellidos
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.lastName
 							? 'border-red-500'
 							: ''}"
 						placeholder="Apellidos del alumno"
 					/>
-					{#if fieldErrors.apellidos}
-						<p class="mt-1 text-xs text-red-500">{fieldErrors.apellidos}</p>
+					{#if fieldErrors.lastName}
+						<p class="mt-1 text-xs text-red-500">{fieldErrors.lastName}</p>
 					{/if}
 				</div>
 
@@ -343,17 +343,17 @@
 						Número de Teléfono
 					</label>
 					<input
-						id="telefono"
+						id="phoneNumber"
 						type="tel"
-						bind:value={formData.numeroTelefono}
-						oninput={(e) => validateField('numeroTelefono', (e.target as HTMLInputElement).value)}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.numeroTelefono
+						bind:value={formData.phoneNumber}
+						oninput={(e) => validateField('phoneNumber', (e.target as HTMLInputElement).value)}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.phoneNumber
 							? 'border-red-500'
 							: ''}"
 						placeholder="+34 XXX XXX XXX (opcional)"
 					/>
-					{#if fieldErrors.numeroTelefono}
-						<p class="mt-1 text-xs text-red-500">{fieldErrors.numeroTelefono}</p>
+					{#if fieldErrors.phoneNumber}
+						<p class="mt-1 text-xs text-red-500">{fieldErrors.phoneNumber}</p>
 					{/if}
 					<p class="mt-1 text-xs text-gray-500">Campo opcional</p>
 				</div>

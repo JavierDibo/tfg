@@ -26,6 +26,8 @@ import app.excepciones.ResourceNotFoundException;
 import app.servicios.ServicioClase;
 import app.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,6 +57,16 @@ public class ClaseRest {
      */
     @GetMapping
     @Operation(summary = "Get classes", description = "Gets classes filtered according to the user's role")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Classes retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClase.class, type = "array")
+            )
+        )
+    })
     public ResponseEntity<List<DTOClase>> obtenerClases() {
         return ResponseEntity.ok(servicioClase.obtenerClasesSegunRol());
     }
@@ -86,6 +98,16 @@ public class ClaseRest {
      */
     @GetMapping("/buscar")
     @Operation(summary = "Search classes by title", description = "Searches for classes by title filtered according to the role")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Classes found successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClase.class, type = "array")
+            )
+        )
+    })
     public ResponseEntity<List<DTOClase>> buscarClasesPorTitulo(@RequestParam String titulo) {
         return ResponseEntity.ok(servicioClase.buscarClasesPorTituloSegunRol(titulo));
     }
@@ -95,6 +117,16 @@ public class ClaseRest {
      */
     @GetMapping("/buscar/general")
     @Operation(summary = "Search classes with general term", description = "Searches for classes with general term in title and description")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Classes found successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClase.class, type = "array")
+            )
+        )
+    })
     public ResponseEntity<List<DTOClase>> buscarClasesPorTerminoGeneral(@RequestParam String q) {
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase();
         // Create a new instance with the general search term
@@ -217,6 +249,16 @@ public class ClaseRest {
      */
     @GetMapping("/alumno/{alumnoId}")
     @Operation(summary = "Get classes by student", description = "Gets all classes for a specific student")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Classes found successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClase.class, type = "array")
+            )
+        )
+    })
     public ResponseEntity<List<DTOClase>> obtenerClasesPorAlumno(@PathVariable String alumnoId) {
         return ResponseEntity.ok(servicioClase.obtenerClasesPorAlumno(alumnoId));
     }
@@ -226,6 +268,16 @@ public class ClaseRest {
      */
     @GetMapping("/profesor/{profesorId}")
     @Operation(summary = "Get classes by teacher", description = "Gets all classes for a specific teacher")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Classes found successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClase.class, type = "array")
+            )
+        )
+    })
     public ResponseEntity<List<DTOClase>> obtenerClasesPorProfesor(@PathVariable String profesorId) {
         return ResponseEntity.ok(servicioClase.obtenerClasesPorProfesor(profesorId));
     }

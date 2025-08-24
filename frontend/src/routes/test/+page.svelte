@@ -33,21 +33,21 @@
 	let students = $state<
 		Array<{
 			id?: number;
-			nombre?: string;
-			apellidos?: string;
+			firstName?: string;
+			lastName?: string;
 			email?: string;
-			numeroTelefono?: string;
-			usuario?: string;
+			phoneNumber?: string;
+			username?: string;
 		}>
 	>([]);
 	let teachers = $state<
 		Array<{
 			id?: number;
-			nombre?: string;
-			apellidos?: string;
+			firstName?: string;
+			lastName?: string;
 			email?: string;
-			especialidad?: string;
-			experiencia?: number;
+			specialty?: string;
+			experience?: number;
 		}>
 	>([]);
 	let classes = $state<
@@ -204,10 +204,10 @@
 			try {
 				// Try to enroll a student in a class (requires ADMIN or PROFESOR)
 				await enrollmentApi.inscribirAlumnoEnClase({
-					dTOPeticionEnrollment: {
-						alumnoId: 1,
-						claseId: 1
-					}
+													dTOPeticionEnrollment: {
+									studentId: 1,
+									classId: 1
+								}
 				});
 				addAccessDeniedResult(
 					'Test 3',
@@ -367,7 +367,7 @@
 			addResult('➕ Test 3: Trying to enroll...');
 			try {
 				const enrollResult = await enrollmentApi.inscribirseEnClase({ claseId: testClass.id! });
-				addResult(`     ✅ Enrollment successful: ${enrollResult.titulo}`);
+												addResult(`     ✅ Enrollment successful: ${enrollResult.className}`);
 			} catch (error) {
 				if (String(error).includes('403')) {
 					addResult(`     ❌ 403 Forbidden - User role ${userRoles} cannot enroll in classes`);
@@ -399,7 +399,7 @@
 			addResult('➖ Test 5: Trying to unenroll...');
 			try {
 				const unenrollResult = await enrollmentApi.darseDeBajaDeClase({ claseId: testClass.id! });
-				addResult(`     ✅ Unenrollment successful: ${unenrollResult.titulo}`);
+												addResult(`     ✅ Unenrollment successful: ${unenrollResult.className}`);
 			} catch (error) {
 				if (String(error).includes('403')) {
 					addResult(`     ❌ 403 Forbidden - User role ${userRoles} cannot unenroll from classes`);
@@ -551,19 +551,19 @@
 		dataLoading = true;
 
 		try {
-			// Load students
-			const studentsResponse = await alumnoApi.obtenerAlumnosPaginados({
-				page: 0,
-				size: 10
-			});
-			students = studentsResponse.contenido || [];
+									// Load students
+						const studentsResponse = await alumnoApi.obtenerAlumnos({
+							page: 0,
+							size: 10
+						});
+			students = studentsResponse.content || [];
 
-			// Load teachers
-			const teachersResponse = await profesorApi.obtenerProfesoresPaginados({
-				page: 0,
-				size: 10
-			});
-			teachers = teachersResponse.contenido || [];
+									// Load teachers
+						const teachersResponse = await profesorApi.obtenerProfesores({
+							page: 0,
+							size: 10
+						});
+			teachers = teachersResponse.content || [];
 
 			// Load classes - different based on user role
 			await loadClasses();
@@ -731,24 +731,24 @@
 								<div class="flex items-start justify-between">
 									<div class="flex-1">
 										<h4 class="font-medium text-gray-900">
-											{student.nombre}
-											{student.apellidos}
+											{student.firstName}
+											{student.lastName}
 										</h4>
 										<p class="text-sm text-gray-600">{student.email}</p>
-										{#if student.numeroTelefono}
-											<p class="text-xs text-gray-500">{student.numeroTelefono}</p>
+										{#if student.phoneNumber}
+											<p class="text-xs text-gray-500">{student.phoneNumber}</p>
 										{/if}
 									</div>
 									<div class="flex flex-col items-end gap-2">
 										<span class="rounded bg-green-100 px-2 py-1 text-xs text-green-800">
 											ID: {student.id}
 										</span>
-										{#if student.usuario}
+										{#if student.username}
 											<button
 												onclick={() =>
 													loginAsSpecificStudent(
-														student.usuario!,
-														`${student.nombre} ${student.apellidos}`
+														student.username!,
+														`${student.firstName} ${student.lastName}`
 													)}
 												disabled={loginLoading}
 												class="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -787,15 +787,15 @@
 								<div class="flex items-start justify-between">
 									<div>
 										<h4 class="font-medium text-gray-900">
-											{teacher.nombre}
-											{teacher.apellidos}
+											{teacher.firstName}
+											{teacher.lastName}
 										</h4>
 										<p class="text-sm text-gray-600">{teacher.email}</p>
-										{#if teacher.especialidad}
-											<p class="text-xs font-medium text-blue-600">{teacher.especialidad}</p>
+										{#if teacher.specialty}
+											<p class="text-xs font-medium text-blue-600">{teacher.specialty}</p>
 										{/if}
-										{#if teacher.experiencia}
-											<p class="text-xs text-gray-500">{teacher.experiencia} años exp.</p>
+										{#if teacher.experience}
+											<p class="text-xs text-gray-500">{teacher.experience} años exp.</p>
 										{/if}
 									</div>
 									<span class="rounded bg-blue-100 px-2 py-1 text-xs text-blue-800">

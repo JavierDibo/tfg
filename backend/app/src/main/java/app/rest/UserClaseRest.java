@@ -48,6 +48,17 @@ public class UserClaseRest {
     @GetMapping("/classes")
     @PreAuthorize("hasRole('PROFESOR')")
     @Operation(summary = "Obtener mis clases", description = "Obtiene las clases del profesor autenticado")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista de clases obtenida exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClase.class, type = "array")
+            )
+        ),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     public ResponseEntity<List<DTOClase>> obtenerMisClases() {
         String profesorId = securityUtils.getCurrentUserId().toString();
         return ResponseEntity.ok(servicioClase.obtenerClasesPorProfesor(profesorId));
@@ -61,6 +72,17 @@ public class UserClaseRest {
     @GetMapping("/enrolled-classes")
     @PreAuthorize("hasRole('ALUMNO')")
     @Operation(summary = "Obtener mis clases inscritas", description = "Obtiene las clases en las que está inscrito el estudiante autenticado")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista de clases inscritas obtenida exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClaseInscrita.class, type = "array")
+            )
+        ),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     public ResponseEntity<List<DTOClaseInscrita>> obtenerMisClasesInscritas() {
         Long alumnoId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(servicioClase.obtenerClasesInscritasConDetalles(alumnoId));
@@ -129,7 +151,7 @@ public class UserClaseRest {
             description = "Lista de alumnos públicos obtenida exitosamente",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = DTOAlumnoPublico.class)
+                schema = @Schema(implementation = DTOAlumnoPublico.class, type = "array")
             )
         ),
         @ApiResponse(responseCode = "403", description = "No autorizado"),

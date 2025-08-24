@@ -14,71 +14,71 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface Material
  */
 export interface Material {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Material
-	 */
-	id: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Material
-	 */
-	nombre: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof Material
-	 */
-	url: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Material
+     */
+    id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Material
+     */
+    nombre: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Material
+     */
+    url: string;
 }
 
 /**
  * Check if a given object implements the Material interface.
  */
 export function instanceOfMaterial(value: object): value is Material {
-	if (!('id' in value) || value['id'] === undefined) return false;
-	if (!('nombre' in value) || value['nombre'] === undefined) return false;
-	if (!('url' in value) || value['url'] === undefined) return false;
-	return true;
+    if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('nombre' in value) || value['nombre'] === undefined) return false;
+    if (!('url' in value) || value['url'] === undefined) return false;
+    return true;
 }
 
 export function MaterialFromJSON(json: any): Material {
-	return MaterialFromJSONTyped(json, false);
+    return MaterialFromJSONTyped(json, false);
 }
 
 export function MaterialFromJSONTyped(json: any, ignoreDiscriminator: boolean): Material {
-	if (json == null) {
-		return json;
-	}
-	return {
-		id: json['id'],
-		nombre: json['nombre'],
-		url: json['url']
-	};
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'id': json['id'],
+        'nombre': json['nombre'],
+        'url': json['url'],
+    };
 }
 
 export function MaterialToJSON(json: any): Material {
-	return MaterialToJSONTyped(json, false);
+    return MaterialToJSONTyped(json, false);
 }
 
-export function MaterialToJSONTyped(
-	value?: Material | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function MaterialToJSONTyped(value?: Material | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		id: value['id'],
-		nombre: value['nombre'],
-		url: value['url']
-	};
+    return {
+        
+        'id': value['id'],
+        'nombre': value['nombre'],
+        'url': value['url'],
+    };
 }
+

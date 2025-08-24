@@ -14,137 +14,134 @@
 
 import { mapValues } from '../runtime';
 /**
- * Respuesta paginada genérica
+ * Generic paginated response
  * @export
  * @interface DTORespuestaPaginada
  */
 export interface DTORespuestaPaginada {
-	/**
-	 * Lista de elementos de la página actual
-	 * @type {Array<any>}
-	 * @memberof DTORespuestaPaginada
-	 */
-	contenido: Array<any>;
-	/**
-	 * Número de página actual (0-indexed)
-	 * @type {number}
-	 * @memberof DTORespuestaPaginada
-	 */
-	numeroPagina: number;
-	/**
-	 * Tamaño de la página
-	 * @type {number}
-	 * @memberof DTORespuestaPaginada
-	 */
-	tamanoPagina: number;
-	/**
-	 * Número total de elementos
-	 * @type {number}
-	 * @memberof DTORespuestaPaginada
-	 */
-	totalElementos: number;
-	/**
-	 * Número total de páginas
-	 * @type {number}
-	 * @memberof DTORespuestaPaginada
-	 */
-	totalPaginas: number;
-	/**
-	 * Indica si es la primera página
-	 * @type {boolean}
-	 * @memberof DTORespuestaPaginada
-	 */
-	esPrimera: boolean;
-	/**
-	 * Indica si es la última página
-	 * @type {boolean}
-	 * @memberof DTORespuestaPaginada
-	 */
-	esUltima: boolean;
-	/**
-	 * Indica si la página tiene contenido
-	 * @type {boolean}
-	 * @memberof DTORespuestaPaginada
-	 */
-	tieneContenido: boolean;
-	/**
-	 * Campo por el que está ordenado
-	 * @type {string}
-	 * @memberof DTORespuestaPaginada
-	 */
-	ordenadoPor: string;
-	/**
-	 * Dirección de ordenación
-	 * @type {string}
-	 * @memberof DTORespuestaPaginada
-	 */
-	direccionOrden: string;
+    /**
+     * List of elements for the current page
+     * @type {Array<any>}
+     * @memberof DTORespuestaPaginada
+     */
+    content: Array<any>;
+    /**
+     * Current page number (0-indexed)
+     * @type {number}
+     * @memberof DTORespuestaPaginada
+     */
+    page: number;
+    /**
+     * Page size
+     * @type {number}
+     * @memberof DTORespuestaPaginada
+     */
+    size: number;
+    /**
+     * Total number of elements
+     * @type {number}
+     * @memberof DTORespuestaPaginada
+     */
+    totalElements: number;
+    /**
+     * Total number of pages
+     * @type {number}
+     * @memberof DTORespuestaPaginada
+     */
+    totalPages: number;
+    /**
+     * Indicates if this is the first page
+     * @type {boolean}
+     * @memberof DTORespuestaPaginada
+     */
+    isFirst: boolean;
+    /**
+     * Indicates if this is the last page
+     * @type {boolean}
+     * @memberof DTORespuestaPaginada
+     */
+    isLast: boolean;
+    /**
+     * Indicates if the page has content
+     * @type {boolean}
+     * @memberof DTORespuestaPaginada
+     */
+    hasContent: boolean;
+    /**
+     * Field by which results are sorted
+     * @type {string}
+     * @memberof DTORespuestaPaginada
+     */
+    sortBy: string;
+    /**
+     * Sort direction
+     * @type {string}
+     * @memberof DTORespuestaPaginada
+     */
+    sortDirection: string;
 }
 
 /**
  * Check if a given object implements the DTORespuestaPaginada interface.
  */
 export function instanceOfDTORespuestaPaginada(value: object): value is DTORespuestaPaginada {
-	if (!('contenido' in value) || value['contenido'] === undefined) return false;
-	if (!('numeroPagina' in value) || value['numeroPagina'] === undefined) return false;
-	if (!('tamanoPagina' in value) || value['tamanoPagina'] === undefined) return false;
-	if (!('totalElementos' in value) || value['totalElementos'] === undefined) return false;
-	if (!('totalPaginas' in value) || value['totalPaginas'] === undefined) return false;
-	if (!('esPrimera' in value) || value['esPrimera'] === undefined) return false;
-	if (!('esUltima' in value) || value['esUltima'] === undefined) return false;
-	if (!('tieneContenido' in value) || value['tieneContenido'] === undefined) return false;
-	if (!('ordenadoPor' in value) || value['ordenadoPor'] === undefined) return false;
-	if (!('direccionOrden' in value) || value['direccionOrden'] === undefined) return false;
-	return true;
+    if (!('content' in value) || value['content'] === undefined) return false;
+    if (!('page' in value) || value['page'] === undefined) return false;
+    if (!('size' in value) || value['size'] === undefined) return false;
+    if (!('totalElements' in value) || value['totalElements'] === undefined) return false;
+    if (!('totalPages' in value) || value['totalPages'] === undefined) return false;
+    if (!('isFirst' in value) || value['isFirst'] === undefined) return false;
+    if (!('isLast' in value) || value['isLast'] === undefined) return false;
+    if (!('hasContent' in value) || value['hasContent'] === undefined) return false;
+    if (!('sortBy' in value) || value['sortBy'] === undefined) return false;
+    if (!('sortDirection' in value) || value['sortDirection'] === undefined) return false;
+    return true;
 }
 
 export function DTORespuestaPaginadaFromJSON(json: any): DTORespuestaPaginada {
-	return DTORespuestaPaginadaFromJSONTyped(json, false);
+    return DTORespuestaPaginadaFromJSONTyped(json, false);
 }
 
-export function DTORespuestaPaginadaFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTORespuestaPaginada {
-	if (json == null) {
-		return json;
-	}
-	return {
-		contenido: json['contenido'],
-		numeroPagina: json['numeroPagina'],
-		tamanoPagina: json['tamanoPagina'],
-		totalElementos: json['totalElementos'],
-		totalPaginas: json['totalPaginas'],
-		esPrimera: json['esPrimera'],
-		esUltima: json['esUltima'],
-		tieneContenido: json['tieneContenido'],
-		ordenadoPor: json['ordenadoPor'],
-		direccionOrden: json['direccionOrden']
-	};
+export function DTORespuestaPaginadaFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTORespuestaPaginada {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'content': json['content'],
+        'page': json['page'],
+        'size': json['size'],
+        'totalElements': json['totalElements'],
+        'totalPages': json['totalPages'],
+        'isFirst': json['isFirst'],
+        'isLast': json['isLast'],
+        'hasContent': json['hasContent'],
+        'sortBy': json['sortBy'],
+        'sortDirection': json['sortDirection'],
+    };
 }
 
 export function DTORespuestaPaginadaToJSON(json: any): DTORespuestaPaginada {
-	return DTORespuestaPaginadaToJSONTyped(json, false);
+    return DTORespuestaPaginadaToJSONTyped(json, false);
 }
 
-export function DTORespuestaPaginadaToJSONTyped(
-	value?: DTORespuestaPaginada | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTORespuestaPaginadaToJSONTyped(value?: DTORespuestaPaginada | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		contenido: value['contenido'],
-		numeroPagina: value['numeroPagina'],
-		tamanoPagina: value['tamanoPagina'],
-		totalElementos: value['totalElementos'],
-		totalPaginas: value['totalPaginas'],
-		esPrimera: value['esPrimera'],
-		esUltima: value['esUltima'],
-		tieneContenido: value['tieneContenido'],
-		ordenadoPor: value['ordenadoPor'],
-		direccionOrden: value['direccionOrden']
-	};
+    return {
+        
+        'content': value['content'],
+        'page': value['page'],
+        'size': value['size'],
+        'totalElements': value['totalElements'],
+        'totalPages': value['totalPages'],
+        'isFirst': value['isFirst'],
+        'isLast': value['isLast'],
+        'hasContent': value['hasContent'],
+        'sortBy': value['sortBy'],
+        'sortDirection': value['sortDirection'],
+    };
 }
+

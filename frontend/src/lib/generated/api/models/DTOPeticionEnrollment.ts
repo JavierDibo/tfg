@@ -14,65 +14,62 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface DTOPeticionEnrollment
  */
 export interface DTOPeticionEnrollment {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTOPeticionEnrollment
-	 */
-	alumnoId: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTOPeticionEnrollment
-	 */
-	claseId: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOPeticionEnrollment
+     */
+    studentId: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOPeticionEnrollment
+     */
+    classId: number;
 }
 
 /**
  * Check if a given object implements the DTOPeticionEnrollment interface.
  */
 export function instanceOfDTOPeticionEnrollment(value: object): value is DTOPeticionEnrollment {
-	if (!('alumnoId' in value) || value['alumnoId'] === undefined) return false;
-	if (!('claseId' in value) || value['claseId'] === undefined) return false;
-	return true;
+    if (!('studentId' in value) || value['studentId'] === undefined) return false;
+    if (!('classId' in value) || value['classId'] === undefined) return false;
+    return true;
 }
 
 export function DTOPeticionEnrollmentFromJSON(json: any): DTOPeticionEnrollment {
-	return DTOPeticionEnrollmentFromJSONTyped(json, false);
+    return DTOPeticionEnrollmentFromJSONTyped(json, false);
 }
 
-export function DTOPeticionEnrollmentFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTOPeticionEnrollment {
-	if (json == null) {
-		return json;
-	}
-	return {
-		alumnoId: json['alumnoId'],
-		claseId: json['claseId']
-	};
+export function DTOPeticionEnrollmentFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOPeticionEnrollment {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'studentId': json['studentId'],
+        'classId': json['classId'],
+    };
 }
 
 export function DTOPeticionEnrollmentToJSON(json: any): DTOPeticionEnrollment {
-	return DTOPeticionEnrollmentToJSONTyped(json, false);
+    return DTOPeticionEnrollmentToJSONTyped(json, false);
 }
 
-export function DTOPeticionEnrollmentToJSONTyped(
-	value?: DTOPeticionEnrollment | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTOPeticionEnrollmentToJSONTyped(value?: DTOPeticionEnrollment | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		alumnoId: value['alumnoId'],
-		claseId: value['claseId']
-	};
+    return {
+        
+        'studentId': value['studentId'],
+        'classId': value['classId'],
+    };
 }
+

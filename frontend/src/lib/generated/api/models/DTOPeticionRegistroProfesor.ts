@@ -14,119 +14,114 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface DTOPeticionRegistroProfesor
  */
 export interface DTOPeticionRegistroProfesor {
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOPeticionRegistroProfesor
-	 */
-	usuario: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOPeticionRegistroProfesor
-	 */
-	password: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOPeticionRegistroProfesor
-	 */
-	nombre: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOPeticionRegistroProfesor
-	 */
-	apellidos: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOPeticionRegistroProfesor
-	 */
-	dni: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOPeticionRegistroProfesor
-	 */
-	email: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOPeticionRegistroProfesor
-	 */
-	numeroTelefono?: string;
-	/**
-	 *
-	 * @type {Array<string>}
-	 * @memberof DTOPeticionRegistroProfesor
-	 */
-	clasesId?: Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOPeticionRegistroProfesor
+     */
+    username: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOPeticionRegistroProfesor
+     */
+    password: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOPeticionRegistroProfesor
+     */
+    firstName: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOPeticionRegistroProfesor
+     */
+    lastName: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOPeticionRegistroProfesor
+     */
+    dni: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOPeticionRegistroProfesor
+     */
+    email: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOPeticionRegistroProfesor
+     */
+    phoneNumber?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof DTOPeticionRegistroProfesor
+     */
+    classIds?: Array<string>;
 }
 
 /**
  * Check if a given object implements the DTOPeticionRegistroProfesor interface.
  */
-export function instanceOfDTOPeticionRegistroProfesor(
-	value: object
-): value is DTOPeticionRegistroProfesor {
-	if (!('usuario' in value) || value['usuario'] === undefined) return false;
-	if (!('password' in value) || value['password'] === undefined) return false;
-	if (!('nombre' in value) || value['nombre'] === undefined) return false;
-	if (!('apellidos' in value) || value['apellidos'] === undefined) return false;
-	if (!('dni' in value) || value['dni'] === undefined) return false;
-	if (!('email' in value) || value['email'] === undefined) return false;
-	return true;
+export function instanceOfDTOPeticionRegistroProfesor(value: object): value is DTOPeticionRegistroProfesor {
+    if (!('username' in value) || value['username'] === undefined) return false;
+    if (!('password' in value) || value['password'] === undefined) return false;
+    if (!('firstName' in value) || value['firstName'] === undefined) return false;
+    if (!('lastName' in value) || value['lastName'] === undefined) return false;
+    if (!('dni' in value) || value['dni'] === undefined) return false;
+    if (!('email' in value) || value['email'] === undefined) return false;
+    return true;
 }
 
 export function DTOPeticionRegistroProfesorFromJSON(json: any): DTOPeticionRegistroProfesor {
-	return DTOPeticionRegistroProfesorFromJSONTyped(json, false);
+    return DTOPeticionRegistroProfesorFromJSONTyped(json, false);
 }
 
-export function DTOPeticionRegistroProfesorFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTOPeticionRegistroProfesor {
-	if (json == null) {
-		return json;
-	}
-	return {
-		usuario: json['usuario'],
-		password: json['password'],
-		nombre: json['nombre'],
-		apellidos: json['apellidos'],
-		dni: json['dni'],
-		email: json['email'],
-		numeroTelefono: json['numeroTelefono'] == null ? undefined : json['numeroTelefono'],
-		clasesId: json['clasesId'] == null ? undefined : json['clasesId']
-	};
+export function DTOPeticionRegistroProfesorFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOPeticionRegistroProfesor {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'username': json['username'],
+        'password': json['password'],
+        'firstName': json['firstName'],
+        'lastName': json['lastName'],
+        'dni': json['dni'],
+        'email': json['email'],
+        'phoneNumber': json['phoneNumber'] == null ? undefined : json['phoneNumber'],
+        'classIds': json['classIds'] == null ? undefined : json['classIds'],
+    };
 }
 
 export function DTOPeticionRegistroProfesorToJSON(json: any): DTOPeticionRegistroProfesor {
-	return DTOPeticionRegistroProfesorToJSONTyped(json, false);
+    return DTOPeticionRegistroProfesorToJSONTyped(json, false);
 }
 
-export function DTOPeticionRegistroProfesorToJSONTyped(
-	value?: DTOPeticionRegistroProfesor | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTOPeticionRegistroProfesorToJSONTyped(value?: DTOPeticionRegistroProfesor | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		usuario: value['usuario'],
-		password: value['password'],
-		nombre: value['nombre'],
-		apellidos: value['apellidos'],
-		dni: value['dni'],
-		email: value['email'],
-		numeroTelefono: value['numeroTelefono'],
-		clasesId: value['clasesId']
-	};
+    return {
+        
+        'username': value['username'],
+        'password': value['password'],
+        'firstName': value['firstName'],
+        'lastName': value['lastName'],
+        'dni': value['dni'],
+        'email': value['email'],
+        'phoneNumber': value['phoneNumber'],
+        'classIds': value['classIds'],
+    };
 }
+

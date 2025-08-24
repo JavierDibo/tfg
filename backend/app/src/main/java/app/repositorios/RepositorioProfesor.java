@@ -23,7 +23,7 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @param usuario Nombre de usuario
      * @return Optional<Profesor>
      */
-    Optional<Profesor> findByUsuario(String usuario);
+    Optional<Profesor> findByUsername(String username);
     
     /**
      * Busca un profesor por su email
@@ -38,6 +38,27 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @return Optional<Profesor>
      */
     Optional<Profesor> findByDni(String dni);
+    
+    /**
+     * Verifica si un profesor con el nombre de usuario dado existe
+     * @param username Nombre de usuario a verificar
+     * @return true si existe, false en caso contrario
+     */
+    boolean existsByUsername(String username);
+    
+    /**
+     * Verifica si un profesor con el email dado existe
+     * @param email Email a verificar
+     * @return true si existe, false en caso contrario
+     */
+    boolean existsByEmail(String email);
+    
+    /**
+     * Verifica si un profesor con el DNI dado existe
+     * @param dni DNI a verificar
+     * @return true si existe, false en caso contrario
+     */
+    boolean existsByDni(String dni);
     
     /**
      * Busca profesores por nombre (contiene, ignorando mayúsculas y acentos)

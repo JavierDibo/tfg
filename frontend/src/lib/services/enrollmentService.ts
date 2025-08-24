@@ -6,6 +6,7 @@ import type {
 } from '$lib/generated/api';
 import { enrollmentApi, userOperationsApi, alumnoApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
+import { authStore } from '$lib/stores/authStore.svelte';
 
 export class EnrollmentService {
 	/**
@@ -38,7 +39,7 @@ export class EnrollmentService {
 	/**
 	 * Enroll the current student in a class
 	 */
-	static async enrollInClass(claseId: number): Promise<DTOClase> {
+	static async enrollInClass(claseId: number): Promise<DTORespuestaEnrollment> {
 		try {
 			return await enrollmentApi.inscribirseEnClase({ claseId });
 		} catch (error) {
@@ -50,7 +51,7 @@ export class EnrollmentService {
 	/**
 	 * Unenroll the current student from a class
 	 */
-	static async unenrollFromClass(claseId: number): Promise<DTOClase> {
+	static async unenrollFromClass(claseId: number): Promise<DTORespuestaEnrollment> {
 		try {
 			return await enrollmentApi.darseDeBajaDeClase({ claseId });
 		} catch (error) {
@@ -68,8 +69,8 @@ export class EnrollmentService {
 	): Promise<DTORespuestaEnrollment> {
 		try {
 			const enrollmentRequest: DTOPeticionEnrollment = {
-				alumnoId,
-				claseId
+				studentId: alumnoId,
+				classId: claseId
 			};
 			return await enrollmentApi.inscribirAlumnoEnClase({
 				dTOPeticionEnrollment: enrollmentRequest
@@ -89,8 +90,8 @@ export class EnrollmentService {
 	): Promise<DTORespuestaEnrollment> {
 		try {
 			const enrollmentRequest: DTOPeticionEnrollment = {
-				alumnoId,
-				claseId
+				studentId: alumnoId,
+				classId: claseId
 			};
 			return await enrollmentApi.darDeBajaAlumnoDeClase({
 				dTOPeticionEnrollment: enrollmentRequest
@@ -110,7 +111,7 @@ export class EnrollmentService {
 			// Use the dedicated endpoint for enrolled classes
 			const enrolledClasses = await userOperationsApi.obtenerMisClasesInscritas();
 			// Convert DTOClaseInscrita to DTOClase if needed
-			return enrolledClasses.map((claseInscrita) => ({
+			return enrolledClasses.map((claseInscrita: any) => ({
 				id: claseInscrita.id,
 				titulo: claseInscrita.titulo,
 				descripcion: claseInscrita.descripcion,
@@ -134,31 +135,40 @@ export class EnrollmentService {
 
 	/**
 	 * Get enrolled classes for a specific student (for admins/professors)
-	 * Uses the dedicated API endpoint for efficiency
+	 * Uses the generated API with proper array handling
 	 */
 	static async getStudentEnrolledClasses(alumnoId: number): Promise<DTOClase[]> {
 		try {
-			// Use the dedicated endpoint for admin to get student's enrolled classes
-			const enrolledClasses = await alumnoApi.obtenerClasesInscritasConDetalles({ alumnoId });
-			// Convert DTOClaseInscrita to DTOClase if needed
-			return enrolledClasses.map((claseInscrita) => ({
-				id: claseInscrita.id,
-				titulo: claseInscrita.titulo,
-				descripcion: claseInscrita.descripcion,
-				precio: claseInscrita.precio,
-				nivel: claseInscrita.nivel,
-				presencialidad: claseInscrita.presencialidad,
-				tipoClase: claseInscrita.tipoClase,
-				imagenPortada: claseInscrita.imagenPortada,
-				material: claseInscrita.material,
-				numeroMateriales: claseInscrita.material?.length || 0,
-				numeroEjercicios: claseInscrita.ejerciciosId?.length || 0,
-				numeroProfesores: claseInscrita.numeroProfesores,
-				numeroAlumnos: claseInscrita.numeroAlumnos
-				// Map other fields as needed
-			})) as DTOClase[];
+			// Use the generated API - it should now work correctly with the backend fixes
+			const response = await alumnoApi.obtenerClasesInscritas({ id: alumnoId });
+			
+			console.log('Raw response from obtenerClasesInscritas:', response);
+			
+			// Handle the response as an array (which is what the backend returns)
+			const enrolledClasses = Array.isArray(response) ? response : [response];
+			console.log('Processed enrolledClasses:', enrolledClasses);
+			
+			// Convert DTOClaseInscrita to DTOClase
+			return enrolledClasses
+				.filter((clase) => clase && clase.id) // Filter out null/undefined entries
+				.map((claseInscrita: any) => ({
+					id: claseInscrita.id,
+					titulo: claseInscrita.titulo,
+					descripcion: claseInscrita.descripcion,
+					precio: claseInscrita.precio,
+					nivel: claseInscrita.nivel,
+					presencialidad: claseInscrita.presencialidad,
+					tipoClase: claseInscrita.tipoClase,
+					imagenPortada: claseInscrita.imagenPortada,
+					material: claseInscrita.material,
+					numeroMateriales: claseInscrita.material?.length || 0,
+					numeroEjercicios: claseInscrita.ejerciciosId?.length || 0,
+					numeroProfesores: claseInscrita.numeroProfesores,
+					numeroAlumnos: claseInscrita.numeroAlumnos
+					// Map other fields as needed
+				})) as DTOClase[];
 		} catch (error) {
-			ErrorHandler.logError(error, 'getStudentEnrolledClases');
+			ErrorHandler.logError(error, 'getStudentEnrolledClasses');
 			throw await ErrorHandler.parseError(error);
 		}
 	}
@@ -169,19 +179,19 @@ export class EnrollmentService {
 	 */
 	static async toggleEnrollment(
 		claseId: number
-	): Promise<{ isEnrolled: boolean; clase: DTOClase }> {
+	): Promise<{ isEnrolled: boolean; response: DTORespuestaEnrollment }> {
 		try {
 			// Check current enrollment status
 			const currentStatus = await this.checkMyEnrollmentStatus(claseId);
 
 			if (currentStatus.isEnrolled) {
 				// Unenroll
-				const clase = await this.unenrollFromClass(claseId);
-				return { isEnrolled: false, clase };
+				const response = await this.unenrollFromClass(claseId);
+				return { isEnrolled: false, response };
 			} else {
 				// Enroll
-				const clase = await this.enrollInClass(claseId);
-				return { isEnrolled: true, clase };
+				const response = await this.enrollInClass(claseId);
+				return { isEnrolled: true, response };
 			}
 		} catch (error) {
 			ErrorHandler.logError(error, 'toggleEnrollment');

@@ -14,73 +14,70 @@
 
 import { mapValues } from '../runtime';
 /**
- * Información pública del alumno (solo nombre y apellidos)
+ * Public student information (first name and last name only)
  * @export
  * @interface DTOAlumnoPublico
  */
 export interface DTOAlumnoPublico {
-	/**
-	 * Nombre del alumno
-	 * @type {string}
-	 * @memberof DTOAlumnoPublico
-	 */
-	nombre: string;
-	/**
-	 * Apellidos del alumno
-	 * @type {string}
-	 * @memberof DTOAlumnoPublico
-	 */
-	apellidos: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOAlumnoPublico
-	 */
-	nombreCompleto?: string;
+    /**
+     * Student's first name
+     * @type {string}
+     * @memberof DTOAlumnoPublico
+     */
+    firstName: string;
+    /**
+     * Student's last name
+     * @type {string}
+     * @memberof DTOAlumnoPublico
+     */
+    lastName: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOAlumnoPublico
+     */
+    fullName?: string;
 }
 
 /**
  * Check if a given object implements the DTOAlumnoPublico interface.
  */
 export function instanceOfDTOAlumnoPublico(value: object): value is DTOAlumnoPublico {
-	if (!('nombre' in value) || value['nombre'] === undefined) return false;
-	if (!('apellidos' in value) || value['apellidos'] === undefined) return false;
-	return true;
+    if (!('firstName' in value) || value['firstName'] === undefined) return false;
+    if (!('lastName' in value) || value['lastName'] === undefined) return false;
+    return true;
 }
 
 export function DTOAlumnoPublicoFromJSON(json: any): DTOAlumnoPublico {
-	return DTOAlumnoPublicoFromJSONTyped(json, false);
+    return DTOAlumnoPublicoFromJSONTyped(json, false);
 }
 
-export function DTOAlumnoPublicoFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTOAlumnoPublico {
-	if (json == null) {
-		return json;
-	}
-	return {
-		nombre: json['nombre'],
-		apellidos: json['apellidos'],
-		nombreCompleto: json['nombreCompleto'] == null ? undefined : json['nombreCompleto']
-	};
+export function DTOAlumnoPublicoFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOAlumnoPublico {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'firstName': json['firstName'],
+        'lastName': json['lastName'],
+        'fullName': json['fullName'] == null ? undefined : json['fullName'],
+    };
 }
 
 export function DTOAlumnoPublicoToJSON(json: any): DTOAlumnoPublico {
-	return DTOAlumnoPublicoToJSONTyped(json, false);
+    return DTOAlumnoPublicoToJSONTyped(json, false);
 }
 
-export function DTOAlumnoPublicoToJSONTyped(
-	value?: DTOAlumnoPublico | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTOAlumnoPublicoToJSONTyped(value?: DTOAlumnoPublico | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		nombre: value['nombre'],
-		apellidos: value['apellidos'],
-		nombreCompleto: value['nombreCompleto']
-	};
+    return {
+        
+        'firstName': value['firstName'],
+        'lastName': value['lastName'],
+        'fullName': value['fullName'],
+    };
 }
+

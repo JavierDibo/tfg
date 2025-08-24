@@ -201,10 +201,10 @@ export class ClaseService {
 	}): Promise<DTORespuestaPaginadaDTOClase> {
 		try {
 			const searchParams: DTOParametrosBusquedaClase = {
-				pagina: params.page || 0,
-				tamanoPagina: params.size || 20,
-				ordenCampo: params.sortBy || 'titulo',
-				ordenDireccion: params.sortDirection || 'ASC'
+				page: params.page || 0,
+				size: params.size || 20,
+				sortBy: params.sortBy || 'titulo',
+				sortDirection: params.sortDirection || 'ASC'
 			};
 
 			// Add general search parameter

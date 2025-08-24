@@ -15,13 +15,13 @@ import app.entidades.Alumno;
 @Repository
 public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
     
-    Optional<Alumno> findByUsuario(String usuario);
+    Optional<Alumno> findByUsername(String username);
     
     Optional<Alumno> findByEmail(String email);
     
     Optional<Alumno> findByDni(String dni);
     
-    boolean existsByUsuario(String usuario);
+    boolean existsByUsername(String username);
     
     boolean existsByEmail(String email);
     

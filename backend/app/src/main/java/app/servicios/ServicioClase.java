@@ -226,7 +226,7 @@ public class ServicioClase {
      */
     @Transactional(readOnly = true)
     public DTOClase obtenerClasePorTitulo(String titulo) {
-        Clase clase = repositorioClase.findByTitulo(titulo).orElse(null);
+        Clase clase = repositorioClase.findByTitle(titulo).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "título", titulo);
         
         // Verificar acceso según el rol
@@ -346,7 +346,7 @@ public class ServicioClase {
      * @return true si se borró correctamente, false en caso contrario
      */
     public boolean borrarClasePorTitulo(String titulo) {
-        Optional<Clase> claseOpt = repositorioClase.findByTitulo(titulo);
+        Optional<Clase> claseOpt = repositorioClase.findByTitle(titulo);
         if (claseOpt.isEmpty()) {
             return false;
         }
@@ -414,22 +414,22 @@ public class ServicioClase {
             // Use existing specific search logic
             if (parametros.titulo() != null && !parametros.titulo().isEmpty()) {
                 // Aplicar paginación manualmente ya que el repositorio no tiene sobrecarga con Pageable
-                List<Clase> clases = repositorioClase.findByTituloContainingIgnoreCase(parametros.titulo());
+                List<Clase> clases = repositorioClase.findByTitleContainingIgnoreCase(parametros.titulo());
                 resultado = convertirListaAPagina(clases, pageable);
             } else if (parametros.descripcion() != null && !parametros.descripcion().isEmpty()) {
-                List<Clase> clases = repositorioClase.findByDescripcionContainingIgnoreCase(parametros.descripcion());
+                List<Clase> clases = repositorioClase.findByDescriptionContainingIgnoreCase(parametros.descripcion());
                 resultado = convertirListaAPagina(clases, pageable);
             } else if (parametros.presencialidad() != null) {
-                List<Clase> clases = repositorioClase.findByPresencialidad(parametros.presencialidad());
+                List<Clase> clases = repositorioClase.findByFormat(parametros.presencialidad());
                 resultado = convertirListaAPagina(clases, pageable);
             } else if (parametros.nivel() != null) {
-                List<Clase> clases = repositorioClase.findByNivel(parametros.nivel());
+                List<Clase> clases = repositorioClase.findByDifficulty(parametros.nivel());
                 resultado = convertirListaAPagina(clases, pageable);
             } else if (parametros.precioMinimo() != null && parametros.precioMaximo() != null) {
-                List<Clase> clases = repositorioClase.findByPrecioBetween(parametros.precioMinimo(), parametros.precioMaximo());
+                List<Clase> clases = repositorioClase.findByPriceBetween(parametros.precioMinimo(), parametros.precioMaximo());
                 resultado = convertirListaAPagina(clases, pageable);
             } else if (parametros.precioMaximo() != null) {
-                List<Clase> clases = repositorioClase.findByPrecioLessThanEqual(parametros.precioMaximo());
+                List<Clase> clases = repositorioClase.findByPriceLessThanEqual(parametros.precioMaximo());
                 resultado = convertirListaAPagina(clases, pageable);
             } else {
                 // Si no hay criterios específicos, obtener todas las clases
@@ -450,7 +450,7 @@ public class ServicioClase {
      * @return Lista de DTOClase que coinciden con el título
      */
     public List<DTOClase> buscarClasesPorTitulo(String titulo) {
-        return repositorioClase.findByTituloContainingIgnoreCase(titulo)
+        return repositorioClase.findByTitleContainingIgnoreCase(titulo)
                 .stream()
                 .map(DTOClase::new)
                 .collect(Collectors.toList());

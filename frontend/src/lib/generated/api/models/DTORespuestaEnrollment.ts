@@ -14,112 +14,108 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * 
  * @export
  * @interface DTORespuestaEnrollment
  */
 export interface DTORespuestaEnrollment {
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof DTORespuestaEnrollment
-	 */
-	success?: boolean;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTORespuestaEnrollment
-	 */
-	message?: string;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTORespuestaEnrollment
-	 */
-	alumnoId?: number;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTORespuestaEnrollment
-	 */
-	claseId?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTORespuestaEnrollment
-	 */
-	nombreAlumno?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTORespuestaEnrollment
-	 */
-	tituloClase?: string;
-	/**
-	 *
-	 * @type {Date}
-	 * @memberof DTORespuestaEnrollment
-	 */
-	fechaOperacion?: Date;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTORespuestaEnrollment
-	 */
-	tipoOperacion?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTORespuestaEnrollment
+     */
+    success?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTORespuestaEnrollment
+     */
+    message?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTORespuestaEnrollment
+     */
+    studentId?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTORespuestaEnrollment
+     */
+    classId?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTORespuestaEnrollment
+     */
+    studentName?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTORespuestaEnrollment
+     */
+    className?: string;
+    /**
+     * 
+     * @type {Date}
+     * @memberof DTORespuestaEnrollment
+     */
+    operationDate?: Date;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTORespuestaEnrollment
+     */
+    operationType?: string;
 }
 
 /**
  * Check if a given object implements the DTORespuestaEnrollment interface.
  */
 export function instanceOfDTORespuestaEnrollment(value: object): value is DTORespuestaEnrollment {
-	return true;
+    return true;
 }
 
 export function DTORespuestaEnrollmentFromJSON(json: any): DTORespuestaEnrollment {
-	return DTORespuestaEnrollmentFromJSONTyped(json, false);
+    return DTORespuestaEnrollmentFromJSONTyped(json, false);
 }
 
-export function DTORespuestaEnrollmentFromJSONTyped(
-	json: any,
-	ignoreDiscriminator: boolean
-): DTORespuestaEnrollment {
-	if (json == null) {
-		return json;
-	}
-	return {
-		success: json['success'] == null ? undefined : json['success'],
-		message: json['message'] == null ? undefined : json['message'],
-		alumnoId: json['alumnoId'] == null ? undefined : json['alumnoId'],
-		claseId: json['claseId'] == null ? undefined : json['claseId'],
-		nombreAlumno: json['nombreAlumno'] == null ? undefined : json['nombreAlumno'],
-		tituloClase: json['tituloClase'] == null ? undefined : json['tituloClase'],
-		fechaOperacion: json['fechaOperacion'] == null ? undefined : new Date(json['fechaOperacion']),
-		tipoOperacion: json['tipoOperacion'] == null ? undefined : json['tipoOperacion']
-	};
+export function DTORespuestaEnrollmentFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTORespuestaEnrollment {
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'success': json['success'] == null ? undefined : json['success'],
+        'message': json['message'] == null ? undefined : json['message'],
+        'studentId': json['studentId'] == null ? undefined : json['studentId'],
+        'classId': json['classId'] == null ? undefined : json['classId'],
+        'studentName': json['studentName'] == null ? undefined : json['studentName'],
+        'className': json['className'] == null ? undefined : json['className'],
+        'operationDate': json['operationDate'] == null ? undefined : (new Date(json['operationDate'])),
+        'operationType': json['operationType'] == null ? undefined : json['operationType'],
+    };
 }
 
 export function DTORespuestaEnrollmentToJSON(json: any): DTORespuestaEnrollment {
-	return DTORespuestaEnrollmentToJSONTyped(json, false);
+    return DTORespuestaEnrollmentToJSONTyped(json, false);
 }
 
-export function DTORespuestaEnrollmentToJSONTyped(
-	value?: DTORespuestaEnrollment | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTORespuestaEnrollmentToJSONTyped(value?: DTORespuestaEnrollment | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		success: value['success'],
-		message: value['message'],
-		alumnoId: value['alumnoId'],
-		claseId: value['claseId'],
-		nombreAlumno: value['nombreAlumno'],
-		tituloClase: value['tituloClase'],
-		fechaOperacion:
-			value['fechaOperacion'] == null ? undefined : value['fechaOperacion'].toISOString(),
-		tipoOperacion: value['tipoOperacion']
-	};
+    return {
+        
+        'success': value['success'],
+        'message': value['message'],
+        'studentId': value['studentId'],
+        'classId': value['classId'],
+        'studentName': value['studentName'],
+        'className': value['className'],
+        'operationDate': value['operationDate'] == null ? undefined : ((value['operationDate']).toISOString()),
+        'operationType': value['operationType'],
+    };
 }
+

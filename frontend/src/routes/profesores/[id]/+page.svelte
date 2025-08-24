@@ -31,7 +31,7 @@
 		// Professor can only edit their own profile
 		if (
 			authStore.isProfesor &&
-			(authStore.user?.usuario === profesor.usuario || authStore.user?.sub === profesor.usuario)
+			(authStore.user?.usuario === profesor.username || authStore.user?.sub === profesor.username)
 		)
 			return true;
 
@@ -76,7 +76,7 @@
 			if (!authStore.isAdmin) {
 				if (
 					!authStore.isProfesor ||
-					(authStore.user?.usuario !== profesor.usuario && authStore.user?.sub !== profesor.usuario)
+					(authStore.user?.sub !== profesor.username && authStore.user?.sub !== profesor.username)
 				) {
 					error = 'No tienes permisos para ver este perfil';
 					return;
@@ -93,11 +93,11 @@
 		if (!profesor || !canEdit) return;
 
 		editForm = {
-			nombre: profesor.nombre || '',
-			apellidos: profesor.apellidos || '',
+			firstName: profesor.firstName || '',
+			lastName: profesor.lastName || '',
 			dni: profesor.dni || '',
 			email: profesor.email || '',
-			numeroTelefono: profesor.numeroTelefono || ''
+			phoneNumber: profesor.phoneNumber || ''
 		};
 		editMode = true;
 	}
@@ -223,20 +223,19 @@
 	 */
 	function isFormValid(): boolean {
 		// Verificar que todos los campos que tienen contenido sean válidos
-		if (editForm.nombre && !validateName(editForm.nombre).isValid) return false;
-		if (editForm.apellidos && !validateName(editForm.apellidos).isValid) return false;
+		if (editForm.firstName && !validateName(editForm.firstName).isValid) return false;
+		if (editForm.lastName && !validateName(editForm.lastName).isValid) return false;
 		if (editForm.dni && !validateDNI(editForm.dni).isValid) return false;
 		if (editForm.email && !validateEmail(editForm.email).isValid) return false;
-		if (editForm.numeroTelefono && !validatePhoneNumber(editForm.numeroTelefono).isValid)
-			return false;
+		if (editForm.phoneNumber && !validatePhoneNumber(editForm.phoneNumber).isValid) return false;
 
 		// Verificar que al menos un campo tenga contenido para enviar
 		return (
-			shouldIncludeField(editForm.nombre) ||
-			shouldIncludeField(editForm.apellidos) ||
+			shouldIncludeField(editForm.firstName) ||
+			shouldIncludeField(editForm.lastName) ||
 			shouldIncludeField(editForm.dni) ||
 			shouldIncludeField(editForm.email) ||
-			shouldIncludeField(editForm.numeroTelefono)
+			shouldIncludeField(editForm.phoneNumber)
 		);
 	}
 
@@ -245,11 +244,11 @@
 	 */
 	function hasFormErrors(): boolean {
 		return Boolean(
-			(editForm.nombre && !validateName(editForm.nombre).isValid) ||
-				(editForm.apellidos && !validateName(editForm.apellidos).isValid) ||
+			(editForm.firstName && !validateName(editForm.firstName).isValid) ||
+				(editForm.lastName && !validateName(editForm.lastName).isValid) ||
 				(editForm.dni && !validateDNI(editForm.dni).isValid) ||
 				(editForm.email && !validateEmail(editForm.email).isValid) ||
-				(editForm.numeroTelefono && !validatePhoneNumber(editForm.numeroTelefono).isValid)
+				(editForm.phoneNumber && !validatePhoneNumber(editForm.phoneNumber).isValid)
 		);
 	}
 
@@ -267,22 +266,22 @@
 			const updateData: DTOActualizacionProfesor = {};
 
 			// Validar y incluir nombre si está presente
-			if (shouldIncludeField(editForm.nombre)) {
-				const nameValidation = validateName(editForm.nombre!);
+			if (shouldIncludeField(editForm.firstName)) {
+				const nameValidation = validateName(editForm.firstName!);
 				if (!nameValidation.isValid) {
 					validationErrors.push(`Nombre: ${nameValidation.message}`);
 				} else {
-					updateData.nombre = editForm.nombre;
+					updateData.firstName = editForm.firstName;
 				}
 			}
 
 			// Validar y incluir apellidos si está presente
-			if (shouldIncludeField(editForm.apellidos)) {
-				const apellidosValidation = validateName(editForm.apellidos!);
+			if (shouldIncludeField(editForm.lastName)) {
+				const apellidosValidation = validateName(editForm.lastName!);
 				if (!apellidosValidation.isValid) {
 					validationErrors.push(`Apellidos: ${apellidosValidation.message}`);
 				} else {
-					updateData.apellidos = editForm.apellidos;
+					updateData.lastName = editForm.lastName;
 				}
 			}
 
@@ -307,12 +306,12 @@
 			}
 
 			// Validar y incluir teléfono si está presente
-			if (shouldIncludeField(editForm.numeroTelefono)) {
-				const phoneValidation = validatePhoneNumber(editForm.numeroTelefono!);
+			if (shouldIncludeField(editForm.phoneNumber)) {
+				const phoneValidation = validatePhoneNumber(editForm.phoneNumber!);
 				if (!phoneValidation.isValid) {
 					validationErrors.push(`Teléfono: ${phoneValidation.message}`);
 				} else {
-					updateData.numeroTelefono = editForm.numeroTelefono;
+					updateData.phoneNumber = editForm.phoneNumber;
 				}
 			}
 
@@ -406,10 +405,10 @@
 					<div class="mb-6 flex items-start justify-between">
 						<div>
 							<h2 class="text-2xl font-bold text-gray-900">
-								{profesor.nombre}
-								{profesor.apellidos}
+								{profesor.firstName}
+								{profesor.lastName}
 							</h2>
-							<p class="text-gray-600">@{profesor.usuario}</p>
+							<p class="text-gray-600">@{profesor.username}</p>
 						</div>
 
 						{#if canEdit() && !editMode}
@@ -439,20 +438,20 @@
 									</label>
 									<div class="relative">
 										<input
-											id="nombre"
+											id="firstName"
 											type="text"
-											bind:value={editForm.nombre}
+											bind:value={editForm.firstName}
 											maxlength="100"
-											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.nombre
-												? validateName(editForm.nombre).isValid
+											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.firstName
+												? validateName(editForm.firstName).isValid
 													? 'border-green-500 bg-green-50'
 													: 'border-red-500 bg-red-50'
 												: 'border-gray-300'}"
 											placeholder="Ej: Juan Carlos"
 										/>
-										{#if editForm.nombre}
+										{#if editForm.firstName}
 											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
-												{#if validateName(editForm.nombre).isValid}
+												{#if validateName(editForm.firstName).isValid}
 													<span class="text-green-500">✓</span>
 												{:else}
 													<span class="text-red-500">✗</span>
@@ -460,13 +459,13 @@
 											</div>
 										{/if}
 									</div>
-									{#if editForm.nombre}
+									{#if editForm.firstName}
 										<p
-											class="mt-1 text-xs {validateName(editForm.nombre).isValid
+											class="mt-1 text-xs {validateName(editForm.firstName).isValid
 												? 'text-green-600'
 												: 'text-red-600'}"
 										>
-											{validateName(editForm.nombre).message}
+											{validateName(editForm.firstName).message}
 										</p>
 									{/if}
 									<p class="mt-1 text-xs text-gray-500">
@@ -481,20 +480,20 @@
 									</label>
 									<div class="relative">
 										<input
-											id="apellidos"
+											id="lastName"
 											type="text"
-											bind:value={editForm.apellidos}
+											bind:value={editForm.lastName}
 											maxlength="100"
-											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.apellidos
-												? validateName(editForm.apellidos).isValid
+											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.lastName
+												? validateName(editForm.lastName).isValid
 													? 'border-green-500 bg-green-50'
 													: 'border-red-500 bg-red-50'
 												: 'border-gray-300'}"
 											placeholder="Ej: García López"
 										/>
-										{#if editForm.apellidos}
+										{#if editForm.lastName}
 											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
-												{#if validateName(editForm.apellidos).isValid}
+												{#if validateName(editForm.lastName).isValid}
 													<span class="text-green-500">✓</span>
 												{:else}
 													<span class="text-red-500">✗</span>
@@ -502,13 +501,13 @@
 											</div>
 										{/if}
 									</div>
-									{#if editForm.apellidos}
+									{#if editForm.lastName}
 										<p
-											class="mt-1 text-xs {validateName(editForm.apellidos).isValid
+											class="mt-1 text-xs {validateName(editForm.lastName).isValid
 												? 'text-green-600'
 												: 'text-red-600'}"
 										>
-											{validateName(editForm.apellidos).message}
+											{validateName(editForm.lastName).message}
 										</p>
 									{/if}
 									<p class="mt-1 text-xs text-gray-500">
@@ -608,19 +607,19 @@
 									</label>
 									<div class="relative">
 										<input
-											id="numeroTelefono"
+											id="phoneNumber"
 											type="tel"
-											bind:value={editForm.numeroTelefono}
-											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.numeroTelefono
-												? validatePhoneNumber(editForm.numeroTelefono).isValid
+											bind:value={editForm.phoneNumber}
+											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.phoneNumber
+												? validatePhoneNumber(editForm.phoneNumber).isValid
 													? 'border-green-500 bg-green-50'
 													: 'border-red-500 bg-red-50'
 												: 'border-gray-300'}"
 											placeholder="Ej: +34 123 456 789, (555) 123-4567, 123456789"
 										/>
-										{#if editForm.numeroTelefono}
+										{#if editForm.phoneNumber}
 											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
-												{#if validatePhoneNumber(editForm.numeroTelefono).isValid}
+												{#if validatePhoneNumber(editForm.phoneNumber).isValid}
 													<span class="text-green-500">✓</span>
 												{:else}
 													<span class="text-red-500">✗</span>
@@ -628,13 +627,13 @@
 											</div>
 										{/if}
 									</div>
-									{#if editForm.numeroTelefono}
+									{#if editForm.phoneNumber}
 										<p
-											class="mt-1 text-xs {validatePhoneNumber(editForm.numeroTelefono).isValid
+											class="mt-1 text-xs {validatePhoneNumber(editForm.phoneNumber).isValid
 												? 'text-green-600'
 												: 'text-red-600'}"
 										>
-											{validatePhoneNumber(editForm.numeroTelefono).message}
+											{validatePhoneNumber(editForm.phoneNumber).message}
 										</p>
 									{/if}
 									<p class="mt-1 text-xs text-gray-500">
@@ -673,11 +672,11 @@
 								<div class="mt-4 rounded-md border border-yellow-200 bg-yellow-50 p-3">
 									<h4 class="mb-2 text-sm font-medium text-yellow-800">⚠️ Campos con errores:</h4>
 									<ul class="space-y-1 text-xs text-yellow-700">
-										{#if editForm.nombre && !validateName(editForm.nombre).isValid}
-											<li>• Nombre: {validateName(editForm.nombre).message}</li>
+										{#if editForm.firstName && !validateName(editForm.firstName).isValid}
+											<li>• Nombre: {validateName(editForm.firstName).message}</li>
 										{/if}
-										{#if editForm.apellidos && !validateName(editForm.apellidos).isValid}
-											<li>• Apellidos: {validateName(editForm.apellidos).message}</li>
+										{#if editForm.lastName && !validateName(editForm.lastName).isValid}
+											<li>• Apellidos: {validateName(editForm.lastName).message}</li>
 										{/if}
 										{#if editForm.dni && !validateDNI(editForm.dni).isValid}
 											<li>• DNI: {validateDNI(editForm.dni).message}</li>
@@ -685,8 +684,8 @@
 										{#if editForm.email && !validateEmail(editForm.email).isValid}
 											<li>• Email: {validateEmail(editForm.email).message}</li>
 										{/if}
-										{#if editForm.numeroTelefono && !validatePhoneNumber(editForm.numeroTelefono).isValid}
-											<li>• Teléfono: {validatePhoneNumber(editForm.numeroTelefono).message}</li>
+										{#if editForm.phoneNumber && !validatePhoneNumber(editForm.phoneNumber).isValid}
+											<li>• Teléfono: {validatePhoneNumber(editForm.phoneNumber).message}</li>
 										{/if}
 									</ul>
 								</div>
@@ -703,7 +702,10 @@
 									<dl class="space-y-2">
 										<div>
 											<dt class="text-sm font-medium text-gray-900">Nombre Completo</dt>
-											<dd class="text-sm text-gray-600">{profesor.nombre} {profesor.apellidos}</dd>
+											<dd class="text-sm text-gray-600">
+												{profesor.firstName}
+												{profesor.lastName}
+											</dd>
 										</div>
 										<div>
 											<dt class="text-sm font-medium text-gray-900">DNI</dt>
@@ -716,7 +718,7 @@
 										<div>
 											<dt class="text-sm font-medium text-gray-900">Teléfono</dt>
 											<dd class="text-sm text-gray-600">
-												{profesor.numeroTelefono || 'No especificado'}
+												{profesor.phoneNumber || 'No especificado'}
 											</dd>
 										</div>
 									</dl>
@@ -729,11 +731,11 @@
 									<dl class="space-y-2">
 										<div>
 											<dt class="text-sm font-medium text-gray-900">Usuario</dt>
-											<dd class="text-sm text-gray-600">@{profesor.usuario}</dd>
+											<dd class="text-sm text-gray-600">@{profesor.username}</dd>
 										</div>
 										<div>
 											<dt class="text-sm font-medium text-gray-900">Fecha de Inscripción</dt>
-											<dd class="text-sm text-gray-600">{formatDate(profesor.fechaCreacion)}</dd>
+											<dd class="text-sm text-gray-600">{formatDate(profesor.createdAt)}</dd>
 										</div>
 										<div>
 											<dt class="text-sm font-medium text-gray-900">Estado de Cuenta</dt>

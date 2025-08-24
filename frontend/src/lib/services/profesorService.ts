@@ -23,15 +23,14 @@ import type { SortDirection } from '$lib/types/pagination';
 
 export const ProfesorService = {
 	async getAllProfesores(filters: {
-		nombre?: string;
-		apellidos?: string;
+		firstName?: string;
+		lastName?: string;
 		email?: string;
-		habilitado?: boolean;
+		enabled?: boolean;
 	}): Promise<DTOProfesor[]> {
 		try {
-			// Note: obtenerProfesores is deprecated, but still keeping for compatibility
 			const response = await profesorApi.obtenerProfesores(filters);
-			return response;
+			return response.content as DTOProfesor[];
 		} catch (error) {
 			ErrorHandler.logError(error, 'getAllProfesores');
 			throw await ErrorHandler.parseError(error);
@@ -41,12 +40,12 @@ export const ProfesorService = {
 	async getProfesoresPaginados(
 		filters: {
 			q?: string; // General search parameter
-			nombre?: string;
-			apellidos?: string;
+			firstName?: string;
+			lastName?: string;
 			email?: string;
-			usuario?: string;
+			username?: string;
 			dni?: string;
-			habilitado?: boolean;
+			enabled?: boolean;
 			claseId?: string;
 			sinClases?: boolean;
 		},
@@ -59,7 +58,7 @@ export const ProfesorService = {
 	): Promise<DTORespuestaPaginadaDTOProfesor> {
 		try {
 			const { page, size, sortBy, sortDirection } = pagination;
-			const response = await profesorApi.obtenerProfesoresPaginados({
+			const response = await profesorApi.obtenerProfesores({
 				...filters,
 				page,
 				size,
@@ -67,31 +66,9 @@ export const ProfesorService = {
 				sortDirection
 			});
 
-			return response;
+			return response as DTORespuestaPaginadaDTOProfesor;
 		} catch (error) {
 			ErrorHandler.logError(error, 'getProfesoresPaginados');
-			throw await ErrorHandler.parseError(error);
-		}
-	},
-
-	async getProfesoresHabilitadosPaginados(pagination: {
-		page?: number;
-		size?: number;
-		sortBy?: string;
-		sortDirection?: SortDirection;
-	}): Promise<DTORespuestaPaginadaDTOProfesor> {
-		try {
-			const { page, size, sortBy, sortDirection } = pagination;
-			const response = await profesorApi.obtenerProfesoresHabilitadosPaginados({
-				page,
-				size,
-				sortBy,
-				sortDirection
-			});
-
-			return response;
-		} catch (error) {
-			ErrorHandler.logError(error, 'getProfesoresHabilitadosPaginados');
 			throw await ErrorHandler.parseError(error);
 		}
 	},
@@ -108,8 +85,12 @@ export const ProfesorService = {
 
 	async getProfesorByUsuario(usuario: string): Promise<DTOProfesor> {
 		try {
-			const response = await profesorApi.obtenerProfesorPorUsuario({ usuario });
-			return response;
+			// Since obtenerProfesorPorUsuario doesn't exist, we'll search by username
+			const response = await profesorApi.obtenerProfesores({ username: usuario });
+			if (response.content && response.content.length > 0) {
+				return response.content[0];
+			}
+			throw new Error(`Profesor with username ${usuario} not found`);
 		} catch (error) {
 			ErrorHandler.logError(error, `getProfesorByUsuario(${usuario})`);
 			throw await ErrorHandler.parseError(error);
@@ -154,7 +135,7 @@ export const ProfesorService = {
 		try {
 			const response = await profesorApi.cambiarEstadoProfesor({
 				id,
-				requestBody: { habilitado }
+				requestBody: { enabled: habilitado }
 			});
 			return response;
 		} catch (error) {
@@ -169,42 +150,17 @@ export const ProfesorService = {
 			let activeCount = 0;
 			let inactiveCount = 0;
 
-			// Try to get total count, but handle gracefully if endpoint doesn't exist
+			// Get statistics by fetching all professors and counting
 			try {
-				const totalStats = await profesorApi.obtenerTotalProfesores();
-				totalCount = totalStats['total'] || 0;
-			} catch (totalError) {
-				console.warn('Total professors endpoint not available, using fallback:', totalError);
-				// Fallback: get all professors and count them
-				try {
-					const allProfesores = await this.getAllProfesores({});
-					totalCount = allProfesores.length;
-				} catch (fallbackError) {
-					console.error('Fallback for total count also failed:', fallbackError);
-					totalCount = 0;
-				}
-			}
-
-			// Try to get habilitacion statistics
-			try {
-				const habilitacionStats = await profesorApi.obtenerEstadisticasHabilitacion();
-				activeCount = habilitacionStats['habilitados'] || 0;
-				inactiveCount = habilitacionStats['noHabilitados'] || 0;
-			} catch (habilitacionError) {
-				console.warn(
-					'Habilitacion statistics endpoint not available, using fallback:',
-					habilitacionError
-				);
-				// Fallback: count enabled/disabled from all professors
-				try {
-					const allProfesores = await this.getAllProfesores({});
-					activeCount = allProfesores.filter((p) => p.enabled).length;
-					inactiveCount = allProfesores.filter((p) => !p.enabled).length;
-				} catch (fallbackError) {
-					console.error('Fallback for habilitacion count also failed:', fallbackError);
-					activeCount = 0;
-					inactiveCount = 0;
-				}
+				const allProfesores = await this.getAllProfesores({});
+				totalCount = allProfesores.length;
+				activeCount = allProfesores.filter((p) => p.enabled).length;
+				inactiveCount = allProfesores.filter((p) => !p.enabled).length;
+			} catch (error) {
+				console.error('Error fetching professor statistics:', error);
+				totalCount = 0;
+				activeCount = 0;
+				inactiveCount = 0;
 			}
 
 			return {
@@ -224,7 +180,7 @@ export const ProfesorService = {
 		const errors: string[] = [];
 
 		// Basic validation rules
-		if (!data.usuario || data.usuario.length < 3) {
+		if (!data.username || data.username.length < 3) {
 			errors.push('El nombre de usuario debe tener al menos 3 caracteres');
 		}
 
@@ -232,11 +188,11 @@ export const ProfesorService = {
 			errors.push('La contraseña debe tener al menos 6 caracteres');
 		}
 
-		if (!data.nombre) {
+		if (!data.firstName) {
 			errors.push('El nombre es obligatorio');
 		}
 
-		if (!data.apellidos) {
+		if (!data.lastName) {
 			errors.push('Los apellidos son obligatorios');
 		}
 

@@ -1,81 +1,54 @@
+import { alumnoApi } from '$lib/api';
 import type {
 	DTOAlumno,
-	DTOPeticionRegistroAlumno,
 	DTOActualizacionAlumno,
-	DTORespuestaPaginadaDTOAlumno,
-	DTOPerfilAlumno,
-	DTOClaseInscrita
+	DTOClaseInscrita,
+	DTOPeticionRegistroAlumno
 } from '$lib/generated/api';
-import { alumnoApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
+import { authStore } from '$lib/stores/authStore.svelte';
 
 export class AlumnoService {
 	// ==================== BASIC CRUD OPERATIONS ====================
 
 	/**
-	 * Get all students with pagination
+	 * Get all students with pagination and filters
 	 */
-	static async getPaginatedAlumnos(
-		params: {
-			page?: number;
-			size?: number;
-			sortBy?: string;
-			sortDirection?: 'ASC' | 'DESC';
-			q?: string; // General search parameter
-			nombre?: string;
-			apellidos?: string;
-			dni?: string;
-			email?: string;
-			matriculado?: boolean;
-		} = {}
-	): Promise<DTORespuestaPaginadaDTOAlumno> {
+	static async getAlumnos(params?: {
+		q?: string;
+		firstName?: string;
+		lastName?: string;
+		dni?: string;
+		email?: string;
+		enrolled?: boolean;
+		enabled?: boolean;
+		available?: boolean;
+		page?: number;
+		size?: number;
+		sortBy?: string;
+		sortDirection?: string;
+	}): Promise<{ content: DTOAlumno[]; totalElements: number; totalPages: number }> {
 		try {
-			return await alumnoApi.obtenerAlumnosPaginados(params);
+			const response = await alumnoApi.obtenerAlumnos(params || {});
+			return {
+				content: response.content || [],
+				totalElements: response.totalElements || 0,
+				totalPages: response.totalPages || 0
+			};
 		} catch (error) {
-			ErrorHandler.logError(error, 'getPaginatedAlumnos');
+			ErrorHandler.logError(error, 'getAlumnos');
 			throw await ErrorHandler.parseError(error);
 		}
 	}
 
 	/**
-	 * Get available students for enrollment (enabled and matriculated)
+	 * Get a student by ID
 	 */
-	static async getAvailableStudents(
-		params: {
-			page?: number;
-			size?: number;
-			sortBy?: string;
-			sortDirection?: 'ASC' | 'DESC';
-		} = {}
-	): Promise<DTORespuestaPaginadaDTOAlumno> {
-		try {
-			return await alumnoApi.obtenerAlumnosDisponibles(params);
-		} catch (error) {
-			ErrorHandler.logError(error, 'getAvailableStudents');
-			throw await ErrorHandler.parseError(error);
-		}
-	}
-
-	/**
-	 * Get student by ID
-	 */
-	static async getAlumnoById(id: number): Promise<DTOAlumno> {
+	static async getAlumno(id: number): Promise<DTOAlumno> {
 		try {
 			return await alumnoApi.obtenerAlumnoPorId({ id });
 		} catch (error) {
-			ErrorHandler.logError(error, `getAlumnoById(${id})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	}
-
-	/**
-	 * Get student by username
-	 */
-	static async getAlumnoByUsername(username: string): Promise<DTOAlumno> {
-		try {
-			return await alumnoApi.obtenerAlumnoPorUsuario({ usuario: username });
-		} catch (error) {
-			ErrorHandler.logError(error, `getAlumnoByUsername(${username})`);
+			ErrorHandler.logError(error, `getAlumno(${id})`);
 			throw await ErrorHandler.parseError(error);
 		}
 	}
@@ -121,44 +94,34 @@ export class AlumnoService {
 		}
 	}
 
-	/**
-	 * Change enrollment status
-	 */
-	static async changeEnrollmentStatus(id: number, matriculado: boolean): Promise<DTOAlumno> {
-		try {
-			return await alumnoApi.cambiarEstadoMatricula({
-				id,
-				requestBody: { matriculado }
-			});
-		} catch (error) {
-			ErrorHandler.logError(error, `changeEnrollmentStatus(${id}, ${matriculado})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	}
-
-	/**
-	 * Enable/disable student
-	 */
-	static async toggleEnabled(id: number, enabled: boolean): Promise<DTOAlumno> {
-		try {
-			return await alumnoApi.habilitarDeshabilitarAlumno({
-				id,
-				requestBody: { enabled }
-			});
-		} catch (error) {
-			ErrorHandler.logError(error, `toggleEnabled(${id}, ${enabled})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	}
-
 	// ==================== STUDENT PROFILE OPERATIONS ====================
 
 	/**
-	 * Get my profile (for authenticated student)
+	 * Get enrolled classes for a student
 	 */
-	static async getMiPerfil(): Promise<DTOPerfilAlumno> {
+	static async getClasesInscritas(alumnoId: number): Promise<DTOClaseInscrita> {
 		try {
-			return await alumnoApi.obtenerMiPerfil();
+			return await alumnoApi.obtenerClasesInscritas({ id: alumnoId });
+		} catch (error) {
+			ErrorHandler.logError(error, `getClasesInscritas(${alumnoId})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	// ==================== STATUS UPDATE OPERATIONS ====================
+
+	/**
+	 * Get current user's profile (for authenticated students)
+	 * Since there's no specific endpoint for this, we'll use the regular getAlumno endpoint
+	 * and assume the user ID is available from the auth store
+	 */
+	static async getMiPerfil(): Promise<DTOAlumno> {
+		try {
+			// For now, we'll throw an error indicating this needs to be implemented
+			// The backend should provide a specific endpoint for getting the current user's profile
+			throw new Error(
+				'getMiPerfil endpoint not available in current API. This needs to be implemented.'
+			);
 		} catch (error) {
 			ErrorHandler.logError(error, 'getMiPerfil');
 			throw await ErrorHandler.parseError(error);
@@ -166,13 +129,57 @@ export class AlumnoService {
 	}
 
 	/**
-	 * Get enrolled classes for a student with details
+	 * Change enrollment status for a student
+	 * Uses the proper generated API with the updated DTO
 	 */
-	static async getClasesInscritasConDetalles(alumnoId: number): Promise<DTOClaseInscrita[]> {
+	static async changeEnrollmentStatus(id: number, enrolled: boolean): Promise<DTOAlumno> {
 		try {
-			return await alumnoApi.obtenerClasesInscritasConDetalles({ alumnoId });
+			const updateData: DTOActualizacionAlumno = {
+				enrolled: enrolled
+			};
+
+			console.log('Sending enrollment status change:', {
+				id,
+				updateData
+			});
+
+			const result = await alumnoApi.actualizarAlumno({
+				id,
+				dTOActualizacionAlumno: updateData
+			});
+
+			console.log('Response from enrollment status change:', result);
+			return result;
 		} catch (error) {
-			ErrorHandler.logError(error, `getClasesInscritasConDetalles(${alumnoId})`);
+			ErrorHandler.logError(error, `changeEnrollmentStatus(${id}, ${enrolled})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Toggle enabled status for a student
+	 * Uses the proper generated API with the updated DTO
+	 */
+	static async toggleEnabled(id: number, enabled: boolean): Promise<DTOAlumno> {
+		try {
+			const updateData: DTOActualizacionAlumno = {
+				enabled: enabled
+			};
+
+			console.log('Sending enabled status change:', {
+				id,
+				updateData
+			});
+
+			const result = await alumnoApi.actualizarAlumno({
+				id,
+				dTOActualizacionAlumno: updateData
+			});
+
+			console.log('Response from enabled status change:', result);
+			return result;
+		} catch (error) {
+			ErrorHandler.logError(error, `toggleEnabled(${id}, ${enabled})`);
 			throw await ErrorHandler.parseError(error);
 		}
 	}

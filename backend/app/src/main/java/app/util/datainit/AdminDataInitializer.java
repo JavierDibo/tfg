@@ -14,7 +14,7 @@ public class AdminDataInitializer extends BaseDataInitializer {
         // Password service is now injected automatically
         
         // Check if admin already exists
-        if (repositorioUsuario.findByUsuario("admin").isEmpty()) {
+        if (repositorioUsuario.findByUsername("admin").isEmpty()) {
             Usuario admin = new Usuario(
                 "admin",
                 encodePassword("admin"), // Use the base class method for consistency

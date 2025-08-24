@@ -14,160 +14,177 @@
 
 import { mapValues } from '../runtime';
 /**
- *
+ * Professor data
  * @export
  * @interface DTOProfesor
  */
 export interface DTOProfesor {
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTOProfesor
-	 */
-	id?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOProfesor
-	 */
-	usuario?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOProfesor
-	 */
-	nombre?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOProfesor
-	 */
-	apellidos?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOProfesor
-	 */
-	dni?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOProfesor
-	 */
-	email?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOProfesor
-	 */
-	numeroTelefono?: string;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOProfesor
-	 */
-	rol?: DTOProfesorRolEnum;
-	/**
-	 *
-	 * @type {boolean}
-	 * @memberof DTOProfesor
-	 */
-	enabled?: boolean;
-	/**
-	 *
-	 * @type {Array<string>}
-	 * @memberof DTOProfesor
-	 */
-	clasesId?: Array<string>;
-	/**
-	 *
-	 * @type {Date}
-	 * @memberof DTOProfesor
-	 */
-	fechaCreacion?: Date;
-	/**
-	 *
-	 * @type {number}
-	 * @memberof DTOProfesor
-	 */
-	numeroClases?: number;
-	/**
-	 *
-	 * @type {string}
-	 * @memberof DTOProfesor
-	 */
-	nombreCompleto?: string;
+    /**
+     * Unique professor ID
+     * @type {number}
+     * @memberof DTOProfesor
+     */
+    id: number;
+    /**
+     * Unique username
+     * @type {string}
+     * @memberof DTOProfesor
+     */
+    username: string;
+    /**
+     * Professor's first name
+     * @type {string}
+     * @memberof DTOProfesor
+     */
+    firstName: string;
+    /**
+     * Professor's last name
+     * @type {string}
+     * @memberof DTOProfesor
+     */
+    lastName: string;
+    /**
+     * Professor's DNI
+     * @type {string}
+     * @memberof DTOProfesor
+     */
+    dni: string;
+    /**
+     * Professor's email
+     * @type {string}
+     * @memberof DTOProfesor
+     */
+    email: string;
+    /**
+     * Phone number
+     * @type {string}
+     * @memberof DTOProfesor
+     */
+    phoneNumber?: string;
+    /**
+     * User role
+     * @type {string}
+     * @memberof DTOProfesor
+     */
+    role: DTOProfesorRoleEnum;
+    /**
+     * Indicates if the account is enabled
+     * @type {boolean}
+     * @memberof DTOProfesor
+     */
+    enabled: boolean;
+    /**
+     * List of assigned class IDs
+     * @type {Array<string>}
+     * @memberof DTOProfesor
+     */
+    classIds?: Array<string>;
+    /**
+     * Profile creation date
+     * @type {Date}
+     * @memberof DTOProfesor
+     */
+    createdAt?: Date;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOProfesor
+     */
+    classCount?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOProfesor
+     */
+    fullName?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOProfesor
+     */
+    enabledStatus?: string;
 }
+
 
 /**
  * @export
  */
-export const DTOProfesorRolEnum = {
-	Admin: 'ADMIN',
-	Profesor: 'PROFESOR',
-	Alumno: 'ALUMNO',
-	Usuario: 'USUARIO'
+export const DTOProfesorRoleEnum = {
+    Admin: 'ADMIN',
+    Profesor: 'PROFESOR',
+    Alumno: 'ALUMNO',
+    Usuario: 'USUARIO'
 } as const;
-export type DTOProfesorRolEnum = (typeof DTOProfesorRolEnum)[keyof typeof DTOProfesorRolEnum];
+export type DTOProfesorRoleEnum = typeof DTOProfesorRoleEnum[keyof typeof DTOProfesorRoleEnum];
+
 
 /**
  * Check if a given object implements the DTOProfesor interface.
  */
 export function instanceOfDTOProfesor(value: object): value is DTOProfesor {
-	return true;
+    if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('username' in value) || value['username'] === undefined) return false;
+    if (!('firstName' in value) || value['firstName'] === undefined) return false;
+    if (!('lastName' in value) || value['lastName'] === undefined) return false;
+    if (!('dni' in value) || value['dni'] === undefined) return false;
+    if (!('email' in value) || value['email'] === undefined) return false;
+    if (!('role' in value) || value['role'] === undefined) return false;
+    if (!('enabled' in value) || value['enabled'] === undefined) return false;
+    return true;
 }
 
 export function DTOProfesorFromJSON(json: any): DTOProfesor {
-	return DTOProfesorFromJSONTyped(json, false);
+    return DTOProfesorFromJSONTyped(json, false);
 }
 
 export function DTOProfesorFromJSONTyped(json: any, ignoreDiscriminator: boolean): DTOProfesor {
-	if (json == null) {
-		return json;
-	}
-	return {
-		id: json['id'] == null ? undefined : json['id'],
-		usuario: json['usuario'] == null ? undefined : json['usuario'],
-		nombre: json['nombre'] == null ? undefined : json['nombre'],
-		apellidos: json['apellidos'] == null ? undefined : json['apellidos'],
-		dni: json['dni'] == null ? undefined : json['dni'],
-		email: json['email'] == null ? undefined : json['email'],
-		numeroTelefono: json['numeroTelefono'] == null ? undefined : json['numeroTelefono'],
-		rol: json['rol'] == null ? undefined : json['rol'],
-		enabled: json['enabled'] == null ? undefined : json['enabled'],
-		clasesId: json['clasesId'] == null ? undefined : json['clasesId'],
-		fechaCreacion: json['fechaCreacion'] == null ? undefined : new Date(json['fechaCreacion']),
-		numeroClases: json['numeroClases'] == null ? undefined : json['numeroClases'],
-		nombreCompleto: json['nombreCompleto'] == null ? undefined : json['nombreCompleto']
-	};
+    if (json == null) {
+        return json;
+    }
+    return {
+        
+        'id': json['id'],
+        'username': json['username'],
+        'firstName': json['firstName'],
+        'lastName': json['lastName'],
+        'dni': json['dni'],
+        'email': json['email'],
+        'phoneNumber': json['phoneNumber'] == null ? undefined : json['phoneNumber'],
+        'role': json['role'],
+        'enabled': json['enabled'],
+        'classIds': json['classIds'] == null ? undefined : json['classIds'],
+        'createdAt': json['createdAt'] == null ? undefined : (new Date(json['createdAt'])),
+        'classCount': json['classCount'] == null ? undefined : json['classCount'],
+        'fullName': json['fullName'] == null ? undefined : json['fullName'],
+        'enabledStatus': json['enabledStatus'] == null ? undefined : json['enabledStatus'],
+    };
 }
 
 export function DTOProfesorToJSON(json: any): DTOProfesor {
-	return DTOProfesorToJSONTyped(json, false);
+    return DTOProfesorToJSONTyped(json, false);
 }
 
-export function DTOProfesorToJSONTyped(
-	value?: DTOProfesor | null,
-	ignoreDiscriminator: boolean = false
-): any {
-	if (value == null) {
-		return value;
-	}
+export function DTOProfesorToJSONTyped(value?: DTOProfesor | null, ignoreDiscriminator: boolean = false): any {
+    if (value == null) {
+        return value;
+    }
 
-	return {
-		id: value['id'],
-		usuario: value['usuario'],
-		nombre: value['nombre'],
-		apellidos: value['apellidos'],
-		dni: value['dni'],
-		email: value['email'],
-		numeroTelefono: value['numeroTelefono'],
-		rol: value['rol'],
-		enabled: value['enabled'],
-		clasesId: value['clasesId'],
-		fechaCreacion:
-			value['fechaCreacion'] == null ? undefined : value['fechaCreacion'].toISOString(),
-		numeroClases: value['numeroClases'],
-		nombreCompleto: value['nombreCompleto']
-	};
+    return {
+        
+        'id': value['id'],
+        'username': value['username'],
+        'firstName': value['firstName'],
+        'lastName': value['lastName'],
+        'dni': value['dni'],
+        'email': value['email'],
+        'phoneNumber': value['phoneNumber'],
+        'role': value['role'],
+        'enabled': value['enabled'],
+        'classIds': value['classIds'],
+        'createdAt': value['createdAt'] == null ? undefined : ((value['createdAt']).toISOString()),
+        'classCount': value['classCount'],
+        'fullName': value['fullName'],
+        'enabledStatus': value['enabledStatus'],
+    };
 }
+

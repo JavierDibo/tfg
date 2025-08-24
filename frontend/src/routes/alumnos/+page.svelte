@@ -119,12 +119,12 @@
 				params.matriculado = currentFilters.matriculado === 'true';
 			}
 
-			const response = await AlumnoService.getPaginatedAlumnos(params);
+			const response = await AlumnoService.getAlumnos(params);
 
-			alumnos = response.contenido || [];
-			totalElements = response.totalElementos || 0;
-			totalPages = response.totalPaginas || 0;
-			currentPage = response.numeroPagina || 0;
+			alumnos = response.content || [];
+			totalElements = response.totalElements || 0;
+			totalPages = response.totalPages || 0;
+			// currentPage is managed locally, not returned from API
 		} catch (err) {
 			error = `Error al cargar alumnos: ${err}`;
 			console.error('Error loading alumnos:', err);
@@ -176,8 +176,8 @@
 
 		try {
 			loading = true;
-			await AlumnoService.changeEnrollmentStatus(alumno.id || 0, !alumno.matriculado);
-			successMessage = `Alumno ${alumno.matriculado ? 'desmatriculado' : 'matriculado'} exitosamente`;
+			await AlumnoService.changeEnrollmentStatus(alumno.id || 0, !alumno.enrolled);
+			successMessage = `Alumno ${alumno.enrolled ? 'desmatriculado' : 'matriculado'} exitosamente`;
 			loadAlumnos();
 		} catch (err) {
 			error = `Error al cambiar estado de matrícula: ${err}`;
@@ -246,14 +246,14 @@
 			color: 'green',
 			hoverColor: 'green',
 			action: toggleEnrollmentStatus,
-			condition: (alumno: DTOAlumno) => !alumno.matriculado && authStore.isAdmin
+			condition: (alumno: DTOAlumno) => !alumno.enrolled && authStore.isAdmin
 		},
 		{
 			label: 'Desmatricular',
 			color: 'yellow',
 			hoverColor: 'yellow',
 			action: toggleEnrollmentStatus,
-			condition: (alumno: DTOAlumno) => alumno.matriculado && authStore.isAdmin
+			condition: (alumno: DTOAlumno) => alumno.enrolled && authStore.isAdmin
 		},
 		{
 			label: 'Activar',

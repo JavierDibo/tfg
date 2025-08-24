@@ -133,10 +133,10 @@
 
 			const response = await ClaseService.getPaginatedClases(params);
 
-			clases = response.contenido || [];
-			totalElements = response.totalElementos || 0;
-			totalPages = response.totalPaginas || 0;
-			currentPage = response.numeroPagina || 0;
+			clases = response.content || [];
+			totalElements = response.totalElements || 0;
+			totalPages = response.totalPages || 0;
+			currentPage = response.page || 0;
 		} catch (err) {
 			error = `Error al cargar clases: ${err}`;
 			console.error('Error loading clases:', err);

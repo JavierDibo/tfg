@@ -3,6 +3,7 @@ package app.rest;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,16 +20,23 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.http.MediaType;
 
 import app.dtos.DTOAlumno;
 import app.dtos.DTOParametrosBusquedaAlumno;
+import app.dtos.DTOActualizacionAlumno;
 import app.dtos.DTORespuestaPaginada;
+import app.entidades.Alumno;
 import app.entidades.Usuario;
+import app.repositorios.RepositorioAlumno;
 import app.servicios.ServicioAlumno;
 import app.servicios.ServicioJwt;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 public class AlumnoRestTest {
@@ -39,16 +47,22 @@ public class AlumnoRestTest {
     private ServicioAlumno servicioAlumno;
     
     @Mock
+    private RepositorioAlumno repositorioAlumno;
+    
+    @Mock
     private ServicioJwt servicioJwt;
 
     @InjectMocks
     private AlumnoRest alumnoRest;
     
+    private ObjectMapper objectMapper;
+
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(alumnoRest)
                 .setControllerAdvice(new app.excepciones.GlobalExceptionHandler())
                 .build();
+        objectMapper = new ObjectMapper();
     }
     
     // Utility method to generate valid DNIs using the same algorithm as the system
@@ -208,6 +222,36 @@ public class AlumnoRestTest {
             ),
             eq(0), eq(20), eq("id"), eq("ASC")
         );
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testActualizarAlumnoConEstadoMatriculaYHabilitado() throws Exception {
+        // Given
+        Long alumnoId = 1L;
+        DTOActualizacionAlumno dtoActualizacion = new DTOActualizacionAlumno(
+            null, null, null, null, null, true, false
+        );
+        
+        Alumno alumno = new Alumno("testuser", "password", "Test", "User", "12345678A", "test@test.com", "123456789");
+        alumno.setId(alumnoId);
+        alumno.setEnrolled(true);  // Updated to true
+        alumno.setEnabled(false);  // Updated to false
+        
+        DTOAlumno dtoAlumno = new DTOAlumno(alumno);
+        
+        when(servicioAlumno.actualizarAlumno(eq(alumnoId), eq(dtoActualizacion))).thenReturn(dtoAlumno);
+        
+        // When & Then
+        mockMvc.perform(patch("/api/alumnos/{id}", alumnoId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dtoActualizacion)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.enrolled").value(true))
+                .andExpect(jsonPath("$.enabled").value(false));
+        
+        // Verify that the service method was called with the correct parameters
+        verify(servicioAlumno).actualizarAlumno(eq(alumnoId), eq(dtoActualizacion));
     }
 }
 

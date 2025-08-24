@@ -28,7 +28,7 @@ public class SecurityUtils {
         }
         
         String username = authentication.getName();
-        return repositorioUsuario.findByUsuario(username)
+        return repositorioUsuario.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
     }
     

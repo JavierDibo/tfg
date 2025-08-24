@@ -4,7 +4,8 @@ import app.dtos.*;
 import app.servicios.ServicioClase;
 import app.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
-
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -148,6 +149,17 @@ public class EnrollmentRest {
     @GetMapping("/my-enrolled-classes")
     @PreAuthorize("hasRole('ALUMNO')")
     @Operation(summary = "Obtener mis clases inscritas", description = "Obtiene las clases en las que está inscrito el estudiante autenticado")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Clases inscritas obtenidas exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClaseInscrita.class, type = "array")
+            )
+        ),
+        @ApiResponse(responseCode = "403", description = "No autorizado")
+    })
     public ResponseEntity<List<DTOClaseInscrita>> obtenerMisClasesInscritas() {
         Long alumnoId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(servicioClase.obtenerClasesInscritasConDetalles(alumnoId));

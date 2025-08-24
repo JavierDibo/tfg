@@ -31,6 +31,10 @@ public record DTOActualizacionAlumno(
     String email,
     
     @ValidPhone
-    String phoneNumber
+    String phoneNumber,
+    
+    Boolean enrolled,
+    
+    Boolean enabled
 ) {
 }

@@ -53,7 +53,7 @@ public class ServicioAlumno {
 
     @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorUsuario(String usuario) {
-        Alumno alumno = repositorioAlumno.findByUsuario(usuario).orElse(null);
+        Alumno alumno = repositorioAlumno.findByUsername(usuario).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "usuario", usuario);
         return new DTOAlumno(alumno);
     }
@@ -65,7 +65,7 @@ public class ServicioAlumno {
      */
     @Transactional(readOnly = true)
     public DTOPerfilAlumno obtenerPerfilAlumnoPorUsuario(String usuario) {
-        Alumno alumno = repositorioAlumno.findByUsuario(usuario).orElse(null);
+        Alumno alumno = repositorioAlumno.findByUsername(usuario).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "usuario", usuario);
         return new DTOPerfilAlumno(alumno);
     }
@@ -79,7 +79,7 @@ public class ServicioAlumno {
 
     public DTOAlumno crearAlumno(DTOPeticionRegistroAlumno peticion) {
         // Validar que no existan duplicados
-        if (repositorioAlumno.existsByUsuario(peticion.username())) {
+        if (repositorioAlumno.existsByUsername(peticion.username())) {
             ExceptionUtils.throwValidationError("Ya existe un alumno con el usuario: " + peticion.username());
         }
         
@@ -110,7 +110,7 @@ public class ServicioAlumno {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
 
-                // Update non-null fields
+        // Update non-null fields
         if (dtoParcial.firstName() != null) {
             alumno.setFirstName(dtoParcial.firstName());
         }
@@ -139,6 +139,16 @@ public class ServicioAlumno {
         
         if (dtoParcial.phoneNumber() != null) {
             alumno.setPhoneNumber(dtoParcial.phoneNumber());
+        }
+        
+        // Handle enrollment status update
+        if (dtoParcial.enrolled() != null) {
+            alumno.setEnrolled(dtoParcial.enrolled());
+        }
+        
+        // Handle enabled status update
+        if (dtoParcial.enabled() != null) {
+            alumno.setEnabled(dtoParcial.enabled());
         }
 
         Alumno alumnoActualizado = repositorioAlumno.save(alumno);

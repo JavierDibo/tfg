@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
     // Custom API Exceptions
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApiException(ApiException ex, WebRequest request) {
-        log.warn("API Exception: {} - {}", ex.getErrorCode(), ex.getMessage());
+        log.warn("[ERROR] API Exception: {} - {}", ex.getErrorCode(), ex.getMessage());
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
     // Validation Exceptions
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex, WebRequest request) {
-        log.warn("Validation Exception: {}", ex.getMessage());
+        log.warn("[ERROR] Validation Exception: {}", ex.getMessage());
         
         ErrorResponse.ErrorResponseBuilder builder = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -76,7 +76,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, WebRequest request) {
         
-        log.warn("Validation error in request body: {}", ex.getMessage());
+        log.warn("[ERROR] Validation error in request body: {}", ex.getMessage());
         
         Map<String, String> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
@@ -105,7 +105,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleConstraintViolation(
             ConstraintViolationException ex, WebRequest request) {
         
-        log.warn("Parameter validation error: {}", ex.getMessage());
+        log.warn("[ERROR] Parameter validation error: {}", ex.getMessage());
         
         Map<String, String> violations = ex.getConstraintViolations()
                 .stream()
@@ -133,7 +133,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(
             MethodArgumentTypeMismatchException ex, WebRequest request) {
         
-        log.warn("Type mismatch error: {} - {}", ex.getName(), ex.getValue());
+        log.warn("[ERROR] Type mismatch error: {} - {}", ex.getName(), ex.getValue());
         
         String message = String.format("El parámetro '%s' con valor '%s' no es válido", 
                 ex.getName(), ex.getValue());
@@ -153,7 +153,7 @@ public class GlobalExceptionHandler {
     // Resource Not Found Exceptions
     @ExceptionHandler({EntidadNoEncontradaException.class, AlumnoNoEncontradoException.class})
     public ResponseEntity<ErrorResponse> handleResourceNotFound(Exception ex, WebRequest request) {
-        log.warn("Resource not found: {}", ex.getMessage());
+        log.warn("[ERROR] Resource not found: {}", ex.getMessage());
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -170,7 +170,7 @@ public class GlobalExceptionHandler {
     // NoHandlerFoundException and NoResourceFoundException - 404 errors
     @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
     public ResponseEntity<ErrorResponse> handleNoHandlerFound(Exception ex, WebRequest request) {
-        log.warn("No handler found for request: {}", getPath(request));
+        log.warn("[ERROR] No handler found for request: {}", getPath(request));
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -187,7 +187,7 @@ public class GlobalExceptionHandler {
     // Security/Authentication Exceptions
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
-        log.warn("Authentication failed: {}", ex.getMessage());
+        log.warn("[ERROR] Authentication failed: {}", ex.getMessage());
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -203,7 +203,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({DisabledException.class, LockedException.class, AccountExpiredException.class, CredentialsExpiredException.class})
     public ResponseEntity<ErrorResponse> handleAccountIssues(Exception ex, WebRequest request) {
-        log.warn("Account issue: {}", ex.getMessage());
+        log.warn("[ERROR] Account issue: {}", ex.getMessage());
         
         String message;
         String errorCode;
@@ -237,7 +237,7 @@ public class GlobalExceptionHandler {
     // Authorization Exceptions
     @ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
     public ResponseEntity<ErrorResponse> handleAccessDenied(Exception ex, WebRequest request) {
-        log.warn("Access denied: {}", ex.getMessage());
+        log.warn("[ERROR] Access denied: {}", ex.getMessage());
         
         // Extract relevant information for better error reporting
         String path = getPath(request);
@@ -292,7 +292,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
             DataIntegrityViolationException ex, WebRequest request) {
         
-        log.warn("Data integrity violation: {}", ex.getMessage());
+        log.warn("[ERROR] Data integrity violation: {}", ex.getMessage());
         
         String userMessage = "Ya existe un registro con los datos proporcionados";
         String exceptionMessage = ex.getMessage();
@@ -324,7 +324,7 @@ public class GlobalExceptionHandler {
     // IllegalArgumentException
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
-        log.warn("Illegal argument: {}", ex.getMessage());
+        log.warn("[ERROR] Illegal argument: {}", ex.getMessage());
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -342,7 +342,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, WebRequest request) {
         // Only log the error message, not the full stack trace for cleaner logs
-        log.error("Unexpected error: {} - {}", ex.getClass().getSimpleName(), ex.getMessage());
+        log.error("[ERROR] Unexpected error: {} - {}", ex.getClass().getSimpleName(), ex.getMessage());
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())

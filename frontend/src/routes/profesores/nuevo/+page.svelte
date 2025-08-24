@@ -6,13 +6,13 @@
 
 	// Form state
 	let formData: DTOPeticionRegistroProfesor = $state({
-		usuario: '',
+		username: '',
 		password: '',
-		nombre: '',
-		apellidos: '',
+		firstName: '',
+		lastName: '',
 		dni: '',
 		email: '',
-		numeroTelefono: ''
+		phoneNumber: ''
 	});
 
 	// UI state
@@ -43,8 +43,8 @@
 		}
 
 		// Additional custom validations
-		if (formData.numeroTelefono && !/^\+?[\d\s-()]+$/.test(formData.numeroTelefono)) {
-			fieldErrors.numeroTelefono = 'El formato del teléfono no es válido';
+		if (formData.phoneNumber && !/^\+?[\d\s-()]+$/.test(formData.phoneNumber)) {
+			fieldErrors.phoneNumber = 'El formato del teléfono no es válido';
 			return false;
 		}
 
@@ -84,13 +84,13 @@
 
 	function resetForm() {
 		formData = {
-			usuario: '',
+			username: '',
 			password: '',
-			nombre: '',
-			apellidos: '',
+			firstName: '',
+			lastName: '',
 			dni: '',
 			email: '',
-			numeroTelefono: ''
+			phoneNumber: ''
 		};
 		errors = [];
 		fieldErrors = {};
@@ -101,9 +101,9 @@
 		delete fieldErrors[field];
 
 		switch (field) {
-			case 'usuario':
+			case 'username':
 				if (value && (value.length < 3 || value.length > 50)) {
-					fieldErrors.usuario = 'El usuario debe tener entre 3 y 50 caracteres';
+					fieldErrors.username = 'El usuario debe tener entre 3 y 50 caracteres';
 				}
 				break;
 			case 'password':
@@ -121,19 +121,19 @@
 					fieldErrors.dni = 'El DNI no puede superar 20 caracteres';
 				}
 				break;
-			case 'nombre':
+			case 'firstName':
 				if (value && value.length > 100) {
-					fieldErrors.nombre = 'El nombre no puede superar 100 caracteres';
+					fieldErrors.firstName = 'El nombre no puede superar 100 caracteres';
 				}
 				break;
-			case 'apellidos':
+			case 'lastName':
 				if (value && value.length > 100) {
-					fieldErrors.apellidos = 'Los apellidos no pueden superar 100 caracteres';
+					fieldErrors.lastName = 'Los apellidos no pueden superar 100 caracteres';
 				}
 				break;
-			case 'numeroTelefono':
+			case 'phoneNumber':
 				if (value && value.length > 15) {
-					fieldErrors.numeroTelefono = 'El teléfono no puede superar 15 caracteres';
+					fieldErrors.phoneNumber = 'El teléfono no puede superar 15 caracteres';
 				}
 				break;
 		}
@@ -179,10 +179,10 @@
 						Usuario *
 					</label>
 					<input
-						id="usuario"
+						id="username"
 						type="text"
-						bind:value={formData.usuario}
-						oninput={(e) => validateField('usuario', (e.target as HTMLInputElement).value)}
+						bind:value={formData.username}
+						oninput={(e) => validateField('username', (e.target as HTMLInputElement).value)}
 						required
 						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.usuario
 							? 'border-red-500'
@@ -237,18 +237,18 @@
 						Nombre *
 					</label>
 					<input
-						id="nombre"
+						id="firstName"
 						type="text"
-						bind:value={formData.nombre}
-						oninput={(e) => validateField('nombre', (e.target as HTMLInputElement).value)}
+						bind:value={formData.firstName}
+						oninput={(e) => validateField('firstName', (e.target as HTMLInputElement).value)}
 						required
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.nombre
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.firstName
 							? 'border-red-500'
 							: ''}"
 						placeholder="Nombre del profesor"
 					/>
-					{#if fieldErrors.nombre}
-						<p class="mt-1 text-xs text-red-500">{fieldErrors.nombre}</p>
+					{#if fieldErrors.firstName}
+						<p class="mt-1 text-xs text-red-500">{fieldErrors.firstName}</p>
 					{/if}
 				</div>
 
@@ -258,18 +258,18 @@
 						Apellidos *
 					</label>
 					<input
-						id="apellidos"
+						id="lastName"
 						type="text"
-						bind:value={formData.apellidos}
-						oninput={(e) => validateField('apellidos', (e.target as HTMLInputElement).value)}
+						bind:value={formData.lastName}
+						oninput={(e) => validateField('lastName', (e.target as HTMLInputElement).value)}
 						required
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.apellidos
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.lastName
 							? 'border-red-500'
 							: ''}"
 						placeholder="Apellidos del profesor"
 					/>
-					{#if fieldErrors.apellidos}
-						<p class="mt-1 text-xs text-red-500">{fieldErrors.apellidos}</p>
+					{#if fieldErrors.lastName}
+						<p class="mt-1 text-xs text-red-500">{fieldErrors.lastName}</p>
 					{/if}
 				</div>
 
@@ -320,21 +320,21 @@
 			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 				<!-- Phone -->
 				<div>
-					<label for="numeroTelefono" class="mb-1 block text-sm font-medium text-gray-700">
+					<label for="phoneNumber" class="mb-1 block text-sm font-medium text-gray-700">
 						Número de Teléfono
 					</label>
 					<input
-						id="numeroTelefono"
+						id="phoneNumber"
 						type="tel"
-						bind:value={formData.numeroTelefono}
-						oninput={(e) => validateField('numeroTelefono', (e.target as HTMLInputElement).value)}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.numeroTelefono
+						bind:value={formData.phoneNumber}
+						oninput={(e) => validateField('phoneNumber', (e.target as HTMLInputElement).value)}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none {fieldErrors.phoneNumber
 							? 'border-red-500'
 							: ''}"
 						placeholder="+34 XXX XXX XXX (opcional)"
 					/>
-					{#if fieldErrors.numeroTelefono}
-						<p class="mt-1 text-xs text-red-500">{fieldErrors.numeroTelefono}</p>
+					{#if fieldErrors.phoneNumber}
+						<p class="mt-1 text-xs text-red-500">{fieldErrors.phoneNumber}</p>
 					{/if}
 					<p class="mt-1 text-xs text-gray-500">Campo opcional</p>
 				</div>

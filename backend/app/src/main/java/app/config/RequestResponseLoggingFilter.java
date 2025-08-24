@@ -46,10 +46,10 @@ public class RequestResponseLoggingFilter implements Filter {
                     try {
                         wrappedResponse.copyBodyToResponse();
                     } catch (Exception e) {
-                        log.warn("Error copying response body for {}: {}", httpRequest.getRequestURI(), e.getMessage());
+                        log.warn("[ERROR] Error copying response body for {}: {}", httpRequest.getRequestURI(), e.getMessage());
                     }
                 } catch (Exception e) {
-                    log.error("Error in filter chain for {}: {}", httpRequest.getRequestURI(), e.getMessage(), e);
+                    log.error("[ERROR] Error in filter chain for {}: {}", httpRequest.getRequestURI(), e.getMessage(), e);
                     throw e;
                 }
             } else {
@@ -73,7 +73,7 @@ public class RequestResponseLoggingFilter implements Filter {
                 try {
                     getResponse().getOutputStream().write(b);
                 } catch (IOException e) {
-                    log.warn("Error writing to original response: {}", e.getMessage());
+                    log.warn("[ERROR] Error writing to original response: {}", e.getMessage());
                 }
             }
             
@@ -83,7 +83,7 @@ public class RequestResponseLoggingFilter implements Filter {
                 try {
                     getResponse().getOutputStream().write(b);
                 } catch (IOException e) {
-                    log.warn("Error writing to original response: {}", e.getMessage());
+                    log.warn("[ERROR] Error writing to original response: {}", e.getMessage());
                 }
             }
             
@@ -93,7 +93,7 @@ public class RequestResponseLoggingFilter implements Filter {
                 try {
                     getResponse().getOutputStream().write(b, off, len);
                 } catch (IOException e) {
-                    log.warn("Error writing to original response: {}", e.getMessage());
+                    log.warn("[ERROR] Error writing to original response: {}", e.getMessage());
                 }
             }
             
@@ -102,7 +102,7 @@ public class RequestResponseLoggingFilter implements Filter {
                 try {
                     return getResponse().getOutputStream().isReady();
                 } catch (IOException e) {
-                    log.warn("Error checking if output stream is ready: {}", e.getMessage());
+                    log.warn("[ERROR] Error checking if output stream is ready: {}", e.getMessage());
                     return false;
                 }
             }
@@ -112,7 +112,7 @@ public class RequestResponseLoggingFilter implements Filter {
                 try {
                     getResponse().getOutputStream().setWriteListener(writeListener);
                 } catch (IOException e) {
-                    log.warn("Error setting write listener: {}", e.getMessage());
+                    log.warn("[ERROR] Error setting write listener: {}", e.getMessage());
                 }
             }
         };
