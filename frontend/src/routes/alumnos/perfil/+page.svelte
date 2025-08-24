@@ -43,16 +43,17 @@
 		error = null;
 
 		try {
-			// Use the getMiPerfil method which is specifically designed for authenticated students
-			const perfil = await AlumnoService.getMiPerfil();
+			// Get the current user's ID from auth store
+			const userId = authStore.user?.id;
 
-			// Convert DTOPerfilAlumno to DTOAlumno format for consistency
-			alumno = {
-				...perfil,
-				id: parseInt(perfil.username), // Use username as id
-				enabled: true // Assume enabled for own profile
-			} as DTOAlumno;
+			if (!userId) {
+				throw new Error('User ID not available from authentication');
+			}
+
+			// Get student data by ID using the service
+			alumno = await AlumnoService.getAlumno(userId);
 		} catch (err) {
+			console.error('Error loading profile:', err);
 			error = `Error al cargar el perfil: ${err}`;
 		} finally {
 			loading = false;

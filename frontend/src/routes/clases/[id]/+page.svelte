@@ -251,7 +251,7 @@
 							{#each clase.material as material (material.id)}
 								<div class="rounded-lg bg-gray-50 p-4">
 									<h3 class="mb-2 font-semibold text-gray-900">
-										{material.nombre || 'Sin nombre'}
+										{material.name || 'Sin nombre'}
 									</h3>
 									{#if material.url}
 										<a

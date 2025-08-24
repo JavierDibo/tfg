@@ -3,6 +3,7 @@
 export * from './AuthenticationApi';
 export * from './ClassManagementApi';
 export * from './ClassesApi';
+export * from './MaterialsApi';
 export * from './ProfessorsApi';
 export * from './PruebasApi';
 export * from './StudentsApi';

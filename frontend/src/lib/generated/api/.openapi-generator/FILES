@@ -1,6 +1,7 @@
 apis/AuthenticationApi.ts
 apis/ClassManagementApi.ts
 apis/ClassesApi.ts
+apis/MaterialsApi.ts
 apis/ProfessorsApi.ts
 apis/PruebasApi.ts
 apis/StudentsApi.ts
@@ -16,6 +17,7 @@ models/DTOClaseConDetalles.ts
 models/DTOClaseInscrita.ts
 models/DTOCurso.ts
 models/DTOEstadoInscripcion.ts
+models/DTOMaterial.ts
 models/DTOMetadatosPaginacion.ts
 models/DTOPeticionCrearCurso.ts
 models/DTOPeticionCrearTaller.ts
@@ -31,8 +33,10 @@ models/DTORespuestaLogin.ts
 models/DTORespuestaPaginada.ts
 models/DTORespuestaPaginadaDTOAlumno.ts
 models/DTORespuestaPaginadaDTOClase.ts
+models/DTORespuestaPaginadaDTOMaterial.ts
 models/DTORespuestaPaginadaDTOProfesor.ts
 models/DTOTaller.ts
 models/Material.ts
+models/MaterialStats.ts
 models/index.ts
 runtime.ts

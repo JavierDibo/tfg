@@ -15,15 +15,16 @@
 	});
 
 	onMount(async () => {
-		if (!authStore.user?.usuario && !authStore.user?.sub) {
+		const userId = authStore.user?.id;
+
+		if (!userId) {
 			goto('/');
 			return;
 		}
 
 		try {
-			// Try to find the professor by username
-			const username = authStore.user.usuario || authStore.user.sub;
-			const profesor = await ProfesorService.getProfesorByUsuario(username);
+			// Get professor data by ID using the service
+			const profesor = await ProfesorService.getProfesorById(userId);
 
 			// Redirect to the professor's profile page
 			goto(`/profesores/${profesor.id}`);

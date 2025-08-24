@@ -6,6 +6,8 @@ import app.dtos.DTOProfesor;
 import app.entidades.enums.EDificultad;
 import app.entidades.enums.EPresencialidad;
 import app.servicios.ServicioClase;
+import app.servicios.ServicioMaterial;
+import app.entidades.Material;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -13,18 +15,24 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 @Component
 public class CourseDataInitializer extends BaseDataInitializer {
     private static final int COURSES_PER_PROFESSOR = 1;
     private final List<DTOCurso> createdCourses = new ArrayList<>();
+    private final Random random = new Random();
 
     @Override
     public void initialize() {
         ServicioClase servicioClase = context.getBean(ServicioClase.class);
+        ServicioMaterial servicioMaterial = context.getBean(ServicioMaterial.class);
         ProfessorDataInitializer professorInit = context.getBean(ProfessorDataInitializer.class);
         
-        // System.out.println("Creating courses for professors...");
+        // Get all available materials to associate with courses
+        List<Material> availableMaterials = servicioMaterial.obtenerTodosLosMateriales().stream()
+            .map(dto -> new Material(dto.id(), dto.name(), dto.url()))
+            .toList();
         
         for (DTOProfesor profesor : professorInit.getCreatedProfessors()) {
             for (int i = 0; i < COURSES_PER_PROFESSOR; i++) {
@@ -40,6 +48,9 @@ public class CourseDataInitializer extends BaseDataInitializer {
                 
                 List<String> profesorIds = Collections.singletonList(profesor.id().toString());
                 
+                // Select random materials for this course (1-3 materials per course)
+                List<Material> courseMaterials = selectRandomMaterials(availableMaterials, 1, 3);
+                
                 // Create course using the record constructor with simplified version
                 DTOPeticionCrearClase dto = new DTOPeticionCrearClase(
                     title,
@@ -49,7 +60,7 @@ public class CourseDataInitializer extends BaseDataInitializer {
                     null, // imagen portada
                     level,
                     profesorIds,
-                    null // material
+                    courseMaterials
                 );
                 
                 try {
@@ -91,5 +102,26 @@ public class CourseDataInitializer extends BaseDataInitializer {
     
     public List<DTOCurso> getCreatedCourses() {
         return createdCourses;
+    }
+    
+    /**
+     * Selects a random number of materials from the available materials list
+     * @param availableMaterials List of all available materials
+     * @param minCount Minimum number of materials to select
+     * @param maxCount Maximum number of materials to select
+     * @return List of randomly selected materials
+     */
+    private List<Material> selectRandomMaterials(List<Material> availableMaterials, int minCount, int maxCount) {
+        if (availableMaterials.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<Material> shuffledMaterials = new ArrayList<>(availableMaterials);
+        Collections.shuffle(shuffledMaterials);
+        
+        int count = random.nextInt(maxCount - minCount + 1) + minCount;
+        count = Math.min(count, shuffledMaterials.size());
+        
+        return shuffledMaterials.subList(0, count);
     }
 }

@@ -83,20 +83,6 @@ export const ProfesorService = {
 		}
 	},
 
-	async getProfesorByUsuario(usuario: string): Promise<DTOProfesor> {
-		try {
-			// Since obtenerProfesorPorUsuario doesn't exist, we'll search by username
-			const response = await profesorApi.obtenerProfesores({ username: usuario });
-			if (response.content && response.content.length > 0) {
-				return response.content[0];
-			}
-			throw new Error(`Profesor with username ${usuario} not found`);
-		} catch (error) {
-			ErrorHandler.logError(error, `getProfesorByUsuario(${usuario})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	},
-
 	async createProfesor(profesorData: DTOPeticionRegistroProfesor): Promise<DTOProfesor> {
 		try {
 			const response = await profesorApi.crearProfesor({

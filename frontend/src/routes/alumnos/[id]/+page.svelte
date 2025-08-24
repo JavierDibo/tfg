@@ -90,15 +90,15 @@
 		error = null;
 
 		try {
-			// If student is viewing their own profile, use the new endpoint
+			// If student is viewing their own profile, get their data by ID
 			if (isOwnProfile()) {
-				const perfil = await AlumnoService.getMiPerfil();
-				// Convert DTOPerfilAlumno to DTOAlumno format for consistency
-				alumno = {
-					...perfil,
-					id: parseInt(perfil.username), // Use username as id
-					enabled: true // Assume enabled for own profile
-				} as DTOAlumno;
+				const userId = authStore.user?.id;
+
+				if (!userId) {
+					throw new Error('User ID not available from authentication');
+				}
+
+				alumno = await AlumnoService.getAlumno(userId);
 			} else {
 				alumno = await AlumnoService.getAlumno(studentId);
 

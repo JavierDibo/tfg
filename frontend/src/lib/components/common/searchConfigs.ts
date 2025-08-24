@@ -7,7 +7,7 @@ export interface SearchFieldConfig {
 }
 
 export interface EntitySearchConfig {
-	entityType: 'alumnos' | 'profesores' | 'clases' | 'generic';
+	entityType: 'alumnos' | 'profesores' | 'clases' | 'materiales' | 'generic';
 	entityNamePlural: string;
 	advancedFields: SearchFieldConfig[];
 	statusField?: {
@@ -56,6 +56,35 @@ export const searchConfigs: Record<string, EntitySearchConfig> = {
 				{ value: 'false', label: 'No matriculado' }
 			]
 		}
+	},
+	materiales: {
+		entityType: 'materiales',
+		entityNamePlural: 'materiales',
+		advancedFields: [
+			{
+				key: 'name',
+				label: 'Nombre',
+				type: 'text',
+				placeholder: 'Ej: Documento de matemáticas'
+			},
+			{
+				key: 'url',
+				label: 'URL',
+				type: 'text',
+				placeholder: 'Ej: https://example.com/document.pdf'
+			},
+			{
+				key: 'type',
+				label: 'Tipo',
+				type: 'select',
+				options: [
+					{ value: '', label: 'Todos' },
+					{ value: 'DOCUMENT', label: 'Documento' },
+					{ value: 'IMAGE', label: 'Imagen' },
+					{ value: 'VIDEO', label: 'Video' }
+				]
+			}
+		]
 	},
 	profesores: {
 		entityType: 'profesores',

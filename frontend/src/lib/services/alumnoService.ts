@@ -110,24 +110,6 @@ export class AlumnoService {
 	// ==================== STATUS UPDATE OPERATIONS ====================
 
 	/**
-	 * Get current user's profile (for authenticated students)
-	 * Since there's no specific endpoint for this, we'll use the regular getAlumno endpoint
-	 * and assume the user ID is available from the auth store
-	 */
-	static async getMiPerfil(): Promise<DTOAlumno> {
-		try {
-			// For now, we'll throw an error indicating this needs to be implemented
-			// The backend should provide a specific endpoint for getting the current user's profile
-			throw new Error(
-				'getMiPerfil endpoint not available in current API. This needs to be implemented.'
-			);
-		} catch (error) {
-			ErrorHandler.logError(error, 'getMiPerfil');
-			throw await ErrorHandler.parseError(error);
-		}
-	}
-
-	/**
 	 * Change enrollment status for a student
 	 * Uses the proper generated API with the updated DTO
 	 */

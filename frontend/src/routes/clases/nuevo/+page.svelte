@@ -60,7 +60,7 @@
 				...material,
 				{
 					id: Date.now().toString(), // Temporary ID
-					nombre: nuevoMaterial.nombre.trim(),
+					name: nuevoMaterial.nombre.trim(),
 					url: nuevoMaterial.url.trim()
 				}
 			];
@@ -482,7 +482,7 @@
 							{#each material as materialItem, index (index)}
 								<div class="flex items-center space-x-2 rounded-md bg-gray-50 p-3">
 									<div class="flex-1">
-										<div class="font-medium">{materialItem.nombre}</div>
+										<div class="font-medium">{materialItem.name}</div>
 										<div class="text-sm text-gray-600">{materialItem.url}</div>
 									</div>
 									<button

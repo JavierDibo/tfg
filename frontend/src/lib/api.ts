@@ -6,7 +6,9 @@ import {
 	ClassesApi,
 	ClassManagementApi,
 	AuthenticationApi,
-	UserOperationsApi
+	UserOperationsApi,
+	MaterialsApi,
+	PruebasApi
 } from './generated/api';
 import { authStore } from './stores/authStore.svelte';
 
@@ -41,3 +43,5 @@ export const claseApi = new ClassesApi(config);
 export const classManagementApi = new ClassManagementApi(config);
 export const autenticacionApi = new AuthenticationApi(config);
 export const userOperationsApi = new UserOperationsApi(config);
+export const materialApi = new MaterialsApi(config);
+export const pruebasApi = new PruebasApi(config);

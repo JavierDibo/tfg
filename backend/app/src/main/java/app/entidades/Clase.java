@@ -71,9 +71,13 @@ public abstract class Clase {
     @Column(name = "ejercicio_id")
     private List<String> exerciseIds = new ArrayList<>();
     
-    // Material embebido
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "clase_materiales", joinColumns = @JoinColumn(name = "clase_id"))
+    // Relación Many-to-Many con Material
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "clase_materiales",
+        joinColumns = @JoinColumn(name = "clase_id"),
+        inverseJoinColumns = @JoinColumn(name = "material_id")
+    )
     private List<Material> material = new ArrayList<>();
     
     public Clase() {}

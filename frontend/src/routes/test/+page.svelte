@@ -8,88 +8,52 @@
 		autenticacionApi,
 		alumnoApi,
 		profesorApi,
-		userOperationsApi
+		userOperationsApi,
+		materialApi,
+		pruebasApi
 	} from '$lib/api';
-
-	// Type definitions for error handling
-	interface ApiErrorResponse {
-		status: number;
-		message: string;
-		errorCode?: string;
-		requiredRole?: string;
-		currentUserRole?: string;
-		resourceType?: string;
-		action?: string;
-		suggestion?: string;
-		path?: string;
-	}
-
-	interface ApiError {
-		response?: {
-			status: number;
-			data: ApiErrorResponse;
-		};
-		message?: string;
-	}
-
-	interface ClaseInscrita {
-		id: number;
-		titulo: string;
-		descripcion: string;
-		precio: number;
-		nivel: string;
-		presencialidad: string;
-	}
+	import type {
+		DTOClase,
+		DTOAlumno,
+		DTOProfesor,
+		DTOMaterial,
+		DTOPeticionCrearCurso,
+		DTOPeticionRegistroAlumno,
+		DTOPeticionRegistroProfesor,
+		DTOActualizacionAlumno,
+		DTOActualizacionProfesor
+	} from '$lib/generated/api';
 
 	// Test state
 	let loading = $state(false);
-	let testResults = $state<string[]>([]);
-	let loginLoading = $state(false);
-	let dataLoading = $state(false);
-	let accessDeniedLoading = $state(false);
-
-	// Enhanced access denied testing
-	let accessDeniedResults = $state<
+	let testResults = $state<
 		Array<{
-			testName: string;
-			status: 'success' | 'error' | 'info';
+			api: string;
+			endpoint: string;
+			method: string;
+			status: 'success' | 'error' | 'skipped' | 'running';
 			message: string;
-			errorDetails?: ApiErrorResponse | ApiError | string;
+			details?: unknown;
 			timestamp: string;
 		}>
 	>([]);
 
-	// Data state
-	let students = $state<
-		Array<{
-			id?: number;
-			firstName?: string;
-			lastName?: string;
-			email?: string;
-			phoneNumber?: string;
-			username?: string;
-		}>
-	>([]);
-	let teachers = $state<
-		Array<{
-			id?: number;
-			firstName?: string;
-			lastName?: string;
-			email?: string;
-			specialty?: string;
-			experience?: number;
-		}>
-	>([]);
-	let classes = $state<
-		Array<{
-			id?: number;
-			titulo?: string;
-			descripcion?: string;
-			nivel?: string;
-			presencialidad?: string;
-			precio?: number;
-		}>
-	>([]);
+	let loginLoading = $state(false);
+	let currentTest = $state('');
+
+	// Test data
+	let testData = $state({
+		students: [] as DTOAlumno[],
+		teachers: [] as DTOProfesor[],
+		classes: [] as DTOClase[],
+		materials: [] as DTOMaterial[],
+		createdIds: {
+			student: null as number | null,
+			teacher: null as number | null,
+			class: null as number | null,
+			material: null as number | null
+		}
+	});
 
 	// Check authentication
 	$effect(() => {
@@ -99,595 +63,836 @@
 		}
 	});
 
-	// Reload classes when user role changes
-	$effect(() => {
-		if (authStore.isAuthenticated) {
-			loadClasses();
-		}
-	});
-
-	function addResult(message: string) {
-		const timestamp = new Date().toLocaleTimeString();
-		const uniqueMessage = `${timestamp}: ${message} (${Math.random().toString(36).substr(2, 9)})`;
-		testResults = [...testResults, uniqueMessage];
-		console.log(message);
-	}
-
-	function addAccessDeniedResult(
-		testName: string,
-		status: 'success' | 'error' | 'info',
+	function addResult(
+		api: string,
+		endpoint: string,
+		method: string,
+		status: 'success' | 'error' | 'skipped' | 'running',
 		message: string,
-		errorDetails?: ApiErrorResponse | ApiError | string
+		details?: unknown
 	) {
 		const timestamp = new Date().toLocaleTimeString();
-		accessDeniedResults = [
-			...accessDeniedResults,
+		testResults = [
+			...testResults,
 			{
-				testName,
+				api,
+				endpoint,
+				method,
 				status,
 				message,
-				errorDetails,
+				details,
 				timestamp
 			}
 		];
+		console.log(`[${api}] ${method} ${endpoint}: ${message}`);
 	}
 
-	async function testEnhancedAccessDenied() {
-		accessDeniedLoading = true;
-		accessDeniedResults = [];
-
-		try {
-			addAccessDeniedResult('Test Setup', 'info', '🚀 Starting Enhanced Access Denied Testing...');
-
-			const userRoles = authStore.user?.roles;
-			const currentUser = authStore.user?.sub;
-
-			addAccessDeniedResult(
-				'User Info',
-				'info',
-				`Current user: ${currentUser}, Roles: ${userRoles}`
-			);
-
-			// Test 1: Try to create a course (requires ADMIN or PROFESOR)
-			addAccessDeniedResult(
-				'Test 1',
-				'info',
-				'📝 Testing course creation (requires ADMIN/PROFESOR)...'
-			);
-			try {
-				await claseApi.crearCurso({
-					dTOPeticionCrearCurso: {
-						titulo: 'Test Course',
-						descripcion: 'Test Description',
-						nivel: 'INTERMEDIO',
-						presencialidad: 'PRESENCIAL',
-						precio: 100,
-						fechaInicio: new Date('2025-02-01'),
-						fechaFin: new Date('2025-06-01')
-					}
-				});
-				addAccessDeniedResult(
-					'Test 1',
-					'success',
-					'✅ Course creation successful (user has required permissions)'
-				);
-			} catch (error: unknown) {
-				const apiError = error as ApiError;
-				if (apiError.response?.status === 403) {
-					const errorData = apiError.response.data;
-					addAccessDeniedResult('Test 1', 'error', '❌ 403 Forbidden - Course creation denied', {
-						status: errorData.status,
-						message: errorData.message,
-						errorCode: errorData.errorCode,
-						requiredRole: errorData.requiredRole,
-						currentUserRole: errorData.currentUserRole,
-						resourceType: errorData.resourceType,
-						action: errorData.action,
-						suggestion: errorData.suggestion,
-						path: errorData.path
-					});
-				} else {
-					addAccessDeniedResult(
-						'Test 1',
-						'error',
-						`❌ Unexpected error: ${String(error)}`,
-						String(error)
-					);
-				}
-			}
-
-			// Test 2: Try to delete a class (requires ADMIN)
-			addAccessDeniedResult('Test 2', 'info', '🗑️ Testing class deletion (requires ADMIN)...');
-			try {
-				// Use a test ID that likely doesn't exist
-				await claseApi.borrarClasePorId({ id: 999999 });
-				addAccessDeniedResult(
-					'Test 2',
-					'success',
-					'✅ Class deletion successful (user has admin permissions)'
-				);
-			} catch (error: unknown) {
-				const apiError = error as ApiError;
-				if (apiError.response?.status === 403) {
-					const errorData = apiError.response.data;
-					addAccessDeniedResult('Test 2', 'error', '❌ 403 Forbidden - Class deletion denied', {
-						status: errorData.status,
-						message: errorData.message,
-						errorCode: errorData.errorCode,
-						requiredRole: errorData.requiredRole,
-						currentUserRole: errorData.currentUserRole,
-						resourceType: errorData.resourceType,
-						action: errorData.action,
-						suggestion: errorData.suggestion,
-						path: errorData.path
-					});
-				} else if (apiError.response?.status === 404) {
-					addAccessDeniedResult(
-						'Test 2',
-						'info',
-						'ℹ️ 404 Not Found - Class not found (but deletion permission granted)'
-					);
-				} else {
-					addAccessDeniedResult(
-						'Test 2',
-						'error',
-						`❌ Unexpected error: ${String(error)}`,
-						String(error)
-					);
-				}
-			}
-
-			// Test 3: Try to manage enrollments (requires ADMIN or PROFESOR)
-			addAccessDeniedResult(
-				'Test 3',
-				'info',
-				'👥 Testing enrollment management (requires ADMIN/PROFESOR)...'
-			);
-			try {
-				// Try to enroll a student in a class (requires ADMIN or PROFESOR)
-				await classManagementApi.inscribirAlumnoEnClase({
-					claseId: 1,
-					studentId: 1
-				});
-				addAccessDeniedResult(
-					'Test 3',
-					'success',
-					'✅ Enrollment management successful (user has required permissions)'
-				);
-			} catch (error: unknown) {
-				const apiError = error as ApiError;
-				if (apiError.response?.status === 403) {
-					const errorData = apiError.response.data;
-					addAccessDeniedResult(
-						'Test 3',
-						'error',
-						'❌ 403 Forbidden - Enrollment management denied',
-						{
-							status: errorData.status,
-							message: errorData.message,
-							errorCode: errorData.errorCode,
-							requiredRole: errorData.requiredRole,
-							currentUserRole: errorData.currentUserRole,
-							resourceType: errorData.resourceType,
-							action: errorData.action,
-							suggestion: errorData.suggestion,
-							path: errorData.path
-						}
-					);
-				} else {
-					addAccessDeniedResult(
-						'Test 3',
-						'error',
-						`❌ Unexpected error: ${String(error)}`,
-						String(error)
-					);
-				}
-			}
-
-			// Test 4: Try to access teacher-specific endpoint (requires PROFESOR)
-			addAccessDeniedResult(
-				'Test 4',
-				'info',
-				'👨‍🏫 Testing teacher-specific endpoint (requires PROFESOR)...'
-			);
-			try {
-				await userOperationsApi.obtenerMisClases();
-				addAccessDeniedResult(
-					'Test 4',
-					'success',
-					'✅ Teacher endpoint successful (user has professor permissions)'
-				);
-			} catch (error: unknown) {
-				const apiError = error as ApiError;
-				if (apiError.response?.status === 403) {
-					const errorData = apiError.response.data;
-					addAccessDeniedResult('Test 4', 'error', '❌ 403 Forbidden - Teacher endpoint denied', {
-						status: errorData.status,
-						message: errorData.message,
-						errorCode: errorData.errorCode,
-						requiredRole: errorData.requiredRole,
-						currentUserRole: errorData.currentUserRole,
-						resourceType: errorData.resourceType,
-						action: errorData.action,
-						suggestion: errorData.suggestion,
-						path: errorData.path
-					});
-				} else {
-					addAccessDeniedResult(
-						'Test 4',
-						'error',
-						`❌ Unexpected error: ${String(error)}`,
-						String(error)
-					);
-				}
-			}
-
-			// Test 5: Try to access student-specific endpoint (requires ALUMNO)
-			addAccessDeniedResult(
-				'Test 5',
-				'info',
-				'👨‍🎓 Testing student-specific endpoint (requires ALUMNO)...'
-			);
-			try {
-				await userOperationsApi.obtenerMisClasesInscritas();
-				addAccessDeniedResult(
-					'Test 5',
-					'success',
-					'✅ Student endpoint successful (user has student permissions)'
-				);
-			} catch (error: unknown) {
-				const apiError = error as ApiError;
-				if (apiError.response?.status === 403) {
-					const errorData = apiError.response.data;
-					addAccessDeniedResult('Test 5', 'error', '❌ 403 Forbidden - Student endpoint denied', {
-						status: errorData.status,
-						message: errorData.message,
-						errorCode: errorData.errorCode,
-						requiredRole: errorData.requiredRole,
-						currentUserRole: errorData.currentUserRole,
-						resourceType: errorData.resourceType,
-						action: errorData.action,
-						suggestion: errorData.suggestion,
-						path: errorData.path
-					});
-				} else {
-					addAccessDeniedResult(
-						'Test 5',
-						'error',
-						`❌ Unexpected error: ${String(error)}`,
-						String(error)
-					);
-				}
-			}
-
-			addAccessDeniedResult(
-				'Test Complete',
-				'info',
-				'✅ Enhanced Access Denied Testing completed!'
-			);
-		} catch (error) {
-			addAccessDeniedResult(
-				'Test Error',
-				'error',
-				`❌ Test failed: ${String(error)}`,
-				String(error)
-			);
-		} finally {
-			accessDeniedLoading = false;
-		}
-	}
-
-	async function clearAccessDeniedResults() {
-		accessDeniedResults = [];
-	}
-
-	async function testEnrollmentAPI() {
-		loading = true;
+	function clearResults() {
 		testResults = [];
-
-		try {
-			addResult('🚀 Testing Enrollment API...');
-
-			// Check user role first
-			const userRoles = authStore.user?.roles;
-			addResult(`🔐 Current user role: ${userRoles}`);
-
-			if (!userRoles || !userRoles.includes('ROLE_ALUMNO')) {
-				addResult('⚠️  WARNING: Enrollment endpoints require ROLE_ALUMNO (student role)');
-				addResult(`     Current role: ${userRoles}`);
-				addResult('     Expected 403 errors for non-student users');
-			}
-
-			// Test 1: Get all classes
-			addResult('📚 Test 1: Getting all classes...');
-			const allClassesResponse = await claseApi.obtenerClases();
-			const allClasses = allClassesResponse.content || [];
-			addResult(`     Found ${allClasses.length} classes`);
-
-			if (allClasses.length === 0) {
-				addResult('❌ No classes found. Cannot test enrollment.');
-				return;
-			}
-
-			const testClass = allClasses[0];
-			addResult(`     Using class: ${testClass.titulo} (ID: ${testClass.id})`);
-
-			// Test 2: Check enrollment status
-			addResult('🔍 Test 2: Checking enrollment status...');
-			try {
-				const status = await classManagementApi.obtenerMiInscripcion({ claseId: testClass.id! });
-				addResult(`     ✅ Current status: ${status.isEnrolled ? 'Enrolled' : 'Not enrolled'}`);
-			} catch (error) {
-				if (String(error).includes('403')) {
-					addResult(
-						`     ❌ 403 Forbidden - User role ${userRoles} cannot check enrollment status`
-					);
-				} else {
-					addResult(`     ❌ Status check failed: ${error}`);
-				}
-			}
-
-			// Test 3: Try to enroll
-			addResult('➕ Test 3: Trying to enroll...');
-			try {
-				const enrollResult = await classManagementApi.inscribirseEnClase({
-					claseId: testClass.id!
-				});
-				addResult(`     ✅ Enrollment successful: ${enrollResult.className}`);
-			} catch (error) {
-				if (String(error).includes('403')) {
-					addResult(`     ❌ 403 Forbidden - User role ${userRoles} cannot enroll in classes`);
-				} else {
-					addResult(`     ❌ Enrollment failed: ${error}`);
-				}
-			}
-
-			// Test 4: Check status after enrollment
-			addResult('🔍 Test 4: Checking status after enrollment...');
-			try {
-				const statusAfter = await classManagementApi.obtenerMiInscripcion({
-					claseId: testClass.id!
-				});
-				addResult(
-					`     ✅ Status after enrollment: ${statusAfter.isEnrolled ? 'Enrolled' : 'Not enrolled'}`
-				);
-			} catch (error) {
-				if (String(error).includes('403')) {
-					addResult(
-						`     ❌ 403 Forbidden - User role ${userRoles} cannot check enrollment status`
-					);
-				} else {
-					addResult(`     ❌ Status check failed: ${error}`);
-				}
-			}
-
-			// Test 5: Try to unenroll
-			addResult('➖ Test 5: Trying to unenroll...');
-			try {
-				const unenrollResult = await classManagementApi.darseDeBajaDeClase({
-					claseId: testClass.id!
-				});
-				addResult(`     ✅ Unenrollment successful: ${unenrollResult.className}`);
-			} catch (error) {
-				if (String(error).includes('403')) {
-					addResult(`     ❌ 403 Forbidden - User role ${userRoles} cannot unenroll from classes`);
-				} else {
-					addResult(`     ❌ Unenrollment failed: ${error}`);
-				}
-			}
-
-			// Test 6: Final status check
-			addResult('🔍 Test 6: Final status check...');
-			try {
-				const finalStatus = await classManagementApi.obtenerMiInscripcion({
-					claseId: testClass.id!
-				});
-				addResult(`     ✅ Final status: ${finalStatus.isEnrolled ? 'Enrolled' : 'Not enrolled'}`);
-			} catch (error) {
-				if (String(error).includes('403')) {
-					addResult(
-						`     ❌ 403 Forbidden - User role ${userRoles} cannot check enrollment status`
-					);
-				} else {
-					addResult(`     ❌ Final status check failed: ${error}`);
-				}
-			}
-
-			if (!userRoles || !userRoles.includes('ROLE_ALUMNO')) {
-				addResult(
-					'💡 SOLUTION: Log in as a student (ROLE_ALUMNO) to test enrollment functionality'
-				);
-			} else {
-				addResult('✅ Enrollment API tests completed!');
-			}
-		} catch (error) {
-			addResult(`❌ Test failed: ${error}`);
-			console.error('Test error:', error);
-		} finally {
-			loading = false;
-		}
-	}
-
-	async function testSimpleAPI() {
-		loading = true;
-		testResults = [];
-
-		try {
-			addResult('🧪 Testing simple API calls...');
-
-			// Test basic API connectivity
-			addResult('🌐 Test 1: Testing API connectivity...');
-			const classesResponse = await claseApi.obtenerClases();
-			const classes = classesResponse.content || [];
-			addResult(`     API is working. Found ${classes.length} classes.`);
-
-			// Test authentication
-			addResult('🔐 Test 2: Testing authentication...');
-			addResult(`     Token present: ${authStore.token ? 'Yes' : 'No'}`);
-			addResult(`     User: ${authStore.user?.sub || 'None'}`);
-			addResult(`     Roles: ${authStore.user?.roles || 'None'}`);
-
-			addResult('✅ Simple API tests completed!');
-		} catch (error) {
-			addResult(`❌ Simple test failed: ${error}`);
-			console.error('Simple test error:', error);
-		} finally {
-			loading = false;
-		}
 	}
 
 	async function quickLogin(username: string, password: string, role: string) {
 		loginLoading = true;
-		addResult(`🔄 Logging in as ${role}...`);
+		addResult('Auth', 'Login', 'POST', 'running', `Logging in as ${role}...`);
 
 		try {
-			// First logout current user
 			authStore.logout();
-			addResult(`     Logged out current user`);
-
-			// Then login with new credentials
 			const loginResponse = await autenticacionApi.login({
-				dTOPeticionLogin: {
-					username,
-					password
-				}
+				dTOPeticionLogin: { username, password }
 			});
-
-			// Store the authentication data
 			authStore.login(loginResponse.token);
-			addResult(`     ✅ Successfully logged in as ${role}: ${username}`);
-			addResult(`     Token received and stored`);
-
-			// Redirect to test page after successful login
-			setTimeout(() => {
-				goto('/test');
-			}, 100); // Small delay to show the success message
+			addResult('Auth', 'Login', 'POST', 'success', `Successfully logged in as ${role}`);
+			setTimeout(() => goto('/test'), 100);
 		} catch (error) {
-			addResult(`     ❌ Login failed for ${role}: ${error}`);
-			console.error('Login error:', error);
+			addResult('Auth', 'Login', 'POST', 'error', `Login failed: ${error}`);
 		} finally {
 			loginLoading = false;
 		}
 	}
 
-	async function loginAsAdmin() {
-		await quickLogin('admin', 'admin', 'Admin');
-	}
-
-	async function loginAsStudent() {
-		await quickLogin('estudiante', 'password', 'Student');
-	}
-
-	async function loginAsProfessor() {
-		await quickLogin('profesor', 'password', 'Professor');
-	}
-
-	async function loginAsSpecificStudent(username: string, studentName: string) {
-		loginLoading = true;
-		addResult(`🔄 Logging in as student: ${studentName}...`);
+	async function loadTestData() {
+		addResult('Data', 'Load', 'GET', 'running', 'Loading test data...');
 
 		try {
-			// First logout current user
-			authStore.logout();
-			addResult(`     Logged out current user`);
+			// Load existing data for testing
+			const [classesRes, studentsRes, teachersRes, materialsRes] = await Promise.allSettled([
+				claseApi.obtenerClases({ page: 0, size: 5 }),
+				alumnoApi.obtenerAlumnos({ page: 0, size: 5 }),
+				profesorApi.obtenerProfesores({ page: 0, size: 5 }),
+				materialApi.obtenerMateriales({ page: 0, size: 5 })
+			]);
 
-			// Then login with student credentials
-			const loginResponse = await autenticacionApi.login({
-				dTOPeticionLogin: {
-					username,
-					password: 'password' // All students use "password"
-				}
-			});
-
-			// Store the authentication data
-			authStore.login(loginResponse.token);
-			addResult(`     ✅ Successfully logged in as student: ${studentName}`);
-			addResult(`     Token received and stored`);
-
-			// Redirect to test page after successful login
-			setTimeout(() => {
-				goto('/test');
-			}, 100); // Small delay to show the success message
-		} catch (error) {
-			addResult(`     ❌ Login failed for student ${studentName}: ${error}`);
-			console.error('Login error:', error);
-		} finally {
-			loginLoading = false;
-		}
-	}
-
-	async function loadSystemData() {
-		dataLoading = true;
-
-		try {
-			// Load students
-			const studentsResponse = await alumnoApi.obtenerAlumnos({
-				page: 0,
-				size: 10
-			});
-			students = studentsResponse.content || [];
-
-			// Load teachers
-			const teachersResponse = await profesorApi.obtenerProfesores({
-				page: 0,
-				size: 10
-			});
-			teachers = teachersResponse.content || [];
-
-			// Load classes - different based on user role
-			await loadClasses();
-		} catch (error) {
-			console.error('Error loading system data:', error);
-		} finally {
-			dataLoading = false;
-		}
-	}
-
-	async function loadClasses() {
-		try {
-			const userRoles = authStore.user?.roles;
-
-			if (userRoles && userRoles.includes('ROLE_ALUMNO')) {
-				// If student, load their enrolled classes
-				const enrolledClasses = await userOperationsApi.obtenerMisClasesInscritas();
-				// Convert DTOClaseInscrita to DTOClase format
-				classes = (enrolledClasses as ClaseInscrita[])
-					.slice(0, 10)
-					.map((claseInscrita: ClaseInscrita) => ({
-						id: claseInscrita.id,
-						titulo: claseInscrita.titulo,
-						descripcion: claseInscrita.descripcion,
-						precio: claseInscrita.precio,
-						nivel: claseInscrita.nivel,
-						presencialidad: claseInscrita.presencialidad
-					}));
-			} else {
-				// If admin/professor, load all classes
-				const classesResponse = await claseApi.obtenerClases();
-				classes = (classesResponse.content || []).slice(0, 10);
+			if (classesRes.status === 'fulfilled') {
+				testData.classes = classesRes.value.content || [];
 			}
+			if (studentsRes.status === 'fulfilled') {
+				testData.students = studentsRes.value.content || [];
+			}
+			if (teachersRes.status === 'fulfilled') {
+				testData.teachers = teachersRes.value.content || [];
+			}
+			if (materialsRes.status === 'fulfilled') {
+				testData.materials = materialsRes.value.content || [];
+			}
+
+			addResult('Data', 'Load', 'GET', 'success', 'Test data loaded successfully');
 		} catch (error) {
-			console.error('Error loading classes:', error);
-			// Fallback to empty array if there's an error (e.g., no enrolled classes)
-			classes = [];
+			addResult('Data', 'Load', 'GET', 'error', `Failed to load test data: ${error}`);
+		}
+	}
+
+	async function testAuthenticationAPI() {
+		currentTest = 'Authentication API';
+		addResult('Auth', 'Test Start', 'INFO', 'running', 'Starting Authentication API tests...');
+
+		try {
+			// Test public endpoint
+			addResult('Auth', 'Test', 'GET', 'running', 'Testing public endpoint...');
+			const testResult = await pruebasApi.publico();
+			addResult('Auth', 'Test', 'GET', 'success', `Public endpoint: ${testResult}`);
+
+			// Test user endpoint
+			addResult('Auth', 'User Info', 'GET', 'running', 'Testing user info endpoint...');
+			const userInfo = await pruebasApi.obtenerInfoUsuario();
+			addResult('Auth', 'User Info', 'GET', 'success', `User info: ${userInfo}`);
+
+			// Test admin endpoint
+			addResult('Auth', 'Admin', 'GET', 'running', 'Testing admin endpoint...');
+			try {
+				const adminResult = await pruebasApi.admin();
+				addResult('Auth', 'Admin', 'GET', 'success', `Admin endpoint: ${adminResult}`);
+			} catch (error) {
+				addResult('Auth', 'Admin', 'GET', 'error', `Admin endpoint failed: ${error}`);
+			}
+
+			addResult('Auth', 'Test Complete', 'INFO', 'success', 'Authentication API tests completed');
+		} catch (error) {
+			addResult('Auth', 'Test Error', 'ERROR', 'error', `Authentication test failed: ${error}`);
+		}
+	}
+
+	async function testClassesAPI() {
+		currentTest = 'Classes API';
+		addResult('Classes', 'Test Start', 'INFO', 'running', 'Starting Classes API tests...');
+
+		try {
+			// GET - Get all classes
+			addResult('Classes', 'Get All', 'GET', 'running', 'Getting all classes...');
+			const classesResponse = await claseApi.obtenerClases({ page: 0, size: 10 });
+			addResult(
+				'Classes',
+				'Get All',
+				'GET',
+				'success',
+				`Found ${classesResponse.content?.length || 0} classes`
+			);
+
+			// GET - Get class by ID (if available)
+			if (testData.classes.length > 0) {
+				const testClass = testData.classes[0];
+				addResult('Classes', 'Get By ID', 'GET', 'running', `Getting class ${testClass.id}...`);
+				const classById = await claseApi.obtenerClasePorId({ id: testClass.id! });
+				addResult('Classes', 'Get By ID', 'GET', 'success', `Retrieved class: ${classById.titulo}`);
+			}
+
+			// POST - Create course
+			addResult('Classes', 'Create Course', 'POST', 'running', 'Creating test course...');
+			try {
+				const newCourse: DTOPeticionCrearCurso = {
+					titulo: `Test Course ${Date.now()}`,
+					descripcion: 'Test course description',
+					nivel: 'INTERMEDIO',
+					presencialidad: 'PRESENCIAL',
+					precio: 100,
+					fechaInicio: new Date('2025-02-01'),
+					fechaFin: new Date('2025-06-01')
+				};
+				const createdCourse = await claseApi.crearCurso({ dTOPeticionCrearCurso: newCourse });
+				testData.createdIds.class = createdCourse.id || null;
+				addResult(
+					'Classes',
+					'Create Course',
+					'POST',
+					'success',
+					`Created course: ${createdCourse.titulo}`
+				);
+			} catch (error) {
+				addResult('Classes', 'Create Course', 'POST', 'error', `Failed to create course: ${error}`);
+			}
+
+			// POST - Create workshop
+			addResult('Classes', 'Create Workshop', 'POST', 'running', 'Creating test workshop...');
+			try {
+				const newWorkshop = {
+					titulo: `Test Workshop ${Date.now()}`,
+					descripcion: 'Test workshop description',
+					nivel: 'PRINCIPIANTE' as const,
+					presencialidad: 'ONLINE' as const,
+					precio: 50,
+					fechaRealizacion: new Date('2025-03-01'),
+					horaComienzo: '10:00',
+					duracionHoras: 20
+				};
+				const createdWorkshop = await claseApi.crearTaller({ dTOPeticionCrearTaller: newWorkshop });
+				addResult(
+					'Classes',
+					'Create Workshop',
+					'POST',
+					'success',
+					`Created workshop: ${createdWorkshop.titulo}`
+				);
+			} catch (error) {
+				addResult(
+					'Classes',
+					'Create Workshop',
+					'POST',
+					'error',
+					`Failed to create workshop: ${error}`
+				);
+			}
+
+			// DELETE - Delete class (if created)
+			if (testData.createdIds.class) {
+				addResult(
+					'Classes',
+					'Delete',
+					'DELETE',
+					'running',
+					`Deleting class ${testData.createdIds.class}...`
+				);
+				try {
+					await claseApi.borrarClasePorId({ id: testData.createdIds.class });
+					addResult('Classes', 'Delete', 'DELETE', 'success', 'Class deleted successfully');
+					testData.createdIds.class = null;
+				} catch (error) {
+					addResult('Classes', 'Delete', 'DELETE', 'error', `Failed to delete class: ${error}`);
+				}
+			}
+
+			addResult('Classes', 'Test Complete', 'INFO', 'success', 'Classes API tests completed');
+		} catch (error) {
+			addResult('Classes', 'Test Error', 'ERROR', 'error', `Classes test failed: ${error}`);
+		}
+	}
+
+	async function testStudentsAPI() {
+		currentTest = 'Students API';
+		addResult('Students', 'Test Start', 'INFO', 'running', 'Starting Students API tests...');
+
+		try {
+			// GET - Get all students
+			addResult('Students', 'Get All', 'GET', 'running', 'Getting all students...');
+			const studentsResponse = await alumnoApi.obtenerAlumnos({ page: 0, size: 10 });
+			addResult(
+				'Students',
+				'Get All',
+				'GET',
+				'success',
+				`Found ${studentsResponse.content?.length || 0} students`
+			);
+
+			// GET - Get student by ID (if available)
+			if (testData.students.length > 0) {
+				const testStudent = testData.students[0];
+				addResult(
+					'Students',
+					'Get By ID',
+					'GET',
+					'running',
+					`Getting student ${testStudent.id}...`
+				);
+				const studentById = await alumnoApi.obtenerAlumnoPorId({ id: testStudent.id! });
+				addResult(
+					'Students',
+					'Get By ID',
+					'GET',
+					'success',
+					`Retrieved student: ${studentById.firstName} ${studentById.lastName}`
+				);
+			}
+
+			// POST - Create student
+			addResult('Students', 'Create', 'POST', 'running', 'Creating test student...');
+			try {
+				const newStudent: DTOPeticionRegistroAlumno = {
+					firstName: `Test${Date.now()}`,
+					lastName: 'Student',
+					email: `test${Date.now()}@example.com`,
+					phoneNumber: '123456789',
+					username: `teststudent${Date.now()}`,
+					password: 'password123',
+					dni: `12345678${Date.now()}`
+				};
+				const createdStudent = await alumnoApi.crearAlumno({
+					dTOPeticionRegistroAlumno: newStudent
+				});
+				testData.createdIds.student = createdStudent.id || null;
+				addResult(
+					'Students',
+					'Create',
+					'POST',
+					'success',
+					`Created student: ${createdStudent.firstName} ${createdStudent.lastName}`
+				);
+			} catch (error) {
+				addResult('Students', 'Create', 'POST', 'error', `Failed to create student: ${error}`);
+			}
+
+			// PUT - Update student (if created)
+			if (testData.createdIds.student) {
+				addResult(
+					'Students',
+					'Update',
+					'PUT',
+					'running',
+					`Updating student ${testData.createdIds.student}...`
+				);
+				try {
+					const updateData: DTOActualizacionAlumno = {
+						firstName: `Updated${Date.now()}`,
+						lastName: 'Student',
+						email: `updated${Date.now()}@example.com`,
+						phoneNumber: '987654321'
+					};
+					const updatedStudent = await alumnoApi.actualizarAlumno({
+						id: testData.createdIds.student,
+						dTOActualizacionAlumno: updateData
+					});
+					addResult(
+						'Students',
+						'Update',
+						'PUT',
+						'success',
+						`Updated student: ${updatedStudent.firstName} ${updatedStudent.lastName}`
+					);
+				} catch (error) {
+					addResult('Students', 'Update', 'PUT', 'error', `Failed to update student: ${error}`);
+				}
+			}
+
+			// DELETE - Delete student (if created)
+			if (testData.createdIds.student) {
+				addResult(
+					'Students',
+					'Delete',
+					'DELETE',
+					'running',
+					`Deleting student ${testData.createdIds.student}...`
+				);
+				try {
+					await alumnoApi.borrarAlumnoPorId({ id: testData.createdIds.student });
+					addResult('Students', 'Delete', 'DELETE', 'success', 'Student deleted successfully');
+					testData.createdIds.student = null;
+				} catch (error) {
+					addResult('Students', 'Delete', 'DELETE', 'error', `Failed to delete student: ${error}`);
+				}
+			}
+
+			addResult('Students', 'Test Complete', 'INFO', 'success', 'Students API tests completed');
+		} catch (error) {
+			addResult('Students', 'Test Error', 'ERROR', 'error', `Students test failed: ${error}`);
+		}
+	}
+
+	async function testProfessorsAPI() {
+		currentTest = 'Professors API';
+		addResult('Professors', 'Test Start', 'INFO', 'running', 'Starting Professors API tests...');
+
+		try {
+			// GET - Get all professors
+			addResult('Professors', 'Get All', 'GET', 'running', 'Getting all professors...');
+			const professorsResponse = await profesorApi.obtenerProfesores({ page: 0, size: 10 });
+			addResult(
+				'Professors',
+				'Get All',
+				'GET',
+				'success',
+				`Found ${professorsResponse.content?.length || 0} professors`
+			);
+
+			// POST - Create professor
+			addResult('Professors', 'Create', 'POST', 'running', 'Creating test professor...');
+			try {
+				const newProfessor: DTOPeticionRegistroProfesor = {
+					firstName: `Test${Date.now()}`,
+					lastName: 'Professor',
+					email: `test${Date.now()}@example.com`,
+					username: `testprof${Date.now()}`,
+					password: 'password123',
+					dni: `87654321${Date.now()}`
+				};
+				const createdProfessor = await profesorApi.crearProfesor({
+					dTOPeticionRegistroProfesor: newProfessor
+				});
+				testData.createdIds.teacher = createdProfessor.id || null;
+				addResult(
+					'Professors',
+					'Create',
+					'POST',
+					'success',
+					`Created professor: ${createdProfessor.firstName} ${createdProfessor.lastName}`
+				);
+			} catch (error) {
+				addResult('Professors', 'Create', 'POST', 'error', `Failed to create professor: ${error}`);
+			}
+
+			// PUT - Update professor (if created)
+			if (testData.createdIds.teacher) {
+				addResult(
+					'Professors',
+					'Update',
+					'PUT',
+					'running',
+					`Updating professor ${testData.createdIds.teacher}...`
+				);
+				try {
+					const updateData: DTOActualizacionProfesor = {
+						firstName: `Updated${Date.now()}`,
+						lastName: 'Professor',
+						email: `updated${Date.now()}@example.com`
+					};
+					const updatedProfessor = await profesorApi.actualizarProfesor({
+						id: testData.createdIds.teacher,
+						dTOActualizacionProfesor: updateData
+					});
+					addResult(
+						'Professors',
+						'Update',
+						'PUT',
+						'success',
+						`Updated professor: ${updatedProfessor.firstName} ${updatedProfessor.lastName}`
+					);
+				} catch (error) {
+					addResult('Professors', 'Update', 'PUT', 'error', `Failed to update professor: ${error}`);
+				}
+			}
+
+			// DELETE - Delete professor (if created)
+			if (testData.createdIds.teacher) {
+				addResult(
+					'Professors',
+					'Delete',
+					'DELETE',
+					'running',
+					`Deleting professor ${testData.createdIds.teacher}...`
+				);
+				try {
+					await profesorApi.borrarProfesorPorId({ id: testData.createdIds.teacher });
+					addResult('Professors', 'Delete', 'DELETE', 'success', 'Professor deleted successfully');
+					testData.createdIds.teacher = null;
+				} catch (error) {
+					addResult(
+						'Professors',
+						'Delete',
+						'DELETE',
+						'error',
+						`Failed to delete professor: ${error}`
+					);
+				}
+			}
+
+			addResult('Professors', 'Test Complete', 'INFO', 'success', 'Professors API tests completed');
+		} catch (error) {
+			addResult('Professors', 'Test Error', 'ERROR', 'error', `Professors test failed: ${error}`);
+		}
+	}
+
+	async function testMaterialsAPI() {
+		currentTest = 'Materials API';
+		addResult('Materials', 'Test Start', 'INFO', 'running', 'Starting Materials API tests...');
+
+		try {
+			// GET - Get all materials
+			addResult('Materials', 'Get All', 'GET', 'running', 'Getting all materials...');
+			const materialsResponse = await materialApi.obtenerMateriales({ page: 0, size: 10 });
+			addResult(
+				'Materials',
+				'Get All',
+				'GET',
+				'success',
+				`Found ${materialsResponse.content?.length || 0} materials`
+			);
+
+			// GET - Get material by ID (if available)
+			if (testData.materials.length > 0) {
+				const testMaterial = testData.materials[0];
+				addResult(
+					'Materials',
+					'Get By ID',
+					'GET',
+					'running',
+					`Getting material ${testMaterial.id}...`
+				);
+				const materialById = await materialApi.obtenerMaterialPorId({ id: testMaterial.id! });
+				addResult(
+					'Materials',
+					'Get By ID',
+					'GET',
+					'success',
+					`Retrieved material: ${materialById.name}`
+				);
+			}
+
+			// POST - Create material
+			addResult('Materials', 'Create', 'POST', 'running', 'Creating test material...');
+			try {
+				const newMaterial = {
+					name: `Test Material ${Date.now()}`,
+					url: 'https://example.com/material.pdf'
+				};
+				const createdMaterial = await materialApi.crearMaterial(newMaterial);
+				testData.createdIds.material = createdMaterial.id ? parseInt(createdMaterial.id) : null;
+				addResult(
+					'Materials',
+					'Create',
+					'POST',
+					'success',
+					`Created material: ${createdMaterial.name}`
+				);
+			} catch (error) {
+				addResult('Materials', 'Create', 'POST', 'error', `Failed to create material: ${error}`);
+			}
+
+			// PUT - Update material (if created)
+			if (testData.createdIds.material) {
+				addResult(
+					'Materials',
+					'Update',
+					'PUT',
+					'running',
+					`Updating material ${testData.createdIds.material}...`
+				);
+				try {
+					const updateData = {
+						name: `Updated Material ${Date.now()}`,
+						url: 'https://example.com/updated-material.mp4'
+					};
+					const updatedMaterial = await materialApi.actualizarMaterial({
+						id: testData.createdIds.material.toString(),
+						...updateData
+					});
+					addResult(
+						'Materials',
+						'Update',
+						'PUT',
+						'success',
+						`Updated material: ${updatedMaterial.name}`
+					);
+				} catch (error) {
+					addResult('Materials', 'Update', 'PUT', 'error', `Failed to update material: ${error}`);
+				}
+			}
+
+			// GET - Get statistics
+			addResult('Materials', 'Statistics', 'GET', 'running', 'Getting material statistics...');
+			try {
+				const stats = await materialApi.obtenerEstadisticas();
+				addResult(
+					'Materials',
+					'Statistics',
+					'GET',
+					'success',
+					`Statistics: ${JSON.stringify(stats)}`
+				);
+			} catch (error) {
+				addResult('Materials', 'Statistics', 'GET', 'error', `Failed to get statistics: ${error}`);
+			}
+
+			// DELETE - Delete material (if created)
+			if (testData.createdIds.material) {
+				addResult(
+					'Materials',
+					'Delete',
+					'DELETE',
+					'running',
+					`Deleting material ${testData.createdIds.material}...`
+				);
+				try {
+					await materialApi.borrarMaterial({ id: testData.createdIds.material.toString() });
+					addResult('Materials', 'Delete', 'DELETE', 'success', 'Material deleted successfully');
+					testData.createdIds.material = null;
+				} catch (error) {
+					addResult(
+						'Materials',
+						'Delete',
+						'DELETE',
+						'error',
+						`Failed to delete material: ${error}`
+					);
+				}
+			}
+
+			addResult('Materials', 'Test Complete', 'INFO', 'success', 'Materials API tests completed');
+		} catch (error) {
+			addResult('Materials', 'Test Error', 'ERROR', 'error', `Materials test failed: ${error}`);
+		}
+	}
+
+	async function testClassManagementAPI() {
+		currentTest = 'Class Management API';
+		addResult(
+			'ClassManagement',
+			'Test Start',
+			'INFO',
+			'running',
+			'Starting Class Management API tests...'
+		);
+
+		try {
+			// Test enrollment status
+			if (testData.classes.length > 0) {
+				const testClass = testData.classes[0];
+				addResult(
+					'ClassManagement',
+					'Get Enrollment Status',
+					'GET',
+					'running',
+					`Checking enrollment status for class ${testClass.id}...`
+				);
+				try {
+					const status = await classManagementApi.obtenerMiInscripcion({ claseId: testClass.id! });
+					addResult(
+						'ClassManagement',
+						'Get Enrollment Status',
+						'GET',
+						'success',
+						`Enrollment status: ${status.isEnrolled ? 'Enrolled' : 'Not enrolled'}`
+					);
+				} catch (error) {
+					addResult(
+						'ClassManagement',
+						'Get Enrollment Status',
+						'GET',
+						'error',
+						`Failed to get enrollment status: ${error}`
+					);
+				}
+
+				// Test enrollment
+				addResult(
+					'ClassManagement',
+					'Enroll',
+					'POST',
+					'running',
+					`Enrolling in class ${testClass.id}...`
+				);
+				try {
+					const enrollment = await classManagementApi.inscribirseEnClase({
+						claseId: testClass.id!
+					});
+					addResult(
+						'ClassManagement',
+						'Enroll',
+						'POST',
+						'success',
+						`Enrolled successfully: ${enrollment.className}`
+					);
+				} catch (error) {
+					addResult('ClassManagement', 'Enroll', 'POST', 'error', `Failed to enroll: ${error}`);
+				}
+
+				// Test unenrollment
+				addResult(
+					'ClassManagement',
+					'Unenroll',
+					'POST',
+					'running',
+					`Unenrolling from class ${testClass.id}...`
+				);
+				try {
+					const unenrollment = await classManagementApi.darseDeBajaDeClase({
+						claseId: testClass.id!
+					});
+					addResult(
+						'ClassManagement',
+						'Unenroll',
+						'POST',
+						'success',
+						`Unenrolled successfully: ${unenrollment.className}`
+					);
+				} catch (error) {
+					addResult('ClassManagement', 'Unenroll', 'POST', 'error', `Failed to unenroll: ${error}`);
+				}
+			}
+
+			addResult(
+				'ClassManagement',
+				'Test Complete',
+				'INFO',
+				'success',
+				'Class Management API tests completed'
+			);
+		} catch (error) {
+			addResult(
+				'ClassManagement',
+				'Test Error',
+				'ERROR',
+				'error',
+				`Class Management test failed: ${error}`
+			);
+		}
+	}
+
+	async function testUserOperationsAPI() {
+		currentTest = 'User Operations API';
+		addResult(
+			'UserOperations',
+			'Test Start',
+			'INFO',
+			'running',
+			'Starting User Operations API tests...'
+		);
+
+		try {
+			// Get my classes (for professors)
+			addResult('UserOperations', 'Get My Classes', 'GET', 'running', 'Getting my classes...');
+			try {
+				const myClasses = await userOperationsApi.obtenerMisClases();
+				addResult(
+					'UserOperations',
+					'Get My Classes',
+					'GET',
+					'success',
+					`Found ${myClasses.length} classes`
+				);
+			} catch (error) {
+				addResult(
+					'UserOperations',
+					'Get My Classes',
+					'GET',
+					'error',
+					`Failed to get my classes: ${error}`
+				);
+			}
+
+			// Get my enrolled classes (for students)
+			addResult(
+				'UserOperations',
+				'Get My Enrolled Classes',
+				'GET',
+				'running',
+				'Getting my enrolled classes...'
+			);
+			try {
+				const enrolledClasses = await userOperationsApi.obtenerMisClasesInscritas();
+				addResult(
+					'UserOperations',
+					'Get My Enrolled Classes',
+					'GET',
+					'success',
+					`Found ${enrolledClasses.length} enrolled classes`
+				);
+			} catch (error) {
+				addResult(
+					'UserOperations',
+					'Get My Enrolled Classes',
+					'GET',
+					'error',
+					`Failed to get enrolled classes: ${error}`
+				);
+			}
+
+			// Get students in a class (if available)
+			if (testData.classes.length > 0) {
+				const testClass = testData.classes[0];
+				addResult(
+					'UserOperations',
+					'Get Students in Class',
+					'GET',
+					'running',
+					`Getting students in class ${testClass.id}...`
+				);
+				try {
+					const studentsInClass = await userOperationsApi.obtenerAlumnosDeClase({
+						claseId: testClass.id!
+					});
+					addResult(
+						'UserOperations',
+						'Get Students in Class',
+						'GET',
+						'success',
+						`Found ${studentsInClass.content?.length || 0} students in class`
+					);
+				} catch (error) {
+					addResult(
+						'UserOperations',
+						'Get Students in Class',
+						'GET',
+						'error',
+						`Failed to get students in class: ${error}`
+					);
+				}
+			}
+
+			addResult(
+				'UserOperations',
+				'Test Complete',
+				'INFO',
+				'success',
+				'User Operations API tests completed'
+			);
+		} catch (error) {
+			addResult(
+				'UserOperations',
+				'Test Error',
+				'ERROR',
+				'error',
+				`User Operations test failed: ${error}`
+			);
+		}
+	}
+
+	async function runAllTests() {
+		loading = true;
+		clearResults();
+		addResult(
+			'System',
+			'Start',
+			'INFO',
+			'running',
+			'🚀 Starting comprehensive API endpoint testing...'
+		);
+
+		try {
+			await loadTestData();
+			await testAuthenticationAPI();
+			await testClassesAPI();
+			await testStudentsAPI();
+			await testProfessorsAPI();
+			await testMaterialsAPI();
+			await testClassManagementAPI();
+			await testUserOperationsAPI();
+
+			addResult('System', 'Complete', 'INFO', 'success', '✅ All API endpoint tests completed!');
+		} catch (error) {
+			addResult('System', 'Error', 'ERROR', 'error', `❌ Test suite failed: ${error}`);
+		} finally {
+			loading = false;
+			currentTest = '';
 		}
 	}
 
 	onMount(() => {
-		addResult('🔧 Test page loaded. Ready to run tests.');
-		loadSystemData();
+		addResult(
+			'System',
+			'Ready',
+			'INFO',
+			'success',
+			'🔧 Test page loaded. Ready to run comprehensive API tests.'
+		);
+		loadTestData();
 	});
 </script>
 
 <svelte:head>
-	<title>API Test Page - Academia</title>
+	<title>Comprehensive API Test Page - Academia</title>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8">
 	<!-- Header -->
 	<div class="mb-6">
-		<h1 class="text-3xl font-bold text-gray-900">🧪 API Test Page</h1>
-		<p class="text-gray-600">Testing enrollment functionality and API connectivity</p>
+		<h1 class="text-3xl font-bold text-gray-900">🧪 Comprehensive API Test Page</h1>
+		<p class="text-gray-600">Testing all endpoints for every API class</p>
 	</div>
 
 	<!-- Authentication Status -->
@@ -706,7 +911,7 @@
 		<h2 class="mb-3 text-lg font-semibold text-purple-900">🚀 Quick Login (for Testing)</h2>
 		<div class="flex flex-wrap gap-3">
 			<button
-				onclick={loginAsAdmin}
+				onclick={() => quickLogin('admin', 'admin', 'Admin')}
 				disabled={loginLoading || loading}
 				class="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
 			>
@@ -714,7 +919,7 @@
 			</button>
 
 			<button
-				onclick={loginAsStudent}
+				onclick={() => quickLogin('estudiante', 'password', 'Student')}
 				disabled={loginLoading || loading}
 				class="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
 			>
@@ -722,7 +927,7 @@
 			</button>
 
 			<button
-				onclick={loginAsProfessor}
+				onclick={() => quickLogin('profesor', 'password', 'Professor')}
 				disabled={loginLoading || loading}
 				class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
 			>
@@ -735,257 +940,81 @@
 	</div>
 
 	<!-- Test Controls -->
-	<div class="mb-6 flex gap-4">
+	<div class="mb-6 flex flex-wrap gap-4">
 		<button
-			onclick={testSimpleAPI}
-			disabled={loading || loginLoading}
-			class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-		>
-			{loading ? '🔄 Running...' : '🧪 Test Simple API'}
-		</button>
-
-		<button
-			onclick={testEnrollmentAPI}
+			onclick={runAllTests}
 			disabled={loading || loginLoading}
 			class="rounded-lg bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
 		>
-			{loading ? '🔄 Running...' : '🎯 Test Enrollment API'}
+			{loading ? '🔄 Running All Tests...' : '🚀 Run All API Tests'}
 		</button>
 
 		<button
-			onclick={testEnhancedAccessDenied}
-			disabled={accessDeniedLoading || loginLoading}
-			class="rounded-lg bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+			onclick={clearResults}
+			disabled={testResults.length === 0}
+			class="rounded-lg bg-gray-600 px-6 py-3 font-semibold text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
 		>
-			{accessDeniedLoading ? '🔄 Running...' : '🚫 Test Access Denied'}
-		</button>
-
-		<button
-			onclick={loadSystemData}
-			disabled={dataLoading}
-			class="rounded-lg bg-orange-600 px-6 py-3 font-semibold text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
-		>
-			{dataLoading ? '🔄 Loading...' : '🔄 Refresh Data'}
+			🗑️ Clear Results
 		</button>
 
 		<button
 			onclick={() => goto('/')}
-			class="rounded-lg bg-gray-600 px-6 py-3 font-semibold text-white hover:bg-gray-700"
+			class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
 		>
 			🏠 Go Home
 		</button>
 	</div>
 
-	<!-- System Data Overview -->
-	<div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-		<!-- Students Section -->
-		<div class="rounded-lg bg-white shadow-lg">
-			<div class="border-b border-gray-200 bg-green-50 p-4">
-				<h2 class="text-lg font-semibold text-green-900">👨‍🎓 Students ({students.length})</h2>
-			</div>
-			<div class="max-h-96 overflow-y-auto p-4">
-				{#if dataLoading}
-					<div class="py-4 text-center">
-						<div
-							class="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-green-600"
-						></div>
-						<p class="mt-2 text-sm text-gray-600">Loading students...</p>
-					</div>
-				{:else if students.length === 0}
-					<div class="py-8 text-center text-gray-500">
-						<p>No students found</p>
-					</div>
-				{:else}
-					<div class="space-y-2">
-						{#each students as student (student.id)}
-							<div class="rounded-lg border p-3 hover:bg-gray-50">
-								<div class="flex items-start justify-between">
-									<div class="flex-1">
-										<h4 class="font-medium text-gray-900">
-											{student.firstName}
-											{student.lastName}
-										</h4>
-										<p class="text-sm text-gray-600">{student.email}</p>
-										{#if student.phoneNumber}
-											<p class="text-xs text-gray-500">{student.phoneNumber}</p>
-										{/if}
-									</div>
-									<div class="flex flex-col items-end gap-2">
-										<span class="rounded bg-green-100 px-2 py-1 text-xs text-green-800">
-											ID: {student.id}
-										</span>
-										{#if student.username}
-											<button
-												onclick={() =>
-													loginAsSpecificStudent(
-														student.username!,
-														`${student.firstName} ${student.lastName}`
-													)}
-												disabled={loginLoading}
-												class="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-											>
-												{loginLoading ? '🔄' : '👤 Log in as'}
-											</button>
-										{/if}
-									</div>
-								</div>
-							</div>
-						{/each}
-					</div>
-				{/if}
+	<!-- Current Test Status -->
+	{#if currentTest}
+		<div class="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+			<div class="flex items-center gap-2">
+				<div class="h-4 w-4 animate-spin rounded-full border-b-2 border-yellow-600"></div>
+				<span class="font-semibold text-yellow-900">Currently testing: {currentTest}</span>
 			</div>
 		</div>
+	{/if}
 
-		<!-- Teachers Section -->
-		<div class="rounded-lg bg-white shadow-lg">
-			<div class="border-b border-gray-200 bg-blue-50 p-4">
-				<h2 class="text-lg font-semibold text-blue-900">👨‍🏫 Teachers ({teachers.length})</h2>
-			</div>
-			<div class="max-h-96 overflow-y-auto p-4">
-				{#if dataLoading}
-					<div class="py-4 text-center">
-						<div class="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-						<p class="mt-2 text-sm text-gray-600">Loading teachers...</p>
-					</div>
-				{:else if teachers.length === 0}
-					<div class="py-8 text-center text-gray-500">
-						<p>No teachers found</p>
-					</div>
-				{:else}
-					<div class="space-y-2">
-						{#each teachers as teacher (teacher.id)}
-							<div class="rounded-lg border p-3 hover:bg-gray-50">
-								<div class="flex items-start justify-between">
-									<div>
-										<h4 class="font-medium text-gray-900">
-											{teacher.firstName}
-											{teacher.lastName}
-										</h4>
-										<p class="text-sm text-gray-600">{teacher.email}</p>
-										{#if teacher.specialty}
-											<p class="text-xs font-medium text-blue-600">{teacher.specialty}</p>
-										{/if}
-										{#if teacher.experience}
-											<p class="text-xs text-gray-500">{teacher.experience} años exp.</p>
-										{/if}
-									</div>
-									<span class="rounded bg-blue-100 px-2 py-1 text-xs text-blue-800">
-										ID: {teacher.id}
-									</span>
-								</div>
-							</div>
-						{/each}
-					</div>
-				{/if}
-			</div>
-		</div>
-
-		<!-- Classes Section -->
-		<div class="rounded-lg bg-white shadow-lg">
-			<div class="border-b border-gray-200 bg-purple-50 p-4">
-				<h2 class="text-lg font-semibold text-purple-900">
-					📚 {authStore.user?.roles?.includes('ROLE_ALUMNO')
-						? 'My Enrolled Classes'
-						: 'All Classes'} ({classes.length})
-				</h2>
-			</div>
-			<div class="max-h-96 overflow-y-auto p-4">
-				{#if dataLoading}
-					<div class="py-4 text-center">
-						<div
-							class="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-purple-600"
-						></div>
-						<p class="mt-2 text-sm text-gray-600">Loading classes...</p>
-					</div>
-				{:else if classes.length === 0}
-					<div class="py-8 text-center text-gray-500">
-						{#if authStore.user?.roles?.includes('ROLE_ALUMNO')}
-							<p>No enrolled classes</p>
-							<p class="mt-1 text-xs">This student is not enrolled in any classes yet</p>
-						{:else}
-							<p>No classes found</p>
-						{/if}
-					</div>
-				{:else}
-					<div class="space-y-2">
-						{#each classes as clase (clase.id)}
-							<div class="rounded-lg border p-3 hover:bg-gray-50">
-								<div class="flex items-start justify-between">
-									<div>
-										<h4 class="font-medium text-gray-900">
-											{clase.titulo}
-										</h4>
-										{#if clase.descripcion}
-											<p class="line-clamp-2 text-sm text-gray-600">{clase.descripcion}</p>
-										{/if}
-										<div class="mt-1 flex gap-2">
-											{#if clase.nivel}
-												<span class="rounded bg-yellow-100 px-2 py-1 text-xs text-yellow-800">
-													{clase.nivel}
-												</span>
-											{/if}
-											{#if clase.presencialidad}
-												<span class="rounded bg-gray-100 px-2 py-1 text-xs text-gray-800">
-													{clase.presencialidad}
-												</span>
-											{/if}
-										</div>
-										{#if clase.precio}
-											<p class="mt-1 text-sm font-medium text-green-600">€{clase.precio}</p>
-										{/if}
-									</div>
-									<span class="rounded bg-purple-100 px-2 py-1 text-xs text-purple-800">
-										ID: {clase.id}
-									</span>
-								</div>
-							</div>
-						{/each}
-					</div>
-				{/if}
-			</div>
-		</div>
-	</div>
-
-	<!-- Enhanced Access Denied Results -->
-	<div class="mb-6 rounded-lg bg-white shadow-lg">
+	<!-- Test Results -->
+	<div class="rounded-lg bg-white shadow-lg">
 		<div class="border-b border-gray-200 p-4">
 			<div class="flex items-center justify-between">
 				<div>
-					<h2 class="text-lg font-semibold text-gray-900">🚫 Enhanced Access Denied Testing</h2>
-					<p class="text-sm text-gray-600">Detailed access denied response analysis</p>
+					<h2 class="text-lg font-semibold text-gray-900">Test Results</h2>
+					<p class="text-sm text-gray-600">Comprehensive API endpoint testing results</p>
 				</div>
-				<button
-					onclick={clearAccessDeniedResults}
-					disabled={accessDeniedResults.length === 0}
-					class="rounded bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-				>
-					Clear Results
-				</button>
+				<div class="text-sm text-gray-600">
+					Total: {testResults.length} tests
+				</div>
 			</div>
 		</div>
 
 		<div class="max-h-96 overflow-y-auto p-4">
-			{#if accessDeniedResults.length === 0}
+			{#if testResults.length === 0}
 				<div class="py-8 text-center text-gray-500">
-					<p>No access denied tests run yet.</p>
-					<p class="mt-1 text-sm">
-						Click "Test Access Denied" to start testing enhanced error responses.
-					</p>
+					<p>No tests run yet. Click "Run All API Tests" to start comprehensive testing.</p>
 				</div>
 			{:else}
-				<div class="space-y-4">
-					{#each accessDeniedResults as result (result.timestamp + result.testName)}
+				<div class="space-y-2">
+					{#each testResults as result (result.timestamp + result.api + result.endpoint)}
 						<div
-							class="rounded-lg border p-4 {result.status === 'success'
+							class="rounded-lg border p-3 {result.status === 'success'
 								? 'border-green-200 bg-green-50'
 								: result.status === 'error'
 									? 'border-red-200 bg-red-50'
-									: 'border-blue-200 bg-blue-50'}"
+									: result.status === 'running'
+										? 'border-yellow-200 bg-yellow-50'
+										: 'border-gray-200 bg-gray-50'}"
 						>
 							<div class="flex items-start justify-between">
 								<div class="flex-1">
-									<div class="mb-2 flex items-center gap-2">
-										<span class="font-semibold text-gray-900">{result.testName}</span>
+									<div class="mb-1 flex items-center gap-2">
+										<span class="font-mono text-xs font-semibold text-gray-600"
+											>{result.method}</span
+										>
+										<span class="font-semibold text-gray-900">{result.api}</span>
+										<span class="text-gray-600">→</span>
+										<span class="font-medium text-gray-800">{result.endpoint}</span>
 										<span class="text-xs text-gray-500">{result.timestamp}</span>
 									</div>
 									<p
@@ -993,92 +1022,43 @@
 											? 'text-green-800'
 											: result.status === 'error'
 												? 'text-red-800'
-												: 'text-blue-800'}"
+												: result.status === 'running'
+													? 'text-yellow-800'
+													: 'text-gray-800'}"
 									>
 										{result.message}
 									</p>
-
-									{#if result.errorDetails && typeof result.errorDetails === 'object'}
-										<div class="mt-3 rounded border bg-white p-3">
-											<h4 class="mb-2 text-xs font-semibold text-gray-700">Error Details:</h4>
-											<div class="space-y-1 text-xs">
-												{#if (result.errorDetails as ApiErrorResponse).status}
-													<div>
-														<span class="font-medium">Status:</span>
-														{(result.errorDetails as ApiErrorResponse).status}
-													</div>
-												{/if}
-												{#if (result.errorDetails as ApiErrorResponse).message}
-													<div>
-														<span class="font-medium">Message:</span>
-														{(result.errorDetails as ApiErrorResponse).message}
-													</div>
-												{/if}
-												{#if (result.errorDetails as ApiErrorResponse).errorCode}
-													<div>
-														<span class="font-medium">Error Code:</span>
-														<code class="rounded bg-gray-100 px-1"
-															>{(result.errorDetails as ApiErrorResponse).errorCode}</code
-														>
-													</div>
-												{/if}
-												{#if (result.errorDetails as ApiErrorResponse).requiredRole}
-													<div>
-														<span class="font-medium">Required Role:</span>
-														<span class="rounded bg-yellow-100 px-1"
-															>{(result.errorDetails as ApiErrorResponse).requiredRole}</span
-														>
-													</div>
-												{/if}
-												{#if (result.errorDetails as ApiErrorResponse).currentUserRole}
-													<div>
-														<span class="font-medium">Current Role:</span>
-														<span class="rounded bg-blue-100 px-1"
-															>{(result.errorDetails as ApiErrorResponse).currentUserRole}</span
-														>
-													</div>
-												{/if}
-												{#if (result.errorDetails as ApiErrorResponse).resourceType}
-													<div>
-														<span class="font-medium">Resource:</span>
-														<code class="rounded bg-gray-100 px-1"
-															>{(result.errorDetails as ApiErrorResponse).resourceType}</code
-														>
-													</div>
-												{/if}
-												{#if (result.errorDetails as ApiErrorResponse).action}
-													<div>
-														<span class="font-medium">Action:</span>
-														<code class="rounded bg-gray-100 px-1"
-															>{(result.errorDetails as ApiErrorResponse).action}</code
-														>
-													</div>
-												{/if}
-												{#if (result.errorDetails as ApiErrorResponse).path}
-													<div>
-														<span class="font-medium">Path:</span>
-														<code class="rounded bg-gray-100 px-1"
-															>{(result.errorDetails as ApiErrorResponse).path}</code
-														>
-													</div>
-												{/if}
-												{#if (result.errorDetails as ApiErrorResponse).suggestion}
-													<div class="mt-2 rounded border-l-4 border-blue-400 bg-blue-50 p-2">
-														<span class="font-medium text-blue-800">Suggestion:</span>
-														<p class="mt-1 text-blue-700">
-															{(result.errorDetails as ApiErrorResponse).suggestion}
-														</p>
-													</div>
-												{/if}
-											</div>
+									{#if result.details}
+										<div class="mt-2 rounded border bg-white p-2">
+											<details class="text-xs">
+												<summary class="cursor-pointer font-medium text-gray-700">Details</summary>
+												<pre class="mt-1 whitespace-pre-wrap text-gray-600">{JSON.stringify(
+														result.details,
+														null,
+														2
+													)}</pre>
+											</details>
 										</div>
-									{:else if result.errorDetails}
-										<div class="mt-3 rounded border bg-white p-3">
-											<h4 class="mb-2 text-xs font-semibold text-gray-700">Error Details:</h4>
-											<div class="text-xs text-gray-600">
-												{String(result.errorDetails)}
-											</div>
-										</div>
+									{/if}
+								</div>
+								<div class="ml-2">
+									{#if result.status === 'success'}
+										<span class="rounded bg-green-100 px-2 py-1 text-xs font-medium text-green-800"
+											>✅ Success</span
+										>
+									{:else if result.status === 'error'}
+										<span class="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-800"
+											>❌ Error</span
+										>
+									{:else if result.status === 'running'}
+										<span
+											class="rounded bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800"
+											>🔄 Running</span
+										>
+									{:else}
+										<span class="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800"
+											>⏭️ Skipped</span
+										>
 									{/if}
 								</div>
 							</div>
@@ -1089,33 +1069,40 @@
 		</div>
 	</div>
 
-	<!-- Test Results -->
-	<div class="rounded-lg bg-white shadow-lg">
-		<div class="border-b border-gray-200 p-4">
-			<h2 class="text-lg font-semibold text-gray-900">Test Results</h2>
-			<p class="text-sm text-gray-600">Real-time test execution log</p>
-		</div>
-
-		<div class="max-h-96 overflow-y-auto p-4">
-			{#if testResults.length === 0}
-				<div class="py-8 text-center text-gray-500">
-					<p>No tests run yet. Click a test button to start.</p>
-				</div>
-			{:else}
-				<div class="space-y-1">
-					{#each testResults as result (result)}
-						<div
-							class="rounded p-2 font-mono text-sm {result.includes('✅')
-								? 'bg-green-50 text-green-800'
-								: result.includes('❌')
-									? 'bg-red-50 text-red-800'
-									: 'bg-gray-50 text-gray-800'}"
-						>
-							{result}
+	<!-- Test Summary -->
+	{#if testResults.length > 0}
+		<div class="mt-6 rounded-lg bg-white shadow-lg">
+			<div class="border-b border-gray-200 p-4">
+				<h3 class="text-lg font-semibold text-gray-900">Test Summary</h3>
+			</div>
+			<div class="p-4">
+				<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+					<div class="text-center">
+						<div class="text-2xl font-bold text-green-600">
+							{testResults.filter((r) => r.status === 'success').length}
 						</div>
-					{/each}
+						<div class="text-sm text-gray-600">Successful</div>
+					</div>
+					<div class="text-center">
+						<div class="text-2xl font-bold text-red-600">
+							{testResults.filter((r) => r.status === 'error').length}
+						</div>
+						<div class="text-sm text-gray-600">Failed</div>
+					</div>
+					<div class="text-center">
+						<div class="text-2xl font-bold text-yellow-600">
+							{testResults.filter((r) => r.status === 'running').length}
+						</div>
+						<div class="text-sm text-gray-600">Running</div>
+					</div>
+					<div class="text-center">
+						<div class="text-2xl font-bold text-gray-600">
+							{testResults.filter((r) => r.status === 'skipped').length}
+						</div>
+						<div class="text-sm text-gray-600">Skipped</div>
+					</div>
 				</div>
-			{/if}
+			</div>
 		</div>
-	</div>
+	{/if}
 </div>

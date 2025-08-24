@@ -117,7 +117,8 @@ public class EntregaEjercicio {
      * @return true si fue entregada fuera de plazo, false en caso contrario
      */
     public boolean esFueraDePlazo(Ejercicio ejercicioRef) {
-        return this.fechaEntrega.isAfter(ejercicioRef.getFechaFinalPlazo());
+        //return this.fechaEntrega.isAfter(ejercicioRef.getFechaFinalPlazo());
+        return false;
     }
     
     /**

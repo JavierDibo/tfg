@@ -7,15 +7,17 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Entidad Material (Agregado)
+ * Entidad Material
  * Representa material didáctico asociado a una clase
  * Basado en el UML de especificación
  */
 @Data
 @EqualsAndHashCode
-@Embeddable
+@Entity
+@Table(name = "materiales")
 public class Material {
     
+    @Id
     @NotNull
     @Size(max = 255)
     private String id;

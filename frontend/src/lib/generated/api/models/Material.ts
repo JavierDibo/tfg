@@ -30,7 +30,7 @@ export interface Material {
      * @type {string}
      * @memberof Material
      */
-    nombre: string;
+    name: string;
     /**
      * 
      * @type {string}
@@ -44,7 +44,7 @@ export interface Material {
  */
 export function instanceOfMaterial(value: object): value is Material {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('nombre' in value) || value['nombre'] === undefined) return false;
+    if (!('name' in value) || value['name'] === undefined) return false;
     if (!('url' in value) || value['url'] === undefined) return false;
     return true;
 }
@@ -60,7 +60,7 @@ export function MaterialFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     return {
         
         'id': json['id'],
-        'nombre': json['nombre'],
+        'name': json['name'],
         'url': json['url'],
     };
 }
@@ -77,7 +77,7 @@ export function MaterialToJSONTyped(value?: Material | null, ignoreDiscriminator
     return {
         
         'id': value['id'],
-        'nombre': value['nombre'],
+        'name': value['name'],
         'url': value['url'],
     };
 }

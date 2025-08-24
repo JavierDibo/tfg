@@ -76,7 +76,7 @@ public interface RepositorioMaterial extends JpaRepository<Material, String> {
      * Finds materials that are documents (PDF, DOC, etc.)
      * @return List of document materials
      */
-    @Query("SELECT m FROM Material m WHERE LOWER(m.url) REGEXP '.*\\.(pdf|doc|docx|txt|rtf|md)$'")
+    @Query("SELECT m FROM Material m WHERE LOWER(m.url) LIKE '%.pdf' OR LOWER(m.url) LIKE '%.doc' OR LOWER(m.url) LIKE '%.docx' OR LOWER(m.url) LIKE '%.txt' OR LOWER(m.url) LIKE '%.rtf' OR LOWER(m.url) LIKE '%.md'")
     List<Material> findDocuments();
     
     /**
@@ -84,14 +84,14 @@ public interface RepositorioMaterial extends JpaRepository<Material, String> {
      * @param pageable Pagination parameters
      * @return Page of document materials
      */
-    @Query("SELECT m FROM Material m WHERE LOWER(m.url) REGEXP '.*\\.(pdf|doc|docx|txt|rtf|md)$'")
+    @Query("SELECT m FROM Material m WHERE LOWER(m.url) LIKE '%.pdf' OR LOWER(m.url) LIKE '%.doc' OR LOWER(m.url) LIKE '%.docx' OR LOWER(m.url) LIKE '%.txt' OR LOWER(m.url) LIKE '%.rtf' OR LOWER(m.url) LIKE '%.md'")
     Page<Material> findDocuments(Pageable pageable);
     
     /**
      * Finds materials that are images
      * @return List of image materials
      */
-    @Query("SELECT m FROM Material m WHERE LOWER(m.url) REGEXP '.*\\.(jpg|jpeg|png|gif|bmp|svg)$'")
+    @Query("SELECT m FROM Material m WHERE LOWER(m.url) LIKE '%.jpg' OR LOWER(m.url) LIKE '%.jpeg' OR LOWER(m.url) LIKE '%.png' OR LOWER(m.url) LIKE '%.gif' OR LOWER(m.url) LIKE '%.bmp' OR LOWER(m.url) LIKE '%.svg'")
     List<Material> findImages();
     
     /**
@@ -99,14 +99,14 @@ public interface RepositorioMaterial extends JpaRepository<Material, String> {
      * @param pageable Pagination parameters
      * @return Page of image materials
      */
-    @Query("SELECT m FROM Material m WHERE LOWER(m.url) REGEXP '.*\\.(jpg|jpeg|png|gif|bmp|svg)$'")
+    @Query("SELECT m FROM Material m WHERE LOWER(m.url) LIKE '%.jpg' OR LOWER(m.url) LIKE '%.jpeg' OR LOWER(m.url) LIKE '%.png' OR LOWER(m.url) LIKE '%.gif' OR LOWER(m.url) LIKE '%.bmp' OR LOWER(m.url) LIKE '%.svg'")
     Page<Material> findImages(Pageable pageable);
     
     /**
      * Finds materials that are videos
      * @return List of video materials
      */
-    @Query("SELECT m FROM Material m WHERE LOWER(m.url) REGEXP '.*\\.(mp4|avi|mov|wmv|flv|webm)$'")
+    @Query("SELECT m FROM Material m WHERE LOWER(m.url) LIKE '%.mp4' OR LOWER(m.url) LIKE '%.avi' OR LOWER(m.url) LIKE '%.mov' OR LOWER(m.url) LIKE '%.wmv' OR LOWER(m.url) LIKE '%.flv' OR LOWER(m.url) LIKE '%.webm'")
     List<Material> findVideos();
     
     /**
@@ -114,7 +114,7 @@ public interface RepositorioMaterial extends JpaRepository<Material, String> {
      * @param pageable Pagination parameters
      * @return Page of video materials
      */
-    @Query("SELECT m FROM Material m WHERE LOWER(m.url) REGEXP '.*\\.(mp4|avi|mov|wmv|flv|webm)$'")
+    @Query("SELECT m FROM Material m WHERE LOWER(m.url) LIKE '%.mp4' OR LOWER(m.url) LIKE '%.avi' OR LOWER(m.url) LIKE '%.mov' OR LOWER(m.url) LIKE '%.wmv' OR LOWER(m.url) LIKE '%.flv' OR LOWER(m.url) LIKE '%.webm'")
     Page<Material> findVideos(Pageable pageable);
     
     /**
@@ -128,20 +128,20 @@ public interface RepositorioMaterial extends JpaRepository<Material, String> {
      * Counts document materials
      * @return Number of document materials
      */
-    @Query("SELECT COUNT(m) FROM Material m WHERE LOWER(m.url) REGEXP '.*\\.(pdf|doc|docx|txt|rtf|md)$'")
+    @Query("SELECT COUNT(m) FROM Material m WHERE LOWER(m.url) LIKE '%.pdf' OR LOWER(m.url) LIKE '%.doc' OR LOWER(m.url) LIKE '%.docx' OR LOWER(m.url) LIKE '%.txt' OR LOWER(m.url) LIKE '%.rtf' OR LOWER(m.url) LIKE '%.md'")
     Long countDocuments();
     
     /**
      * Counts image materials
      * @return Number of image materials
      */
-    @Query("SELECT COUNT(m) FROM Material m WHERE LOWER(m.url) REGEXP '.*\\.(jpg|jpeg|png|gif|bmp|svg)$'")
+    @Query("SELECT COUNT(m) FROM Material m WHERE LOWER(m.url) LIKE '%.jpg' OR LOWER(m.url) LIKE '%.jpeg' OR LOWER(m.url) LIKE '%.png' OR LOWER(m.url) LIKE '%.gif' OR LOWER(m.url) LIKE '%.bmp' OR LOWER(m.url) LIKE '%.svg'")
     Long countImages();
     
     /**
      * Counts video materials
      * @return Number of video materials
      */
-    @Query("SELECT COUNT(m) FROM Material m WHERE LOWER(m.url) REGEXP '.*\\.(mp4|avi|mov|wmv|flv|webm)$'")
+    @Query("SELECT COUNT(m) FROM Material m WHERE LOWER(m.url) LIKE '%.mp4' OR LOWER(m.url) LIKE '%.avi' OR LOWER(m.url) LIKE '%.mov' OR LOWER(m.url) LIKE '%.wmv' OR LOWER(m.url) LIKE '%.flv' OR LOWER(m.url) LIKE '%.webm'")
     Long countVideos();
 }

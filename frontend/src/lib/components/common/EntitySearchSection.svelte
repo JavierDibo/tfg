@@ -29,7 +29,7 @@
 			label: string;
 			options: Array<{ value: string | number | boolean; label: string }>;
 		} | null;
-		entityType?: 'alumnos' | 'profesores' | 'clases' | 'generic';
+		entityType?: 'alumnos' | 'profesores' | 'clases' | 'materiales' | 'generic';
 	}>();
 
 	// Local state for input values to prevent focus loss
@@ -83,6 +83,8 @@
 				return 'Buscar por nombre, apellidos, email, usuario, DNI...';
 			case 'clases':
 				return 'Buscar por título, descripción...';
+			case 'materiales':
+				return 'Buscar por nombre, URL...';
 			default:
 				return 'Buscar...';
 		}
@@ -97,6 +99,8 @@
 				return 'Búsqueda general: nombre, apellidos, email, usuario, DNI';
 			case 'clases':
 				return 'Búsqueda general: título, descripción';
+			case 'materiales':
+				return 'Búsqueda general: nombre, URL';
 			default:
 				return 'Búsqueda general en todos los campos relevantes';
 		}
