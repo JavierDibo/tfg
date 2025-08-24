@@ -20,20 +20,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
-@Tag(name = "Autenticación", description = "API para autenticación y registro de usuarios")
+@Tag(name = "Authentication", description = "API for user authentication and registration")
 public class AutenticacionRest {
     
     private final ServicioAutenticacion servicioAutenticacion;
     
     @PostMapping("/login")
     @Operation(
-        summary = "Iniciar sesión",
-        description = "Autentica un usuario con sus credenciales y devuelve un token JWT"
+        summary = "Login",
+        description = "Authenticates a user with their credentials and returns a JWT token"
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Login exitoso",
+            description = "Login successful",
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = DTORespuestaLogin.class)
@@ -41,28 +41,28 @@ public class AutenticacionRest {
         ),
         @ApiResponse(
             responseCode = "401",
-            description = "Credenciales inválidas"
+            description = "Invalid credentials"
         ),
         @ApiResponse(
             responseCode = "400",
-            description = "Datos de entrada inválidos"
+            description = "Invalid input data"
         )
     })
     public ResponseEntity<DTORespuestaLogin> login(
-            @Parameter(description = "Credenciales de login", required = true)
+            @Parameter(description = "Login credentials", required = true)
             @Valid @RequestBody DTOPeticionLogin request) {
         return ResponseEntity.ok(servicioAutenticacion.login(request));
     }
     
     @PostMapping("/registro")
     @Operation(
-        summary = "Registrar nuevo usuario",
-        description = "Crea una nueva cuenta de usuario y devuelve un token JWT"
+        summary = "Register new user",
+        description = "Creates a new user account and returns a JWT token"
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Registro exitoso",
+            description = "Registration successful",
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = DTORespuestaLogin.class)
@@ -70,24 +70,24 @@ public class AutenticacionRest {
         ),
         @ApiResponse(
             responseCode = "400",
-            description = "Datos de entrada inválidos o usuario ya existe"
+            description = "Invalid input data or user already exists"
         )
     })
     public ResponseEntity<DTORespuestaLogin> registro(
-            @Parameter(description = "Datos de registro", required = true)
+            @Parameter(description = "Registration data", required = true)
             @Valid @RequestBody DTOPeticionRegistro request) {
         return ResponseEntity.ok(servicioAutenticacion.registro(request));
     }
     
     @GetMapping("/test")
     @Operation(
-        summary = "Probar autenticación",
-        description = "Endpoint de prueba para verificar que la autenticación funciona correctamente"
+        summary = "Test authentication",
+        description = "Test endpoint to verify that authentication is working correctly"
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Autenticación funcionando correctamente",
+            description = "Authentication working correctly",
             content = @Content(
                 mediaType = "text/plain",
                 schema = @Schema(type = "string")
@@ -95,6 +95,6 @@ public class AutenticacionRest {
         )
     })
     public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Autenticación funcionando correctamente");
+        return ResponseEntity.ok("Authentication working correctly");
     }
 } 

@@ -1,0 +1,7 @@
+---
+alwaysApply: true
+---
+- Always use ID-based verification - Never use username-based lookups for security checks
+- Use the enhanced SecurityUtils methods - getCurrentUserId() and getCurrentUserRole()
+- Follow the established pattern - Use @PreAuthorize("hasRole('X') and #id == authentication.principal.id") for individual resource access
+- Test security thoroughly - Ensure all new endpoints follow the same security patterns

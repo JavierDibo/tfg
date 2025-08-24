@@ -2,7 +2,7 @@ package app.dtos;
 
 import app.entidades.Material;
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -33,7 +33,7 @@ public record DTOPeticionCrearClase(
         String imagenPortada,
         
         @NotNull
-        ENivel nivel,
+        EDificultad nivel,
         
         List<String> profesoresId,
         List<Material> material
@@ -43,7 +43,7 @@ public record DTOPeticionCrearClase(
      * Constructor por defecto con listas vacías
      */
     public DTOPeticionCrearClase(String titulo, String descripcion, BigDecimal precio,
-                                EPresencialidad presencialidad, String imagenPortada, ENivel nivel) {
+                                EPresencialidad presencialidad, String imagenPortada, EDificultad nivel) {
         this(titulo, descripcion, precio, presencialidad, imagenPortada, nivel, List.of(), List.of());
     }
 }

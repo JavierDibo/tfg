@@ -14,14 +14,14 @@ class DTOParametrosBusquedaProfesorTest {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor();
         
         assertNotNull(dto);
-        assertNull(dto.nombre());
-        assertNull(dto.apellidos());
+        assertNull(dto.firstName());
+        assertNull(dto.lastName());
         assertNull(dto.email());
-        assertNull(dto.usuario());
+        assertNull(dto.username());
         assertNull(dto.dni());
-        assertNull(dto.habilitado());
-        assertNull(dto.claseId());
-        assertNull(dto.sinClases());
+        assertNull(dto.enabled());
+        assertNull(dto.classId());
+        assertNull(dto.hasNoClasses());
     }
 
     @Test
@@ -31,14 +31,14 @@ class DTOParametrosBusquedaProfesorTest {
                 "María", "García", "maria@test.com", "profesor123", "12345678A", true, "clase1", false);
         
         assertNotNull(dto);
-        assertEquals("María", dto.nombre());
-        assertEquals("García", dto.apellidos());
+        assertEquals("María", dto.firstName());
+        assertEquals("García", dto.lastName());
         assertEquals("maria@test.com", dto.email());
-        assertEquals("profesor123", dto.usuario());
+        assertEquals("profesor123", dto.username());
         assertEquals("12345678A", dto.dni());
-        assertTrue(dto.habilitado());
-        assertEquals("clase1", dto.claseId());
-        assertFalse(dto.sinClases());
+        assertTrue(dto.enabled());
+        assertEquals("clase1", dto.classId());
+        assertFalse(dto.hasNoClasses());
     }
 
     @Test
@@ -48,14 +48,14 @@ class DTOParametrosBusquedaProfesorTest {
                 "María", null, "maria@test.com", null, "12345678A", null, "clase1", null);
         
         assertNotNull(dto);
-        assertEquals("María", dto.nombre());
-        assertNull(dto.apellidos());
+        assertEquals("María", dto.firstName());
+        assertNull(dto.lastName());
         assertEquals("maria@test.com", dto.email());
-        assertNull(dto.usuario());
+        assertNull(dto.username());
         assertEquals("12345678A", dto.dni());
-        assertNull(dto.habilitado());
-        assertEquals("clase1", dto.claseId());
-        assertNull(dto.sinClases());
+        assertNull(dto.enabled());
+        assertEquals("clase1", dto.classId());
+        assertNull(dto.hasNoClasses());
     }
 
     @Test
@@ -63,7 +63,7 @@ class DTOParametrosBusquedaProfesorTest {
     void testEstaVacioConTodosNulos() {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor();
         
-        assertTrue(dto.estaVacio());
+        assertTrue(dto.isEmpty());
     }
 
     @Test
@@ -72,7 +72,7 @@ class DTOParametrosBusquedaProfesorTest {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor(
                 "María", null, null, null, null, null, null, null);
         
-        assertFalse(dto.estaVacio());
+        assertFalse(dto.isEmpty());
     }
 
     @Test
@@ -81,7 +81,7 @@ class DTOParametrosBusquedaProfesorTest {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor(
                 "María", "García", "maria@test.com", "profesor123", "12345678A", true, "clase1", false);
         
-        assertFalse(dto.estaVacio());
+        assertFalse(dto.isEmpty());
     }
 
     @Test
@@ -90,7 +90,7 @@ class DTOParametrosBusquedaProfesorTest {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor(
                 "María", null, null, null, null, null, null, null);
         
-        assertTrue(dto.tieneCriteriosTexto());
+        assertTrue(dto.hasTextCriteria());
     }
 
     @Test
@@ -99,7 +99,7 @@ class DTOParametrosBusquedaProfesorTest {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor(
                 null, null, null, null, null, true, "clase1", false);
         
-        assertFalse(dto.tieneCriteriosTexto());
+        assertFalse(dto.hasTextCriteria());
     }
 
     @Test
@@ -108,7 +108,7 @@ class DTOParametrosBusquedaProfesorTest {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor(
                 "María", "García", "maria@test.com", "profesor123", "12345678A", true, "clase1", false);
         
-        assertTrue(dto.tieneCriteriosTexto());
+        assertTrue(dto.hasTextCriteria());
     }
 
     @Test
@@ -117,7 +117,7 @@ class DTOParametrosBusquedaProfesorTest {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor(
                 null, null, null, null, null, true, "clase1", false);
         
-        assertFalse(dto.tieneCriteriosTexto());
+        assertFalse(dto.hasTextCriteria());
     }
 
     @Test
@@ -126,27 +126,27 @@ class DTOParametrosBusquedaProfesorTest {
         // Test con nombre
         DTOParametrosBusquedaProfesor dtoNombre = new DTOParametrosBusquedaProfesor(
                 "María", null, null, null, null, null, null, null);
-        assertTrue(dtoNombre.tieneCriteriosTexto());
+        assertTrue(dtoNombre.hasTextCriteria());
         
         // Test con apellidos
         DTOParametrosBusquedaProfesor dtoApellidos = new DTOParametrosBusquedaProfesor(
                 null, "García", null, null, null, null, null, null);
-        assertTrue(dtoApellidos.tieneCriteriosTexto());
+        assertTrue(dtoApellidos.hasTextCriteria());
         
         // Test con email
         DTOParametrosBusquedaProfesor dtoEmail = new DTOParametrosBusquedaProfesor(
                 null, null, "maria@test.com", null, null, null, null, null);
-        assertTrue(dtoEmail.tieneCriteriosTexto());
+        assertTrue(dtoEmail.hasTextCriteria());
         
         // Test con usuario
         DTOParametrosBusquedaProfesor dtoUsuario = new DTOParametrosBusquedaProfesor(
                 null, null, null, "profesor123", null, null, null, null);
-        assertTrue(dtoUsuario.tieneCriteriosTexto());
+        assertTrue(dtoUsuario.hasTextCriteria());
         
         // Test con DNI
         DTOParametrosBusquedaProfesor dtoDni = new DTOParametrosBusquedaProfesor(
                 null, null, null, null, "12345678A", null, null, null);
-        assertTrue(dtoDni.tieneCriteriosTexto());
+        assertTrue(dtoDni.hasTextCriteria());
     }
 
     @Test
@@ -155,7 +155,7 @@ class DTOParametrosBusquedaProfesorTest {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor(
                 null, null, null, null, null, true, "clase1", false);
         
-        assertFalse(dto.tieneCriteriosTexto());
+        assertFalse(dto.hasTextCriteria());
     }
 
     @Test
@@ -165,14 +165,14 @@ class DTOParametrosBusquedaProfesorTest {
                 "María", "García", "maria@test.com", "profesor123", "12345678A", true, "clase1", false);
         
         assertNotNull(dto);
-        assertEquals("María", dto.nombre());
-        assertEquals("García", dto.apellidos());
+        assertEquals("María", dto.firstName());
+        assertEquals("García", dto.lastName());
         assertEquals("maria@test.com", dto.email());
-        assertEquals("profesor123", dto.usuario());
+        assertEquals("profesor123", dto.username());
         assertEquals("12345678A", dto.dni());
-        assertTrue(dto.habilitado());
-        assertEquals("clase1", dto.claseId());
-        assertFalse(dto.sinClases());
+        assertTrue(dto.enabled());
+        assertEquals("clase1", dto.classId());
+        assertFalse(dto.hasNoClasses());
     }
 
     @Test
@@ -214,8 +214,8 @@ class DTOParametrosBusquedaProfesorTest {
                 null, null, null, null, null, false, null, true);
         
         assertNotNull(dto);
-        assertFalse(dto.habilitado());
-        assertTrue(dto.sinClases());
+        assertFalse(dto.enabled());
+        assertTrue(dto.hasNoClasses());
     }
 
     @Test
@@ -225,12 +225,12 @@ class DTOParametrosBusquedaProfesorTest {
                 "", "", "", "", "", null, "", null);
         
         assertNotNull(dto);
-        assertEquals("", dto.nombre());
-        assertEquals("", dto.apellidos());
+        assertEquals("", dto.firstName());
+        assertEquals("", dto.lastName());
         assertEquals("", dto.email());
-        assertEquals("", dto.usuario());
+        assertEquals("", dto.username());
         assertEquals("", dto.dni());
-        assertEquals("", dto.claseId());
+        assertEquals("", dto.classId());
     }
 
     @Test
@@ -239,7 +239,7 @@ class DTOParametrosBusquedaProfesorTest {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor(
                 "", "", "", "", "", null, "", null);
         
-        assertFalse(dto.estaVacio());
+        assertFalse(dto.isEmpty());
     }
 
     @Test
@@ -248,6 +248,6 @@ class DTOParametrosBusquedaProfesorTest {
         DTOParametrosBusquedaProfesor dto = new DTOParametrosBusquedaProfesor(
                 "", "", "", "", "", null, "", null);
         
-        assertTrue(dto.tieneCriteriosTexto());
+        assertTrue(dto.hasTextCriteria());
     }
 }

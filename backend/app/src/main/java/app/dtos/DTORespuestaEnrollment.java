@@ -3,52 +3,52 @@ package app.dtos;
 import java.time.LocalDateTime;
 
 /**
- * DTO para la respuesta de inscripción de un alumno en una clase
- * Proporciona información detallada sobre el resultado de la operación
+ * DTO for student enrollment response in a class
+ * Provides detailed information about the operation result
  */
 public record DTORespuestaEnrollment(
         boolean success,
         String message,
-        Long alumnoId,
-        Long claseId,
-        String nombreAlumno,
-        String tituloClase,
-        LocalDateTime fechaOperacion,
-        String tipoOperacion // "ENROLLMENT" o "UNENROLLMENT"
+        Long studentId,
+        Long classId,
+        String studentName,
+        String className,
+        LocalDateTime operationDate,
+        String operationType // "ENROLLMENT" or "UNENROLLMENT"
 ) {
     
     /**
-     * Constructor para una operación exitosa
+     * Constructor for successful operation
      */
-    public static DTORespuestaEnrollment success(Long alumnoId, Long claseId, 
-                                                String nombreAlumno, String tituloClase, 
-                                                String tipoOperacion) {
+    public static DTORespuestaEnrollment success(Long studentId, Long classId, 
+                                                String studentName, String className, 
+                                                String operationType) {
         return new DTORespuestaEnrollment(
                 true,
-                "Operación realizada con éxito",
-                alumnoId,
-                claseId,
-                nombreAlumno,
-                tituloClase,
+                "Operation completed successfully",
+                studentId,
+                classId,
+                studentName,
+                className,
                 LocalDateTime.now(),
-                tipoOperacion
+                operationType
         );
     }
     
     /**
-     * Constructor para una operación fallida
+     * Constructor for failed operation
      */
-    public static DTORespuestaEnrollment failure(Long alumnoId, Long claseId, 
-                                                String message, String tipoOperacion) {
+    public static DTORespuestaEnrollment failure(Long studentId, Long classId, 
+                                                String message, String operationType) {
         return new DTORespuestaEnrollment(
                 false,
                 message,
-                alumnoId,
-                claseId,
+                studentId,
+                classId,
                 null,
                 null,
                 LocalDateTime.now(),
-                tipoOperacion
+                operationType
         );
     }
 }

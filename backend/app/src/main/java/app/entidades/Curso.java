@@ -1,7 +1,7 @@
 package app.entidades;
 
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -33,7 +33,7 @@ public class Curso extends Clase {
     }
     
     public Curso(String titulo, String descripcion, BigDecimal precio, 
-                EPresencialidad presencialidad, String imagenPortada, ENivel nivel,
+                EPresencialidad presencialidad, String imagenPortada, EDificultad nivel,
                 LocalDate fechaInicio, LocalDate fechaFin) {
         super(titulo, descripcion, precio, presencialidad, imagenPortada, nivel);
         this.fechaInicio = fechaInicio;

@@ -6,51 +6,51 @@ import app.entidades.Usuario;
 import java.time.LocalDateTime;
 
 /**
- * DTO para la entidad Administrador
- * Contiene la información del administrador sin datos sensibles
+ * DTO for Administrator entity
+ * Contains administrator information without sensitive data
  */
 public record DTOAdministrador(
         Long id,
-        String usuario,
-        String nombre,
-        String apellidos,
+        String username,
+        String firstName,
+        String lastName,
         String dni,
         String email,
-        String numeroTelefono,
-        Usuario.Rol rol,
+        String phoneNumber,
+        Usuario.Role role,
         boolean enabled,
-        LocalDateTime fechaCreacion
+        LocalDateTime createdAt
 ) {
     
     /**
-     * Constructor que crea un DTO desde una entidad Administrador
+     * Constructor that creates a DTO from an Administrator entity
      */
     public DTOAdministrador(Administrador administrador) {
         this(
                 administrador.getId(),
-                administrador.getUsuario(),
-                administrador.getNombre(),
-                administrador.getApellidos(),
+                administrador.getUsername(),
+                administrador.getFirstName(),
+                administrador.getLastName(),
                 administrador.getDni(),
                 administrador.getEmail(),
-                administrador.getNumeroTelefono(),
-                administrador.getRol(),
+                administrador.getPhoneNumber(),
+                administrador.getRole(),
                 administrador.isEnabled(),
-                LocalDateTime.now() // placeholder, en una implementación real sería fechaCreacion de la entidad
+                LocalDateTime.now() // placeholder, in a real implementation would be creation date from entity
         );
     }
     
     /**
-     * Métod estático para crear desde entidad
+     * Static method to create from entity
      */
     public static DTOAdministrador from(Administrador administrador) {
         return new DTOAdministrador(administrador);
     }
     
     /**
-     * Obtiene el nombre completo del administrador
+     * Gets the administrator's full name
      */
-    public String getNombreCompleto() {
-        return this.nombre + " " + this.apellidos;
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
     }
 }

@@ -2,6 +2,7 @@ package app.rest;
 
 import app.dtos.DTOClase;
 import app.entidades.Material;
+import app.entidades.enums.EDificultad;
 import app.servicios.ServicioClase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -50,7 +50,7 @@ class ClaseManagementRestTest {
         dtoClase = new DTOClase(
                 1L, "Matemáticas I", "Descripción de la clase",
                 new java.math.BigDecimal("50.00"), app.entidades.enums.EPresencialidad.PRESENCIAL,
-                "imagen.jpg", app.entidades.enums.ENivel.INTERMEDIO,
+                "imagen.jpg", EDificultad.INTERMEDIO,
                 Arrays.asList("alumno1", "alumno2"), Arrays.asList("profesor1"), Arrays.asList("ejercicio1"),
                 Arrays.asList(), "CURSO"
         );

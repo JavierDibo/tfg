@@ -1,21 +1,23 @@
 package app.dtos;
 
-import app.validation.*;
+import java.util.List;
+
+import app.validation.ValidDNI;
+import app.validation.ValidEmail;
+import app.validation.ValidPhone;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-import java.util.List;
-
 /**
- * DTO para la petición de registro de un profesor
- * Contiene todos los datos necesarios para crear un profesor
+ * DTO for professor registration request
+ * Contains all necessary data to create a professor
  */
 public record DTOPeticionRegistroProfesor(
         @NotNull
         @Size(min = 3, max = 50)
-        @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El usuario solo puede contener letras, números, puntos, guiones y guiones bajos")
-        String usuario,
+        @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "Username can only contain letters, numbers, dots, hyphens and underscores")
+        String username,
         
         @NotNull
         @Size(min = 6)
@@ -23,13 +25,13 @@ public record DTOPeticionRegistroProfesor(
         
         @NotNull
         @Size(max = 100)
-        @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "El nombre solo puede contener letras y espacios")
-        String nombre,
+        @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "First name can only contain letters and spaces")
+        String firstName,
         
         @NotNull
         @Size(max = 100)
-        @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "Los apellidos solo pueden contener letras y espacios")
-        String apellidos,
+        @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "Last name can only contain letters and spaces")
+        String lastName,
         
         @NotNull
         @ValidDNI
@@ -40,17 +42,17 @@ public record DTOPeticionRegistroProfesor(
         String email,
         
         @ValidPhone
-        String numeroTelefono,
+        String phoneNumber,
         
-        List<String> clasesId
+        List<String> classIds
 ) {
     
     /**
-     * Constructor por defecto con lista vacía de clases
+     * Default constructor with empty class list
      */
-    public DTOPeticionRegistroProfesor(String usuario, String password, String nombre, 
-                                      String apellidos, String dni, String email, 
-                                      String numeroTelefono) {
-        this(usuario, password, nombre, apellidos, dni, email, numeroTelefono, List.of());
+    public DTOPeticionRegistroProfesor(String username, String password, String firstName, 
+                                      String lastName, String dni, String email, 
+                                      String phoneNumber) {
+        this(username, password, firstName, lastName, dni, email, phoneNumber, List.of());
     }
 }

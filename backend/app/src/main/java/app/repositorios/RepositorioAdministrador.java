@@ -67,7 +67,7 @@ public interface RepositorioAdministrador extends JpaRepository<Administrador, L
      * Obtiene todos los administradores ordenados por nombre
      * @return Lista de administradores ordenada por nombre
      */
-    @Query("SELECT a FROM Administrador a ORDER BY a.nombre ASC, a.apellidos ASC")
+    @Query("SELECT a FROM Administrador a ORDER BY a.firstName ASC, a.lastName ASC")
     List<Administrador> findAllOrderedByNombre();
     
     /**

@@ -1,7 +1,7 @@
 package app.entidades;
 
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -38,7 +38,7 @@ public class Taller extends Clase {
     }
     
     public Taller(String titulo, String descripcion, BigDecimal precio, 
-                 EPresencialidad presencialidad, String imagenPortada, ENivel nivel,
+                 EPresencialidad presencialidad, String imagenPortada, EDificultad nivel,
                  Integer duracionHoras, LocalDate fechaRealizacion, LocalTime horaComienzo) {
         super(titulo, descripcion, precio, presencialidad, imagenPortada, nivel);
         this.duracionHoras = duracionHoras;

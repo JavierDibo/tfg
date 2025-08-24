@@ -1,7 +1,6 @@
 package app.repositorios;
 
 import app.entidades.Profesor;
-import app.entidades.Usuario;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -59,8 +58,8 @@ class RepositorioProfesorTest {
         Optional<Profesor> resultado = repositorioProfesor.findByUsuario("profesor1");
 
         assertTrue(resultado.isPresent());
-        assertEquals("profesor1", resultado.get().getUsuario());
-        assertEquals("María", resultado.get().getNombre());
+        assertEquals("profesor1", resultado.get().getUsername());
+        assertEquals("María", resultado.get().getFirstName());
     }
 
     @Test
@@ -78,7 +77,7 @@ class RepositorioProfesorTest {
 
         assertTrue(resultado.isPresent());
         assertEquals("maria@ejemplo.com", resultado.get().getEmail());
-        assertEquals("María", resultado.get().getNombre());
+        assertEquals("María", resultado.get().getFirstName());
     }
 
     @Test
@@ -96,7 +95,7 @@ class RepositorioProfesorTest {
 
         assertTrue(resultado.isPresent());
         assertEquals("12345678Z", resultado.get().getDni());
-        assertEquals("María", resultado.get().getNombre());
+        assertEquals("María", resultado.get().getFirstName());
     }
 
     @Test
@@ -114,7 +113,7 @@ class RepositorioProfesorTest {
         List<Profesor> resultado = repositorioProfesor.findByNombreContainingIgnoreCase("María");
 
         assertEquals(1, resultado.size());
-        assertEquals("María", resultado.get(0).getNombre());
+        assertEquals("María", resultado.get(0).getFirstName());
     }
 
     @Test
@@ -123,7 +122,7 @@ class RepositorioProfesorTest {
         List<Profesor> resultado = repositorioProfesor.findByNombreContainingIgnoreCase("maría");
 
         assertEquals(1, resultado.size());
-        assertEquals("María", resultado.get(0).getNombre());
+        assertEquals("María", resultado.get(0).getFirstName());
     }
 
     @Test
@@ -140,7 +139,7 @@ class RepositorioProfesorTest {
         List<Profesor> resultado = repositorioProfesor.findByApellidosContainingIgnoreCase("García");
 
         assertEquals(1, resultado.size());
-        assertEquals("García", resultado.get(0).getApellidos());
+        assertEquals("García", resultado.get(0).getLastName());
     }
 
     @Test
@@ -149,7 +148,7 @@ class RepositorioProfesorTest {
         List<Profesor> resultado = repositorioProfesor.findByApellidosContainingIgnoreCase("garcía");
 
         assertEquals(1, resultado.size());
-        assertEquals("García", resultado.get(0).getApellidos());
+        assertEquals("García", resultado.get(0).getLastName());
     }
 
     @Test
@@ -221,7 +220,7 @@ class RepositorioProfesorTest {
                 "María", null, null, null, null, null, null, null);
 
         assertEquals(1, resultado.size());
-        assertEquals("María", resultado.get(0).getNombre());
+        assertEquals("María", resultado.get(0).getFirstName());
     }
 
     @Test
@@ -231,7 +230,7 @@ class RepositorioProfesorTest {
                 null, "García", null, null, null, null, null, null);
 
         assertEquals(1, resultado.size());
-        assertEquals("García", resultado.get(0).getApellidos());
+        assertEquals("García", resultado.get(0).getLastName());
     }
 
     @Test
@@ -251,7 +250,7 @@ class RepositorioProfesorTest {
                 null, null, null, "profesor1", null, null, null, null);
 
         assertEquals(1, resultado.size());
-        assertEquals("profesor1", resultado.get(0).getUsuario());
+        assertEquals("profesor1", resultado.get(0).getUsername());
     }
 
     @Test
@@ -301,8 +300,8 @@ class RepositorioProfesorTest {
                 "María", "García", null, null, null, true, null, null);
 
         assertEquals(1, resultado.size());
-        assertEquals("María", resultado.get(0).getNombre());
-        assertEquals("García", resultado.get(0).getApellidos());
+        assertEquals("María", resultado.get(0).getFirstName());
+        assertEquals("García", resultado.get(0).getLastName());
         assertTrue(resultado.get(0).isEnabled());
     }
 
@@ -324,8 +323,8 @@ class RepositorioProfesorTest {
         Profesor resultado = repositorioProfesor.save(nuevoProfesor);
 
         assertNotNull(resultado.getId());
-        assertEquals("nuevo", resultado.getUsuario());
-        assertEquals("Nuevo", resultado.getNombre());
+        assertEquals("nuevo", resultado.getUsername());
+        assertEquals("Nuevo", resultado.getFirstName());
         assertTrue(resultado.getClasesId().contains("claseNueva"));
     }
 
@@ -336,7 +335,7 @@ class RepositorioProfesorTest {
 
         assertTrue(resultado.isPresent());
         assertEquals(profesor1.getId(), resultado.get().getId());
-        assertEquals("profesor1", resultado.get().getUsuario());
+        assertEquals("profesor1", resultado.get().getUsername());
     }
 
     @Test

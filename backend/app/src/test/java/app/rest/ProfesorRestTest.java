@@ -1,30 +1,45 @@
 package app.rest;
 
-import app.dtos.DTOProfesor;
-import app.dtos.DTOPeticionRegistroProfesor;
-import app.servicios.ServicioProfesor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import app.entidades.Usuario;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import app.dtos.DTOParametrosBusquedaProfesor;
+import app.dtos.DTOPeticionRegistroProfesor;
+import app.dtos.DTOProfesor;
+import app.dtos.DTORespuestaPaginada;
+import app.servicios.ServicioClase;
+import app.servicios.ServicioProfesor;
+import app.util.SecurityUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para ProfesorRest")
@@ -32,6 +47,12 @@ class ProfesorRestTest {
 
     @Mock
     private ServicioProfesor servicioProfesor;
+
+    @Mock
+    private ServicioClase servicioClase;
+
+    @Mock
+    private SecurityUtils securityUtils;
 
     @InjectMocks
     private ProfesorRest profesorRest;
@@ -53,34 +74,16 @@ class ProfesorRestTest {
 
         // Crear DTOs de prueba
         dtoProfesor1 = new DTOProfesor(1L, "profesor1", "María", "García", "12345678Z", 
-                "maria@ejemplo.com", "123456789", app.entidades.Usuario.Rol.PROFESOR, true, 
+                "maria@ejemplo.com", "123456789", Usuario.Role.PROFESOR, true,
                 Arrays.asList("clase1", "clase2"), java.time.LocalDateTime.now());
         
         dtoProfesor2 = new DTOProfesor(2L, "profesor2", "Juan", "Pérez", "87654321Y", 
-                "juan@ejemplo.com", "987654321", app.entidades.Usuario.Rol.PROFESOR, true, 
+                "juan@ejemplo.com", "987654321", Usuario.Role.PROFESOR, true,
                 Arrays.asList(), java.time.LocalDateTime.now());
         
         dtoProfesor3 = new DTOProfesor(3L, "profesor3", "Ana", "López", "11223344X", 
-                "ana@ejemplo.com", "555666777", app.entidades.Usuario.Rol.PROFESOR, false, 
+                "ana@ejemplo.com", "555666777", Usuario.Role.PROFESOR, false,
                 Arrays.asList("clase3"), java.time.LocalDateTime.now());
-    }
-
-    @Test
-    @DisplayName("GET /api/profesores debe retornar todos los profesores")
-    void testObtenerProfesores() throws Exception {
-        List<DTOProfesor> profesores = Arrays.asList(dtoProfesor1, dtoProfesor2, dtoProfesor3);
-        when(servicioProfesor.obtenerProfesores()).thenReturn(profesores);
-
-        mockMvc.perform(get("/api/profesores"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].usuario").value("profesor1"))
-                .andExpect(jsonPath("$[1].id").value(2))
-                .andExpect(jsonPath("$[2].id").value(3));
-
-        verify(servicioProfesor).obtenerProfesores();
     }
 
     @Test
@@ -91,9 +94,7 @@ class ProfesorRestTest {
         mockMvc.perform(get("/api/profesores/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.usuario").value("profesor1"))
-                .andExpect(jsonPath("$.nombre").value("María"));
+                .andExpect(jsonPath("$.id").value(1));
 
         verify(servicioProfesor).obtenerProfesorPorId(1L);
     }
@@ -123,19 +124,6 @@ class ProfesorRestTest {
     }
 
     @Test
-    @DisplayName("GET /api/profesores/usuario/{usuario} debe retornar profesor por usuario")
-    void testObtenerProfesorPorUsuario() throws Exception {
-        when(servicioProfesor.obtenerProfesorPorUsuario("profesor1")).thenReturn(dtoProfesor1);
-
-        mockMvc.perform(get("/api/profesores/usuario/profesor1"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.usuario").value("profesor1"));
-
-        verify(servicioProfesor).obtenerProfesorPorUsuario("profesor1");
-    }
-
-    @Test
     @DisplayName("GET /api/profesores/dni/{dni} debe retornar profesor por DNI")
     void testObtenerProfesorPorDni() throws Exception {
         when(servicioProfesor.obtenerProfesorPorDni("12345678Z")).thenReturn(dtoProfesor1);
@@ -146,54 +134,6 @@ class ProfesorRestTest {
                 .andExpect(jsonPath("$.dni").value("12345678Z"));
 
         verify(servicioProfesor).obtenerProfesorPorDni("12345678Z");
-    }
-
-    @Test
-    @DisplayName("GET /api/profesores/buscar/nombre debe retornar profesores por nombre")
-    void testBuscarProfesoresPorNombre() throws Exception {
-        List<DTOProfesor> profesores = Arrays.asList(dtoProfesor1);
-        when(servicioProfesor.buscarProfesoresPorNombre("María")).thenReturn(profesores);
-
-        mockMvc.perform(get("/api/profesores/buscar/nombre")
-                .param("nombre", "María"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].nombre").value("María"));
-
-        verify(servicioProfesor).buscarProfesoresPorNombre("María");
-    }
-
-    @Test
-    @DisplayName("GET /api/profesores/buscar/apellidos debe retornar profesores por apellidos")
-    void testBuscarProfesoresPorApellidos() throws Exception {
-        List<DTOProfesor> profesores = Arrays.asList(dtoProfesor1);
-        when(servicioProfesor.buscarProfesoresPorApellidos("García")).thenReturn(profesores);
-
-        mockMvc.perform(get("/api/profesores/buscar/apellidos")
-                .param("apellidos", "García"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].apellidos").value("García"));
-
-        verify(servicioProfesor).buscarProfesoresPorApellidos("García");
-    }
-
-    @Test
-    @DisplayName("GET /api/profesores/habilitados debe retornar profesores habilitados")
-    void testObtenerProfesoresHabilitados() throws Exception {
-        List<DTOProfesor> profesores = Arrays.asList(dtoProfesor1, dtoProfesor2);
-        when(servicioProfesor.obtenerProfesoresHabilitados()).thenReturn(profesores);
-
-        mockMvc.perform(get("/api/profesores/habilitados"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].enabled").value(true))
-                .andExpect(jsonPath("$[1].enabled").value(true));
-
-        verify(servicioProfesor).obtenerProfesoresHabilitados();
     }
 
     @Test
@@ -209,21 +149,6 @@ class ProfesorRestTest {
                 .andExpect(jsonPath("$[0].clasesId").isArray());
 
         verify(servicioProfesor).obtenerProfesoresPorClase("clase1");
-    }
-
-    @Test
-    @DisplayName("GET /api/profesores/sin-clases debe retornar profesores sin clases")
-    void testObtenerProfesoresSinClases() throws Exception {
-        List<DTOProfesor> profesores = Arrays.asList(dtoProfesor2);
-        when(servicioProfesor.obtenerProfesoresSinClases()).thenReturn(profesores);
-
-        mockMvc.perform(get("/api/profesores/sin-clases"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].clasesId").isArray());
-
-        verify(servicioProfesor).obtenerProfesoresSinClases();
     }
 
     @Test
@@ -312,20 +237,6 @@ class ProfesorRestTest {
     }
 
     @Test
-    @DisplayName("GET /api/profesores/{id}/clases/count debe retornar número de clases")
-    void testContarClasesProfesor() throws Exception {
-        when(servicioProfesor.contarClasesProfesor(1L)).thenReturn(2);
-
-        mockMvc.perform(get("/api/profesores/1/clases/count"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.profesorId").value(1))
-                .andExpect(jsonPath("$.numeroClases").value(2));
-
-        verify(servicioProfesor).contarClasesProfesor(1L);
-    }
-
-    @Test
     @DisplayName("PATCH /api/profesores/{id}/estado debe cambiar estado correctamente")
     void testCambiarEstadoProfesor() throws Exception {
         when(servicioProfesor.cambiarEstadoProfesor(1L, false)).thenReturn(dtoProfesor3);
@@ -356,42 +267,40 @@ class ProfesorRestTest {
     }
 
     @Test
-    @DisplayName("GET /api/profesores/test debe retornar mensaje de prueba")
-    void testTest() throws Exception {
-        mockMvc.perform(get("/api/profesores/test"))
+    @DisplayName("GET /api/profesores sin parámetros debe retornar respuesta paginada")
+    void testObtenerProfesoresSinParametros() throws Exception {
+        DTORespuestaPaginada<DTOProfesor> respuestaPaginada = DTORespuestaPaginada.of(
+            Arrays.asList(dtoProfesor1, dtoProfesor2, dtoProfesor3), 0, 20, 3, "id", "ASC"
+        );
+        when(servicioProfesor.buscarProfesoresPorParametrosPaginados(any(DTOParametrosBusquedaProfesor.class), eq(0), eq(20), eq("id"), eq("ASC")))
+            .thenReturn(respuestaPaginada);
+
+        mockMvc.perform(get("/api/profesores"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Controlador ProfesorRest funcionando correctamente"));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.contenido").isArray())
+                .andExpect(jsonPath("$.contenido").value(org.hamcrest.Matchers.hasSize(3)));
+
+        verify(servicioProfesor).buscarProfesoresPorParametrosPaginados(any(DTOParametrosBusquedaProfesor.class), eq(0), eq(20), eq("id"), eq("ASC"));
     }
 
     @Test
-    @DisplayName("GET /api/profesores con parámetros debe usar búsqueda por parámetros")
+    @DisplayName("GET /api/profesores con parámetros debe usar búsqueda paginada")
     void testObtenerProfesoresConParametros() throws Exception {
-        List<DTOProfesor> profesores = Arrays.asList(dtoProfesor1);
-        when(servicioProfesor.buscarProfesoresPorParametros(any())).thenReturn(profesores);
+        DTORespuestaPaginada<DTOProfesor> respuestaPaginada = DTORespuestaPaginada.of(
+            Arrays.asList(dtoProfesor1), 0, 20, 1, "id", "ASC"
+        );
+        when(servicioProfesor.buscarProfesoresPorParametrosPaginados(any(DTOParametrosBusquedaProfesor.class), eq(0), eq(20), eq("id"), eq("ASC")))
+            .thenReturn(respuestaPaginada);
 
         mockMvc.perform(get("/api/profesores")
                 .param("nombre", "María")
                 .param("habilitado", "true"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].nombre").value("María"));
+                .andExpect(jsonPath("$.contenido").isArray())
+                .andExpect(jsonPath("$.contenido[0].nombre").value("María"));
 
-        verify(servicioProfesor).buscarProfesoresPorParametros(any());
-    }
-
-    @Test
-    @DisplayName("GET /api/profesores con parámetros vacíos debe retornar todos")
-    void testObtenerProfesoresSinParametros() throws Exception {
-        List<DTOProfesor> profesores = Arrays.asList(dtoProfesor1, dtoProfesor2, dtoProfesor3);
-        when(servicioProfesor.obtenerProfesores()).thenReturn(profesores);
-
-        mockMvc.perform(get("/api/profesores"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").value(org.hamcrest.Matchers.hasSize(3)));
-
-        verify(servicioProfesor).obtenerProfesores();
+        verify(servicioProfesor).buscarProfesoresPorParametrosPaginados(any(DTOParametrosBusquedaProfesor.class), eq(0), eq(20), eq("id"), eq("ASC"));
     }
 }

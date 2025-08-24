@@ -5,7 +5,7 @@ package app.entidades.enums;
  * Define el nivel de dificultad de una clase
  * Basado en el UML de especificación
  */
-public enum ENivel {
+public enum EDificultad {
     PRINCIPIANTE,
     INTERMEDIO,
     AVANZADO

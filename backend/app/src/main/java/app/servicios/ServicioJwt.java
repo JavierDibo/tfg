@@ -1,18 +1,20 @@
 package app.servicios;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 
 @Service
 public class ServicioJwt {
@@ -25,6 +27,16 @@ public class ServicioJwt {
     
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+    
+    public Long extractUserId(String token) {
+        return extractClaim(token, claims -> {
+            Object userId = claims.get("userId");
+            if (userId instanceof Number) {
+                return ((Number) userId).longValue();
+            }
+            return null;
+        });
     }
     
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -48,6 +60,12 @@ public class ServicioJwt {
         extraClaims.put("roles", userDetails.getAuthorities().stream()
                 .map(grantedAuthority -> grantedAuthority.getAuthority())
                 .toList());
+        
+        // Add user ID to claims for secure identity verification
+        if (userDetails instanceof app.entidades.Usuario) {
+            app.entidades.Usuario usuario = (app.entidades.Usuario) userDetails;
+            extraClaims.put("userId", usuario.getId());
+        }
 
         return Jwts
                 .builder()

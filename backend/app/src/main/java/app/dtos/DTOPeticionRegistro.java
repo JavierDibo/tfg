@@ -3,30 +3,30 @@ package app.dtos;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
-@Schema(description = "Datos de petición para registro de usuario")
+@Schema(description = "User registration request data")
 public record DTOPeticionRegistro(
-    @Schema(description = "Nombre de usuario único", example = "usuario123", required = true)
-    @NotBlank(message = "El username es obligatorio")
-    @Size(min = 3, max = 50, message = "El username debe tener entre 3 y 50 caracteres")
+    @Schema(description = "Unique username", example = "user123", required = true)
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     String username,
     
-    @Schema(description = "Contraseña del usuario", example = "password123", required = true)
-    @NotBlank(message = "La password es obligatoria")
-    @Size(min = 6, message = "La password debe tener al menos 6 caracteres")
+    @Schema(description = "User password", example = "password123", required = true)
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must have at least 6 characters")
     String password,
     
-    @Schema(description = "Email del usuario", example = "usuario@email.com", required = true)
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "El email debe tener un formato válido")
+    @Schema(description = "User email", example = "user@email.com", required = true)
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must have a valid format")
     String email,
     
-    @Schema(description = "Nombre del usuario", example = "Juan", required = true)
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
-    String nombre,
+    @Schema(description = "User first name", example = "Juan", required = true)
+    @NotBlank(message = "First name is required")
+    @Size(max = 100, message = "First name cannot exceed 100 characters")
+    String firstName,
     
-    @Schema(description = "Apellidos del usuario", example = "Pérez García", required = true)
-    @NotBlank(message = "Los apellidos son obligatorios")
-    @Size(max = 100, message = "Los apellidos no pueden exceder 100 caracteres")
-    String apellidos
+    @Schema(description = "User last name", example = "Perez Garcia", required = true)
+    @NotBlank(message = "Last name is required")
+    @Size(max = 100, message = "Last name cannot exceed 100 characters")
+    String lastName
 ) {} 

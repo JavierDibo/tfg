@@ -1,118 +1,129 @@
 package app.rest;
 
-import app.dtos.*;
-import app.entidades.Material;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import app.dtos.DTOClase;
+import app.dtos.DTOCurso;
+import app.dtos.DTOParametrosBusquedaClase;
+import app.dtos.DTOPeticionCrearClase;
+import app.dtos.DTOPeticionCrearCurso;
+import app.dtos.DTOPeticionCrearTaller;
+import app.dtos.DTORespuestaPaginada;
+import app.dtos.DTOTaller;
 import app.excepciones.ResourceNotFoundException;
 import app.servicios.ServicioClase;
 import app.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
 import jakarta.validation.Valid;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 /**
- * Controlador REST para operaciones CRUD básicas de clases (Cursos y Talleres)
- * Maneja la creación, lectura, actualización y eliminación de clases
+ * REST controller for basic CRUD operations of classes (Courses and Workshops)
+ * Handles creation, reading, updating and deletion of classes
  */
 @RestController
 @RequestMapping("/api/clases")
 @RequiredArgsConstructor
-@Tag(name = "Clases", description = "API para gestión básica de clases, cursos y talleres")
+@Tag(name = "Classes", description = "API for basic management of classes, courses and workshops")
 public class ClaseRest {
 
     private final ServicioClase servicioClase;
     private final SecurityUtils securityUtils;
 
-    // ===== OPERACIONES DE LECTURA =====
+    // ===== READ OPERATIONS =====
 
     /**
-     * Obtiene clases según el rol del usuario autenticado:
-     * - ADMIN: todas las clases
-     * - PROFESOR: solo las clases que imparte
-     * - ALUMNO: todas las clases (catálogo)
+     * Gets classes according to the authenticated user's role:
+     * - ADMIN: all classes
+     * - PROFESSOR: only the classes they teach
+     * - STUDENT: all classes (catalog)
      */
     @GetMapping
-    @Operation(summary = "Obtener clases", description = "Obtiene clases filtradas según el rol del usuario")
+    @Operation(summary = "Get classes", description = "Gets classes filtered according to the user's role")
     public ResponseEntity<List<DTOClase>> obtenerClases() {
         return ResponseEntity.ok(servicioClase.obtenerClasesSegunRol());
     }
 
     /**
-     * Obtiene una clase por su ID
+     * Gets a class by its ID
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Obtener clase por ID", description = "Obtiene una clase específica por su ID")
+    @Operation(summary = "Get class by ID", description = "Gets a specific class by its ID")
     public ResponseEntity<DTOClase> obtenerClasePorId(@PathVariable Long id) {
         DTOClase clase = servicioClase.obtenerClasePorId(id);
         if (clase == null) {
-            throw new ResourceNotFoundException("Clase", "ID", id);
+            throw new ResourceNotFoundException("Class", "ID", id);
         }
         return ResponseEntity.ok(clase);
     }
 
     /**
-     * Obtiene una clase por su título
+     * Gets a class by its title
      */
     @GetMapping("/titulo/{titulo}")
-    @Operation(summary = "Obtener clase por título", description = "Obtiene una clase específica por su título")
+    @Operation(summary = "Get class by title", description = "Gets a specific class by its title")
     public ResponseEntity<DTOClase> obtenerClasePorTitulo(@PathVariable String titulo) {
         return ResponseEntity.ok(servicioClase.obtenerClasePorTitulo(titulo));
     }
 
     /**
-     * Busca clases por título según el rol del usuario autenticado
+     * Searches for classes by title according to the authenticated user's role
      */
     @GetMapping("/buscar")
-    @Operation(summary = "Buscar clases por título", description = "Busca clases por título filtradas según el rol")
+    @Operation(summary = "Search classes by title", description = "Searches for classes by title filtered according to the role")
     public ResponseEntity<List<DTOClase>> buscarClasesPorTitulo(@RequestParam String titulo) {
         return ResponseEntity.ok(servicioClase.buscarClasesPorTituloSegunRol(titulo));
     }
 
     /**
-     * Busca clases con término general según el rol del usuario autenticado
+     * Searches for classes with general term according to the authenticated user's role
      */
     @GetMapping("/buscar/general")
-    @Operation(summary = "Buscar clases con término general", description = "Busca clases con término general en título y descripción")
+    @Operation(summary = "Search classes with general term", description = "Searches for classes with general term in title and description")
     public ResponseEntity<List<DTOClase>> buscarClasesPorTerminoGeneral(@RequestParam String q) {
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase();
         // Create a new instance with the general search term
         parametros = new DTOParametrosBusquedaClase(q, null, null, null, null, null, null, null, 0, 100, "id", "ASC");
-        return ResponseEntity.ok(servicioClase.buscarClasesSegunRol(parametros).contenido());
+        return ResponseEntity.ok(servicioClase.buscarClasesSegunRol(parametros).content());
     }
 
     /**
-     * Busca clases con paginación y filtros según el rol del usuario autenticado
+     * Searches for classes with pagination and filters according to the authenticated user's role
      */
     @PostMapping("/buscar")
-    @Operation(summary = "Buscar clases con filtros", description = "Busca clases con paginación y filtros avanzados")
+    @Operation(summary = "Search classes with filters", description = "Searches for classes with pagination and advanced filters")
     public ResponseEntity<DTORespuestaPaginada<DTOClase>> buscarClases(
             @Valid @RequestBody DTOParametrosBusquedaClase parametros) {
         return ResponseEntity.ok(servicioClase.buscarClasesSegunRol(parametros));
     }
 
-    // ===== OPERACIONES DE CREACIÓN =====
+    // ===== CREATION OPERATIONS =====
 
     /**
-     * Crea un nuevo curso
+     * Creates a new course
      */
     @PostMapping("/cursos")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Crear curso", description = "Crea un nuevo curso. Requiere permisos de ADMIN o PROFESOR")
+    @Operation(summary = "Create course", description = "Creates a new course. Requires ADMIN or PROFESOR permissions")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Curso creado exitosamente"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado - Se requieren permisos de ADMIN o PROFESOR"),
-        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+        @ApiResponse(responseCode = "201", description = "Course created successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
     public ResponseEntity<DTOCurso> crearCurso(@Valid @RequestBody DTOPeticionCrearCurso peticion) {
         DTOCurso curso = servicioClase.crearCurso(
@@ -133,11 +144,11 @@ public class ClaseRest {
     }
 
     /**
-     * Crea un nuevo taller
+     * Creates a new workshop
      */
     @PostMapping("/talleres")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Crear taller", description = "Crea un nuevo taller")
+    @Operation(summary = "Create workshop", description = "Creates a new workshop")
     public ResponseEntity<DTOTaller> crearTaller(@Valid @RequestBody DTOPeticionCrearTaller peticion) {
         DTOTaller taller = servicioClase.crearTaller(
                 new DTOPeticionCrearClase(
@@ -157,64 +168,64 @@ public class ClaseRest {
         return ResponseEntity.status(HttpStatus.CREATED).body(taller);
     }
 
-    // ===== OPERACIONES DE ELIMINACIÓN =====
+    // ===== DELETION OPERATIONS =====
 
     /**
-     * Borra una clase por su ID
+     * Deletes a class by its ID
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Eliminar clase por ID", description = "Elimina una clase por su ID")
+    @Operation(summary = "Delete class by ID", description = "Deletes a class by its ID")
     public ResponseEntity<Void> borrarClasePorId(@PathVariable Long id) {
         boolean resultado = servicioClase.borrarClasePorId(id);
         return resultado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     /**
-     * Borra una clase por su título
+     * Deletes a class by its title
      */
     @DeleteMapping("/titulo/{titulo}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Eliminar clase por título", description = "Elimina una clase por su título")
+    @Operation(summary = "Delete class by title", description = "Deletes a class by its title")
     public ResponseEntity<Void> borrarClasePorTitulo(@PathVariable String titulo) {
         boolean resultado = servicioClase.borrarClasePorTitulo(titulo);
         return resultado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
-    // ===== OPERACIONES DE CONSULTA ESTADÍSTICA =====
+    // ===== STATISTICAL CONSULTATION OPERATIONS =====
 
     /**
-     * Obtiene el número de alumnos en una clase
+     * Gets the number of students in a class
      */
     @GetMapping("/{claseId}/alumnos/contar")
-    @Operation(summary = "Contar alumnos en clase", description = "Obtiene el número de alumnos inscritos en una clase")
+    @Operation(summary = "Count students in class", description = "Gets the number of students enrolled in a class")
     public ResponseEntity<Integer> contarAlumnosEnClase(@PathVariable Long claseId) {
         return ResponseEntity.ok(servicioClase.contarAlumnosEnClase(claseId));
     }
 
     /**
-     * Obtiene el número de profesores en una clase
+     * Gets the number of teachers in a class
      */
     @GetMapping("/{claseId}/profesores/contar")
-    @Operation(summary = "Contar profesores en clase", description = "Obtiene el número de profesores de una clase")
+    @Operation(summary = "Count teachers in class", description = "Gets the number of teachers in a class")
     public ResponseEntity<Integer> contarProfesoresEnClase(@PathVariable Long claseId) {
         return ResponseEntity.ok(servicioClase.contarProfesoresEnClase(claseId));
     }
 
     /**
-     * Obtiene las clases por alumno
+     * Gets classes by student
      */
     @GetMapping("/alumno/{alumnoId}")
-    @Operation(summary = "Obtener clases por alumno", description = "Obtiene todas las clases de un alumno específico")
+    @Operation(summary = "Get classes by student", description = "Gets all classes for a specific student")
     public ResponseEntity<List<DTOClase>> obtenerClasesPorAlumno(@PathVariable String alumnoId) {
         return ResponseEntity.ok(servicioClase.obtenerClasesPorAlumno(alumnoId));
     }
 
     /**
-     * Obtiene las clases por profesor
+     * Gets classes by teacher
      */
     @GetMapping("/profesor/{profesorId}")
-    @Operation(summary = "Obtener clases por profesor", description = "Obtiene todas las clases de un profesor específico")
+    @Operation(summary = "Get classes by teacher", description = "Gets all classes for a specific teacher")
     public ResponseEntity<List<DTOClase>> obtenerClasesPorProfesor(@PathVariable String profesorId) {
         return ResponseEntity.ok(servicioClase.obtenerClasesPorProfesor(profesorId));
     }

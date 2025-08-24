@@ -3,7 +3,7 @@ package app.dtos;
 import app.entidades.Material;
 import app.entidades.Taller;
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,7 +21,7 @@ public record DTOTaller(
         BigDecimal precio,
         EPresencialidad presencialidad,
         String imagenPortada,
-        ENivel nivel,
+        EDificultad nivel,
         List<String> alumnosId,
         List<String> profesoresId,
         List<String> ejerciciosId,
@@ -37,15 +37,15 @@ public record DTOTaller(
     public DTOTaller(Taller taller) {
         this(
                 taller.getId(),
-                taller.getTitulo(),
-                taller.getDescripcion(),
-                taller.getPrecio(),
-                taller.getPresencialidad(),
-                taller.getImagenPortada(),
-                taller.getNivel(),
-                taller.getAlumnosId(),
-                taller.getProfesoresId(),
-                taller.getEjerciciosId(),
+                taller.getTitle(),
+                taller.getDescription(),
+                taller.getPrice(),
+                taller.getFormat(),
+                taller.getImage(),
+                taller.getDifficulty(),
+                taller.getStudentIds(),
+                taller.getTeacherIds(),
+                taller.getExerciseIds(),
                 taller.getMaterial(),
                 taller.getDuracionHoras(),
                 taller.getFechaRealizacion(),

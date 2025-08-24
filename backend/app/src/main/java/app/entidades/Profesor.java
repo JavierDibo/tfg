@@ -38,13 +38,13 @@ public class Profesor extends Usuario {
     
     public Profesor() {
         super();
-        this.setRol(Rol.PROFESOR);
+        this.setRole(Role.PROFESOR);
     }
     
     public Profesor(String usuario, String password, String nombre, String apellidos, 
                    String dni, String email, String numeroTelefono) {
         super(usuario, password, nombre, apellidos, dni, email, numeroTelefono);
-        this.setRol(Rol.PROFESOR);
+        this.setRole(Role.PROFESOR);
     }
     
     /**

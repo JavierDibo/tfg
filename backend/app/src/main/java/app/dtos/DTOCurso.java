@@ -3,7 +3,7 @@ package app.dtos;
 import app.entidades.Curso;
 import app.entidades.Material;
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,7 +21,7 @@ public record DTOCurso(
         BigDecimal precio,
         EPresencialidad presencialidad,
         String imagenPortada,
-        ENivel nivel,
+        EDificultad nivel,
         List<String> alumnosId,
         List<String> profesoresId,
         List<String> ejerciciosId,
@@ -36,15 +36,15 @@ public record DTOCurso(
     public DTOCurso(Curso curso) {
         this(
                 curso.getId(),
-                curso.getTitulo(),
-                curso.getDescripcion(),
-                curso.getPrecio(),
-                curso.getPresencialidad(),
-                curso.getImagenPortada(),
-                curso.getNivel(),
-                curso.getAlumnosId(),
-                curso.getProfesoresId(),
-                curso.getEjerciciosId(),
+                curso.getTitle(),
+                curso.getDescription(),
+                curso.getPrice(),
+                curso.getFormat(),
+                curso.getImage(),
+                curso.getDifficulty(),
+                curso.getStudentIds(),
+                curso.getTeacherIds(),
+                curso.getExerciseIds(),
                 curso.getMaterial(),
                 curso.getFechaInicio(),
                 curso.getFechaFin()

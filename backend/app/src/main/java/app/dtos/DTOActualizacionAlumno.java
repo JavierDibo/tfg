@@ -1,32 +1,36 @@
 package app.dtos;
 
-import app.validation.*;
-import jakarta.validation.constraints.*;
+import app.validation.NotEmptyIfPresent;
+import app.validation.ValidDNI;
+import app.validation.ValidEmail;
+import app.validation.ValidPhone;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 /**
- * DTO para actualizaciones parciales de alumno (PATCH)
- * Todos los campos son opcionales para permitir actualizaciones parciales
+ * DTO for partial student updates (PATCH)
+ * All fields are optional to allow partial updates
  */
 public record DTOActualizacionAlumno(
-    @NotEmptyIfPresent(message = "El nombre no puede estar vacío si se proporciona")
-    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
-    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "El nombre solo puede contener letras y espacios")
-    String nombre,
+    @NotEmptyIfPresent(message = "First name cannot be empty if provided")
+    @Size(max = 100, message = "First name cannot exceed 100 characters")
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "First name can only contain letters and spaces")
+    String firstName,
     
-    @NotEmptyIfPresent(message = "Los apellidos no pueden estar vacíos si se proporcionan")
-    @Size(max = 100, message = "Los apellidos no pueden exceder 100 caracteres")
-    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "Los apellidos solo pueden contener letras y espacios")
-    String apellidos,
+    @NotEmptyIfPresent(message = "Last name cannot be empty if provided")
+    @Size(max = 100, message = "Last name cannot exceed 100 characters")
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "Last name can only contain letters and spaces")
+    String lastName,
     
-    @NotEmptyIfPresent(message = "El DNI no puede estar vacío si se proporciona")
+    @NotEmptyIfPresent(message = "DNI cannot be empty if provided")
     @ValidDNI
     String dni,
     
-    @NotEmptyIfPresent(message = "El email no puede estar vacío si se proporciona")
+    @NotEmptyIfPresent(message = "Email cannot be empty if provided")
     @ValidEmail
     String email,
     
     @ValidPhone
-    String numeroTelefono
+    String phoneNumber
 ) {
 }

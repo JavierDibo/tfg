@@ -1,127 +1,129 @@
 package app.dtos;
 
-import app.entidades.Alumno;
-import app.entidades.Usuario;
-import jakarta.validation.constraints.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
+import app.entidades.Alumno;
+import app.entidades.Usuario;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 /**
- * DTO para el perfil del alumno (vista para el propio estudiante)
- * Oculta información sensible como ID y enabled status
+ * DTO for student profile (view for the student themselves)
+ * Hides sensitive information like ID and enabled status
  */
 public record DTOPerfilAlumno(
-    @NotBlank(message = "El usuario no puede estar vacío")
-    @Size(min = 3, max = 50, message = "El usuario debe tener entre 3 y 50 caracteres")
-    String usuario,
+    @NotBlank(message = "Username cannot be empty")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    String username,
     
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
-    String nombre,
+    @NotBlank(message = "First name cannot be empty")
+    @Size(max = 100, message = "First name cannot exceed 100 characters")
+    String firstName,
     
-    @NotBlank(message = "Los apellidos no pueden estar vacíos")
-    @Size(max = 100, message = "Los apellidos no pueden exceder 100 caracteres")
-    String apellidos,
+    @NotBlank(message = "Last name cannot be empty")
+    @Size(max = 100, message = "Last name cannot exceed 100 characters")
+    String lastName,
     
-    @NotBlank(message = "El DNI no puede estar vacío")
-    @Size(max = 20, message = "El DNI no puede exceder 20 caracteres")
+    @NotBlank(message = "DNI cannot be empty")
+    @Size(max = 20, message = "DNI cannot exceed 20 characters")
     String dni,
     
-    @NotBlank(message = "El email no puede estar vacío")
-    @Email(message = "El email debe tener un formato válido")
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Email must have a valid format")
     String email,
     
-    @Size(max = 15, message = "El número de teléfono no puede exceder 15 caracteres")
-    String numeroTelefono,
+    @Size(max = 15, message = "Phone number cannot exceed 15 characters")
+    String phoneNumber,
     
-    LocalDateTime fechaInscripcion,
+    LocalDateTime enrollmentDate,
     
-    boolean matriculado,
+    boolean enrolled,
     
-    List<String> clasesId,
+    List<String> classIds,
     
-    List<String> pagosId,
+    List<String> paymentIds,
     
-    List<String> entregasId,
+    List<String> submissionIds,
     
-    Usuario.Rol rol
+    Usuario.Role role
 ) {
 
     /**
-     * Constructor que crea un DTO desde una entidad Alumno
-     * Oculta información sensible como ID y enabled status
+     * Constructor that creates a DTO from a Student entity
+     * Hides sensitive information like ID and enabled status
      */
     public DTOPerfilAlumno(Alumno alumno) {
         this(
-            alumno.getUsuario(),
-            alumno.getNombre(),
-            alumno.getApellidos(),
+            alumno.getUsername(),
+            alumno.getFirstName(),
+            alumno.getLastName(),
             alumno.getDni(),
             alumno.getEmail(),
-            alumno.getNumeroTelefono(),
-            alumno.getFechaInscripcion(),
-            alumno.isMatriculado(),
-            alumno.getClasesId(),
-            alumno.getPagosId(),
-            alumno.getEntregasId(),
-            alumno.getRol()
+            alumno.getPhoneNumber(),
+            alumno.getEnrollDate(),
+            alumno.isEnrolled(),
+            alumno.getClassIds(),
+            alumno.getPaymentIds(),
+            alumno.getSubmissionIds(),
+            alumno.getRole()
         );
     }
     
     /**
-     * metodo estático para crear desde entidad
+     * Static method to create from entity
      */
     public static DTOPerfilAlumno from(Alumno alumno) {
         return new DTOPerfilAlumno(alumno);
     }
     
     /**
-     * Obtiene el nombre completo del alumno
+     * Gets the student's full name
      */
-    public String getNombreCompleto() {
-        return this.nombre + " " + this.apellidos;
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
     }
     
     /**
-     * Verifica si el alumno está inscrito en alguna clase
+     * Checks if the student is enrolled in any class
      */
-    public boolean tieneClases() {
-        return this.clasesId != null && !this.clasesId.isEmpty();
+    public boolean hasClasses() {
+        return this.classIds != null && !this.classIds.isEmpty();
     }
     
     /**
-     * Cuenta el número de clases en las que está inscrito
+     * Counts the number of enrolled classes
      */
-    public int getNumeroClases() {
-        return this.clasesId != null ? this.clasesId.size() : 0;
+    public int getClassCount() {
+        return this.classIds != null ? this.classIds.size() : 0;
     }
     
     /**
-     * Verifica si el alumno tiene pagos registrados
+     * Checks if the student has payments
      */
-    public boolean tienePagos() {
-        return this.pagosId != null && !this.pagosId.isEmpty();
+    public boolean hasPayments() {
+        return this.paymentIds != null && !this.paymentIds.isEmpty();
     }
     
     /**
-     * Cuenta el número de pagos realizados
+     * Counts the number of payments
      */
-    public int getNumeroPagos() {
-        return this.pagosId != null ? this.pagosId.size() : 0;
+    public int getPaymentCount() {
+        return this.paymentIds != null ? this.paymentIds.size() : 0;
     }
     
     /**
-     * Verifica si el alumno tiene entregas de ejercicios
+     * Checks if the student has exercise submissions
      */
-    public boolean tieneEntregas() {
-        return this.entregasId != null && !this.entregasId.isEmpty();
+    public boolean hasSubmissions() {
+        return this.submissionIds != null && !this.submissionIds.isEmpty();
     }
     
     /**
-     * Cuenta el número de entregas realizadas
+     * Counts the number of submissions
      */
-    public int getNumeroEntregas() {
-        return this.entregasId != null ? this.entregasId.size() : 0;
+    public int getSubmissionCount() {
+        return this.submissionIds != null ? this.submissionIds.size() : 0;
     }
 }

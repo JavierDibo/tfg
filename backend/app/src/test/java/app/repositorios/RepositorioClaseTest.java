@@ -5,7 +5,7 @@ import app.entidades.Curso;
 import app.entidades.Material;
 import app.entidades.Taller;
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -44,7 +44,7 @@ class RepositorioClaseTest {
         
         curso = new Curso(
                 "Curso de Java", "Aprende Java desde cero", new BigDecimal("99.99"),
-                EPresencialidad.ONLINE, "imagen1.jpg", ENivel.PRINCIPIANTE,
+                EPresencialidad.ONLINE, "imagen1.jpg", EDificultad.PRINCIPIANTE,
                 LocalDate.now().plusDays(7), LocalDate.now().plusDays(30)
         );
         curso.agregarAlumno("alumno1");
@@ -55,7 +55,7 @@ class RepositorioClaseTest {
 
         taller = new Taller(
                 "Taller de Spring", "Taller intensivo de Spring Boot", new BigDecimal("49.99"),
-                EPresencialidad.PRESENCIAL, "imagen2.jpg", ENivel.INTERMEDIO,
+                EPresencialidad.PRESENCIAL, "imagen2.jpg", EDificultad.INTERMEDIO,
                 4, LocalDate.now().plusDays(3), LocalTime.of(10, 0)
         );
         taller.agregarAlumno("alumno3");
@@ -71,10 +71,10 @@ class RepositorioClaseTest {
 
         assertNotNull(cursoGuardado);
         assertNotNull(cursoGuardado.getId());
-        assertEquals("Curso de Java", cursoGuardado.getTitulo());
-        assertEquals(2, cursoGuardado.getAlumnosId().size());
-        assertEquals(1, cursoGuardado.getProfesoresId().size());
-        assertEquals(1, cursoGuardado.getEjerciciosId().size());
+        assertEquals("Curso de Java", cursoGuardado.getTitle());
+        assertEquals(2, cursoGuardado.getStudentIds().size());
+        assertEquals(1, cursoGuardado.getTeacherIds().size());
+        assertEquals(1, cursoGuardado.getExerciseIds().size());
         assertEquals(1, cursoGuardado.getMaterial().size());
     }
 
@@ -87,9 +87,9 @@ class RepositorioClaseTest {
         Optional<Clase> resultado = repositorioClase.findById(id);
 
         assertTrue(resultado.isPresent());
-        assertEquals("Curso de Java", resultado.get().getTitulo());
-        assertEquals(EPresencialidad.ONLINE, resultado.get().getPresencialidad());
-        assertEquals(ENivel.PRINCIPIANTE, resultado.get().getNivel());
+        assertEquals("Curso de Java", resultado.get().getTitle());
+        assertEquals(EPresencialidad.ONLINE, resultado.get().getFormat());
+        assertEquals(EDificultad.PRINCIPIANTE, resultado.get().getDifficulty());
     }
 
     @Test
@@ -108,7 +108,7 @@ class RepositorioClaseTest {
         Optional<Clase> resultado = repositorioClase.findByTitulo("Curso de Java");
 
         assertTrue(resultado.isPresent());
-        assertEquals("Curso de Java", resultado.get().getTitulo());
+        assertEquals("Curso de Java", resultado.get().getTitle());
     }
 
     @Test
@@ -128,7 +128,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findByTituloContainingIgnoreCase("Java");
 
         assertEquals(1, resultado.size());
-        assertEquals("Curso de Java", resultado.get(0).getTitulo());
+        assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
@@ -139,7 +139,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findByTituloContainingIgnoreCase("java");
 
         assertEquals(1, resultado.size());
-        assertEquals("Curso de Java", resultado.get(0).getTitulo());
+        assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
@@ -150,7 +150,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findByDescripcionContainingIgnoreCase("Java");
 
         assertEquals(1, resultado.size());
-        assertEquals("Curso de Java", resultado.get(0).getTitulo());
+        assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
@@ -162,7 +162,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findByPresencialidad(EPresencialidad.ONLINE);
 
         assertEquals(1, resultado.size());
-        assertEquals("Curso de Java", resultado.get(0).getTitulo());
+        assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
@@ -171,10 +171,10 @@ class RepositorioClaseTest {
         repositorioClase.save(curso);
         repositorioClase.save(taller);
 
-        List<Clase> resultado = repositorioClase.findByNivel(ENivel.PRINCIPIANTE);
+        List<Clase> resultado = repositorioClase.findByNivel(EDificultad.PRINCIPIANTE);
 
         assertEquals(1, resultado.size());
-        assertEquals("Curso de Java", resultado.get(0).getTitulo());
+        assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
@@ -187,7 +187,7 @@ class RepositorioClaseTest {
                 new BigDecimal("40.00"), new BigDecimal("60.00"));
 
         assertEquals(1, resultado.size());
-        assertEquals("Taller de Spring", resultado.get(0).getTitulo());
+        assertEquals("Taller de Spring", resultado.get(0).getTitle());
     }
 
     @Test
@@ -199,7 +199,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findByPrecioLessThanEqual(new BigDecimal("50.00"));
 
         assertEquals(1, resultado.size());
-        assertEquals("Taller de Spring", resultado.get(0).getTitulo());
+        assertEquals("Taller de Spring", resultado.get(0).getTitle());
     }
 
     @Test
@@ -223,7 +223,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findAllOrderedByPrecioAsc();
 
         assertEquals(2, resultado.size());
-        assertTrue(resultado.get(0).getPrecio().compareTo(resultado.get(1).getPrecio()) <= 0);
+        assertTrue(resultado.get(0).getPrice().compareTo(resultado.get(1).getPrice()) <= 0);
     }
 
     @Test
@@ -235,7 +235,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findAllOrderedByTitulo();
 
         assertEquals(2, resultado.size());
-        assertTrue(resultado.get(0).getTitulo().compareTo(resultado.get(1).getTitulo()) <= 0);
+        assertTrue(resultado.get(0).getTitle().compareTo(resultado.get(1).getTitle()) <= 0);
     }
 
     @Test
@@ -247,7 +247,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findByAlumnoId("alumno1");
 
         assertEquals(1, resultado.size());
-        assertEquals("Curso de Java", resultado.get(0).getTitulo());
+        assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
@@ -259,7 +259,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findByProfesorId("profesor1");
 
         assertEquals(1, resultado.size());
-        assertEquals("Curso de Java", resultado.get(0).getTitulo());
+        assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
@@ -271,7 +271,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findByEjercicioId("ejercicio1");
 
         assertEquals(1, resultado.size());
-        assertEquals("Curso de Java", resultado.get(0).getTitulo());
+        assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
@@ -301,7 +301,7 @@ class RepositorioClaseTest {
     void testFindClasesSinAlumnos() {
         Curso cursoSinAlumnos = new Curso(
                 "Curso Vacío", "Curso sin alumnos", new BigDecimal("29.99"),
-                EPresencialidad.ONLINE, "imagen3.jpg", ENivel.PRINCIPIANTE,
+                EPresencialidad.ONLINE, "imagen3.jpg", EDificultad.PRINCIPIANTE,
                 LocalDate.now().plusDays(10), LocalDate.now().plusDays(20)
         );
 
@@ -311,7 +311,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findClasesSinAlumnos();
 
         assertEquals(1, resultado.size());
-        assertEquals("Curso Vacío", resultado.get(0).getTitulo());
+        assertEquals("Curso Vacío", resultado.get(0).getTitle());
     }
 
     @Test
@@ -319,7 +319,7 @@ class RepositorioClaseTest {
     void testFindClasesSinProfesores() {
         Curso cursoSinProfesores = new Curso(
                 "Curso Sin Profesor", "Curso sin profesores", new BigDecimal("19.99"),
-                EPresencialidad.ONLINE, "imagen4.jpg", ENivel.PRINCIPIANTE,
+                EPresencialidad.ONLINE, "imagen4.jpg", EDificultad.PRINCIPIANTE,
                 LocalDate.now().plusDays(15), LocalDate.now().plusDays(25)
         );
 
@@ -329,7 +329,7 @@ class RepositorioClaseTest {
         List<Clase> resultado = repositorioClase.findClasesSinProfesores();
 
         assertEquals(1, resultado.size());
-        assertEquals("Curso Sin Profesor", resultado.get(0).getTitulo());
+        assertEquals("Curso Sin Profesor", resultado.get(0).getTitle());
     }
 
     @Test

@@ -1,26 +1,27 @@
 package app.repositorios;
 
-import app.entidades.Alumno;
-import app.entidades.Usuario;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import app.entidades.Alumno;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para RepositorioAlumno")
@@ -37,18 +38,18 @@ class RepositorioAlumnoTest {
     void setUp() {
         alumno1 = new Alumno("alumno1", "password1", "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", "123456789");
         alumno1.setId(1L);
-        alumno1.setFechaInscripcion(LocalDateTime.now().minusDays(30));
-        alumno1.setMatriculado(true);
+        alumno1.setEnrollDate(LocalDateTime.now().minusDays(30));
+        alumno1.setEnrolled(true);
 
         alumno2 = new Alumno("alumno2", "password2", "María", "García", "87654321Y", "maria@ejemplo.com", "987654321");
         alumno2.setId(2L);
-        alumno2.setFechaInscripcion(LocalDateTime.now().minusDays(15));
-        alumno2.setMatriculado(false);
+        alumno2.setEnrollDate(LocalDateTime.now().minusDays(15));
+        alumno2.setEnrolled(false);
 
         alumno3 = new Alumno("alumno3", "password3", "Carlos", "López", "11223344X", "carlos@ejemplo.com", "555666777");
         alumno3.setId(3L);
-        alumno3.setFechaInscripcion(LocalDateTime.now());
-        alumno3.setMatriculado(true);
+        alumno3.setEnrollDate(LocalDateTime.now());
+        alumno3.setEnrolled(true);
     }
 
     @Test
@@ -159,46 +160,6 @@ class RepositorioAlumnoTest {
     }
 
     @Test
-    @DisplayName("findByMatriculado debe retornar alumnos matriculados")
-    void testFindByMatriculado() {
-        List<Alumno> alumnosMatriculados = Arrays.asList(alumno1, alumno3);
-        when(repositorioAlumno.findByMatriculado(true)).thenReturn(alumnosMatriculados);
-
-        List<Alumno> resultado = repositorioAlumno.findByMatriculado(true);
-
-        assertEquals(2, resultado.size());
-        assertTrue(resultado.stream().allMatch(Alumno::isMatriculado));
-        verify(repositorioAlumno).findByMatriculado(true);
-    }
-
-    @Test
-    @DisplayName("findByMatriculado debe retornar alumnos no matriculados")
-    void testFindByNoMatriculado() {
-        List<Alumno> alumnosNoMatriculados = Arrays.asList(alumno2);
-        when(repositorioAlumno.findByMatriculado(false)).thenReturn(alumnosNoMatriculados);
-
-        List<Alumno> resultado = repositorioAlumno.findByMatriculado(false);
-
-        assertEquals(1, resultado.size());
-        assertFalse(resultado.get(0).isMatriculado());
-        verify(repositorioAlumno).findByMatriculado(false);
-    }
-
-    @Test
-    @DisplayName("findByFiltros debe retornar alumnos filtrados")
-    void testFindByFiltros() {
-        List<Alumno> alumnosFiltrados = Arrays.asList(alumno1);
-        when(repositorioAlumno.findByFiltros("Juan", null, null, null, null))
-                .thenReturn(alumnosFiltrados);
-
-        List<Alumno> resultado = repositorioAlumno.findByFiltros("Juan", null, null, null, null);
-
-        assertEquals(1, resultado.size());
-        assertEquals(alumno1, resultado.get(0));
-        verify(repositorioAlumno).findByFiltros("Juan", null, null, null, null);
-    }
-
-    @Test
     @DisplayName("countByMatriculado debe retornar conteo correcto")
     void testCountByMatriculado() {
         when(repositorioAlumno.countByMatriculado(true)).thenReturn(2L);
@@ -211,21 +172,6 @@ class RepositorioAlumnoTest {
         assertEquals(1L, noMatriculados);
         verify(repositorioAlumno).countByMatriculado(true);
         verify(repositorioAlumno).countByMatriculado(false);
-    }
-
-    @Test
-    @DisplayName("findAllOrderedById debe retornar todos los alumnos ordenados")
-    void testFindAllOrderedById() {
-        List<Alumno> todosLosAlumnos = Arrays.asList(alumno1, alumno2, alumno3);
-        when(repositorioAlumno.findAllOrderedById()).thenReturn(todosLosAlumnos);
-
-        List<Alumno> resultado = repositorioAlumno.findAllOrderedById();
-
-        assertEquals(3, resultado.size());
-        assertEquals(alumno1, resultado.get(0));
-        assertEquals(alumno2, resultado.get(1));
-        assertEquals(alumno3, resultado.get(2));
-        verify(repositorioAlumno).findAllOrderedById();
     }
 
     @Test
@@ -274,7 +220,7 @@ class RepositorioAlumnoTest {
 
         assertEquals(2, resultado.getContent().size());
         assertEquals(2, resultado.getTotalElements());
-        assertTrue(resultado.getContent().stream().allMatch(Alumno::isMatriculado));
+        assertTrue(resultado.getContent().stream().allMatch(Alumno::isEnrolled));
         verify(repositorioAlumno).findByMatriculadoPaged(true, pageable);
     }
 

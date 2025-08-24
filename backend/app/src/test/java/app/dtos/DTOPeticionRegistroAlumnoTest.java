@@ -21,13 +21,13 @@ class DTOPeticionRegistroAlumnoTest {
             "123456789"
         );
 
-        assertEquals("usuario123", dto.usuario());
+        assertEquals("usuario123", dto.username());
         assertEquals("password123", dto.password());
-        assertEquals("Juan", dto.nombre());
-        assertEquals("Pérez García", dto.apellidos());
+        assertEquals("Juan", dto.firstName());
+        assertEquals("Pérez García", dto.lastName());
         assertEquals("12345678Z", dto.dni());
         assertEquals("juan@ejemplo.com", dto.email());
-        assertEquals("123456789", dto.numeroTelefono());
+        assertEquals("123456789", dto.phoneNumber());
     }
 
     @Test
@@ -43,11 +43,11 @@ class DTOPeticionRegistroAlumnoTest {
             null
         );
 
-        assertNull(dto.numeroTelefono());
-        assertNotNull(dto.usuario());
+        assertNull(dto.phoneNumber());
+        assertNotNull(dto.username());
         assertNotNull(dto.password());
-        assertNotNull(dto.nombre());
-        assertNotNull(dto.apellidos());
+        assertNotNull(dto.firstName());
+        assertNotNull(dto.lastName());
         assertNotNull(dto.dni());
         assertNotNull(dto.email());
     }
@@ -67,9 +67,9 @@ class DTOPeticionRegistroAlumnoTest {
 
         // Los records son inmutables por defecto, no se pueden modificar
         // Solo podemos verificar que los valores se mantienen
-        assertEquals("usuario123", dto.usuario());
+        assertEquals("usuario123", dto.username());
         assertEquals("password123", dto.password());
-        assertEquals("Juan", dto.nombre());
+        assertEquals("Juan", dto.firstName());
     }
 
     @Test
@@ -129,19 +129,19 @@ class DTOPeticionRegistroAlumnoTest {
         DTOPeticionRegistroAlumno dto1 = new DTOPeticionRegistroAlumno(
             "usuario1", "password1", "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", "+34 123 456 789"
         );
-        assertEquals("+34 123 456 789", dto1.numeroTelefono());
+        assertEquals("+34 123 456 789", dto1.phoneNumber());
 
         // Teléfono sin prefijo
         DTOPeticionRegistroAlumno dto2 = new DTOPeticionRegistroAlumno(
             "usuario2", "password2", "María", "García", "87654321Y", "maria@ejemplo.com", "123456789"
         );
-        assertEquals("123456789", dto2.numeroTelefono());
+        assertEquals("123456789", dto2.phoneNumber());
 
         // Sin teléfono
         DTOPeticionRegistroAlumno dto3 = new DTOPeticionRegistroAlumno(
             "usuario3", "password3", "Carlos", "López", "11223344X", "carlos@ejemplo.com", null
         );
-        assertNull(dto3.numeroTelefono());
+        assertNull(dto3.phoneNumber());
     }
 
     @Test
@@ -157,8 +157,8 @@ class DTOPeticionRegistroAlumnoTest {
             "123456789"
         );
 
-        assertEquals("José María", dto.nombre());
-        assertEquals("García López", dto.apellidos());
+        assertEquals("José María", dto.firstName());
+        assertEquals("García López", dto.lastName());
     }
 
     @Test
@@ -174,7 +174,7 @@ class DTOPeticionRegistroAlumnoTest {
             "123456789"
         );
 
-        assertEquals("usuario_123", dto.usuario());
+        assertEquals("usuario_123", dto.username());
     }
 
     @Test

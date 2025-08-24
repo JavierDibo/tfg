@@ -1,13 +1,28 @@
 package app.rest;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import app.dtos.DTOActualizacionAlumno;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOClaseInscrita;
 import app.dtos.DTOParametrosBusquedaAlumno;
-import app.dtos.DTOPerfilAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
 import app.dtos.DTORespuestaPaginada;
-
 import app.servicios.ServicioAlumno;
 import app.servicios.ServicioClase;
 import app.util.SecurityUtils;
@@ -19,75 +34,100 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/alumnos")
 @RequiredArgsConstructor
 @CrossOrigin(origins = {"http://localhost:8080", "http://localhost:5173"})
 @Validated
-@Tag(name = "Alumnos", description = "API para gestión de alumnos")
-public class AlumnoRest {
+@Tag(name = "Students", description = "API for student management")
+public class AlumnoRest extends BaseRestController {
 
     private final ServicioAlumno servicioAlumno;
     private final ServicioClase servicioClase;
     private final SecurityUtils securityUtils;
 
-    // Endpoint con paginación (recomendado)
-    @GetMapping("/paged")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    // Standard GET collection endpoint with comprehensive filtering and pagination
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
     @Operation(
-        summary = "Obtener alumnos paginados",
-        description = "Obtiene una lista paginada de alumnos con filtros opcionales (requiere rol ADMIN o PROFESOR)"
+        summary = "Get paginated students",
+        description = "Gets a paginated list of students with optional filters. Students can only see their own profile."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Lista paginada de alumnos obtenida exitosamente",
+            description = "Paginated list of students retrieved successfully",
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = DTORespuestaPaginada.class)
             )
         ),
         @ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination parameters"
+        ),
+        @ApiResponse(
             responseCode = "403",
-            description = "Acceso denegado - Se requiere rol ADMIN o PROFESOR"
+            description = "Access denied - Not authorized to view these students"
         )
     })
-    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosPaginados(
-            @Parameter(description = "Término de búsqueda general (busca en nombre, apellidos, DNI, email)", required = false)
+    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnos(
+            @Parameter(description = "General search term (searches in firstName, lastName, dni, email)", required = false)
             @RequestParam(required = false) @Size(max = 100) String q,
-            @Parameter(description = "Nombre del alumno para filtrar", required = false)
-            @RequestParam(required = false) @Size(max = 100) String nombre,
-            @Parameter(description = "Apellidos del alumno para filtrar", required = false)
-            @RequestParam(required = false) @Size(max = 100) String apellidos,
-            @Parameter(description = "DNI del alumno para filtrar", required = false)
+            @Parameter(description = "Student's first name to filter by", required = false)
+            @RequestParam(required = false) @Size(max = 100) String firstName,
+            @Parameter(description = "Student's last name to filter by", required = false)
+            @RequestParam(required = false) @Size(max = 100) String lastName,
+            @Parameter(description = "Student's DNI to filter by", required = false)
             @RequestParam(required = false) @Size(max = 20) String dni,
-            @Parameter(description = "Email del alumno para filtrar", required = false)
+            @Parameter(description = "Student's email to filter by", required = false)
             @RequestParam(required = false) String email,
-            @Parameter(description = "Estado de matriculación para filtrar", required = false)
-            @RequestParam(required = false) Boolean matriculado,
-            @Parameter(description = "Número de página (0-indexed)", required = false)
+            @Parameter(description = "Enrollment status to filter by", required = false)
+            @RequestParam(required = false) Boolean enrolled,
+            @Parameter(description = "Account enabled status to filter by", required = false)
+            @RequestParam(required = false) Boolean enabled,
+            @Parameter(description = "Filter only available students (enabled and enrolled)", required = false)
+            @RequestParam(required = false) Boolean available,
+            @Parameter(description = "Page number (0-indexed)", required = false)
             @RequestParam(defaultValue = "0") @Min(0) int page,
-            @Parameter(description = "Tamaño de página", required = false)
-            @RequestParam(defaultValue = "20") @Min(1) int size,
-            @Parameter(description = "Campo por el que ordenar", required = false)
-            @RequestParam(defaultValue = "id") String sortBy,
-            @Parameter(description = "Dirección de ordenación (ASC/DESC)", required = false)
-            @RequestParam(defaultValue = "ASC") String sortDirection) {
+            @Parameter(description = "Page size", required = false)
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            @Parameter(description = "Field to sort by", required = false)
+            @RequestParam(defaultValue = "id") @Size(max = 50) String sortBy,
+            @Parameter(description = "Sort direction (ASC/DESC)", required = false)
+            @RequestParam(defaultValue = "ASC") @Pattern(regexp = "ASC|DESC") String sortDirection) {
+        
+        // Handle student profile request (students can only see their own profile)
+        if (securityUtils.hasRole("ALUMNO") && !securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR")) {
+            Long userId = securityUtils.getCurrentUserId();
+            DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoPorId(userId);
+            // Convert to paginated response with single item
+            DTORespuestaPaginada<DTOAlumno> respuesta = DTORespuestaPaginada.of(
+                List.of(dtoAlumno), 0, 1, 1, "id", "ASC");
+            return new ResponseEntity<>(respuesta, HttpStatus.OK);
+        }
+        
+        // Validate and standardize parameters using BaseRestController
+        page = validatePageNumber(page);
+        size = validatePageSize(size);
+        sortBy = validateSortBy(sortBy, "id", "firstName", "lastName", "dni", "email", "enrolled", "enabled");
+        sortDirection = validateSortDirection(sortDirection);
+        
+        // Handle special filtering for available students
+        if (Boolean.TRUE.equals(available)) {
+            DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.obtenerAlumnosDisponiblesPaginados(
+                page, size, sortBy, sortDirection);
+            return new ResponseEntity<>(respuesta, HttpStatus.OK);
+        }
         
         DTOParametrosBusquedaAlumno parametros = new DTOParametrosBusquedaAlumno(
-            q, nombre, apellidos, dni, email, matriculado);
+            q, firstName, lastName, dni, email, enrolled);
         
         DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.buscarAlumnosPorParametrosPaginados(
             parametros, page, size, sortBy, sortDirection);
@@ -95,104 +135,17 @@ public class AlumnoRest {
         return new ResponseEntity<>(respuesta, HttpStatus.OK);
     }
 
-    /**
-     * Endpoint para que los profesores obtengan todos los alumnos disponibles para inscribir
-     * @param page Número de página (0-indexed)
-     * @param size Tamaño de página
-     * @param sortBy Campo por el que ordenar
-     * @param sortDirection Dirección de ordenación (ASC/DESC)
-     * @return Lista paginada de todos los alumnos disponibles
-     */
-    @GetMapping("/disponibles")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(
-        summary = "Obtener alumnos disponibles",
-        description = "Obtiene una lista paginada de alumnos habilitados y matriculados para inscripción (requiere rol ADMIN o PROFESOR)"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Lista paginada de alumnos disponibles obtenida exitosamente",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTORespuestaPaginada.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acceso denegado - Se requiere rol ADMIN o PROFESOR"
-        )
-    })
-    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosDisponibles(
-            @Parameter(description = "Número de página (0-indexed)", required = false)
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @Parameter(description = "Tamaño de página", required = false)
-            @RequestParam(defaultValue = "50") @Min(1) int size,
-            @Parameter(description = "Campo por el que ordenar", required = false)
-            @RequestParam(defaultValue = "nombre") String sortBy,
-            @Parameter(description = "Dirección de ordenación (ASC/DESC)", required = false)
-            @RequestParam(defaultValue = "ASC") String sortDirection) {
-        
-        // Obtener todos los alumnos habilitados y matriculados
-        DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.obtenerAlumnosDisponiblesPaginados(
-            page, size, sortBy, sortDirection);
-        
-        return new ResponseEntity<>(respuesta, HttpStatus.OK);
-    }
-
-    // Endpoint sin paginación (mantenido por compatibilidad - DEPRECATED)
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Deprecated(since = "1.1", forRemoval = true)
-    @Operation(
-        summary = "Obtener alumnos (DEPRECATED)",
-        description = "Obtiene una lista de alumnos con filtros opcionales sin paginación (DEPRECATED - usar /paged)"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Lista de alumnos obtenida exitosamente",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOAlumno.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acceso denegado - Se requiere rol ADMIN o PROFESOR"
-        )
-    })
-    public ResponseEntity<List<DTOAlumno>> obtenerAlumnos(
-            @Parameter(description = "Término de búsqueda general (busca en nombre, apellidos, DNI, email)", required = false)
-            @RequestParam(required = false) @Size(max = 100) String q,
-            @Parameter(description = "Nombre del alumno para filtrar", required = false)
-            @RequestParam(required = false) @Size(max = 100) String nombre,
-            @Parameter(description = "Apellidos del alumno para filtrar", required = false)
-            @RequestParam(required = false) @Size(max = 100) String apellidos,
-            @Parameter(description = "DNI del alumno para filtrar", required = false)
-            @RequestParam(required = false) @Size(max = 20) String dni,
-            @Parameter(description = "Email del alumno para filtrar", required = false)
-            @RequestParam(required = false) String email,
-            @Parameter(description = "Estado de matriculación para filtrar", required = false)
-            @RequestParam(required = false) Boolean matriculado) {
-        
-        DTOParametrosBusquedaAlumno parametros = new DTOParametrosBusquedaAlumno(
-            q, nombre, apellidos, dni, email, matriculado);
-        
-        List<DTOAlumno> alumnosDTO = servicioAlumno.buscarAlumnosPorParametros(parametros);
-        return new ResponseEntity<>(alumnosDTO, HttpStatus.OK);
-    }
-
+    // Standard GET specific resource endpoint
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #id == authentication.principal.id)")
     @Operation(
-        summary = "Obtener alumno por ID",
-        description = "Obtiene un alumno específico por su ID. Los alumnos solo pueden ver su propio perfil."
+        summary = "Get student by ID",
+        description = "Gets a specific student by their ID. Students can only see their own profile."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Alumno encontrado exitosamente",
+            description = "Student found successfully",
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = DTOAlumno.class)
@@ -200,185 +153,50 @@ public class AlumnoRest {
         ),
         @ApiResponse(
             responseCode = "404",
-            description = "Alumno no encontrado"
+            description = "Student not found"
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Acceso denegado - No autorizado para ver este alumno"
+            description = "Access denied - Not authorized to view this student"
         )
     })
     public ResponseEntity<DTOAlumno> obtenerAlumnoPorId(
-            @Parameter(description = "ID del alumno", required = true)
-            @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id) {
+            @Parameter(description = "ID of the student", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
         DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoPorId(id);
         return new ResponseEntity<>(dtoAlumno, HttpStatus.OK);
     }
 
-    @GetMapping("/usuario/{usuario}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(
-        summary = "Obtener alumno por usuario",
-        description = "Obtiene un alumno específico por su nombre de usuario. Para alumnos, usar el endpoint /mi-perfil."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Alumno encontrado exitosamente",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOAlumno.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Alumno no encontrado"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acceso denegado - No autorizado para ver este alumno"
-        )
-    })
-    public ResponseEntity<DTOAlumno> obtenerAlumnoPorUsuario(
-            @Parameter(description = "Nombre de usuario del alumno", required = true)
-            @PathVariable @Size(max = 50) String usuario) {
-        
-        DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoPorUsuario(usuario);
-        return new ResponseEntity<>(dtoAlumno, HttpStatus.OK);
-    }
-
-    @GetMapping("/email/{email}")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(
-        summary = "Obtener alumno por email",
-        description = "Obtiene un alumno específico por su email (requiere rol ADMIN)"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Alumno encontrado exitosamente",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOAlumno.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Alumno no encontrado"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acceso denegado - Se requiere rol ADMIN"
-        )
-    })
-    public ResponseEntity<DTOAlumno> obtenerAlumnoPorEmail(
-            @Parameter(description = "Email del alumno", required = true)
-            @PathVariable String email) {
-        
-        DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoPorEmail(email);
-        return new ResponseEntity<>(dtoAlumno, HttpStatus.OK);
-    }
-
-    @GetMapping("/dni/{dni}")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(
-        summary = "Obtener alumno por DNI",
-        description = "Obtiene un alumno específico por su DNI (requiere rol ADMIN)"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Alumno encontrado exitosamente",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOAlumno.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Alumno no encontrado"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acceso denegado - Se requiere rol ADMIN"
-        )
-    })
-    public ResponseEntity<DTOAlumno> obtenerAlumnoPorDni(
-            @Parameter(description = "DNI del alumno", required = true)
-            @PathVariable @Size(max = 20) String dni) {
-        
-        DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoPorDni(dni);
-        return new ResponseEntity<>(dtoAlumno, HttpStatus.OK);
-    }
-
-    @GetMapping("/matriculados/paged")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(
-        summary = "Obtener alumnos matriculados paginados",
-        description = "Obtiene una lista paginada de alumnos matriculados (requiere rol ADMIN o PROFESOR)"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Lista paginada de alumnos matriculados obtenida exitosamente",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTORespuestaPaginada.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acceso denegado - Se requiere rol ADMIN o PROFESOR"
-        )
-    })
-    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosMatriculadosPaginados(
-            @Parameter(description = "Número de página (0-indexed)", required = false)
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @Parameter(description = "Tamaño de página", required = false)
-            @RequestParam(defaultValue = "20") @Min(1) int size,
-            @Parameter(description = "Campo por el que ordenar", required = false)
-            @RequestParam(defaultValue = "id") String sortBy,
-            @Parameter(description = "Dirección de ordenación (ASC/DESC)", required = false)
-            @RequestParam(defaultValue = "ASC") String sortDirection) {
-        
-        DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.obtenerAlumnosPorMatriculadoPaginados(
-            true, page, size, sortBy, sortDirection);
-        return new ResponseEntity<>(respuesta, HttpStatus.OK);
-    }
-
-    @GetMapping("/no-matriculados/paged")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DTORespuestaPaginada<DTOAlumno>> obtenerAlumnosNoMatriculadosPaginados(
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortDirection) {
-        
-        DTORespuestaPaginada<DTOAlumno> respuesta = servicioAlumno.obtenerAlumnosPorMatriculadoPaginados(
-            false, page, size, sortBy, sortDirection);
-        return new ResponseEntity<>(respuesta, HttpStatus.OK);
-    }
-
-    @GetMapping("/matriculados")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Deprecated(since = "1.1", forRemoval = true)
-    public ResponseEntity<List<DTOAlumno>> obtenerAlumnosMatriculados() {
-        
-        List<DTOAlumno> alumnosDTO = servicioAlumno.obtenerAlumnosPorMatriculado(true);
-        return new ResponseEntity<>(alumnosDTO, HttpStatus.OK);
-    }
-
-    @GetMapping("/no-matriculados")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Deprecated(since = "1.1", forRemoval = true)
-    public ResponseEntity<List<DTOAlumno>> obtenerAlumnosNoMatriculados() {
-        
-        List<DTOAlumno> alumnosDTO = servicioAlumno.obtenerAlumnosPorMatriculado(false);
-        return new ResponseEntity<>(alumnosDTO, HttpStatus.OK);
-    }
-
+    // Standard POST create endpoint
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+        summary = "Create new student",
+        description = "Creates a new student in the system (requires ADMIN role)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Student created successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumno.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input data"
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Conflict - Student already exists"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ADMIN role is required"
+        )
+    })
     public ResponseEntity<DTOAlumno> crearAlumno(
             @Valid @RequestBody DTOPeticionRegistroAlumno peticion) {
         
@@ -386,100 +204,106 @@ public class AlumnoRest {
         return new ResponseEntity<>(dtoAlumnoNuevo, HttpStatus.CREATED);
     }
 
+    // Standard PATCH partial update endpoint with status management
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('ALUMNO') and #id == authentication.principal.id)")
+    @Operation(
+        summary = "Update student partially",
+        description = "Partially updates an existing student. Students can only update their own profile. Administrators can change enrollment and enabled status."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Student updated successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumno.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input data"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Student not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to update this student"
+        )
+    })
     public ResponseEntity<DTOAlumno> actualizarAlumno(
-            @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id, 
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id, 
             @Valid @RequestBody DTOActualizacionAlumno dtoParcial) {
         
         DTOAlumno dtoActualizado = servicioAlumno.actualizarAlumno(id, dtoParcial);
         return new ResponseEntity<>(dtoActualizado, HttpStatus.OK);
     }
 
-    @PatchMapping("/{id}/matricula")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DTOAlumno> cambiarEstadoMatricula(
-            @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id,
-            @RequestBody Map<String, Boolean> request) {
-        
-        Boolean matriculado = request.get("matriculado");
-        if (matriculado == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        
-        DTOAlumno dtoActualizado = servicioAlumno.cambiarEstadoMatricula(id, matriculado);
-        return new ResponseEntity<>(dtoActualizado, HttpStatus.OK);
-    }
-
-    @PatchMapping("/{id}/habilitar")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DTOAlumno> habilitarDeshabilitarAlumno(
-            @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id,
-            @RequestBody Map<String, Boolean> request) {
-        
-        Boolean habilitar = request.get("habilitar");
-        if (habilitar == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        
-        DTOAlumno dtoActualizado = servicioAlumno.habilitarDeshabilitarAlumno(id, habilitar);
-        return new ResponseEntity<>(dtoActualizado, HttpStatus.OK);
-    }
-
+    // Standard DELETE endpoint
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+        summary = "Delete student",
+        description = "Deletes a student from the system (requires ADMIN role)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Student deleted successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumno.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Student not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ADMIN role is required"
+        )
+    })
     public ResponseEntity<DTOAlumno> borrarAlumnoPorId(
-            @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long id) {
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
         DTOAlumno dtoAlumno = servicioAlumno.borrarAlumnoPorId(id);
         return new ResponseEntity<>(dtoAlumno, HttpStatus.OK);
     }
 
-    // Endpoints de estadísticas para administradores
-    @GetMapping("/estadisticas/total")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Long>> obtenerTotalAlumnos() {
-        long total = servicioAlumno.contarTotalAlumnos();
-        return new ResponseEntity<>(Map.of("total", total), HttpStatus.OK);
-    }
+    // Specialized endpoints for specific use cases that don't fit standard CRUD
 
-    @GetMapping("/estadisticas/matriculas")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Long>> obtenerEstadisticasMatriculas() {
-        Map<String, Long> estadisticas = Map.of(
-            "matriculados", servicioAlumno.contarAlumnosMatriculados(),
-            "no_matriculados", servicioAlumno.contarAlumnosNoMatriculados()
-        );
-        return new ResponseEntity<>(estadisticas, HttpStatus.OK);
-    }
-
-    // ===== NUEVOS ENDPOINTS PARA ESTUDIANTES =====
-
-    /**
-     * Obtiene las clases en las que está inscrito un estudiante con información detallada del profesor
-     * GET /api/alumnos/{alumnoId}/clases
-     * @param alumnoId ID del estudiante
-     * @return Lista de DTOClaseInscrita con información del profesor
-     */
-    @GetMapping("/{alumnoId}/clases")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #alumnoId == authentication.principal.id)")
-    public ResponseEntity<List<DTOClaseInscrita>> obtenerClasesInscritasConDetalles(
-            @PathVariable @Min(value = 1, message = "El ID debe ser mayor a 0") Long alumnoId) {
+    @GetMapping("/{id}/clases-inscritas")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #id == authentication.principal.id)")
+    @Operation(
+        summary = "Get classes enrolled by student",
+        description = "Gets the classes in which a specific student is enrolled"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Classes enrolled retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClaseInscrita.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Student not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view these classes"
+        )
+    })
+    public ResponseEntity<List<DTOClaseInscrita>> obtenerClasesInscritas(
+            @Parameter(description = "ID of the student", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
-        List<DTOClaseInscrita> clases = servicioClase.obtenerClasesInscritasConDetalles(alumnoId);
-        return new ResponseEntity<>(clases, HttpStatus.OK);
-    }
-
-    /**
-     * Obtiene el perfil del estudiante autenticado (sin información sensible)
-     * GET /api/alumnos/mi-perfil
-     * @return DTOPerfilAlumno del estudiante actual
-     */
-    @GetMapping("/mi-perfil")
-    @PreAuthorize("hasRole('ALUMNO')")
-    public ResponseEntity<DTOPerfilAlumno> obtenerMiPerfil() {
-        String usuario = securityUtils.getCurrentUsername();
-        DTOPerfilAlumno perfil = servicioAlumno.obtenerPerfilAlumnoPorUsuario(usuario);
-        return new ResponseEntity<>(perfil, HttpStatus.OK);
+        List<DTOClaseInscrita> clasesInscritas = servicioClase.obtenerClasesInscritasConDetalles(id);
+        return new ResponseEntity<>(clasesInscritas, HttpStatus.OK);
     }
 }

@@ -1,7 +1,7 @@
 package app.entidades;
 
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 import jakarta.persistence.*;
 import jakarta.persistence.FetchType;
 import jakarta.validation.constraints.DecimalMin;
@@ -33,43 +33,43 @@ public abstract class Clase {
     
     @NotNull
     @Size(max = 200)
-    private String titulo;
+    private String title;
     
     @Size(max = 1000)
-    private String descripcion;
+    private String description;
     
     @NotNull
     @DecimalMin(value = "0.0", inclusive = false)
     @Column(precision = 10, scale = 2)
-    private BigDecimal precio;
+    private BigDecimal price;
     
     @NotNull
     @Enumerated(EnumType.STRING)
-    private EPresencialidad presencialidad;
+    private EPresencialidad format;
     
     @Size(max = 500)
-    private String imagenPortada;
+    private String image;
     
     @NotNull
     @Enumerated(EnumType.STRING)
-    private ENivel nivel;
+    private EDificultad difficulty;
     
     // Relaciones como listas de IDs (según UML)
     // TODO: Estas se refactorizarán a relaciones JPA cuando sea necesario
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "clase_alumnos", joinColumns = @JoinColumn(name = "clase_id"))
     @Column(name = "alumno_id")
-    private List<String> alumnosId = new ArrayList<>();
+    private List<String> studentIds = new ArrayList<>();
     
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "clase_profesores", joinColumns = @JoinColumn(name = "clase_id"))
     @Column(name = "profesor_id")
-    private List<String> profesoresId = new ArrayList<>();
+    private List<String> teacherIds = new ArrayList<>();
     
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "clase_ejercicios", joinColumns = @JoinColumn(name = "clase_id"))
     @Column(name = "ejercicio_id")
-    private List<String> ejerciciosId = new ArrayList<>();
+    private List<String> exerciseIds = new ArrayList<>();
     
     // Material embebido
     @ElementCollection(fetch = FetchType.EAGER)
@@ -78,14 +78,14 @@ public abstract class Clase {
     
     public Clase() {}
     
-    public Clase(String titulo, String descripcion, BigDecimal precio, 
-                EPresencialidad presencialidad, String imagenPortada, ENivel nivel) {
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-        this.precio = precio;
-        this.presencialidad = presencialidad;
-        this.imagenPortada = imagenPortada;
-        this.nivel = nivel;
+    public Clase(String title, String description, BigDecimal price,
+                 EPresencialidad format, String image, EDificultad difficulty) {
+        this.title = title;
+        this.description = description;
+        this.price = price;
+        this.format = format;
+        this.image = image;
+        this.difficulty = difficulty;
     }
     
     /**
@@ -93,8 +93,8 @@ public abstract class Clase {
      * @param alumnoId ID del alumno
      */
     public void agregarAlumno(String alumnoId) {
-        if (!this.alumnosId.contains(alumnoId)) {
-            this.alumnosId.add(alumnoId);
+        if (!this.studentIds.contains(alumnoId)) {
+            this.studentIds.add(alumnoId);
         }
     }
     
@@ -103,7 +103,7 @@ public abstract class Clase {
      * @param alumnoId ID del alumno
      */
     public void removerAlumno(String alumnoId) {
-        this.alumnosId.remove(alumnoId);
+        this.studentIds.remove(alumnoId);
     }
     
     /**
@@ -111,8 +111,8 @@ public abstract class Clase {
      * @param profesorId ID del profesor
      */
     public void agregarProfesor(String profesorId) {
-        if (!this.profesoresId.contains(profesorId)) {
-            this.profesoresId.add(profesorId);
+        if (!this.teacherIds.contains(profesorId)) {
+            this.teacherIds.add(profesorId);
         }
     }
     
@@ -121,7 +121,7 @@ public abstract class Clase {
      * @param profesorId ID del profesor
      */
     public void removerProfesor(String profesorId) {
-        this.profesoresId.remove(profesorId);
+        this.teacherIds.remove(profesorId);
     }
     
     /**
@@ -129,8 +129,8 @@ public abstract class Clase {
      * @param ejercicioId ID del ejercicio
      */
     public void agregarEjercicio(String ejercicioId) {
-        if (!this.ejerciciosId.contains(ejercicioId)) {
-            this.ejerciciosId.add(ejercicioId);
+        if (!this.exerciseIds.contains(ejercicioId)) {
+            this.exerciseIds.add(ejercicioId);
         }
     }
     
@@ -139,7 +139,7 @@ public abstract class Clase {
      * @param ejercicioId ID del ejercicio
      */
     public void removerEjercicio(String ejercicioId) {
-        this.ejerciciosId.remove(ejercicioId);
+        this.exerciseIds.remove(ejercicioId);
     }
     
     /**

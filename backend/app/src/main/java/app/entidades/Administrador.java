@@ -17,13 +17,13 @@ public class Administrador extends Usuario {
     
     public Administrador() {
         super();
-        this.setRol(Rol.ADMIN);
+        this.setRole(Role.ADMIN);
     }
     
     public Administrador(String usuario, String password, String nombre, String apellidos, 
                         String dni, String email, String numeroTelefono) {
         super(usuario, password, nombre, apellidos, dni, email, numeroTelefono);
-        this.setRol(Rol.ADMIN);
+        this.setRole(Role.ADMIN);
     }
     
     /**

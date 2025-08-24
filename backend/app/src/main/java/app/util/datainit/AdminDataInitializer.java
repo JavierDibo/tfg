@@ -24,7 +24,7 @@ public class AdminDataInitializer extends BaseDataInitializer {
                 "admin@academia.com",
                 "600000000"
             );
-            admin.setRol(Usuario.Rol.ADMIN);
+            admin.setRole(Usuario.Role.ADMIN);
             
             try {
                 repositorioUsuario.save(admin);

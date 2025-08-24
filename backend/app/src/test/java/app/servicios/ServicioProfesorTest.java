@@ -8,7 +8,6 @@ import app.entidades.Curso;
 import app.excepciones.ResourceNotFoundException;
 import app.repositorios.RepositorioProfesor;
 import app.repositorios.RepositorioClase;
-import app.servicios.ServicioCachePassword;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +27,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import app.entidades.Usuario;
+import app.excepciones.ValidationException;
+import app.repositorios.RepositorioUsuario;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para ServicioProfesor")
@@ -44,6 +45,9 @@ class ServicioProfesorTest {
 
     @Mock
     private ServicioCachePassword servicioCachePassword;
+
+    @Mock
+    private RepositorioUsuario repositorioUsuario;
 
     @InjectMocks
     private ServicioProfesor servicioProfesor;
@@ -73,17 +77,17 @@ class ServicioProfesorTest {
         profesor3.agregarClase("3");
 
         // Create DTOs with fixed timestamp to avoid comparison issues
-        dtoProfesor1 = new DTOProfesor(profesor1.getId(), profesor1.getUsuario(), profesor1.getNombre(), 
-                                      profesor1.getApellidos(), profesor1.getDni(), profesor1.getEmail(), 
-                                      profesor1.getNumeroTelefono(), profesor1.getRol(), profesor1.isEnabled(), 
+        dtoProfesor1 = new DTOProfesor(profesor1.getId(), profesor1.getUsername(), profesor1.getFirstName(),
+                                      profesor1.getLastName(), profesor1.getDni(), profesor1.getEmail(),
+                                      profesor1.getPhoneNumber(), profesor1.getRole(), profesor1.isEnabled(),
                                       profesor1.getClasesId(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
-        dtoProfesor2 = new DTOProfesor(profesor2.getId(), profesor2.getUsuario(), profesor2.getNombre(), 
-                                      profesor2.getApellidos(), profesor2.getDni(), profesor2.getEmail(), 
-                                      profesor2.getNumeroTelefono(), profesor2.getRol(), profesor2.isEnabled(), 
+        dtoProfesor2 = new DTOProfesor(profesor2.getId(), profesor2.getUsername(), profesor2.getFirstName(),
+                                      profesor2.getLastName(), profesor2.getDni(), profesor2.getEmail(),
+                                      profesor2.getPhoneNumber(), profesor2.getRole(), profesor2.isEnabled(),
                                       profesor2.getClasesId(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
-        dtoProfesor3 = new DTOProfesor(profesor3.getId(), profesor3.getUsuario(), profesor3.getNombre(), 
-                                      profesor3.getApellidos(), profesor3.getDni(), profesor3.getEmail(), 
-                                      profesor3.getNumeroTelefono(), profesor3.getRol(), profesor3.isEnabled(), 
+        dtoProfesor3 = new DTOProfesor(profesor3.getId(), profesor3.getUsername(), profesor3.getFirstName(),
+                                      profesor3.getLastName(), profesor3.getDni(), profesor3.getEmail(),
+                                      profesor3.getPhoneNumber(), profesor3.getRole(), profesor3.isEnabled(),
                                       profesor3.getClasesId(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
     }
 
@@ -99,39 +103,39 @@ class ServicioProfesorTest {
         // Compare individual fields instead of the whole DTO due to timestamp differences
         DTOProfesor resultado1 = resultado.get(0);
         assertEquals(dtoProfesor1.id(), resultado1.id());
-        assertEquals(dtoProfesor1.usuario(), resultado1.usuario());
-        assertEquals(dtoProfesor1.nombre(), resultado1.nombre());
-        assertEquals(dtoProfesor1.apellidos(), resultado1.apellidos());
+        assertEquals(dtoProfesor1.username(), resultado1.username());
+        assertEquals(dtoProfesor1.firstName(), resultado1.firstName());
+        assertEquals(dtoProfesor1.lastName(), resultado1.lastName());
         assertEquals(dtoProfesor1.dni(), resultado1.dni());
         assertEquals(dtoProfesor1.email(), resultado1.email());
-        assertEquals(dtoProfesor1.numeroTelefono(), resultado1.numeroTelefono());
-        assertEquals(dtoProfesor1.rol(), resultado1.rol());
+        assertEquals(dtoProfesor1.phoneNumber(), resultado1.phoneNumber());
+        assertEquals(dtoProfesor1.role(), resultado1.role());
         assertEquals(dtoProfesor1.enabled(), resultado1.enabled());
-        assertEquals(dtoProfesor1.clasesId(), resultado1.clasesId());
+        assertEquals(dtoProfesor1.classIds(), resultado1.classIds());
         
         DTOProfesor resultado2 = resultado.get(1);
         assertEquals(dtoProfesor2.id(), resultado2.id());
-        assertEquals(dtoProfesor2.usuario(), resultado2.usuario());
-        assertEquals(dtoProfesor2.nombre(), resultado2.nombre());
-        assertEquals(dtoProfesor2.apellidos(), resultado2.apellidos());
+        assertEquals(dtoProfesor2.username(), resultado2.username());
+        assertEquals(dtoProfesor2.firstName(), resultado2.firstName());
+        assertEquals(dtoProfesor2.lastName(), resultado2.lastName());
         assertEquals(dtoProfesor2.dni(), resultado2.dni());
         assertEquals(dtoProfesor2.email(), resultado2.email());
-        assertEquals(dtoProfesor2.numeroTelefono(), resultado2.numeroTelefono());
-        assertEquals(dtoProfesor2.rol(), resultado2.rol());
+        assertEquals(dtoProfesor2.phoneNumber(), resultado2.phoneNumber());
+        assertEquals(dtoProfesor2.role(), resultado2.role());
         assertEquals(dtoProfesor2.enabled(), resultado2.enabled());
-        assertEquals(dtoProfesor2.clasesId(), resultado2.clasesId());
+        assertEquals(dtoProfesor2.classIds(), resultado2.classIds());
         
         DTOProfesor resultado3 = resultado.get(2);
         assertEquals(dtoProfesor3.id(), resultado3.id());
-        assertEquals(dtoProfesor3.usuario(), resultado3.usuario());
-        assertEquals(dtoProfesor3.nombre(), resultado3.nombre());
-        assertEquals(dtoProfesor3.apellidos(), resultado3.apellidos());
+        assertEquals(dtoProfesor3.username(), resultado3.username());
+        assertEquals(dtoProfesor3.firstName(), resultado3.firstName());
+        assertEquals(dtoProfesor3.lastName(), resultado3.lastName());
         assertEquals(dtoProfesor3.dni(), resultado3.dni());
         assertEquals(dtoProfesor3.email(), resultado3.email());
-        assertEquals(dtoProfesor3.numeroTelefono(), resultado3.numeroTelefono());
-        assertEquals(dtoProfesor3.rol(), resultado3.rol());
+        assertEquals(dtoProfesor3.phoneNumber(), resultado3.phoneNumber());
+        assertEquals(dtoProfesor3.role(), resultado3.role());
         assertEquals(dtoProfesor3.enabled(), resultado3.enabled());
-        assertEquals(dtoProfesor3.clasesId(), resultado3.clasesId());
+        assertEquals(dtoProfesor3.classIds(), resultado3.classIds());
         
         verify(repositorioProfesor).findAllOrderedById();
     }
@@ -145,15 +149,15 @@ class ServicioProfesorTest {
 
         // Compare individual fields instead of the whole DTO due to timestamp differences
         assertEquals(dtoProfesor1.id(), resultado.id());
-        assertEquals(dtoProfesor1.usuario(), resultado.usuario());
-        assertEquals(dtoProfesor1.nombre(), resultado.nombre());
-        assertEquals(dtoProfesor1.apellidos(), resultado.apellidos());
+        assertEquals(dtoProfesor1.username(), resultado.username());
+        assertEquals(dtoProfesor1.firstName(), resultado.firstName());
+        assertEquals(dtoProfesor1.lastName(), resultado.lastName());
         assertEquals(dtoProfesor1.dni(), resultado.dni());
         assertEquals(dtoProfesor1.email(), resultado.email());
-        assertEquals(dtoProfesor1.numeroTelefono(), resultado.numeroTelefono());
-        assertEquals(dtoProfesor1.rol(), resultado.rol());
+        assertEquals(dtoProfesor1.phoneNumber(), resultado.phoneNumber());
+        assertEquals(dtoProfesor1.role(), resultado.role());
         assertEquals(dtoProfesor1.enabled(), resultado.enabled());
-        assertEquals(dtoProfesor1.clasesId(), resultado.clasesId());
+        assertEquals(dtoProfesor1.classIds(), resultado.classIds());
         verify(repositorioProfesor).findById(1L);
     }
 
@@ -177,15 +181,15 @@ class ServicioProfesorTest {
 
         // Compare individual fields instead of the whole DTO due to timestamp differences
         assertEquals(dtoProfesor1.id(), resultado.id());
-        assertEquals(dtoProfesor1.usuario(), resultado.usuario());
-        assertEquals(dtoProfesor1.nombre(), resultado.nombre());
-        assertEquals(dtoProfesor1.apellidos(), resultado.apellidos());
+        assertEquals(dtoProfesor1.username(), resultado.username());
+        assertEquals(dtoProfesor1.firstName(), resultado.firstName());
+        assertEquals(dtoProfesor1.lastName(), resultado.lastName());
         assertEquals(dtoProfesor1.dni(), resultado.dni());
         assertEquals(dtoProfesor1.email(), resultado.email());
-        assertEquals(dtoProfesor1.numeroTelefono(), resultado.numeroTelefono());
-        assertEquals(dtoProfesor1.rol(), resultado.rol());
+        assertEquals(dtoProfesor1.phoneNumber(), resultado.phoneNumber());
+        assertEquals(dtoProfesor1.role(), resultado.role());
         assertEquals(dtoProfesor1.enabled(), resultado.enabled());
-        assertEquals(dtoProfesor1.clasesId(), resultado.clasesId());
+        assertEquals(dtoProfesor1.classIds(), resultado.classIds());
         verify(repositorioProfesor).findByEmail("maria@ejemplo.com");
     }
 
@@ -209,15 +213,15 @@ class ServicioProfesorTest {
 
         // Compare individual fields instead of the whole DTO due to timestamp differences
         assertEquals(dtoProfesor1.id(), resultado.id());
-        assertEquals(dtoProfesor1.usuario(), resultado.usuario());
-        assertEquals(dtoProfesor1.nombre(), resultado.nombre());
-        assertEquals(dtoProfesor1.apellidos(), resultado.apellidos());
+        assertEquals(dtoProfesor1.username(), resultado.username());
+        assertEquals(dtoProfesor1.firstName(), resultado.firstName());
+        assertEquals(dtoProfesor1.lastName(), resultado.lastName());
         assertEquals(dtoProfesor1.dni(), resultado.dni());
         assertEquals(dtoProfesor1.email(), resultado.email());
-        assertEquals(dtoProfesor1.numeroTelefono(), resultado.numeroTelefono());
-        assertEquals(dtoProfesor1.rol(), resultado.rol());
+        assertEquals(dtoProfesor1.phoneNumber(), resultado.phoneNumber());
+        assertEquals(dtoProfesor1.role(), resultado.role());
         assertEquals(dtoProfesor1.enabled(), resultado.enabled());
-        assertEquals(dtoProfesor1.clasesId(), resultado.clasesId());
+        assertEquals(dtoProfesor1.classIds(), resultado.classIds());
         verify(repositorioProfesor).findByUsuario("profesor1");
     }
 
@@ -241,15 +245,15 @@ class ServicioProfesorTest {
 
         // Compare individual fields instead of the whole DTO due to timestamp differences
         assertEquals(dtoProfesor1.id(), resultado.id());
-        assertEquals(dtoProfesor1.usuario(), resultado.usuario());
-        assertEquals(dtoProfesor1.nombre(), resultado.nombre());
-        assertEquals(dtoProfesor1.apellidos(), resultado.apellidos());
+        assertEquals(dtoProfesor1.username(), resultado.username());
+        assertEquals(dtoProfesor1.firstName(), resultado.firstName());
+        assertEquals(dtoProfesor1.lastName(), resultado.lastName());
         assertEquals(dtoProfesor1.dni(), resultado.dni());
         assertEquals(dtoProfesor1.email(), resultado.email());
-        assertEquals(dtoProfesor1.numeroTelefono(), resultado.numeroTelefono());
-        assertEquals(dtoProfesor1.rol(), resultado.rol());
+        assertEquals(dtoProfesor1.phoneNumber(), resultado.phoneNumber());
+        assertEquals(dtoProfesor1.role(), resultado.role());
         assertEquals(dtoProfesor1.enabled(), resultado.enabled());
-        assertEquals(dtoProfesor1.clasesId(), resultado.clasesId());
+        assertEquals(dtoProfesor1.classIds(), resultado.classIds());
         verify(repositorioProfesor).findByDni("12345678Z");
     }
 
@@ -276,15 +280,15 @@ class ServicioProfesorTest {
         // Compare individual fields instead of the whole DTO due to timestamp differences
         DTOProfesor resultadoProfesor = resultado.get(0);
         assertEquals(dtoProfesor1.id(), resultadoProfesor.id());
-        assertEquals(dtoProfesor1.usuario(), resultadoProfesor.usuario());
-        assertEquals(dtoProfesor1.nombre(), resultadoProfesor.nombre());
-        assertEquals(dtoProfesor1.apellidos(), resultadoProfesor.apellidos());
+        assertEquals(dtoProfesor1.username(), resultadoProfesor.username());
+        assertEquals(dtoProfesor1.firstName(), resultadoProfesor.firstName());
+        assertEquals(dtoProfesor1.lastName(), resultadoProfesor.lastName());
         assertEquals(dtoProfesor1.dni(), resultadoProfesor.dni());
         assertEquals(dtoProfesor1.email(), resultadoProfesor.email());
-        assertEquals(dtoProfesor1.numeroTelefono(), resultadoProfesor.numeroTelefono());
-        assertEquals(dtoProfesor1.rol(), resultadoProfesor.rol());
+        assertEquals(dtoProfesor1.phoneNumber(), resultadoProfesor.phoneNumber());
+        assertEquals(dtoProfesor1.role(), resultadoProfesor.role());
         assertEquals(dtoProfesor1.enabled(), resultadoProfesor.enabled());
-        assertEquals(dtoProfesor1.clasesId(), resultadoProfesor.clasesId());
+        assertEquals(dtoProfesor1.classIds(), resultadoProfesor.classIds());
         verify(repositorioProfesor).findByNombreContainingIgnoreCase("María");
     }
 
@@ -300,15 +304,15 @@ class ServicioProfesorTest {
         // Compare individual fields instead of the whole DTO due to timestamp differences
         DTOProfesor resultadoProfesor = resultado.get(0);
         assertEquals(dtoProfesor1.id(), resultadoProfesor.id());
-        assertEquals(dtoProfesor1.usuario(), resultadoProfesor.usuario());
-        assertEquals(dtoProfesor1.nombre(), resultadoProfesor.nombre());
-        assertEquals(dtoProfesor1.apellidos(), resultadoProfesor.apellidos());
+        assertEquals(dtoProfesor1.username(), resultadoProfesor.username());
+        assertEquals(dtoProfesor1.firstName(), resultadoProfesor.firstName());
+        assertEquals(dtoProfesor1.lastName(), resultadoProfesor.lastName());
         assertEquals(dtoProfesor1.dni(), resultadoProfesor.dni());
         assertEquals(dtoProfesor1.email(), resultadoProfesor.email());
-        assertEquals(dtoProfesor1.numeroTelefono(), resultadoProfesor.numeroTelefono());
-        assertEquals(dtoProfesor1.rol(), resultadoProfesor.rol());
+        assertEquals(dtoProfesor1.phoneNumber(), resultadoProfesor.phoneNumber());
+        assertEquals(dtoProfesor1.role(), resultadoProfesor.role());
         assertEquals(dtoProfesor1.enabled(), resultadoProfesor.enabled());
-        assertEquals(dtoProfesor1.clasesId(), resultadoProfesor.clasesId());
+        assertEquals(dtoProfesor1.classIds(), resultadoProfesor.classIds());
         verify(repositorioProfesor).findByApellidosContainingIgnoreCase("García");
     }
 
@@ -340,15 +344,15 @@ class ServicioProfesorTest {
         // Compare individual fields instead of the whole DTO due to timestamp differences
         DTOProfesor resultadoProfesor = resultado.get(0);
         assertEquals(dtoProfesor1.id(), resultadoProfesor.id());
-        assertEquals(dtoProfesor1.usuario(), resultadoProfesor.usuario());
-        assertEquals(dtoProfesor1.nombre(), resultadoProfesor.nombre());
-        assertEquals(dtoProfesor1.apellidos(), resultadoProfesor.apellidos());
+        assertEquals(dtoProfesor1.username(), resultadoProfesor.username());
+        assertEquals(dtoProfesor1.firstName(), resultadoProfesor.firstName());
+        assertEquals(dtoProfesor1.lastName(), resultadoProfesor.lastName());
         assertEquals(dtoProfesor1.dni(), resultadoProfesor.dni());
         assertEquals(dtoProfesor1.email(), resultadoProfesor.email());
-        assertEquals(dtoProfesor1.numeroTelefono(), resultadoProfesor.numeroTelefono());
-        assertEquals(dtoProfesor1.rol(), resultadoProfesor.rol());
+        assertEquals(dtoProfesor1.phoneNumber(), resultadoProfesor.phoneNumber());
+        assertEquals(dtoProfesor1.role(), resultadoProfesor.role());
         assertEquals(dtoProfesor1.enabled(), resultadoProfesor.enabled());
-        assertEquals(dtoProfesor1.clasesId(), resultadoProfesor.clasesId());
+        assertEquals(dtoProfesor1.classIds(), resultadoProfesor.classIds());
         verify(repositorioProfesor).findAll();
     }
 
@@ -377,15 +381,15 @@ class ServicioProfesorTest {
         // Compare individual fields instead of the whole DTO due to timestamp differences
         DTOProfesor resultadoProfesor = resultado.get(0);
         assertEquals(dtoProfesor1.id(), resultadoProfesor.id());
-        assertEquals(dtoProfesor1.usuario(), resultadoProfesor.usuario());
-        assertEquals(dtoProfesor1.nombre(), resultadoProfesor.nombre());
-        assertEquals(dtoProfesor1.apellidos(), resultadoProfesor.apellidos());
+        assertEquals(dtoProfesor1.username(), resultadoProfesor.username());
+        assertEquals(dtoProfesor1.firstName(), resultadoProfesor.firstName());
+        assertEquals(dtoProfesor1.lastName(), resultadoProfesor.lastName());
         assertEquals(dtoProfesor1.dni(), resultadoProfesor.dni());
         assertEquals(dtoProfesor1.email(), resultadoProfesor.email());
-        assertEquals(dtoProfesor1.numeroTelefono(), resultadoProfesor.numeroTelefono());
-        assertEquals(dtoProfesor1.rol(), resultadoProfesor.rol());
+        assertEquals(dtoProfesor1.phoneNumber(), resultadoProfesor.phoneNumber());
+        assertEquals(dtoProfesor1.role(), resultadoProfesor.role());
         assertEquals(dtoProfesor1.enabled(), resultadoProfesor.enabled());
-        assertEquals(dtoProfesor1.clasesId(), resultadoProfesor.clasesId());
+        assertEquals(dtoProfesor1.classIds(), resultadoProfesor.classIds());
         verify(repositorioProfesor).findByClaseId("1");
     }
 
@@ -401,15 +405,15 @@ class ServicioProfesorTest {
         // Compare individual fields instead of the whole DTO due to timestamp differences
         DTOProfesor resultadoProfesor = resultado.get(0);
         assertEquals(dtoProfesor2.id(), resultadoProfesor.id());
-        assertEquals(dtoProfesor2.usuario(), resultadoProfesor.usuario());
-        assertEquals(dtoProfesor2.nombre(), resultadoProfesor.nombre());
-        assertEquals(dtoProfesor2.apellidos(), resultadoProfesor.apellidos());
+        assertEquals(dtoProfesor2.username(), resultadoProfesor.username());
+        assertEquals(dtoProfesor2.firstName(), resultadoProfesor.firstName());
+        assertEquals(dtoProfesor2.lastName(), resultadoProfesor.lastName());
         assertEquals(dtoProfesor2.dni(), resultadoProfesor.dni());
         assertEquals(dtoProfesor2.email(), resultadoProfesor.email());
-        assertEquals(dtoProfesor2.numeroTelefono(), resultadoProfesor.numeroTelefono());
-        assertEquals(dtoProfesor2.rol(), resultadoProfesor.rol());
+        assertEquals(dtoProfesor2.phoneNumber(), resultadoProfesor.phoneNumber());
+        assertEquals(dtoProfesor2.role(), resultadoProfesor.role());
         assertEquals(dtoProfesor2.enabled(), resultadoProfesor.enabled());
-        assertEquals(dtoProfesor2.clasesId(), resultadoProfesor.clasesId());
+        assertEquals(dtoProfesor2.classIds(), resultadoProfesor.classIds());
         verify(repositorioProfesor).findProfesoresSinClases();
     }
 
@@ -430,72 +434,77 @@ class ServicioProfesorTest {
 
         // Compare individual fields instead of the whole DTO due to timestamp differences
         assertEquals(4L, resultado.id());
-        assertEquals("nuevo", resultado.usuario());
-        assertEquals("Nuevo", resultado.nombre());
-        assertEquals("Profesor", resultado.apellidos());
+        assertEquals("nuevo", resultado.username());
+        assertEquals("Nuevo", resultado.firstName());
+        assertEquals("Profesor", resultado.lastName());
         assertEquals("98765432X", resultado.dni());
         assertEquals("nuevo@ejemplo.com", resultado.email());
-        assertEquals("555123456", resultado.numeroTelefono());
-        assertEquals(Usuario.Rol.PROFESOR, resultado.rol());
+        assertEquals("555123456", resultado.phoneNumber());
+        assertEquals(Usuario.Role.PROFESOR, resultado.role());
         assertTrue(resultado.enabled());
-        assertNotNull(resultado.clasesId());
-        assertTrue(resultado.clasesId().isEmpty());
+        assertNotNull(resultado.classIds());
+        assertTrue(resultado.classIds().isEmpty());
         
         verify(servicioCachePassword).encodePassword("password123");
         verify(repositorioProfesor).save(any(Profesor.class));
     }
 
     @Test
-    @DisplayName("crearProfesor debe lanzar excepción si usuario ya existe")
+    @DisplayName("crearProfesor debe lanzar excepción cuando el usuario ya existe")
     void testCrearProfesorUsuarioExiste() {
+        // Arrange
         DTOPeticionRegistroProfesor peticion = new DTOPeticionRegistroProfesor(
-                "existente", "password123", "Nuevo", "Profesor", "99999999A", "nuevo@ejemplo.com", "111222333"
-        );
-        
+                "existente", "password123", "Existente", "Profesor", "12345678Z", "existente@ejemplo.com", "555123456");
         when(repositorioProfesor.findByUsuario("existente")).thenReturn(Optional.of(profesor1));
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        // Act & Assert
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
             servicioProfesor.crearProfesor(peticion);
         });
+
+        assertEquals("Ya existe un profesor con el usuario: existente", exception.getMessage());
         verify(repositorioProfesor).findByUsuario("existente");
         verify(repositorioProfesor, never()).save(any());
     }
 
     @Test
-    @DisplayName("crearProfesor debe lanzar excepción si email ya existe")
+    @DisplayName("crearProfesor debe lanzar excepción cuando el email ya existe")
     void testCrearProfesorEmailExiste() {
+        // Arrange
         DTOPeticionRegistroProfesor peticion = new DTOPeticionRegistroProfesor(
-                "nuevo", "password123", "Nuevo", "Profesor", "99999999A", "existente@ejemplo.com", "111222333"
-        );
-        
-        when(repositorioProfesor.findByUsuario("nuevo")).thenReturn(Optional.empty());
+                "existente", "password123", "Existente", "Profesor", "12345678Z", "existente@ejemplo.com", "555123456");
+        when(repositorioProfesor.findByUsuario("existente")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByEmail("existente@ejemplo.com")).thenReturn(Optional.of(profesor1));
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        // Act & Assert
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
             servicioProfesor.crearProfesor(peticion);
         });
-        verify(repositorioProfesor).findByUsuario("nuevo");
+
+        assertEquals("Ya existe un profesor con el email: existente@ejemplo.com", exception.getMessage());
+        verify(repositorioProfesor).findByUsuario("existente");
         verify(repositorioProfesor).findByEmail("existente@ejemplo.com");
         verify(repositorioProfesor, never()).save(any());
     }
 
     @Test
-    @DisplayName("crearProfesor debe lanzar excepción si DNI ya existe")
+    @DisplayName("crearProfesor debe lanzar excepción cuando el DNI ya existe")
     void testCrearProfesorDniExiste() {
+        // Arrange
         DTOPeticionRegistroProfesor peticion = new DTOPeticionRegistroProfesor(
-                "nuevo", "password123", "Nuevo", "Profesor", "12345678Z", "nuevo@ejemplo.com", "111222333"
-        );
-        
-        when(repositorioProfesor.findByUsuario("nuevo")).thenReturn(Optional.empty());
-        when(repositorioProfesor.findByEmail("nuevo@ejemplo.com")).thenReturn(Optional.empty());
+                "existente", "password123", "Existente", "Profesor", "12345678Z", "existente@ejemplo.com", "555123456");
+        when(repositorioProfesor.findByUsuario("existente")).thenReturn(Optional.empty());
+        when(repositorioProfesor.findByEmail("existente@ejemplo.com")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByDni("12345678Z")).thenReturn(Optional.of(profesor1));
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        // Act & Assert
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
             servicioProfesor.crearProfesor(peticion);
         });
-        verify(repositorioProfesor).findByUsuario("nuevo");
-        verify(repositorioProfesor).findByEmail("nuevo@ejemplo.com");
-        verify(repositorioProfesor).findByDni("12345678Z");
+
+        assertEquals("Ya existe un profesor con el DNI: 12345678Z", exception.getMessage());
+        verify(repositorioProfesor).findByUsuario("existente");
+        verify(repositorioProfesor).findByEmail("existente@ejemplo.com");
         verify(repositorioProfesor, never()).save(any());
     }
 

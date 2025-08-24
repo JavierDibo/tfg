@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,14 +31,14 @@ class ProfesorTest {
     void testConstructorConParametros() {
         // Verificar que se crea correctamente
         assertNotNull(profesor);
-        assertEquals(USUARIO, profesor.getUsuario());
+        assertEquals(USUARIO, profesor.getUsername());
         assertEquals(PASSWORD, profesor.getPassword());
-        assertEquals(NOMBRE, profesor.getNombre());
-        assertEquals(APELLIDOS, profesor.getApellidos());
+        assertEquals(NOMBRE, profesor.getFirstName());
+        assertEquals(APELLIDOS, profesor.getLastName());
         assertEquals(DNI, profesor.getDni());
         assertEquals(EMAIL, profesor.getEmail());
-        assertEquals(TELEFONO, profesor.getNumeroTelefono());
-        assertEquals(Usuario.Rol.PROFESOR, profesor.getRol());
+        assertEquals(TELEFONO, profesor.getPhoneNumber());
+        assertEquals(Usuario.Role.PROFESOR, profesor.getRole());
         assertTrue(profesor.isEnabled());
         assertNotNull(profesor.getClasesId());
         assertTrue(profesor.getClasesId().isEmpty());
@@ -51,7 +50,7 @@ class ProfesorTest {
         Profesor profesorVacio = new Profesor();
         
         assertNotNull(profesorVacio);
-        assertEquals(Usuario.Rol.PROFESOR, profesorVacio.getRol());
+        assertEquals(Usuario.Role.PROFESOR, profesorVacio.getRole());
         assertTrue(profesorVacio.isEnabled());
         assertNotNull(profesorVacio.getClasesId());
         assertTrue(profesorVacio.getClasesId().isEmpty());
@@ -156,11 +155,11 @@ class ProfesorTest {
     @Test
     @DisplayName("Rol debe ser PROFESOR por defecto")
     void testRolPorDefecto() {
-        assertEquals(Usuario.Rol.PROFESOR, profesor.getRol());
+        assertEquals(Usuario.Role.PROFESOR, profesor.getRole());
         
         // Verificar que se puede cambiar el rol (Lombok @Data permite esto)
-        profesor.setRol(Usuario.Rol.ALUMNO);
-        assertEquals(Usuario.Rol.ALUMNO, profesor.getRol());
+        profesor.setRole(Usuario.Role.ALUMNO);
+        assertEquals(Usuario.Role.ALUMNO, profesor.getRole());
     }
 
     @Test

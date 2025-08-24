@@ -3,7 +3,7 @@ package app.rest;
 import app.dtos.*;
 import app.entidades.Material;
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 import app.repositorios.RepositorioClase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,13 +60,13 @@ class ClaseRestIntegrationTest {
         // Crear peticiones de prueba
         peticionCrearCurso = new DTOPeticionCrearCurso(
                 "Curso de Java Avanzado", "Aprende Java avanzado", new BigDecimal("129.99"),
-                EPresencialidad.ONLINE, "imagen-java.jpg", ENivel.AVANZADO,
+                EPresencialidad.ONLINE, "imagen-java.jpg", EDificultad.AVANZADO,
                 LocalDate.now().plusDays(15), LocalDate.now().plusDays(45),
                 Arrays.asList("profesor1"), Arrays.asList(material));
 
         peticionCrearTaller = new DTOPeticionCrearTaller(
                 "Taller de Spring Boot", "Taller intensivo de Spring Boot", new BigDecimal("79.99"),
-                EPresencialidad.PRESENCIAL, "imagen-spring.jpg", ENivel.INTERMEDIO,
+                EPresencialidad.PRESENCIAL, "imagen-spring.jpg", EDificultad.INTERMEDIO,
                 8, LocalDate.now().plusDays(7), LocalTime.of(16, 0),
                 Arrays.asList("profesor2"), Arrays.asList());
     }
@@ -423,7 +423,7 @@ class ClaseRestIntegrationTest {
         // Crear segundo curso
         DTOPeticionCrearCurso segundoCurso = new DTOPeticionCrearCurso(
                 "Curso de Python", "Aprende Python desde cero", new BigDecimal("99.99"),
-                EPresencialidad.ONLINE, "imagen-python.jpg", ENivel.PRINCIPIANTE,
+                EPresencialidad.ONLINE, "imagen-python.jpg", EDificultad.PRINCIPIANTE,
                 LocalDate.now().plusDays(10), LocalDate.now().plusDays(40),
                 Arrays.asList("profesor2"), Arrays.asList());
 
@@ -440,7 +440,7 @@ class ClaseRestIntegrationTest {
     void testCrearCursoConDatosInvalidos() throws Exception {
         DTOPeticionCrearCurso peticionInvalida = new DTOPeticionCrearCurso(
                 "Curso Inválido", "Curso con datos inválidos", new BigDecimal("-10"),
-                EPresencialidad.ONLINE, "imagen.jpg", ENivel.PRINCIPIANTE,
+                EPresencialidad.ONLINE, "imagen.jpg", EDificultad.PRINCIPIANTE,
                 LocalDate.now().minusDays(1), LocalDate.now().minusDays(2),
                 Arrays.asList("profesor1"), Arrays.asList());
 

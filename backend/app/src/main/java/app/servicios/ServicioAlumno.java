@@ -38,14 +38,6 @@ public class ServicioAlumno {
     private final ServicioCachePassword servicioCachePassword;
 
     @Transactional(readOnly = true)
-    public List<DTOAlumno> obtenerAlumnos() {
-        return repositorioAlumno.findAllOrderedById()
-                .stream()
-                .map(DTOAlumno::new)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorId(Long id) {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
@@ -85,79 +77,10 @@ public class ServicioAlumno {
         return new DTOAlumno(alumno);
     }
 
-    @Transactional(readOnly = true)
-    public List<DTOAlumno> buscarAlumnosPorParametros(DTOParametrosBusquedaAlumno parametros) {
-        // Enhanced search logic with "q" parameter support
-        if (parametros.hasGeneralSearch()) {
-            if (parametros.hasSpecificFilters()) {
-                // Use combined search (general + specific filters) without pagination
-                List<Alumno> alumnos = repositorioAlumno.findAll().stream()
-                    .filter(a -> {
-                        String searchTerm = parametros.q().toLowerCase();
-                        boolean generalMatch = a.getNombre().toLowerCase().contains(searchTerm) ||
-                                             a.getApellidos().toLowerCase().contains(searchTerm) ||
-                                             a.getDni().toLowerCase().contains(searchTerm) ||
-                                             a.getEmail().toLowerCase().contains(searchTerm);
-                        
-                        boolean specificMatch = (parametros.nombre() == null || 
-                                               a.getNombre().toLowerCase().contains(parametros.nombre().toLowerCase())) &&
-                                              (parametros.apellidos() == null || 
-                                               a.getApellidos().toLowerCase().contains(parametros.apellidos().toLowerCase())) &&
-                                              (parametros.dni() == null || 
-                                               a.getDni().toLowerCase().contains(parametros.dni().toLowerCase())) &&
-                                              (parametros.email() == null || 
-                                               a.getEmail().toLowerCase().contains(parametros.email().toLowerCase())) &&
-                                              (parametros.matriculado() == null || 
-                                               a.isMatriculado() == parametros.matriculado());
-                        
-                        return generalMatch && specificMatch;
-                    })
-                    .collect(Collectors.toList());
-                
-                return alumnos.stream().map(DTOAlumno::new).toList();
-            } else {
-                // Use only general search without pagination
-                List<Alumno> alumnos = repositorioAlumno.findAll().stream()
-                    .filter(a -> {
-                        String searchTerm = parametros.q().toLowerCase();
-                        return a.getNombre().toLowerCase().contains(searchTerm) ||
-                               a.getApellidos().toLowerCase().contains(searchTerm) ||
-                               a.getDni().toLowerCase().contains(searchTerm) ||
-                               a.getEmail().toLowerCase().contains(searchTerm);
-                    })
-                    .collect(Collectors.toList());
-                
-                return alumnos.stream().map(DTOAlumno::new).toList();
-            }
-        } else {
-            // Use existing specific search logic
-            if (parametros.hasSpecificFilters()) {
-                return repositorioAlumno.findByFiltros(
-                        parametros.nombre(), 
-                        parametros.apellidos(),
-                        parametros.dni(),
-                        parametros.email(),
-                        parametros.matriculado())
-                        .stream()
-                        .map(DTOAlumno::new)
-                        .toList();
-            } else {
-                return obtenerAlumnos();
-            }
-        }
-    }
-
-    public List<DTOAlumno> obtenerAlumnosPorMatriculado(boolean matriculado) {
-        return repositorioAlumno.findByMatriculado(matriculado)
-                .stream()
-                .map(DTOAlumno::new)
-                .toList();
-    }
-
     public DTOAlumno crearAlumno(DTOPeticionRegistroAlumno peticion) {
         // Validar que no existan duplicados
-        if (repositorioAlumno.existsByUsuario(peticion.usuario())) {
-            ExceptionUtils.throwValidationError("Ya existe un alumno con el usuario: " + peticion.usuario());
+        if (repositorioAlumno.existsByUsuario(peticion.username())) {
+            ExceptionUtils.throwValidationError("Ya existe un alumno con el usuario: " + peticion.username());
         }
         
         if (repositorioAlumno.existsByEmail(peticion.email())) {
@@ -170,13 +93,13 @@ public class ServicioAlumno {
 
         // Crear el alumno
         Alumno alumno = new Alumno(
-            peticion.usuario(),
+            peticion.username(),
             servicioCachePassword.encodePassword(peticion.password()),
-            peticion.nombre(),
-            peticion.apellidos(),
+            peticion.firstName(),
+            peticion.lastName(),
             peticion.dni(),
             peticion.email(),
-            peticion.numeroTelefono()
+            peticion.phoneNumber()
         );
 
         Alumno alumnoGuardado = repositorioAlumno.save(alumno);
@@ -187,35 +110,35 @@ public class ServicioAlumno {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
 
-        // Actualizar campos no nulos
-        if (dtoParcial.nombre() != null) {
-            alumno.setNombre(dtoParcial.nombre());
+                // Update non-null fields
+        if (dtoParcial.firstName() != null) {
+            alumno.setFirstName(dtoParcial.firstName());
         }
         
-        if (dtoParcial.apellidos() != null) {
-            alumno.setApellidos(dtoParcial.apellidos());
+        if (dtoParcial.lastName() != null) {
+            alumno.setLastName(dtoParcial.lastName());
         }
         
         if (dtoParcial.email() != null) {
-            // Verificar que no exista otro alumno con ese email
+            // Check that no other student exists with that email
             if (!alumno.getEmail().equals(dtoParcial.email()) && 
                 repositorioAlumno.existsByEmail(dtoParcial.email())) {
-                ExceptionUtils.throwValidationError("Ya existe un alumno con el email: " + dtoParcial.email());
+                ExceptionUtils.throwValidationError("A student with this email already exists: " + dtoParcial.email());
             }
             alumno.setEmail(dtoParcial.email());
         }
         
         if (dtoParcial.dni() != null) {
-            // Verificar que no exista otro alumno con ese DNI
+            // Check that no other student exists with that DNI
             if (!alumno.getDni().equals(dtoParcial.dni()) && 
                 repositorioAlumno.existsByDni(dtoParcial.dni())) {
-                ExceptionUtils.throwValidationError("Ya existe un alumno con el DNI: " + dtoParcial.dni());
+                ExceptionUtils.throwValidationError("A student with this DNI already exists: " + dtoParcial.dni());
             }
             alumno.setDni(dtoParcial.dni());
         }
         
-        if (dtoParcial.numeroTelefono() != null) {
-            alumno.setNumeroTelefono(dtoParcial.numeroTelefono());
+        if (dtoParcial.phoneNumber() != null) {
+            alumno.setPhoneNumber(dtoParcial.phoneNumber());
         }
 
         Alumno alumnoActualizado = repositorioAlumno.save(alumno);
@@ -226,7 +149,7 @@ public class ServicioAlumno {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
         
-        alumno.setMatriculado(matriculado);
+        alumno.setEnrolled(matriculado);
         Alumno alumnoActualizado = repositorioAlumno.save(alumno);
         return new DTOAlumno(alumnoActualizado);
     }
@@ -277,7 +200,7 @@ public class ServicioAlumno {
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar que el alumno no esté ya inscrito en la clase
-        if (alumno.getClasesId().contains(claseId.toString())) {
+        if (alumno.getClassIds().contains(claseId.toString())) {
             throw new IllegalArgumentException("El alumno ya está inscrito en esta clase.");
         }
         
@@ -308,7 +231,7 @@ public class ServicioAlumno {
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar que el alumno esté inscrito en la clase
-        if (!alumno.getClasesId().contains(claseId.toString())) {
+        if (!alumno.getClassIds().contains(claseId.toString())) {
             throw new IllegalArgumentException("El alumno no está inscrito en esta clase.");
         }
         
@@ -364,7 +287,7 @@ public class ServicioAlumno {
         Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
                 
-        return alumno.getClasesId().size();
+        return alumno.getClassIds().size();
     }
 
     // metodos con paginación
@@ -430,11 +353,11 @@ public class ServicioAlumno {
                 // Use combined search (general + specific filters)
                 pageAlumnos = repositorioAlumno.findByGeneralAndSpecificFilters(
                     parametros.q(),
-                    parametros.nombre(),
-                    parametros.apellidos(),
+                    parametros.firstName(),
+                    parametros.lastName(),
                     parametros.dni(),
                     parametros.email(),
-                    parametros.matriculado(),
+                    parametros.enrolled(),
                     pageable
                 );
             } else {
@@ -445,11 +368,11 @@ public class ServicioAlumno {
             // Use existing specific search logic
             if (parametros.hasSpecificFilters()) {
                 pageAlumnos = repositorioAlumno.findByFiltrosPaged(
-                    parametros.nombre(),
-                    parametros.apellidos(),
+                    parametros.firstName(),
+                    parametros.lastName(),
                     parametros.dni(),
                     parametros.email(),
-                    parametros.matriculado(),
+                    parametros.enrolled(),
                     pageable
                 );
             } else {
@@ -519,8 +442,8 @@ public class ServicioAlumno {
         // Obtenemos los alumnos de la clase usando filtrado en memoria
         // Nota: En un escenario real se implementaría una consulta específica
         List<Alumno> alumnosDeClase = repositorioAlumno.findAll().stream()
-                .filter(alumno -> alumno.getClasesId() != null && 
-                                 alumno.getClasesId().contains(claseId.toString()))
+                .filter(alumno -> alumno.getClassIds() != null &&
+                                 alumno.getClassIds().contains(claseId.toString()))
                 .collect(Collectors.toList());
         
         // Aplicamos paginación manualmente
@@ -570,7 +493,7 @@ public class ServicioAlumno {
         // Obtener solo alumnos habilitados y matriculados
         // Nota: En un escenario real se implementaría una consulta específica en el repositorio
         List<Alumno> alumnosDisponibles = repositorioAlumno.findAll().stream()
-                .filter(alumno -> alumno.isEnabled() && alumno.isMatriculado())
+                .filter(alumno -> alumno.isEnabled() && alumno.isEnrolled())
                 .collect(Collectors.toList());
         
         // Aplicar paginación manualmente
@@ -639,8 +562,8 @@ public class ServicioAlumno {
         
         // Obtenemos los alumnos de la clase usando filtrado en memoria
         List<Alumno> alumnosDeClase = repositorioAlumno.findAll().stream()
-                .filter(alumno -> alumno.getClasesId() != null && 
-                                 alumno.getClasesId().contains(claseId.toString()))
+                .filter(alumno -> alumno.getClassIds() != null &&
+                                 alumno.getClassIds().contains(claseId.toString()))
                 .collect(Collectors.toList());
         
         // Aplicamos paginación manualmente
@@ -668,7 +591,7 @@ public class ServicioAlumno {
             // Profesor: verificar si es profesor de esta clase específica
             // La clase ya fue verificada arriba, podemos usarla directamente
             
-            if (clase.getProfesoresId().contains(currentUserId.toString())) {
+            if (clase.getTeacherIds().contains(currentUserId.toString())) {
                 // Es profesor de esta clase: ve toda la información
                 pageDTOs = pageAlumnos.map(DTOAlumno::new);
                 tipoInformacion = DTORespuestaAlumnosClase.TIPO_COMPLETA;

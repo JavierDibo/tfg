@@ -30,17 +30,17 @@ class AlumnoTest {
     void testConstructorConParametros() {
         // Verificar que se crea correctamente
         assertNotNull(alumno);
-        assertEquals(USUARIO, alumno.getUsuario());
+        assertEquals(USUARIO, alumno.getUsername());
         assertEquals(PASSWORD, alumno.getPassword());
-        assertEquals(NOMBRE, alumno.getNombre());
-        assertEquals(APELLIDOS, alumno.getApellidos());
+        assertEquals(NOMBRE, alumno.getFirstName());
+        assertEquals(APELLIDOS, alumno.getLastName());
         assertEquals(DNI, alumno.getDni());
         assertEquals(EMAIL, alumno.getEmail());
-        assertEquals(TELEFONO, alumno.getNumeroTelefono());
-        assertEquals(Usuario.Rol.ALUMNO, alumno.getRol());
+        assertEquals(TELEFONO, alumno.getPhoneNumber());
+        assertEquals(Usuario.Role.ALUMNO, alumno.getRole());
         assertTrue(alumno.isEnabled());
-        assertFalse(alumno.isMatriculado());
-        assertNotNull(alumno.getFechaInscripcion());
+        assertFalse(alumno.isEnrolled());
+        assertNotNull(alumno.getEnrollDate());
     }
 
     @Test
@@ -49,10 +49,10 @@ class AlumnoTest {
         Alumno alumnoVacio = new Alumno();
         
         assertNotNull(alumnoVacio);
-        assertEquals(Usuario.Rol.ALUMNO, alumnoVacio.getRol());
+        assertEquals(Usuario.Role.ALUMNO, alumnoVacio.getRole());
         assertTrue(alumnoVacio.isEnabled());
-        assertFalse(alumnoVacio.isMatriculado());
-        assertNotNull(alumnoVacio.getFechaInscripcion());
+        assertFalse(alumnoVacio.isEnrolled());
+        assertNotNull(alumnoVacio.getEnrollDate());
     }
 
     @Test
@@ -60,15 +60,15 @@ class AlumnoTest {
     void testGettersYSetters() {
         // Test fechaInscripcion
         LocalDateTime nuevaFecha = LocalDateTime.now().minusDays(1);
-        alumno.setFechaInscripcion(nuevaFecha);
-        assertEquals(nuevaFecha, alumno.getFechaInscripcion());
+        alumno.setEnrollDate(nuevaFecha);
+        assertEquals(nuevaFecha, alumno.getEnrollDate());
 
         // Test matriculado
-        alumno.setMatriculado(true);
-        assertTrue(alumno.isMatriculado());
+        alumno.setEnrolled(true);
+        assertTrue(alumno.isEnrolled());
         
-        alumno.setMatriculado(false);
-        assertFalse(alumno.isMatriculado());
+        alumno.setEnrolled(false);
+        assertFalse(alumno.isEnrolled());
 
         // Test enabled (heredado de Usuario)
         alumno.setEnabled(false);
@@ -97,7 +97,7 @@ class AlumnoTest {
         assertEquals(alumno1.hashCode(), alumno2.hashCode());
         
         // Modificar un campo debe hacer que no sean iguales
-        alumno2.setMatriculado(true);
+        alumno2.setEnrolled(true);
         assertNotEquals(alumno1, alumno2);
     }
 
@@ -115,11 +115,11 @@ class AlumnoTest {
     @Test
     @DisplayName("Rol debe ser ALUMNO por defecto")
     void testRolPorDefecto() {
-        assertEquals(Usuario.Rol.ALUMNO, alumno.getRol());
+        assertEquals(Usuario.Role.ALUMNO, alumno.getRole());
         
         // Verificar que se puede cambiar el rol (Lombok @Data permite esto)
-        alumno.setRol(Usuario.Rol.PROFESOR);
-        assertEquals(Usuario.Rol.PROFESOR, alumno.getRol());
+        alumno.setRole(Usuario.Role.PROFESOR);
+        assertEquals(Usuario.Role.PROFESOR, alumno.getRole());
     }
 
     @Test
@@ -129,17 +129,17 @@ class AlumnoTest {
         Alumno nuevoAlumno = new Alumno();
         LocalDateTime despues = LocalDateTime.now().plusSeconds(1);
         
-        assertTrue(nuevoAlumno.getFechaInscripcion().isAfter(antes) || 
-                  nuevoAlumno.getFechaInscripcion().isEqual(antes));
-        assertTrue(nuevoAlumno.getFechaInscripcion().isBefore(despues) || 
-                  nuevoAlumno.getFechaInscripcion().isEqual(despues));
+        assertTrue(nuevoAlumno.getEnrollDate().isAfter(antes) ||
+                  nuevoAlumno.getEnrollDate().isEqual(antes));
+        assertTrue(nuevoAlumno.getEnrollDate().isBefore(despues) ||
+                  nuevoAlumno.getEnrollDate().isEqual(despues));
     }
 
     @Test
     @DisplayName("Matriculado debe ser false por defecto")
     void testMatriculadoPorDefecto() {
         Alumno nuevoAlumno = new Alumno();
-        assertFalse(nuevoAlumno.isMatriculado());
+        assertFalse(nuevoAlumno.isEnrolled());
     }
 
     @Test

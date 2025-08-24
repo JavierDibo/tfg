@@ -3,6 +3,7 @@ package app.rest;
 import app.dtos.DTOClase;
 import app.dtos.DTOParametrosBusquedaClase;
 import app.dtos.DTORespuestaPaginada;
+import app.entidades.enums.EDificultad;
 import app.servicios.ServicioClase;
 import app.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +40,7 @@ class ClaseRestTest {
             1L, "Test Class", "Test Description", 
             java.math.BigDecimal.valueOf(100), 
             app.entidades.enums.EPresencialidad.PRESENCIAL,
-            "test-image.jpg", app.entidades.enums.ENivel.INTERMEDIO,
+            "test-image.jpg", EDificultad.INTERMEDIO,
             Arrays.asList("alum1"), Arrays.asList("prof1"), 
             Arrays.asList("ej1"), Arrays.asList(), "CURSO"
         );

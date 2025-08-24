@@ -30,14 +30,14 @@ class DTOPeticionRegistroProfesorTest {
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, clases);
         
         assertNotNull(dto);
-        assertEquals(USUARIO, dto.usuario());
+        assertEquals(USUARIO, dto.username());
         assertEquals(PASSWORD, dto.password());
-        assertEquals(NOMBRE, dto.nombre());
-        assertEquals(APELLIDOS, dto.apellidos());
+        assertEquals(NOMBRE, dto.firstName());
+        assertEquals(APELLIDOS, dto.lastName());
         assertEquals(DNI, dto.dni());
         assertEquals(EMAIL, dto.email());
-        assertEquals(TELEFONO, dto.numeroTelefono());
-        assertEquals(clases, dto.clasesId());
+        assertEquals(TELEFONO, dto.phoneNumber());
+        assertEquals(clases, dto.classIds());
     }
 
     @Test
@@ -47,15 +47,15 @@ class DTOPeticionRegistroProfesorTest {
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO);
         
         assertNotNull(dto);
-        assertEquals(USUARIO, dto.usuario());
+        assertEquals(USUARIO, dto.username());
         assertEquals(PASSWORD, dto.password());
-        assertEquals(NOMBRE, dto.nombre());
-        assertEquals(APELLIDOS, dto.apellidos());
+        assertEquals(NOMBRE, dto.firstName());
+        assertEquals(APELLIDOS, dto.lastName());
         assertEquals(DNI, dto.dni());
         assertEquals(EMAIL, dto.email());
-        assertEquals(TELEFONO, dto.numeroTelefono());
-        assertNotNull(dto.clasesId());
-        assertTrue(dto.clasesId().isEmpty());
+        assertEquals(TELEFONO, dto.phoneNumber());
+        assertNotNull(dto.classIds());
+        assertTrue(dto.classIds().isEmpty());
     }
 
     @Test
@@ -65,14 +65,14 @@ class DTOPeticionRegistroProfesorTest {
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, null);
         
         assertNotNull(dto);
-        assertEquals(USUARIO, dto.usuario());
+        assertEquals(USUARIO, dto.username());
         assertEquals(PASSWORD, dto.password());
-        assertEquals(NOMBRE, dto.nombre());
-        assertEquals(APELLIDOS, dto.apellidos());
+        assertEquals(NOMBRE, dto.firstName());
+        assertEquals(APELLIDOS, dto.lastName());
         assertEquals(DNI, dto.dni());
         assertEquals(EMAIL, dto.email());
-        assertEquals(TELEFONO, dto.numeroTelefono());
-        assertNull(dto.clasesId());
+        assertEquals(TELEFONO, dto.phoneNumber());
+        assertNull(dto.classIds());
     }
 
     @Test
@@ -84,8 +84,8 @@ class DTOPeticionRegistroProfesorTest {
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, clasesVacia);
         
         assertNotNull(dto);
-        assertEquals(clasesVacia, dto.clasesId());
-        assertTrue(dto.clasesId().isEmpty());
+        assertEquals(clasesVacia, dto.classIds());
+        assertTrue(dto.classIds().isEmpty());
     }
 
     @Test
@@ -97,12 +97,12 @@ class DTOPeticionRegistroProfesorTest {
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, clases);
         
         assertNotNull(dto);
-        assertEquals(clases, dto.clasesId());
-        assertEquals(4, dto.clasesId().size());
-        assertTrue(dto.clasesId().contains("clase1"));
-        assertTrue(dto.clasesId().contains("clase2"));
-        assertTrue(dto.clasesId().contains("clase3"));
-        assertTrue(dto.clasesId().contains("clase4"));
+        assertEquals(clases, dto.classIds());
+        assertEquals(4, dto.classIds().size());
+        assertTrue(dto.classIds().contains("clase1"));
+        assertTrue(dto.classIds().contains("clase2"));
+        assertTrue(dto.classIds().contains("clase3"));
+        assertTrue(dto.classIds().contains("clase4"));
     }
 
     @Test
@@ -112,8 +112,8 @@ class DTOPeticionRegistroProfesorTest {
                 USUARIO, PASSWORD, "María José", "García López", DNI, EMAIL, TELEFONO);
         
         assertNotNull(dto);
-        assertEquals("María José", dto.nombre());
-        assertEquals("García López", dto.apellidos());
+        assertEquals("María José", dto.firstName());
+        assertEquals("García López", dto.lastName());
     }
 
     @Test
@@ -123,7 +123,7 @@ class DTOPeticionRegistroProfesorTest {
                 "profesor_123", PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO);
         
         assertNotNull(dto);
-        assertEquals("profesor_123", dto.usuario());
+        assertEquals("profesor_123", dto.username());
     }
 
     @Test
@@ -133,7 +133,7 @@ class DTOPeticionRegistroProfesorTest {
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, null);
         
         assertNotNull(dto);
-        assertNull(dto.numeroTelefono());
+        assertNull(dto.phoneNumber());
     }
 
     @Test
@@ -143,13 +143,13 @@ class DTOPeticionRegistroProfesorTest {
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO);
         
         assertNotNull(dto);
-        assertEquals(USUARIO, dto.usuario());
+        assertEquals(USUARIO, dto.username());
         assertEquals(PASSWORD, dto.password());
-        assertEquals(NOMBRE, dto.nombre());
-        assertEquals(APELLIDOS, dto.apellidos());
+        assertEquals(NOMBRE, dto.firstName());
+        assertEquals(APELLIDOS, dto.lastName());
         assertEquals(DNI, dto.dni());
         assertEquals(EMAIL, dto.email());
-        assertEquals(TELEFONO, dto.numeroTelefono());
+        assertEquals(TELEFONO, dto.phoneNumber());
     }
 
     @Test
@@ -193,8 +193,8 @@ class DTOPeticionRegistroProfesorTest {
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, clases);
         
         assertNotNull(dto);
-        assertEquals(clases, dto.clasesId());
-        assertEquals(2, dto.clasesId().size());
+        assertEquals(clases, dto.classIds());
+        assertEquals(2, dto.classIds().size());
     }
 
     @Test

@@ -1,0 +1,6 @@
+---
+alwaysApply: true
+---
+We are NOT using a UNIX based system. We are using Windows 10. 
+We are using Microsoft Powershell to run commands, so ajust them accordingly.
+User "mvn" to compile and test.

@@ -2,7 +2,7 @@ package app.dtos;
 
 import app.entidades.Material;
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -36,7 +36,7 @@ public record DTOPeticionCrearTaller(
         String imagenPortada,
         
         @NotNull
-        ENivel nivel,
+        EDificultad nivel,
         
         @NotNull
         @Min(value = 1, message = "La duración debe ser al menos 1 hora")
@@ -56,7 +56,7 @@ public record DTOPeticionCrearTaller(
      * Constructor simplificado sin listas
      */
     public DTOPeticionCrearTaller(String titulo, String descripcion, BigDecimal precio,
-                                 EPresencialidad presencialidad, String imagenPortada, ENivel nivel,
+                                 EPresencialidad presencialidad, String imagenPortada, EDificultad nivel,
                                  Integer duracionHoras, LocalDate fechaRealizacion, LocalTime horaComienzo) {
         this(titulo, descripcion, precio, presencialidad, imagenPortada, nivel, 
              duracionHoras, fechaRealizacion, horaComienzo, List.of(), List.of());

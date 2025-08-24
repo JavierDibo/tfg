@@ -1,25 +1,25 @@
 package app.dtos;
 
+import java.util.Set;
+
 import app.validation.NotEmptyIfPresent;
 import app.validation.ValidDNI;
 import app.validation.ValidEmail;
 import app.validation.ValidPhone;
 import jakarta.validation.constraints.Size;
 
-import java.util.Set;
-
 /**
- * DTO para actualización parcial de datos de un profesor
- * Todos los campos son opcionales, solo se actualizan los campos no nulos
+ * DTO for partial professor data update
+ * All fields are optional, only non-null fields are updated
  */
 public record DTOActualizacionProfesor(
-    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
+    @Size(min = 2, max = 100, message = "First name must be between 2 and 100 characters")
     @NotEmptyIfPresent
-    String nombre,
+    String firstName,
 
-    @Size(min = 2, max = 100, message = "Los apellidos deben tener entre 2 y 100 caracteres")
+    @Size(min = 2, max = 100, message = "Last name must be between 2 and 100 characters")
     @NotEmptyIfPresent
-    String apellidos,
+    String lastName,
 
     @ValidDNI
     @NotEmptyIfPresent
@@ -31,20 +31,20 @@ public record DTOActualizacionProfesor(
 
     @ValidPhone
     @NotEmptyIfPresent
-    String numeroTelefono,
+    String phoneNumber,
 
-    Set<String> clasesId
+    Set<String> classIds
 ) {
     /**
-     * Verifica si todos los campos están vacíos/nulos
-     * @return true si todos los campos son nulos
+     * Checks if all fields are empty/null
+     * @return true if all fields are null
      */
-    public boolean estaVacio() {
-        return nombre == null && 
-               apellidos == null && 
+    public boolean isEmpty() {
+        return firstName == null && 
+               lastName == null && 
                dni == null && 
                email == null && 
-               numeroTelefono == null && 
-               (clasesId == null || clasesId.isEmpty());
+               phoneNumber == null && 
+               (classIds == null || classIds.isEmpty());
     }
 }

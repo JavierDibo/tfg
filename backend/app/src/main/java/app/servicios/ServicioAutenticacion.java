@@ -47,8 +47,8 @@ public class ServicioAutenticacion {
         var usuario = new Usuario(
                 request.username(),
                 pe.encode(request.password()),
-                request.nombre(),
-                request.apellidos(),
+                request.firstName(),
+                request.lastName(),
                 "00000000X", // DNI temporal
                 request.email(),
                 null // numeroTelefono temporal

@@ -4,83 +4,83 @@ import java.text.Normalizer;
 import java.util.regex.Pattern;
 
 /**
- * Utilidad para normalización de texto y búsquedas insensibles a acentos y mayúsculas
+ * Utility for text normalization and accent/case-insensitive searches
  */
 public class TextUtils {
     
-    // Patrón para eliminar signos diacríticos (acentos, tildes, etc.)
+    // Pattern to remove diacritical marks (accents, tildes, etc.)
     private static final Pattern DIACRITICS_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
     
     /**
-     * Normaliza un texto eliminando acentos y convirtiéndolo a minúsculas
-     * @param texto El texto a normalizar
-     * @return El texto normalizado, o null si el input es null
+     * Normalizes text by removing accents and converting to lowercase
+     * @param text The text to normalize
+     * @return The normalized text, or null if input is null
      */
-    public static String normalizar(String texto) {
-        if (texto == null) {
+    public static String normalizar(String text) {
+        if (text == null) {
             return null;
         }
         
-        // Convertir a minúsculas
-        String textoMinusculas = texto.toLowerCase();
+        // Convert to lowercase
+        String textLowercase = text.toLowerCase();
         
-        // Normalizar para separar caracteres base de diacríticos
-        String normalizado = Normalizer.normalize(textoMinusculas, Normalizer.Form.NFD);
+        // Normalize to separate base characters from diacritics
+        String normalized = Normalizer.normalize(textLowercase, Normalizer.Form.NFD);
         
-        // Eliminar diacríticos
-        String sinAcentos = DIACRITICS_PATTERN.matcher(normalizado).replaceAll("");
+        // Remove diacritics
+        String withoutAccents = DIACRITICS_PATTERN.matcher(normalized).replaceAll("");
         
-        return sinAcentos.trim();
+        return withoutAccents.trim();
     }
     
     /**
-     * Verifica si un texto contiene otro texto, ignorando acentos y mayúsculas
-     * @param texto El texto donde buscar
-     * @param busqueda El texto a buscar
-     * @return true si el texto contiene la búsqueda
+     * Checks if a text contains another text, ignoring accents and case
+     * @param text The text to search in
+     * @param search The text to search for
+     * @return true if the text contains the search term
      */
-    public static boolean contiene(String texto, String busqueda) {
-        if (texto == null || busqueda == null) {
+    public static boolean contiene(String text, String search) {
+        if (text == null || search == null) {
             return false;
         }
         
-        String textoNormalizado = normalizar(texto);
-        String busquedaNormalizada = normalizar(busqueda);
+        String normalizedText = normalizar(text);
+        String normalizedSearch = normalizar(search);
         
-        return textoNormalizado.contains(busquedaNormalizada);
+        return normalizedText.contains(normalizedSearch);
     }
     
     /**
-     * Verifica si dos textos son iguales, ignorando acentos y mayúsculas
-     * @param texto1 El primer texto
-     * @param texto2 El segundo texto
-     * @return true si los textos son equivalentes
+     * Checks if two texts are equal, ignoring accents and case
+     * @param text1 The first text
+     * @param text2 The second text
+     * @return true if the texts are equivalent
      */
-    public static boolean sonIguales(String texto1, String texto2) {
-        if (texto1 == null && texto2 == null) {
+    public static boolean sonIguales(String text1, String text2) {
+        if (text1 == null && text2 == null) {
             return true;
         }
         
-        if (texto1 == null || texto2 == null) {
+        if (text1 == null || text2 == null) {
             return false;
         }
         
-        String texto1Normalizado = normalizar(texto1);
-        String texto2Normalizado = normalizar(texto2);
+        String normalizedText1 = normalizar(text1);
+        String normalizedText2 = normalizar(text2);
         
-        return texto1Normalizado.equals(texto2Normalizado);
+        return normalizedText1.equals(normalizedText2);
     }
     
     /**
-     * Prepara un término de búsqueda para usar en queries LIKE con comodines
-     * @param termino El término a preparar
-     * @return El término normalizado listo para LIKE
+     * Prepares a search term for use in LIKE queries with wildcards
+     * @param term The term to prepare
+     * @return The normalized term ready for LIKE
      */
-    public static String prepararParaLike(String termino) {
-        if (termino == null || termino.trim().isEmpty()) {
+    public static String prepararParaLike(String term) {
+        if (term == null || term.trim().isEmpty()) {
             return null;
         }
         
-        return normalizar(termino);
+        return normalizar(term);
     }
 }

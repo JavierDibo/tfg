@@ -1,69 +1,69 @@
 package app.dtos;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.List;
 
-@Schema(description = "Respuesta paginada genérica")
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Generic paginated response")
 public record DTORespuestaPaginada<T>(
-    @Schema(description = "Lista de elementos de la página actual", required = true)
-    List<T> contenido,
+    @Schema(description = "List of elements for the current page", required = true)
+    List<T> content,
     
-    @Schema(description = "Número de página actual (0-indexed)", example = "0", required = true)
-    int numeroPagina,
+    @Schema(description = "Current page number (0-indexed)", example = "0", required = true)
+    int page,
     
-    @Schema(description = "Tamaño de la página", example = "20", required = true)
-    int tamanoPagina,
+    @Schema(description = "Page size", example = "20", required = true)
+    int size,
     
-    @Schema(description = "Número total de elementos", example = "150", required = true)
-    long totalElementos,
+    @Schema(description = "Total number of elements", example = "150", required = true)
+    long totalElements,
     
-    @Schema(description = "Número total de páginas", example = "8", required = true)
-    int totalPaginas,
+    @Schema(description = "Total number of pages", example = "8", required = true)
+    int totalPages,
     
-    @Schema(description = "Indica si es la primera página", example = "true", required = true)
-    boolean esPrimera,
+    @Schema(description = "Indicates if this is the first page", example = "true", required = true)
+    boolean isFirst,
     
-    @Schema(description = "Indica si es la última página", example = "false", required = true)
-    boolean esUltima,
+    @Schema(description = "Indicates if this is the last page", example = "false", required = true)
+    boolean isLast,
     
-    @Schema(description = "Indica si la página tiene contenido", example = "true", required = true)
-    boolean tieneContenido,
+    @Schema(description = "Indicates if the page has content", example = "true", required = true)
+    boolean hasContent,
     
-    @Schema(description = "Campo por el que está ordenado", example = "id", required = true)
-    String ordenadoPor,
+    @Schema(description = "Field by which results are sorted", example = "id", required = true)
+    String sortBy,
     
-    @Schema(description = "Dirección de ordenación", example = "ASC", required = true)
-    String direccionOrden
+    @Schema(description = "Sort direction", example = "ASC", required = true)
+    String sortDirection
 ) {
     public static <T> DTORespuestaPaginada<T> of(
-            List<T> contenido,
-            int numeroPagina,
-            int tamanoPagina,
-            long totalElementos,
-            String ordenadoPor,
-            String direccionOrden) {
+            List<T> content,
+            int page,
+            int size,
+            long totalElements,
+            String sortBy,
+            String sortDirection) {
         
-        int totalPaginas = (int) Math.ceil((double) totalElementos / tamanoPagina);
-        boolean esPrimera = numeroPagina == 0;
-        boolean esUltima = numeroPagina >= totalPaginas - 1;
-        boolean tieneContenido = !contenido.isEmpty();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        boolean isFirst = page == 0;
+        boolean isLast = page >= totalPages - 1;
+        boolean hasContent = !content.isEmpty();
         
         return new DTORespuestaPaginada<>(
-                contenido,
-                numeroPagina,
-                tamanoPagina,
-                totalElementos,
-                totalPaginas,
-                esPrimera,
-                esUltima,
-                tieneContenido,
-                ordenadoPor,
-                direccionOrden
+                content,
+                page,
+                size,
+                totalElements,
+                totalPages,
+                isFirst,
+                isLast,
+                hasContent,
+                sortBy,
+                sortDirection
         );
     }
     
-    public static <T> DTORespuestaPaginada<T> fromPage(org.springframework.data.domain.Page<T> page, String ordenadoPor, String direccionOrden) {
+    public static <T> DTORespuestaPaginada<T> fromPage(org.springframework.data.domain.Page<T> page, String sortBy, String sortDirection) {
         return new DTORespuestaPaginada<>(
                 page.getContent(),
                 page.getNumber(),
@@ -73,8 +73,8 @@ public record DTORespuestaPaginada<T>(
                 page.isFirst(),
                 page.isLast(),
                 page.hasContent(),
-                ordenadoPor,
-                direccionOrden
+                sortBy,
+                sortDirection
         );
     }
 }

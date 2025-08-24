@@ -1,36 +1,40 @@
 package app.dtos;
 
-import app.validation.*;
-import jakarta.validation.constraints.*;
+import app.validation.ValidDNI;
+import app.validation.ValidEmail;
+import app.validation.ValidPhone;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public record DTOPeticionRegistroAlumno(
-    @NotBlank(message = "El usuario no puede estar vacío")
-    @Size(min = 3, max = 50, message = "El usuario debe tener entre 3 y 50 caracteres")
-    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El usuario solo puede contener letras, números, puntos, guiones y guiones bajos")
-    String usuario,
+    @NotBlank(message = "Username cannot be empty")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "Username can only contain letters, numbers, dots, hyphens and underscores")
+    String username,
     
-    @NotBlank(message = "La password no puede estar vacía")
-    @Size(min = 6, message = "La password debe tener al menos 6 caracteres")
+    @NotBlank(message = "Password cannot be empty")
+    @Size(min = 6, message = "Password must have at least 6 characters")
     String password,
     
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
-    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "El nombre solo puede contener letras y espacios")
-    String nombre,
+    @NotBlank(message = "First name cannot be empty")
+    @Size(max = 100, message = "First name cannot exceed 100 characters")
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "First name can only contain letters and spaces")
+    String firstName,
     
-    @NotBlank(message = "Los apellidos no pueden estar vacíos")
-    @Size(max = 100, message = "Los apellidos no pueden exceder 100 caracteres")
-    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "Los apellidos solo pueden contener letras y espacios")
-    String apellidos,
+    @NotBlank(message = "Last name cannot be empty")
+    @Size(max = 100, message = "Last name cannot exceed 100 characters")
+    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "Last name can only contain letters and spaces")
+    String lastName,
     
-    @NotBlank(message = "El DNI no puede estar vacío")
+    @NotBlank(message = "DNI cannot be empty")
     @ValidDNI
     String dni,
     
-    @NotBlank(message = "El email no puede estar vacío")
+    @NotBlank(message = "Email cannot be empty")
     @ValidEmail
     String email,
     
     @ValidPhone
-    String numeroTelefono
+    String phoneNumber
 ) {}

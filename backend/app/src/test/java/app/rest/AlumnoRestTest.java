@@ -1,30 +1,34 @@
 package app.rest;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 import app.dtos.DTOAlumno;
 import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Usuario;
 import app.servicios.ServicioAlumno;
 import app.servicios.ServicioJwt;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AlumnoRestTest {
@@ -76,10 +80,10 @@ public class AlumnoRestTest {
         List<DTOAlumno> mockAlumnos = Arrays.asList(
             new DTOAlumno(1L, "alumno1", "John", "Doe", generateValidDNI(1), "john.doe@email.com", 
                          "+34612345678", LocalDateTime.now(), true, true, 
-                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Rol.ALUMNO),
+                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Role.ALUMNO),
             new DTOAlumno(2L, "alumno2", "Johnny", "Smith", generateValidDNI(2), "johnny.smith@email.com", 
                          "+34687654321", LocalDateTime.now(), true, true, 
-                         Arrays.asList("1"), Arrays.asList("2"), Arrays.asList("2"), Usuario.Rol.ALUMNO)
+                         Arrays.asList("1"), Arrays.asList("2"), Arrays.asList("2"), Usuario.Role.ALUMNO)
         );
         
         DTORespuestaPaginada<DTOAlumno> mockResponse = DTORespuestaPaginada.of(
@@ -91,7 +95,7 @@ public class AlumnoRestTest {
         )).thenReturn(mockResponse);
         
         // When & Then
-        mockMvc.perform(get("/api/alumnos/paged")
+        mockMvc.perform(get("/api/alumnos")
                 .param("q", searchTerm)
                 .param("page", "0")
                 .param("size", "20")
@@ -100,8 +104,8 @@ public class AlumnoRestTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contenido").isArray())
                 .andExpect(jsonPath("$.contenido.length()").value(2))
-                .andExpect(jsonPath("$.numeroPagina").value(0))
-                .andExpect(jsonPath("$.tamanoPagina").value(20))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
                 .andExpect(jsonPath("$.totalElementos").value(2))
                 .andExpect(jsonPath("$.totalPaginas").value(1));
         
@@ -122,7 +126,7 @@ public class AlumnoRestTest {
         List<DTOAlumno> mockAlumnos = Arrays.asList(
             new DTOAlumno(1L, "alumno1", "John", "Doe", generateValidDNI(1), "john.doe@email.com", 
                          "+34612345678", LocalDateTime.now(), true, true, 
-                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Rol.ALUMNO)
+                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Role.ALUMNO)
         );
         
         DTORespuestaPaginada<DTOAlumno> mockResponse = DTORespuestaPaginada.of(
@@ -134,7 +138,7 @@ public class AlumnoRestTest {
         )).thenReturn(mockResponse);
         
         // When & Then
-        mockMvc.perform(get("/api/alumnos/paged")
+        mockMvc.perform(get("/api/alumnos")
                 .param("q", searchTerm)
                 .param("nombre", nombre)
                 .param("matriculado", matriculado.toString())
@@ -145,8 +149,8 @@ public class AlumnoRestTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contenido").isArray())
                 .andExpect(jsonPath("$.contenido.length()").value(1))
-                .andExpect(jsonPath("$.numeroPagina").value(0))
-                .andExpect(jsonPath("$.tamanoPagina").value(20));
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20));
         
         // Verify that the service was called with the correct parameters
         verify(servicioAlumno).buscarAlumnosPorParametrosPaginados(
@@ -154,8 +158,8 @@ public class AlumnoRestTest {
                 parametros.hasGeneralSearch() && 
                 parametros.q().equals(searchTerm) &&
                 parametros.hasSpecificFilters() &&
-                parametros.nombre().equals(nombre) &&
-                parametros.matriculado().equals(matriculado)
+                parametros.firstName().equals(nombre) &&
+                parametros.enrolled().equals(matriculado)
             ),
             eq(0), eq(20), eq("id"), eq("ASC")
         );
@@ -169,7 +173,7 @@ public class AlumnoRestTest {
         List<DTOAlumno> mockAlumnos = Arrays.asList(
             new DTOAlumno(1L, "alumno1", "John", "Doe", generateValidDNI(1), "john.doe@email.com", 
                          "+34612345678", LocalDateTime.now(), true, true, 
-                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Rol.ALUMNO)
+                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Role.ALUMNO)
         );
         
         DTORespuestaPaginada<DTOAlumno> mockResponse = DTORespuestaPaginada.of(
@@ -181,7 +185,7 @@ public class AlumnoRestTest {
         )).thenReturn(mockResponse);
         
         // When & Then
-        mockMvc.perform(get("/api/alumnos/paged")
+        mockMvc.perform(get("/api/alumnos")
                 .param("nombre", nombre)
                 .param("page", "0")
                 .param("size", "20")
@@ -189,14 +193,18 @@ public class AlumnoRestTest {
                 .param("sortDirection", "ASC"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contenido").isArray())
-                .andExpect(jsonPath("$.contenido.length()").value(1));
+                .andExpect(jsonPath("$.contenido.length()").value(1))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElementos").value(1))
+                .andExpect(jsonPath("$.totalPaginas").value(1));
         
         // Verify that the service was called with the correct parameters
         verify(servicioAlumno).buscarAlumnosPorParametrosPaginados(
             argThat(parametros -> 
                 !parametros.hasGeneralSearch() && 
                 parametros.hasSpecificFilters() &&
-                parametros.nombre().equals(nombre)
+                parametros.firstName().equals(nombre)
             ),
             eq(0), eq(20), eq("id"), eq("ASC")
         );

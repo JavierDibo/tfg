@@ -28,38 +28,38 @@ public class Alumno extends Usuario {
     
     @NotNull
     @Column(name = "fecha_inscripcion")
-    private LocalDateTime fechaInscripcion = LocalDateTime.now();
+    private LocalDateTime enrollDate = LocalDateTime.now();
     
     @NotNull
-    private boolean matriculado = false;
+    private boolean enrolled = false;
     
     // Lista de clases a las que está inscrito el alumno
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "alumno_clases", joinColumns = @JoinColumn(name = "alumno_id"))
     @Column(name = "clase_id")
-    private List<String> clasesId = new ArrayList<>();
+    private List<String> classIds = new ArrayList<>();
     
     // Lista de pagos realizados por el alumno
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "alumno_pagos", joinColumns = @JoinColumn(name = "alumno_id"))
     @Column(name = "pago_id")
-    private List<String> pagosId = new ArrayList<>();
+    private List<String> paymentIds = new ArrayList<>();
     
     // Lista de entregas de ejercicios del alumno
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "alumno_entregas", joinColumns = @JoinColumn(name = "alumno_id"))
     @Column(name = "entrega_id")
-    private List<String> entregasId = new ArrayList<>();
+    private List<String> submissionIds = new ArrayList<>();
     
     public Alumno() {
         super();
-        this.setRol(Rol.ALUMNO);
+        this.setRole(Role.ALUMNO);
     }
     
-    public Alumno(String usuario, String password, String nombre, String apellidos, 
-                  String dni, String email, String numeroTelefono) {
-        super(usuario, password, nombre, apellidos, dni, email, numeroTelefono);
-        this.setRol(Rol.ALUMNO);
+    public Alumno(String username, String password, String firstName, String lastName,
+                  String dni, String email, String phoneNumber) {
+        super(username, password, firstName, lastName, dni, email, phoneNumber);
+        this.setRole(Role.ALUMNO);
     }
     
     /**
@@ -73,73 +73,73 @@ public class Alumno extends Usuario {
     
     /**
      * Agrega una clase al alumno
-     * @param claseId ID de la clase
+     * @param classId ID de la clase
      */
-    public void agregarClase(String claseId) {
-        if (!this.clasesId.contains(claseId)) {
-            this.clasesId.add(claseId);
+    public void agregarClase(String classId) {
+        if (!this.classIds.contains(classId)) {
+            this.classIds.add(classId);
         }
     }
     
     /**
      * Remueve una clase del alumno
-     * @param claseId ID de la clase
+     * @param classId ID de la clase
      */
-    public void removerClase(String claseId) {
-        this.clasesId.remove(claseId);
+    public void removerClase(String classId) {
+        this.classIds.remove(classId);
     }
     
     /**
      * Agrega un pago al alumno
-     * @param pagoId ID del pago
+     * @param paymentId ID del pago
      */
-    public void agregarPago(String pagoId) {
-        if (!this.pagosId.contains(pagoId)) {
-            this.pagosId.add(pagoId);
+    public void agregarPago(String paymentId) {
+        if (!this.paymentIds.contains(paymentId)) {
+            this.paymentIds.add(paymentId);
         }
     }
     
     /**
      * Remueve un pago del alumno
-     * @param pagoId ID del pago
+     * @param paymentId ID del pago
      */
-    public void removerPago(String pagoId) {
-        this.pagosId.remove(pagoId);
+    public void removerPago(String paymentId) {
+        this.paymentIds.remove(paymentId);
     }
     
     /**
      * Agrega una entrega de ejercicio al alumno
-     * @param entregaId ID de la entrega
+     * @param submissionId ID de la entrega
      */
-    public void agregarEntrega(String entregaId) {
-        if (!this.entregasId.contains(entregaId)) {
-            this.entregasId.add(entregaId);
+    public void agregarEntrega(String submissionId) {
+        if (!this.submissionIds.contains(submissionId)) {
+            this.submissionIds.add(submissionId);
         }
     }
     
     /**
      * Remueve una entrega de ejercicio del alumno
-     * @param entregaId ID de la entrega
+     * @param submissionId ID de la entrega
      */
-    public void removerEntrega(String entregaId) {
-        this.entregasId.remove(entregaId);
+    public void removerEntrega(String submissionId) {
+        this.submissionIds.remove(submissionId);
     }
     
     /**
      * Verifica si el alumno está inscrito en una clase específica
-     * @param claseId ID de la clase
+     * @param classId ID de la clase
      * @return true si está inscrito, false en caso contrario
      */
-    public boolean estaInscritoEnClase(String claseId) {
-        return this.clasesId.contains(claseId);
+    public boolean estaInscritoEnClase(String classId) {
+        return this.classIds.contains(classId);
     }
     
     /**
      * Verifica si el alumno tiene una entrega específica
-     * @param entregaId ID de la entrega
+     * @param submissionId ID de la entrega
      * @return true si tiene la entrega, false en caso contrario
      */
-    public boolean tieneEntrega(String entregaId) {
-        return this.entregasId.contains(entregaId);
+    public boolean tieneEntrega(String submissionId) {
+        return this.submissionIds.contains(submissionId);
     }
 }

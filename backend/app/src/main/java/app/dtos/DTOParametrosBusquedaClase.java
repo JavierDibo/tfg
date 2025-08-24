@@ -1,12 +1,12 @@
 package app.dtos;
 
+import java.math.BigDecimal;
+
+import app.entidades.enums.EDificultad;
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
-import java.math.BigDecimal;
 
 /**
  * DTO para parámetros de búsqueda de clases
@@ -20,7 +20,7 @@ public record DTOParametrosBusquedaClase(
         String titulo,
         String descripcion,
         EPresencialidad presencialidad,
-        ENivel nivel,
+        EDificultad nivel,
         BigDecimal precioMinimo,
         BigDecimal precioMaximo,
         Boolean soloConPlazasDisponibles,
@@ -29,26 +29,26 @@ public record DTOParametrosBusquedaClase(
         // Parámetros de paginación
         @NotNull
         @Min(value = 0, message = "La página debe ser >= 0")
-        Integer pagina,
+        Integer page,
         
         @NotNull
         @Min(value = 1, message = "El tamaño de página debe ser >= 1")
-        Integer tamanoPagina,
+        Integer size,
         
         // Parámetros de ordenación
         @NotNull
         @Size(min = 2, message = "El campo de ordenación no puede estar vacío")
-        String ordenCampo,
+        String sortBy,
         
         @NotNull
-        String ordenDireccion
+        String sortDirection
 ) {
     /**
      * Constructor with default values for backward compatibility
      */
     public DTOParametrosBusquedaClase(String titulo, String descripcion, EPresencialidad presencialidad,
-                                     ENivel nivel, BigDecimal precioMinimo, BigDecimal precioMaximo,
-                                     Boolean soloConPlazasDisponibles, Boolean soloProximas) {
+                                      EDificultad nivel, BigDecimal precioMinimo, BigDecimal precioMaximo,
+                                      Boolean soloConPlazasDisponibles, Boolean soloProximas) {
         this(null, titulo, descripcion, presencialidad, nivel, precioMinimo, precioMaximo,
              soloConPlazasDisponibles, soloProximas, 0, 10, "id", "ASC");
     }
@@ -57,27 +57,27 @@ public record DTOParametrosBusquedaClase(
      * Constructor with values for pagination and ordering
      */
     public DTOParametrosBusquedaClase(String titulo, String descripcion, EPresencialidad presencialidad,
-                                     ENivel nivel, BigDecimal precioMinimo, BigDecimal precioMaximo,
-                                     Boolean soloConPlazasDisponibles, Boolean soloProximas,
-                                     Integer pagina, Integer tamanoPagina, String ordenCampo, String ordenDireccion) {
+                                      EDificultad nivel, BigDecimal precioMinimo, BigDecimal precioMaximo,
+                                      Boolean soloConPlazasDisponibles, Boolean soloProximas,
+                                      Integer page, Integer size, String sortBy, String sortDirection) {
         this(null, titulo, descripcion, presencialidad, nivel, precioMinimo, precioMaximo,
-             soloConPlazasDisponibles, soloProximas, pagina, tamanoPagina, ordenCampo, ordenDireccion);
+             soloConPlazasDisponibles, soloProximas, page, size, sortBy, sortDirection);
     }
     
     /**
      * Constructor con valores mínimos requeridos para paginación
      */
-    public DTOParametrosBusquedaClase(Integer pagina, Integer tamanoPagina) {
+    public DTOParametrosBusquedaClase(Integer page, Integer size) {
         this(null, null, null, null, null, null, null, null,
-             pagina, tamanoPagina, "id", "ASC");
+             page, size, "id", "ASC");
     }
     
     /**
      * Constructor con valores mínimos requeridos para paginación y ordenación
      */
-    public DTOParametrosBusquedaClase(Integer pagina, Integer tamanoPagina, String ordenCampo, String ordenDireccion) {
+    public DTOParametrosBusquedaClase(Integer page, Integer size, String sortBy, String sortDirection) {
         this(null, null, null, null, null, null, null, null,
-             pagina, tamanoPagina, ordenCampo, ordenDireccion);
+             page, size, sortBy, sortDirection);
     }
     
     /**

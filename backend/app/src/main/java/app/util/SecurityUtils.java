@@ -1,17 +1,20 @@
 package app.util;
 
-import app.entidades.Usuario;
-import app.repositorios.RepositorioUsuario;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import app.entidades.Usuario;
+import app.repositorios.RepositorioUsuario;
+import app.servicios.ServicioJwt;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class SecurityUtils {
     
     private final RepositorioUsuario repositorioUsuario;
+    private final ServicioJwt servicioJwt;
     
     /**
      * Gets the current authenticated user from the security context
@@ -30,10 +33,29 @@ public class SecurityUtils {
     }
     
     /**
-     * Gets the current user's ID
+     * Gets the current user's ID from JWT token when possible, falls back to database lookup
      * @return The current user's ID
      */
     public Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("No user is currently authenticated");
+        }
+        
+        // Try to extract user ID from JWT token first (more secure)
+        if (authentication.getCredentials() instanceof String) {
+            String token = (String) authentication.getCredentials();
+            try {
+                Long userId = servicioJwt.extractUserId(token);
+                if (userId != null) {
+                    return userId;
+                }
+            } catch (Exception e) {
+                // Fall back to database lookup if JWT extraction fails
+            }
+        }
+        
+        // Fall back to database lookup
         return getCurrentUser().getId();
     }
     
@@ -43,6 +65,22 @@ public class SecurityUtils {
      */
     public String getCurrentUsername() {
         return getCurrentUser().getUsername();
+    }
+    
+    /**
+     * Gets the current user's role more securely
+     * @return The current user's role name
+     */
+    public String getCurrentUserRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return null;
+        }
+        
+        return authentication.getAuthorities().stream()
+                .map(authority -> authority.getAuthority().replace("ROLE_", ""))
+                .findFirst()
+                .orElse(null);
     }
     
     /**

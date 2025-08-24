@@ -1,14 +1,17 @@
 package app.dtos;
 
-import app.entidades.Alumno;
-import app.entidades.Usuario;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import app.entidades.Alumno;
 
 @DisplayName("Tests para DTOAlumno")
 class DTOAlumnoTest {
@@ -30,8 +33,8 @@ class DTOAlumnoTest {
     void setUp() {
         alumno = new Alumno(USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO);
         alumno.setId(ID);
-        alumno.setFechaInscripcion(FECHA_INSCRIPCION);
-        alumno.setMatriculado(MATRICULADO);
+        alumno.setEnrollDate(FECHA_INSCRIPCION);
+        alumno.setEnrolled(MATRICULADO);
         alumno.setEnabled(ENABLED);
     }
 
@@ -41,31 +44,31 @@ class DTOAlumnoTest {
         DTOAlumno dto = new DTOAlumno(alumno);
 
         assertEquals(ID, dto.id());
-        assertEquals(USUARIO, dto.usuario());
-        assertEquals(NOMBRE, dto.nombre());
-        assertEquals(APELLIDOS, dto.apellidos());
+        assertEquals(USUARIO, dto.username());
+        assertEquals(NOMBRE, dto.firstName());
+        assertEquals(APELLIDOS, dto.lastName());
         assertEquals(DNI, dto.dni());
         assertEquals(EMAIL, dto.email());
-        assertEquals(TELEFONO, dto.numeroTelefono());
-        assertEquals(FECHA_INSCRIPCION, dto.fechaInscripcion());
-        assertEquals(MATRICULADO, dto.matriculado());
+        assertEquals(TELEFONO, dto.phoneNumber());
+        assertEquals(FECHA_INSCRIPCION, dto.enrollmentDate());
+        assertEquals(MATRICULADO, dto.enrolled());
         assertEquals(ENABLED, dto.enabled());
     }
 
     @Test
     @DisplayName("Constructor debe manejar valores null correctamente")
     void testConstructorConValoresNull() {
-        alumno.setNumeroTelefono(null);
+        alumno.setPhoneNumber(null);
         DTOAlumno dto = new DTOAlumno(alumno);
 
-        assertNull(dto.numeroTelefono());
+        assertNull(dto.phoneNumber());
         assertNotNull(dto.id());
-        assertNotNull(dto.usuario());
-        assertNotNull(dto.nombre());
-        assertNotNull(dto.apellidos());
+        assertNotNull(dto.username());
+        assertNotNull(dto.firstName());
+        assertNotNull(dto.lastName());
         assertNotNull(dto.dni());
         assertNotNull(dto.email());
-        assertNotNull(dto.fechaInscripcion());
+        assertNotNull(dto.enrollmentDate());
     }
 
     @Test
@@ -76,8 +79,8 @@ class DTOAlumnoTest {
         // Los records son inmutables por defecto, no se pueden modificar
         // Solo podemos verificar que los valores se mantienen
         assertEquals(ID, dto.id());
-        assertEquals(USUARIO, dto.usuario());
-        assertEquals(NOMBRE, dto.nombre());
+        assertEquals(USUARIO, dto.username());
+        assertEquals(NOMBRE, dto.firstName());
     }
 
     @Test
@@ -88,8 +91,8 @@ class DTOAlumnoTest {
         // Crear otro alumno con los mismos datos
         Alumno alumno2 = new Alumno(USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO);
         alumno2.setId(ID);
-        alumno2.setFechaInscripcion(FECHA_INSCRIPCION);
-        alumno2.setMatriculado(MATRICULADO);
+        alumno2.setEnrollDate(FECHA_INSCRIPCION);
+        alumno2.setEnrolled(MATRICULADO);
         alumno2.setEnabled(ENABLED);
         DTOAlumno dto2 = new DTOAlumno(alumno2);
 
@@ -114,14 +117,14 @@ class DTOAlumnoTest {
     @DisplayName("Constructor debe manejar diferentes estados de matrícula")
     void testDiferentesEstadosMatricula() {
         // Alumno matriculado
-        alumno.setMatriculado(true);
+        alumno.setEnrolled(true);
         DTOAlumno dtoMatriculado = new DTOAlumno(alumno);
-        assertTrue(dtoMatriculado.matriculado());
+        assertTrue(dtoMatriculado.enrolled());
 
         // Alumno no matriculado
-        alumno.setMatriculado(false);
+        alumno.setEnrolled(false);
         DTOAlumno dtoNoMatriculado = new DTOAlumno(alumno);
-        assertFalse(dtoNoMatriculado.matriculado());
+        assertFalse(dtoNoMatriculado.enrolled());
     }
 
     @Test
@@ -142,32 +145,32 @@ class DTOAlumnoTest {
     @DisplayName("Constructor debe manejar diferentes fechas de inscripción")
     void testDiferentesFechasInscripcion() {
         LocalDateTime fechaPasada = LocalDateTime.now().minusDays(30);
-        alumno.setFechaInscripcion(fechaPasada);
+        alumno.setEnrollDate(fechaPasada);
         DTOAlumno dto = new DTOAlumno(alumno);
-        assertEquals(fechaPasada, dto.fechaInscripcion());
+        assertEquals(fechaPasada, dto.enrollmentDate());
 
         LocalDateTime fechaFutura = LocalDateTime.now().plusDays(30);
-        alumno.setFechaInscripcion(fechaFutura);
+        alumno.setEnrollDate(fechaFutura);
         DTOAlumno dto2 = new DTOAlumno(alumno);
-        assertEquals(fechaFutura, dto2.fechaInscripcion());
+        assertEquals(fechaFutura, dto2.enrollmentDate());
     }
 
     @Test
     @DisplayName("Constructor debe manejar diferentes tipos de teléfono")
     void testDiferentesTiposTelefono() {
         // Teléfono con prefijo
-        alumno.setNumeroTelefono("+34 123 456 789");
+        alumno.setPhoneNumber("+34 123 456 789");
         DTOAlumno dto = new DTOAlumno(alumno);
-        assertEquals("+34 123 456 789", dto.numeroTelefono());
+        assertEquals("+34 123 456 789", dto.phoneNumber());
 
         // Teléfono sin prefijo
-        alumno.setNumeroTelefono("123456789");
+        alumno.setPhoneNumber("123456789");
         DTOAlumno dto2 = new DTOAlumno(alumno);
-        assertEquals("123456789", dto2.numeroTelefono());
+        assertEquals("123456789", dto2.phoneNumber());
 
         // Sin teléfono
-        alumno.setNumeroTelefono(null);
+        alumno.setPhoneNumber(null);
         DTOAlumno dto3 = new DTOAlumno(alumno);
-        assertNull(dto3.numeroTelefono());
+        assertNull(dto3.phoneNumber());
     }
 }

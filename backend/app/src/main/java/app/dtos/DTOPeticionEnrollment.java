@@ -5,23 +5,23 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 /**
- * DTO para la petición de inscripción de un alumno en una clase
- * Utilizado por profesores para gestionar las inscripciones de sus clases
+ * DTO for student enrollment request in a class
+ * Used by professors to manage enrollments in their classes
  */
 public record DTOPeticionEnrollment(
-        @NotNull(message = "El ID del alumno no puede ser nulo")
-        @Positive(message = "El ID del alumno debe ser positivo")
-        Long alumnoId,
+        @NotNull(message = "Student ID cannot be null")
+        @Positive(message = "Student ID must be positive")
+        Long studentId,
         
-        @NotNull(message = "El ID de la clase no puede ser nulo")
-        @Positive(message = "El ID de la clase debe ser positivo")
-        Long claseId
+        @NotNull(message = "Class ID cannot be null")
+        @Positive(message = "Class ID must be positive")
+        Long classId
 ) {
     
     /**
-     * Constructor por defecto
+     * Default constructor
      */
     public DTOPeticionEnrollment {
-        // Validaciones adicionales si es necesario
+        // Additional validations if needed
     }
 }

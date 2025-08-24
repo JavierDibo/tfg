@@ -50,10 +50,10 @@ class ServicioAutenticacionTest {
     void setUp() {
         usuario = new Usuario("testuser", "encoded_password", "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", "123456789");
         usuario.setId(1L);
-        usuario.setRol(Usuario.Rol.ALUMNO);
+        usuario.setRole(Usuario.Role.ALUMNO);
 
         peticionLogin = new DTOPeticionLogin("testuser", "password123");
-        peticionRegistro = new DTOPeticionRegistro("newuser", "password123", "Nuevo", "Usuario", "nuevo@ejemplo.com");
+        peticionRegistro = new DTOPeticionRegistro("newuser", "password123", "nuevo@ejemplo.com", "Nuevo", "Usuario");
     }
 
     @Test
@@ -71,10 +71,10 @@ class ServicioAutenticacionTest {
         assertNotNull(respuesta);
         assertEquals(jwtToken, respuesta.token());
         assertEquals("testuser", respuesta.username());
-        assertEquals("ALUMNO", respuesta.rol());
+        assertEquals("ALUMNO", respuesta.role());
         assertEquals(1L, respuesta.id());
-        assertEquals("Juan", respuesta.nombre());
-        assertEquals("Pérez", respuesta.apellidos());
+        assertEquals("Juan", respuesta.firstName());
+        assertEquals("Pérez", respuesta.lastName());
         assertEquals("juan@ejemplo.com", respuesta.email());
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
@@ -200,13 +200,13 @@ class ServicioAutenticacionTest {
 
         // Assert - Verificar que se llama save con un usuario que tiene valores por defecto
         verify(repositorioUsuario).save(argThat(usuario -> 
-            "newuser".equals(usuario.getUsuario()) &&
+            "newuser".equals(usuario.getUsername()) &&
             "encoded_password".equals(usuario.getPassword()) &&
-            "Nuevo".equals(usuario.getNombre()) &&
-            "Usuario".equals(usuario.getApellidos()) &&
+            "Nuevo".equals(usuario.getFirstName()) &&
+            "Usuario".equals(usuario.getLastName()) &&
             "00000000X".equals(usuario.getDni()) &&
             "nuevo@ejemplo.com".equals(usuario.getEmail()) &&
-            usuario.getNumeroTelefono() == null
+            usuario.getPhoneNumber() == null
         ));
     }
 

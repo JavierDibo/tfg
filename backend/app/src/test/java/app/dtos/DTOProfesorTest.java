@@ -24,7 +24,7 @@ class DTOProfesorTest {
     private final String DNI = "87654321A";
     private final String EMAIL = "maria.garcia@ejemplo.com";
     private final String TELEFONO = "987654321";
-    private final Usuario.Rol ROL = Usuario.Rol.PROFESOR;
+    private final Usuario.Role Role = Usuario.Role.PROFESOR;
     private final boolean ENABLED = true;
     private final LocalDateTime FECHA_CREACION = LocalDateTime.now();
 
@@ -34,7 +34,7 @@ class DTOProfesorTest {
         profesor.setId(ID);
         profesor.setEnabled(ENABLED);
         
-        dtoProfesor = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, ROL, ENABLED, new ArrayList<>(), FECHA_CREACION);
+        dtoProfesor = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
     }
 
     @Test
@@ -42,16 +42,16 @@ class DTOProfesorTest {
     void testConstructorConParametros() {
         assertNotNull(dtoProfesor);
         assertEquals(ID, dtoProfesor.id());
-        assertEquals(USUARIO, dtoProfesor.usuario());
-        assertEquals(NOMBRE, dtoProfesor.nombre());
-        assertEquals(APELLIDOS, dtoProfesor.apellidos());
+        assertEquals(USUARIO, dtoProfesor.username());
+        assertEquals(NOMBRE, dtoProfesor.firstName());
+        assertEquals(APELLIDOS, dtoProfesor.lastName());
         assertEquals(DNI, dtoProfesor.dni());
         assertEquals(EMAIL, dtoProfesor.email());
-        assertEquals(TELEFONO, dtoProfesor.numeroTelefono());
-        assertEquals(ROL, dtoProfesor.rol());
+        assertEquals(TELEFONO, dtoProfesor.phoneNumber());
+        assertEquals(Role, dtoProfesor.role());
         assertEquals(ENABLED, dtoProfesor.enabled());
-        assertNotNull(dtoProfesor.clasesId());
-        assertEquals(FECHA_CREACION, dtoProfesor.fechaCreacion());
+        assertNotNull(dtoProfesor.classIds());
+        assertEquals(FECHA_CREACION, dtoProfesor.createdAt());
     }
 
     @Test
@@ -65,16 +65,16 @@ class DTOProfesorTest {
         
         assertNotNull(dtoDesdeEntidad);
         assertEquals(profesor.getId(), dtoDesdeEntidad.id());
-        assertEquals(profesor.getUsuario(), dtoDesdeEntidad.usuario());
-        assertEquals(profesor.getNombre(), dtoDesdeEntidad.nombre());
-        assertEquals(profesor.getApellidos(), dtoDesdeEntidad.apellidos());
+        assertEquals(profesor.getUsername(), dtoDesdeEntidad.username());
+        assertEquals(profesor.getFirstName(), dtoDesdeEntidad.firstName());
+        assertEquals(profesor.getLastName(), dtoDesdeEntidad.lastName());
         assertEquals(profesor.getDni(), dtoDesdeEntidad.dni());
         assertEquals(profesor.getEmail(), dtoDesdeEntidad.email());
-        assertEquals(profesor.getNumeroTelefono(), dtoDesdeEntidad.numeroTelefono());
-        assertEquals(profesor.getRol(), dtoDesdeEntidad.rol());
+        assertEquals(profesor.getPhoneNumber(), dtoDesdeEntidad.phoneNumber());
+        assertEquals(profesor.getRole(), dtoDesdeEntidad.role());
         assertEquals(profesor.isEnabled(), dtoDesdeEntidad.enabled());
-        assertEquals(profesor.getClasesId(), dtoDesdeEntidad.clasesId());
-        assertNotNull(dtoDesdeEntidad.fechaCreacion());
+        assertEquals(profesor.getClasesId(), dtoDesdeEntidad.classIds());
+        assertNotNull(dtoDesdeEntidad.createdAt());
     }
 
     @Test
@@ -84,36 +84,36 @@ class DTOProfesorTest {
         
         assertNotNull(dtoFrom);
         assertEquals(profesor.getId(), dtoFrom.id());
-        assertEquals(profesor.getUsuario(), dtoFrom.usuario());
-        assertEquals(profesor.getNombre(), dtoFrom.nombre());
-        assertEquals(profesor.getApellidos(), dtoFrom.apellidos());
+        assertEquals(profesor.getUsername(), dtoFrom.username());
+        assertEquals(profesor.getFirstName(), dtoFrom.firstName());
+        assertEquals(profesor.getLastName(), dtoFrom.lastName());
         assertEquals(profesor.getDni(), dtoFrom.dni());
         assertEquals(profesor.getEmail(), dtoFrom.email());
-        assertEquals(profesor.getNumeroTelefono(), dtoFrom.numeroTelefono());
-        assertEquals(profesor.getRol(), dtoFrom.rol());
+        assertEquals(profesor.getPhoneNumber(), dtoFrom.phoneNumber());
+        assertEquals(profesor.getRole(), dtoFrom.role());
         assertEquals(profesor.isEnabled(), dtoFrom.enabled());
-        assertEquals(profesor.getClasesId(), dtoFrom.clasesId());
+        assertEquals(profesor.getClasesId(), dtoFrom.classIds());
     }
 
     @Test
     @DisplayName("Método getNombreCompleto debe retornar nombre completo")
     void testGetNombreCompleto() {
-        String nombreCompleto = dtoProfesor.getNombreCompleto();
+        String nombreCompleto = dtoProfesor.getFullName();
         assertEquals(NOMBRE + " " + APELLIDOS, nombreCompleto);
     }
 
     @Test
     @DisplayName("Método getNombreCompleto con nombres con espacios")
     void testGetNombreCompletoConEspacios() {
-        DTOProfesor dtoConEspacios = new DTOProfesor(ID, USUARIO, "María José", "García López", DNI, EMAIL, TELEFONO, ROL, ENABLED, new ArrayList<>(), FECHA_CREACION);
-        String nombreCompleto = dtoConEspacios.getNombreCompleto();
+        DTOProfesor dtoConEspacios = new DTOProfesor(ID, USUARIO, "María José", "García López", DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
+        String nombreCompleto = dtoConEspacios.getFullName();
         assertEquals("María José García López", nombreCompleto);
     }
 
     @Test
     @DisplayName("Método tieneClases debe retornar false cuando no hay clases")
     void testTieneClasesSinClases() {
-        assertFalse(dtoProfesor.tieneClases());
+        assertFalse(dtoProfesor.hasClasses());
     }
 
     @Test
@@ -123,21 +123,21 @@ class DTOProfesorTest {
         clases.add("clase1");
         clases.add("clase2");
         
-        DTOProfesor dtoConClases = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, ROL, ENABLED, clases, FECHA_CREACION);
-        assertTrue(dtoConClases.tieneClases());
+        DTOProfesor dtoConClases = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, clases, FECHA_CREACION);
+        assertTrue(dtoConClases.hasClasses());
     }
 
     @Test
     @DisplayName("Método tieneClases debe retornar false cuando clasesId es null")
     void testTieneClasesConClasesIdNull() {
-        DTOProfesor dtoConClasesNull = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, ROL, ENABLED, null, FECHA_CREACION);
-        assertFalse(dtoConClasesNull.tieneClases());
+        DTOProfesor dtoConClasesNull = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, null, FECHA_CREACION);
+        assertFalse(dtoConClasesNull.hasClasses());
     }
 
     @Test
     @DisplayName("Método getNumeroClases debe retornar 0 cuando no hay clases")
     void testGetNumeroClasesSinClases() {
-        assertEquals(0, dtoProfesor.getNumeroClases());
+        assertEquals(0, dtoProfesor.getClassCount());
     }
 
     @Test
@@ -148,15 +148,15 @@ class DTOProfesorTest {
         clases.add("clase2");
         clases.add("clase3");
         
-        DTOProfesor dtoConClases = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, ROL, ENABLED, clases, FECHA_CREACION);
-        assertEquals(3, dtoConClases.getNumeroClases());
+        DTOProfesor dtoConClases = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, clases, FECHA_CREACION);
+        assertEquals(3, dtoConClases.getClassCount());
     }
 
     @Test
     @DisplayName("Método getNumeroClases debe retornar 0 cuando clasesId es null")
     void testGetNumeroClasesConClasesIdNull() {
-        DTOProfesor dtoConClasesNull = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, ROL, ENABLED, null, FECHA_CREACION);
-        assertEquals(0, dtoConClasesNull.getNumeroClases());
+        DTOProfesor dtoConClasesNull = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, null, FECHA_CREACION);
+        assertEquals(0, dtoConClasesNull.getClassCount());
     }
 
     @Test
@@ -165,20 +165,20 @@ class DTOProfesorTest {
         // Los records son inmutables por defecto, no se pueden modificar después de la creación
         assertNotNull(dtoProfesor);
         assertEquals(ID, dtoProfesor.id());
-        assertEquals(USUARIO, dtoProfesor.usuario());
+        assertEquals(USUARIO, dtoProfesor.username());
     }
 
     @Test
     @DisplayName("Equals y hashCode deben funcionar correctamente")
     void testEqualsYHashCode() {
-        DTOProfesor dto1 = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, ROL, ENABLED, new ArrayList<>(), FECHA_CREACION);
-        DTOProfesor dto2 = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, ROL, ENABLED, new ArrayList<>(), FECHA_CREACION);
+        DTOProfesor dto1 = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
+        DTOProfesor dto2 = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
         
         assertEquals(dto1, dto2);
         assertEquals(dto1.hashCode(), dto2.hashCode());
         
         // Crear con diferentes valores
-        DTOProfesor dto3 = new DTOProfesor(2L, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, ROL, ENABLED, new ArrayList<>(), FECHA_CREACION);
+        DTOProfesor dto3 = new DTOProfesor(2L, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
         assertNotEquals(dto1, dto3);
     }
 
@@ -203,10 +203,10 @@ class DTOProfesorTest {
         
         DTOProfesor dto = new DTOProfesor(profesor);
         
-        assertTrue(dto.tieneClases());
-        assertEquals(2, dto.getNumeroClases());
-        assertTrue(dto.clasesId().contains("clase1"));
-        assertTrue(dto.clasesId().contains("clase2"));
+        assertTrue(dto.hasClasses());
+        assertEquals(2, dto.getClassCount());
+        assertTrue(dto.classIds().contains("clase1"));
+        assertTrue(dto.classIds().contains("clase2"));
     }
 
     @Test

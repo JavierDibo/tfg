@@ -13,7 +13,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -169,13 +168,13 @@ public class ServicioClase {
             
             // Aplicar paginación manual
             Pageable pageable = PageRequest.of(
-                    parametros.pagina(),
-                    parametros.tamanoPagina(),
-                    Sort.by(Sort.Direction.fromString(parametros.ordenDireccion()), parametros.ordenCampo())
+                    parametros.page(),
+                    parametros.size(),
+                    Sort.by(Sort.Direction.fromString(parametros.sortDirection()), parametros.sortBy())
             );
             
             Page<DTOClase> page = convertirListaAPagina(clasesFiltradas, pageable);
-            return DTORespuestaPaginada.fromPage(page, parametros.ordenCampo(), parametros.ordenDireccion());
+            return DTORespuestaPaginada.fromPage(page, parametros.sortBy(), parametros.sortDirection());
         } else {
             // Los alumnos pueden buscar en todas las clases
             return buscarClases(parametros);
@@ -212,7 +211,7 @@ public class ServicioClase {
         } else if (securityUtils.isProfessor()) {
             // Los profesores solo pueden acceder a las clases que imparten
             String profesorId = securityUtils.getCurrentUserId().toString();
-            return clase.getProfesoresId().contains(profesorId);
+            return clase.getTeacherIds().contains(profesorId);
         } else {
             // Los alumnos pueden acceder a todas las clases (para ver el catálogo)
             return true;
@@ -386,9 +385,9 @@ public class ServicioClase {
     public DTORespuestaPaginada<DTOClase> buscarClases(DTOParametrosBusquedaClase parametros) {
         // Configurar paginación
         Pageable pageable = PageRequest.of(
-                parametros.pagina(),
-                parametros.tamanoPagina(),
-                Sort.by(Sort.Direction.fromString(parametros.ordenDireccion()), parametros.ordenCampo())
+                parametros.page(),
+                parametros.size(),
+                Sort.by(Sort.Direction.fromString(parametros.sortDirection()), parametros.sortBy())
         );
         
         // Enhanced search logic with "q" parameter support
@@ -442,7 +441,7 @@ public class ServicioClase {
         // Convertir a DTOs
         Page<DTOClase> pageDTOs = resultado.map(DTOClase::new);
         
-        return DTORespuestaPaginada.fromPage(pageDTOs, parametros.ordenCampo(), parametros.ordenDireccion());
+        return DTORespuestaPaginada.fromPage(pageDTOs, parametros.sortBy(), parametros.sortDirection());
     }
 
     /**
@@ -474,7 +473,7 @@ public class ServicioClase {
         }
         
         // Verificar si el alumno ya está en la clase para evitar duplicados
-        if (clase.getAlumnosId().contains(alumnoId)) {
+        if (clase.getStudentIds().contains(alumnoId)) {
             // El alumno ya está en la clase, devolver la clase sin cambios
             return new DTOClase(clase);
         }
@@ -492,41 +491,41 @@ public class ServicioClase {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public DTORespuestaEnrollment inscribirAlumnoEnClase(DTOPeticionEnrollment peticion) {
         try {
-            Clase clase = repositorioClase.findById(peticion.claseId()).orElse(null);
-            ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", peticion.claseId());
+            Clase clase = repositorioClase.findById(peticion.classId()).orElse(null);
+            ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", peticion.classId());
             
-            // Verificar que el profesor actual puede modificar esta clase
+            // Verify that the current professor can modify this class
             if (!puedeAccederAClase(clase)) {
-                ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
+                ExceptionUtils.throwAccessDenied("You don't have permission to modify this class");
             }
             
-            // Verificar si el alumno ya está en la clase
-            if (clase.getAlumnosId().contains(peticion.alumnoId().toString())) {
+            // Check if the student is already in the class
+            if (clase.getStudentIds().contains(peticion.studentId().toString())) {
                 return DTORespuestaEnrollment.failure(
-                    peticion.alumnoId(), 
-                    peticion.claseId(), 
-                    "El alumno ya está inscrito en esta clase", 
+                    peticion.studentId(), 
+                    peticion.classId(), 
+                    "The student is already enrolled in this class", 
                     "ENROLLMENT"
                 );
             }
             
-            // Agregar el alumno a la clase
-            clase.agregarAlumno(peticion.alumnoId().toString());
+            // Add the student to the class
+            clase.agregarAlumno(peticion.studentId().toString());
             Clase claseActualizada = repositorioClase.save(clase);
             
             return DTORespuestaEnrollment.success(
-                peticion.alumnoId(),
-                peticion.claseId(),
-                "Alumno inscrito", // TODO: Obtener nombre real del alumno
-                claseActualizada.getTitulo(),
+                peticion.studentId(),
+                peticion.classId(),
+                "Student enrolled", // TODO: Get real student name
+                claseActualizada.getTitle(),
                 "ENROLLMENT"
             );
             
         } catch (Exception e) {
             return DTORespuestaEnrollment.failure(
-                peticion.alumnoId(), 
-                peticion.claseId(), 
-                "Error al inscribir alumno: " + e.getMessage(), 
+                peticion.studentId(), 
+                peticion.classId(), 
+                "Error enrolling student: " + e.getMessage(), 
                 "ENROLLMENT"
             );
         }
@@ -560,41 +559,41 @@ public class ServicioClase {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public DTORespuestaEnrollment darDeBajaAlumnoDeClase(DTOPeticionEnrollment peticion) {
         try {
-            Clase clase = repositorioClase.findById(peticion.claseId()).orElse(null);
-            ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", peticion.claseId());
+            Clase clase = repositorioClase.findById(peticion.classId()).orElse(null);
+            ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", peticion.classId());
             
-            // Verificar que el profesor actual puede modificar esta clase
+            // Verify that the current professor can modify this class
             if (!puedeAccederAClase(clase)) {
-                ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
+                ExceptionUtils.throwAccessDenied("You don't have permission to modify this class");
             }
             
-            // Verificar si el alumno está en la clase
-            if (!clase.getAlumnosId().contains(peticion.alumnoId().toString())) {
+            // Check if the student is in the class
+            if (!clase.getStudentIds().contains(peticion.studentId().toString())) {
                 return DTORespuestaEnrollment.failure(
-                    peticion.alumnoId(), 
-                    peticion.claseId(), 
-                    "El alumno no está inscrito en esta clase", 
+                    peticion.studentId(), 
+                    peticion.classId(), 
+                    "The student is not enrolled in this class", 
                     "UNENROLLMENT"
                 );
             }
             
-            // Remover el alumno de la clase
-            clase.removerAlumno(peticion.alumnoId().toString());
+            // Remove the student from the class
+            clase.removerAlumno(peticion.studentId().toString());
             Clase claseActualizada = repositorioClase.save(clase);
             
             return DTORespuestaEnrollment.success(
-                peticion.alumnoId(),
-                peticion.claseId(),
-                "Alumno dado de baja", // TODO: Obtener nombre real del alumno
-                claseActualizada.getTitulo(),
+                peticion.studentId(),
+                peticion.classId(),
+                "Student unenrolled", // TODO: Get real student name
+                claseActualizada.getTitle(),
                 "UNENROLLMENT"
             );
             
         } catch (Exception e) {
             return DTORespuestaEnrollment.failure(
-                peticion.alumnoId(), 
-                peticion.claseId(), 
-                "Error al dar de baja al alumno: " + e.getMessage(), 
+                peticion.studentId(), 
+                peticion.classId(), 
+                "Error unenrolling student: " + e.getMessage(), 
                 "UNENROLLMENT"
             );
         }
@@ -617,7 +616,7 @@ public class ServicioClase {
         }
         
         // Verificar si el profesor ya está en la clase para evitar duplicados
-        if (clase.getProfesoresId().contains(profesorId)) {
+        if (clase.getTeacherIds().contains(profesorId)) {
             // El profesor ya está en la clase, devolver la clase sin cambios
             return new DTOClase(clase);
         }
@@ -797,7 +796,7 @@ public class ServicioClase {
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
         // Verificar si el alumno ya está inscrito
-        if (clase.getAlumnosId().contains(alumnoId)) {
+        if (clase.getStudentIds().contains(alumnoId)) {
             return DTORespuestaEnrollment.failure(alumnoIdLong, claseId, 
                 "El alumno ya está inscrito en esta clase", "ENROLLMENT");
         }
@@ -819,10 +818,10 @@ public class ServicioClase {
         
         // Obtener información del alumno para la respuesta
         Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
-        String nombreAlumno = alumno != null ? alumno.getNombre() : "Alumno";
+        String nombreAlumno = alumno != null ? alumno.getFirstName() : "Alumno";
         
         return DTORespuestaEnrollment.success(alumnoIdLong, claseId, 
-            nombreAlumno, claseActualizada.getTitulo(), "ENROLLMENT");
+            nombreAlumno, claseActualizada.getTitle(), "ENROLLMENT");
     }
 
     /**
@@ -839,7 +838,7 @@ public class ServicioClase {
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
         // Verificar si el alumno está inscrito en la clase
-        if (!clase.getAlumnosId().contains(alumnoId)) {
+        if (!clase.getStudentIds().contains(alumnoId)) {
             return DTORespuestaEnrollment.failure(alumnoIdLong, claseId, 
                 "El alumno no está inscrito en esta clase", "UNENROLLMENT");
         }
@@ -862,10 +861,10 @@ public class ServicioClase {
         
         // Obtener información del alumno para la respuesta
         Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
-        String nombreAlumno = alumno != null ? alumno.getNombre() : "Alumno";
+        String nombreAlumno = alumno != null ? alumno.getFirstName() : "Alumno";
         
         return DTORespuestaEnrollment.success(alumnoIdLong, claseId, 
-            nombreAlumno, claseActualizada.getTitulo(), "UNENROLLMENT");
+            nombreAlumno, claseActualizada.getTitle(), "UNENROLLMENT");
     }
 
     // ===== NUEVOS MÉTODOS PARA ESTUDIANTES =====
@@ -882,9 +881,9 @@ public class ServicioClase {
                 .map(clase -> {
                     // Obtener el primer profesor de la clase (profesor principal)
                     DTOProfesor profesor = null;
-                    if (!clase.getProfesoresId().isEmpty()) {
+                    if (!clase.getTeacherIds().isEmpty()) {
                         try {
-                            Long profesorId = Long.parseLong(clase.getProfesoresId().get(0));
+                            Long profesorId = Long.parseLong(clase.getTeacherIds().get(0));
                             Profesor profesorEntity = repositorioProfesor.findById(profesorId)
                                     .orElse(null);
                             if (profesorEntity != null) {
@@ -914,7 +913,7 @@ public class ServicioClase {
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
-        boolean isEnrolled = clase.getAlumnosId().contains(alumnoId.toString());
+        boolean isEnrolled = clase.getStudentIds().contains(alumnoId.toString());
         
         if (isEnrolled) {
             // Por ahora, usamos la fecha actual como fecha de inscripción
@@ -938,9 +937,9 @@ public class ServicioClase {
         
         // Obtener el primer profesor de la clase (profesor principal)
         DTOProfesor profesor = null;
-        if (!clase.getProfesoresId().isEmpty()) {
+        if (!clase.getTeacherIds().isEmpty()) {
             try {
-                Long profesorId = Long.parseLong(clase.getProfesoresId().get(0));
+                Long profesorId = Long.parseLong(clase.getTeacherIds().get(0));
                 Profesor profesorEntity = repositorioProfesor.findById(profesorId)
                         .orElse(null);
                 if (profesorEntity != null) {
@@ -952,12 +951,12 @@ public class ServicioClase {
         }
         
         // Verificar si el estudiante está inscrito
-        boolean isEnrolled = clase.getAlumnosId().contains(alumnoId.toString());
+        boolean isEnrolled = clase.getStudentIds().contains(alumnoId.toString());
         LocalDateTime fechaInscripcion = isEnrolled ? LocalDateTime.now() : null;
         
         // Contar alumnos y profesores
-        int alumnosCount = clase.getAlumnosId().size();
-        int profesoresCount = clase.getProfesoresId().size();
+        int alumnosCount = clase.getStudentIds().size();
+        int profesoresCount = clase.getTeacherIds().size();
         
         return new DTOClaseConDetalles(clase, profesor, isEnrolled, fechaInscripcion, alumnosCount, profesoresCount);
     }
@@ -971,7 +970,7 @@ public class ServicioClase {
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
-        return clase.getAlumnosId().stream()
+        return clase.getStudentIds().stream()
                 .map(alumnoId -> {
                     try {
                         Long id = Long.parseLong(alumnoId);

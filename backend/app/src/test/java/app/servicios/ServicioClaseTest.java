@@ -6,7 +6,7 @@ import app.entidades.Curso;
 import app.entidades.Material;
 import app.entidades.Taller;
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 import app.excepciones.ResourceNotFoundException;
 import app.repositorios.RepositorioAlumno;
 import app.repositorios.RepositorioClase;
@@ -70,7 +70,7 @@ class ServicioClaseTest {
         
         curso = new Curso(
                 "Curso de Java", "Aprende Java desde cero", new BigDecimal("99.99"),
-                EPresencialidad.ONLINE, "imagen1.jpg", ENivel.PRINCIPIANTE,
+                EPresencialidad.ONLINE, "imagen1.jpg", EDificultad.PRINCIPIANTE,
                 LocalDate.now().plusDays(7), LocalDate.now().plusDays(30)
         );
         curso.setId(1L);
@@ -79,7 +79,7 @@ class ServicioClaseTest {
 
         taller = new Taller(
                 "Taller de Spring", "Taller intensivo de Spring Boot", new BigDecimal("49.99"),
-                EPresencialidad.PRESENCIAL, "imagen2.jpg", ENivel.INTERMEDIO,
+                EPresencialidad.PRESENCIAL, "imagen2.jpg", EDificultad.INTERMEDIO,
                 4, LocalDate.now().plusDays(3), LocalTime.of(10, 0)
         );
         taller.setId(2L);
@@ -88,7 +88,7 @@ class ServicioClaseTest {
 
         peticionCrearClase = new DTOPeticionCrearClase(
                 "Nuevo Curso", "Descripción del curso", new BigDecimal("89.99"),
-                EPresencialidad.ONLINE, "nueva-imagen.jpg", ENivel.PRINCIPIANTE,
+                EPresencialidad.ONLINE, "nueva-imagen.jpg", EDificultad.PRINCIPIANTE,
                 Arrays.asList("profesor1"), Arrays.asList(material)
         );
     }
@@ -270,8 +270,8 @@ class ServicioClaseTest {
         DTORespuestaPaginada<DTOClase> resultado = servicioClase.buscarClases(parametros);
 
         assertNotNull(resultado);
-        assertEquals(1, resultado.contenido().size());
-        assertEquals("Curso de Java", resultado.contenido().get(0).titulo());
+        assertEquals(1, resultado.content().size());
+        assertEquals("Curso de Java", resultado.content().get(0).titulo());
         verify(repositorioClase).findByTituloContainingIgnoreCase("Java");
     }
 

@@ -20,95 +20,76 @@ import java.util.List;
 @DiscriminatorColumn(name = "tipo_usuario", discriminatorType = DiscriminatorType.STRING)
 @DiscriminatorValue("USUARIO")
 public class Usuario implements UserDetails {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     @NotNull
     @Size(min = 3, max = 50)
     @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El usuario solo puede contener letras, números, puntos, guiones y guiones bajos")
     @Column(unique = true)
-    private String usuario;
-    
+    private String username;
+
     @NotNull
     @Size(min = 6)
     private String password;
-    
+
     @NotNull
     @Size(max = 100)
     @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "El nombre solo puede contener letras y espacios")
-    private String nombre;
-    
+    private String firstName;
+
     @NotNull
     @Size(max = 100)
     @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "Los apellidos solo pueden contener letras y espacios")
-    private String apellidos;
-    
+    private String lastName;
+
     @NotNull
     @ValidDNI
     @Column(unique = true)
     private String dni;
-    
+
     @NotNull
     @ValidEmail
     @Column(unique = true)
     private String email;
-    
+
     @ValidPhone
-    private String numeroTelefono;
-    
+    private String phoneNumber;
+
     @Enumerated(EnumType.STRING)
-    private Rol rol = Rol.USUARIO;
-    
+    private Role role = Role.USUARIO;
+
     private boolean enabled = true;
-    
-    public enum Rol {
+
+    public enum Role {
         ADMIN, PROFESOR, ALUMNO, USUARIO
     }
-    
-    public Usuario() {}
-    
-    public Usuario(String usuario, String password, String nombre, String apellidos, String dni, String email, String numeroTelefono) {
-        this.usuario = usuario;
+
+    public Usuario() {
+    }
+
+    public Usuario(String username, String password, String firstName, String lastName, String dni, String email, String phoneNumber) {
+        this.username = username;
         this.password = password;
-        this.nombre = nombre;
-        this.apellidos = apellidos;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.dni = dni;
         this.email = email;
-        this.numeroTelefono = numeroTelefono;
+        this.phoneNumber = phoneNumber;
     }
-    
+
     @Override
     public String getUsername() {
-        return this.usuario;
+        return this.username;
     }
-    
-    @Override
-    public String getPassword() {
-        return this.password;
-    }
-    
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + this.rol.name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
-    
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-    
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-    
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-    
+
     @Override
     public boolean isEnabled() {
         return this.enabled;

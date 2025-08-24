@@ -17,30 +17,30 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 /**
- * Controlador REST para gestión de inscripciones y matrículas
- * Maneja todas las operaciones relacionadas con la inscripción de alumnos en clases
+ * REST controller for enrollment and registration management
+ * Handles all operations related to student enrollment in classes
  */
 @RestController
 @RequestMapping("/api/enrollments")
 @RequiredArgsConstructor
-@Tag(name = "Inscripciones", description = "API para gestión de inscripciones y matrículas")
+@Tag(name = "Enrollments", description = "API for enrollment and registration management")
 public class EnrollmentRest {
 
     private final ServicioClase servicioClase;
     private final SecurityUtils securityUtils;
 
-    // ===== OPERACIONES DE INSCRIPCIÓN PARA PROFESORES/ADMIN =====
+    // ===== ENROLLMENT OPERATIONS FOR PROFESSORS/ADMIN =====
 
     /**
-     * Inscribe un alumno en una clase (para profesores y administradores)
+     * Enrolls a student in a class (for professors and administrators)
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Inscribir alumno en clase", description = "Permite a profesores y administradores inscribir alumnos en clases")
+    @Operation(summary = "Enroll student in class", description = "Allows professors and administrators to enroll students in classes")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Inscripción exitosa"),
-        @ApiResponse(responseCode = "400", description = "Error en la inscripción"),
-        @ApiResponse(responseCode = "403", description = "No autorizado")
+        @ApiResponse(responseCode = "200", description = "Enrollment successful"),
+        @ApiResponse(responseCode = "400", description = "Enrollment error"),
+        @ApiResponse(responseCode = "403", description = "Not authorized")
     })
     public ResponseEntity<DTORespuestaEnrollment> inscribirAlumnoEnClase(
             @Valid @RequestBody DTOPeticionEnrollment peticion) {
@@ -54,15 +54,15 @@ public class EnrollmentRest {
     }
 
     /**
-     * Da de baja un alumno de una clase (para profesores y administradores)
+     * Unenrolls a student from a class (for professors and administrators)
      */
     @DeleteMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Dar de baja alumno de clase", description = "Permite a profesores y administradores dar de baja alumnos de clases")
+    @Operation(summary = "Unenroll student from class", description = "Allows professors and administrators to unenroll students from classes")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Baja exitosa"),
-        @ApiResponse(responseCode = "400", description = "Error en la baja"),
-        @ApiResponse(responseCode = "403", description = "No autorizado")
+        @ApiResponse(responseCode = "200", description = "Unenrollment successful"),
+        @ApiResponse(responseCode = "400", description = "Unenrollment error"),
+        @ApiResponse(responseCode = "403", description = "Not authorized")
     })
     public ResponseEntity<DTORespuestaEnrollment> darDeBajaAlumnoDeClase(
             @Valid @RequestBody DTOPeticionEnrollment peticion) {
@@ -75,14 +75,14 @@ public class EnrollmentRest {
         }
     }
 
-    // ===== OPERACIONES DE INSCRIPCIÓN PARA ALUMNOS =====
+    // ===== ENROLLMENT OPERATIONS FOR STUDENTS =====
 
     /**
-     * Permite a un alumno inscribirse en una clase
+     * Allows a student to enroll themselves in a class
      */
     @PostMapping("/{claseId}/self-enroll")
     @PreAuthorize("hasRole('ALUMNO')")
-    @Operation(summary = "Auto-inscripción en clase", description = "Permite a un alumno inscribirse en una clase")
+    @Operation(summary = "Self-enrollment in class", description = "Allows a student to enroll themselves in a class")
     public ResponseEntity<DTORespuestaEnrollment> inscribirseEnClase(@PathVariable Long claseId) {
         DTORespuestaEnrollment respuesta = servicioClase.inscribirseEnClase(claseId);
         
@@ -94,11 +94,11 @@ public class EnrollmentRest {
     }
 
     /**
-     * Permite a un alumno darse de baja de una clase
+     * Allows a student to unenroll themselves from a class
      */
     @DeleteMapping("/{claseId}/self-unenroll")
     @PreAuthorize("hasRole('ALUMNO')")
-    @Operation(summary = "Auto-baja de clase", description = "Permite a un alumno darse de baja de una clase")
+    @Operation(summary = "Self-unenrollment from class", description = "Allows a student to unenroll themselves from a class")
     public ResponseEntity<DTORespuestaEnrollment> darseDeBajaDeClase(@PathVariable Long claseId) {
         DTORespuestaEnrollment respuesta = servicioClase.darseDeBajaDeClase(claseId);
         

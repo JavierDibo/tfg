@@ -57,7 +57,7 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
                         enrolledInThisStudent++;
                     } catch (Exception e) {
                         if (!e.getMessage().contains("ya está inscrito")) {
-                            System.err.println("✗ Error enrolling student " + student.nombre() + " in course " + course.titulo() + ": " + e.getMessage());
+                            System.err.println("✗ Error enrolling student " + student.firstName() + " in course " + course.titulo() + ": " + e.getMessage());
                         }
                     }
                 }
@@ -77,7 +77,7 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
         int totalStudentsInCourses = 0;
         for (DTOCurso course : courses) {
             try {
-                int studentCount = servicioAlumno.obtenerAlumnosPorClasePaginados(course.id(), 0, 1000, "id", "ASC").contenido().size();
+                int studentCount = servicioAlumno.obtenerAlumnosPorClasePaginados(course.id(), 0, 1000, "id", "ASC").content().size();
                 totalStudentsInCourses += studentCount;
             } catch (Exception e) {
                 System.err.println("Error getting students for course " + course.titulo() + ": " + e.getMessage());
@@ -97,7 +97,7 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
                     totalStudentCourses += courseCount;
                 }
             } catch (Exception e) {
-                System.err.println("Error getting courses for student " + student.nombre() + ": " + e.getMessage());
+                System.err.println("Error getting courses for student " + student.firstName() + ": " + e.getMessage());
             }
         }
         

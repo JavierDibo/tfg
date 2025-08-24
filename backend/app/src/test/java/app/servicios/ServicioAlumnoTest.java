@@ -1,5 +1,33 @@
 package app.servicios;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import app.dtos.DTOActualizacionAlumno;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOParametrosBusquedaAlumno;
@@ -9,29 +37,6 @@ import app.entidades.Alumno;
 import app.excepciones.ResourceNotFoundException;
 import app.excepciones.ValidationException;
 import app.repositorios.RepositorioAlumno;
-import app.servicios.ServicioCachePassword;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para ServicioAlumno")
@@ -60,37 +65,22 @@ class ServicioAlumnoTest {
     void setUp() {
         alumno1 = new Alumno("alumno1", "password1", "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", "123456789");
         alumno1.setId(1L);
-        alumno1.setFechaInscripcion(LocalDateTime.now().minusDays(30));
-        alumno1.setMatriculado(true);
+        alumno1.setEnrollDate(LocalDateTime.now().minusDays(30));
+        alumno1.setEnrolled(true);
 
         alumno2 = new Alumno("alumno2", "password2", "María", "García", "87654321Y", "maria@ejemplo.com", "987654321");
         alumno2.setId(2L);
-        alumno2.setFechaInscripcion(LocalDateTime.now().minusDays(15));
-        alumno2.setMatriculado(false);
+        alumno2.setEnrollDate(LocalDateTime.now().minusDays(15));
+        alumno2.setEnrolled(false);
 
         alumno3 = new Alumno("alumno3", "password3", "Carlos", "López", "11223344X", "carlos@ejemplo.com", "555666777");
         alumno3.setId(3L);
-        alumno3.setFechaInscripcion(LocalDateTime.now());
-        alumno3.setMatriculado(true);
+        alumno3.setEnrollDate(LocalDateTime.now());
+        alumno3.setEnrolled(true);
 
         dtoAlumno1 = new DTOAlumno(alumno1);
         dtoAlumno2 = new DTOAlumno(alumno2);
         dtoAlumno3 = new DTOAlumno(alumno3);
-    }
-
-    @Test
-    @DisplayName("obtenerAlumnos debe retornar lista de DTOs")
-    void testObtenerAlumnos() {
-        List<Alumno> alumnos = Arrays.asList(alumno1, alumno2, alumno3);
-        when(repositorioAlumno.findAllOrderedById()).thenReturn(alumnos);
-
-        List<DTOAlumno> resultado = servicioAlumno.obtenerAlumnos();
-
-        assertEquals(3, resultado.size());
-        assertEquals(dtoAlumno1, resultado.get(0));
-        assertEquals(dtoAlumno2, resultado.get(1));
-        assertEquals(dtoAlumno3, resultado.get(2));
-        verify(repositorioAlumno).findAllOrderedById();
     }
 
     @Test
@@ -157,47 +147,6 @@ class ServicioAlumnoTest {
 
         assertEquals(dtoAlumno1, resultado);
         verify(repositorioAlumno).findByDni("12345678Z");
-    }
-
-    @Test
-    @DisplayName("buscarAlumnosPorParametros debe retornar todos cuando no hay filtros")
-    void testBuscarAlumnosPorParametrosSinFiltros() {
-        DTOParametrosBusquedaAlumno parametros = new DTOParametrosBusquedaAlumno(null, null, null, null, null);
-        List<Alumno> todosLosAlumnos = Arrays.asList(alumno1, alumno2, alumno3);
-        when(repositorioAlumno.findAllOrderedById()).thenReturn(todosLosAlumnos);
-
-        List<DTOAlumno> resultado = servicioAlumno.buscarAlumnosPorParametros(parametros);
-
-        assertEquals(3, resultado.size());
-        verify(repositorioAlumno).findAllOrderedById();
-        verify(repositorioAlumno, never()).findByFiltros(any(), any(), any(), any(), any());
-    }
-
-    @Test
-    @DisplayName("buscarAlumnosPorParametros debe usar filtros cuando se proporcionan")
-    void testBuscarAlumnosPorParametrosConFiltros() {
-        DTOParametrosBusquedaAlumno parametros = new DTOParametrosBusquedaAlumno("Juan", null, null, null, null);
-        List<Alumno> alumnosFiltrados = Arrays.asList(alumno1);
-        when(repositorioAlumno.findByFiltros("Juan", null, null, null, null)).thenReturn(alumnosFiltrados);
-
-        List<DTOAlumno> resultado = servicioAlumno.buscarAlumnosPorParametros(parametros);
-
-        assertEquals(1, resultado.size());
-        assertEquals(dtoAlumno1, resultado.get(0));
-        verify(repositorioAlumno).findByFiltros("Juan", null, null, null, null);
-    }
-
-    @Test
-    @DisplayName("obtenerAlumnosPorMatriculado debe retornar alumnos matriculados")
-    void testObtenerAlumnosPorMatriculado() {
-        List<Alumno> alumnosMatriculados = Arrays.asList(alumno1, alumno3);
-        when(repositorioAlumno.findByMatriculado(true)).thenReturn(alumnosMatriculados);
-
-        List<DTOAlumno> resultado = servicioAlumno.obtenerAlumnosPorMatriculado(true);
-
-        assertEquals(2, resultado.size());
-        assertTrue(resultado.stream().allMatch(DTOAlumno::matriculado));
-        verify(repositorioAlumno).findByMatriculado(true);
     }
 
     @Test
@@ -272,8 +221,8 @@ class ServicioAlumnoTest {
         DTOAlumno resultado = servicioAlumno.actualizarAlumno(1L, dtoParcial);
 
         assertNotNull(resultado);
-        assertEquals("Nuevo Nombre", resultado.nombre());
-        assertEquals(alumno1.getApellidos(), resultado.apellidos());
+        assertEquals("Nuevo Nombre", resultado.firstName());
+        assertEquals(alumno1.getLastName(), resultado.lastName());
         verify(repositorioAlumno).findById(1L);
         verify(repositorioAlumno).save(any(Alumno.class));
     }
@@ -304,7 +253,7 @@ class ServicioAlumnoTest {
         DTOAlumno resultado = servicioAlumno.cambiarEstadoMatricula(1L, false);
 
         assertNotNull(resultado);
-        assertFalse(resultado.matriculado());
+        assertFalse(resultado.enrolled());
         verify(repositorioAlumno).findById(1L);
         verify(repositorioAlumno).save(any(Alumno.class));
     }
@@ -383,10 +332,10 @@ class ServicioAlumnoTest {
         DTORespuestaPaginada<DTOAlumno> resultado = servicioAlumno.obtenerAlumnosPaginados(0, 2, "id", "ASC");
 
         assertNotNull(resultado);
-        assertEquals(2, resultado.contenido().size());
-        assertEquals(3, resultado.totalElementos());
-        assertEquals(0, resultado.numeroPagina());
-        assertEquals(2, resultado.tamanoPagina());
+        assertEquals(2, resultado.content().size());
+        assertEquals(3, resultado.totalElements());
+        assertEquals(0, resultado.page());
+        assertEquals(2, resultado.size());
         verify(repositorioAlumno).findAllPaged(any(Pageable.class));
     }
 
@@ -402,8 +351,8 @@ class ServicioAlumnoTest {
         DTORespuestaPaginada<DTOAlumno> resultado = servicioAlumno.buscarAlumnosPorParametrosPaginados(parametros, 0, 1, "id", "ASC");
 
         assertNotNull(resultado);
-        assertEquals(1, resultado.contenido().size());
-        assertEquals(1, resultado.totalElementos());
+        assertEquals(1, resultado.content().size());
+        assertEquals(1, resultado.totalElements());
         verify(repositorioAlumno).findByFiltrosPaged(anyString(), any(), any(), any(), any(), any(Pageable.class));
     }
 
@@ -418,8 +367,8 @@ class ServicioAlumnoTest {
         DTORespuestaPaginada<DTOAlumno> resultado = servicioAlumno.obtenerAlumnosPorMatriculadoPaginados(true, 0, 2, "id", "ASC");
 
         assertNotNull(resultado);
-        assertEquals(2, resultado.contenido().size());
-        assertEquals(2, resultado.totalElementos());
+        assertEquals(2, resultado.content().size());
+        assertEquals(2, resultado.totalElements());
         verify(repositorioAlumno).findByMatriculadoPaged(any(Boolean.class), any(Pageable.class));
     }
 }

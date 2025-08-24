@@ -1,30 +1,30 @@
 package app.dtos;
 
 /**
- * DTO para parámetros de búsqueda de profesores
- * Permite realizar búsquedas con múltiples criterios
+ * DTO for professor search parameters
+ * Allows searches with multiple criteria
  */
 public record DTOParametrosBusquedaProfesor(
         String q,              // General search term across multiple fields
-        String nombre,
-        String apellidos,
+        String firstName,
+        String lastName,
         String email,
-        String usuario,
+        String username,
         String dni,
-        Boolean habilitado,
-        String claseId,
-        Boolean sinClases
+        Boolean enabled,
+        String classId,
+        Boolean hasNoClasses
 ) {
     
     /**
      * Constructor with default values for backward compatibility
      */
-    public DTOParametrosBusquedaProfesor(String nombre, String apellidos, String email, String usuario, String dni, Boolean habilitado, String claseId, Boolean sinClases) {
-        this(null, nombre, apellidos, email, usuario, dni, habilitado, claseId, sinClases);
+    public DTOParametrosBusquedaProfesor(String firstName, String lastName, String email, String username, String dni, Boolean enabled, String classId, Boolean hasNoClasses) {
+        this(null, firstName, lastName, email, username, dni, enabled, classId, hasNoClasses);
     }
     
     /**
-     * Constructor por defecto con todos los parámetros nulos
+     * Default constructor with all parameters null
      */
     public DTOParametrosBusquedaProfesor() {
         this(null, null, null, null, null, null, null, null, null);
@@ -43,25 +43,25 @@ public record DTOParametrosBusquedaProfesor(
      * @return true if any specific filter is provided
      */
     public boolean hasSpecificFilters() {
-        return nombre != null || apellidos != null || email != null || 
-               usuario != null || dni != null || habilitado != null || 
-               claseId != null || sinClases != null;
+        return firstName != null || lastName != null || email != null || 
+               username != null || dni != null || enabled != null || 
+               classId != null || hasNoClasses != null;
     }
     
     /**
-     * Verifica si todos los parámetros están vacíos
-     * @return true si no hay criterios de búsqueda
+     * Checks if all parameters are empty
+     * @return true if no search criteria are provided
      */
-    public boolean estaVacio() {
+    public boolean isEmpty() {
         return !hasGeneralSearch() && !hasSpecificFilters();
     }
     
     /**
-     * Verifica si hay criterios de texto para búsqueda
-     * @return true si hay al menos un criterio de texto
+     * Checks if there are text criteria for search
+     * @return true if there is at least one text criterion
      */
-    public boolean tieneCriteriosTexto() {
-        return hasGeneralSearch() || nombre != null || apellidos != null || email != null || 
-               usuario != null || dni != null;
+    public boolean hasTextCriteria() {
+        return hasGeneralSearch() || firstName != null || lastName != null || email != null || 
+               username != null || dni != null;
     }
 }

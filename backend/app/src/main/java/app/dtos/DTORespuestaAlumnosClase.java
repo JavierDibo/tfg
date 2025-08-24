@@ -6,28 +6,28 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 /**
- * DTO específico para respuestas de alumnos de una clase
- * Puede contener información completa (DTOAlumno) o pública (DTOAlumnoPublico)
- * según el nivel de acceso del usuario
+ * Specific DTO for class student responses
+ * Can contain complete information (DTOAlumno) or public information (DTOAlumnoPublico)
+ * depending on the user's access level
  */
-@Schema(description = "Respuesta paginada de alumnos de una clase con diferentes niveles de información según el rol del usuario")
+@Schema(description = "Paginated response of class students with different information levels according to user role")
 public record DTORespuestaAlumnosClase(
-    @Schema(description = "Lista de alumnos (información completa o pública según el rol)")
+    @Schema(description = "List of students (complete or public information according to role)")
     List<Object> content,
     
-    @Schema(description = "Metadatos de paginación")
+    @Schema(description = "Pagination metadata")
     DTOMetadatosPaginacion page,
     
-    @Schema(description = "Tipo de información devuelta: 'COMPLETA' para admin/profesor de la clase, 'PUBLICA' para otros")
-    String tipoInformacion
+    @Schema(description = "Type of information returned: 'COMPLETE' for admin/class professor, 'PUBLIC' for others")
+    String informationType
 ) {
     
     /**
-     * Constructor que convierte un Page de Spring Data en DTORespuestaAlumnosClase
-     * @param page Page con alumnos (DTOAlumno o DTOAlumnoPublico)
-     * @param tipoInformacion Tipo de información devuelta
+     * Constructor that converts a Spring Data Page to DTORespuestaAlumnosClase
+     * @param page Page with students (DTOAlumno or DTOAlumnoPublico)
+     * @param informationType Type of information returned
      */
-    public DTORespuestaAlumnosClase(Page<?> page, String tipoInformacion) {
+    public DTORespuestaAlumnosClase(Page<?> page, String informationType) {
         this(
             (List<Object>) page.getContent(),
             new DTOMetadatosPaginacion(
@@ -40,42 +40,42 @@ public record DTORespuestaAlumnosClase(
                 page.hasNext(),
                 page.hasPrevious()
             ),
-            tipoInformacion
+            informationType
         );
     }
     
     /**
-     * Record para los metadatos de paginación
+     * Record for pagination metadata
      */
     public record DTOMetadatosPaginacion(
-        @Schema(description = "Número de página actual (0-indexed)")
+        @Schema(description = "Current page number (0-indexed)")
         int number,
         
-        @Schema(description = "Tamaño de la página")
+        @Schema(description = "Page size")
         int size,
         
-        @Schema(description = "Total de elementos en todas las páginas")
+        @Schema(description = "Total elements across all pages")
         long totalElements,
         
-        @Schema(description = "Total de páginas")
+        @Schema(description = "Total pages")
         int totalPages,
         
-        @Schema(description = "Indica si es la primera página")
+        @Schema(description = "Indicates if this is the first page")
         boolean first,
         
-        @Schema(description = "Indica si es la última página")
+        @Schema(description = "Indicates if this is the last page")
         boolean last,
         
-        @Schema(description = "Indica si hay página siguiente")
+        @Schema(description = "Indicates if there is a next page")
         boolean hasNext,
         
-        @Schema(description = "Indica si hay página anterior")
+        @Schema(description = "Indicates if there is a previous page")
         boolean hasPrevious
     ) {}
     
     /**
-     * Constantes para el tipo de información
+     * Constants for information type
      */
-    public static final String TIPO_COMPLETA = "COMPLETA";
-    public static final String TIPO_PUBLICA = "PUBLICA";
+    public static final String TIPO_COMPLETA = "COMPLETE";
+    public static final String TIPO_PUBLICA = "PUBLIC";
 }

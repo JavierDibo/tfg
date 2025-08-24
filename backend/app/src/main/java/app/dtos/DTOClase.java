@@ -3,7 +3,7 @@ package app.dtos;
 import app.entidades.Clase;
 import app.entidades.Material;
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,7 +19,7 @@ public record DTOClase(
         BigDecimal precio,
         EPresencialidad presencialidad,
         String imagenPortada,
-        ENivel nivel,
+        EDificultad nivel,
         List<String> alumnosId,
         List<String> profesoresId,
         List<String> ejerciciosId,
@@ -33,15 +33,15 @@ public record DTOClase(
     public DTOClase(Clase clase) {
         this(
                 clase.getId(),
-                clase.getTitulo(),
-                clase.getDescripcion(),
-                clase.getPrecio(),
-                clase.getPresencialidad(),
-                clase.getImagenPortada(),
-                clase.getNivel(),
-                clase.getAlumnosId(),
-                clase.getProfesoresId(),
-                clase.getEjerciciosId(),
+                clase.getTitle(),
+                clase.getDescription(),
+                clase.getPrice(),
+                clase.getFormat(),
+                clase.getImage(),
+                clase.getDifficulty(),
+                clase.getStudentIds(),
+                clase.getTeacherIds(),
+                clase.getExerciseIds(),
                 clase.getMaterial(),
                 clase.getClass().getAnnotation(jakarta.persistence.DiscriminatorValue.class).value()
         );

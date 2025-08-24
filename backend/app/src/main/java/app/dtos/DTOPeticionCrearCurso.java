@@ -2,7 +2,7 @@ package app.dtos;
 
 import app.entidades.Material;
 import app.entidades.enums.EPresencialidad;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -32,7 +32,7 @@ public record DTOPeticionCrearCurso(
         String imagenPortada,
         
         @NotNull
-        ENivel nivel,
+        EDificultad nivel,
         
         @NotNull
         @FutureOrPresent(message = "La fecha de inicio debe ser hoy o en el futuro")
@@ -50,7 +50,7 @@ public record DTOPeticionCrearCurso(
      * Constructor simplificado sin listas
      */
     public DTOPeticionCrearCurso(String titulo, String descripcion, BigDecimal precio,
-                                EPresencialidad presencialidad, String imagenPortada, ENivel nivel,
+                                EPresencialidad presencialidad, String imagenPortada, EDificultad nivel,
                                 LocalDate fechaInicio, LocalDate fechaFin) {
         this(titulo, descripcion, precio, presencialidad, imagenPortada, nivel, 
              fechaInicio, fechaFin, List.of(), List.of());

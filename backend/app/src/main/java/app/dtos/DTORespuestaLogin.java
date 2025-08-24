@@ -3,31 +3,31 @@ package app.dtos;
 import app.entidades.Usuario;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "Respuesta de autenticación con token JWT")
+@Schema(description = "Authentication response with JWT token")
 public record DTORespuestaLogin(
-    @Schema(description = "Token JWT para autenticación", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", required = true)
+    @Schema(description = "JWT token for authentication", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", required = true)
     String token,
     
-    @Schema(description = "Tipo de token", example = "Bearer", required = true)
+    @Schema(description = "Token type", example = "Bearer", required = true)
     String type,
     
-    @Schema(description = "ID del usuario autenticado", example = "1", required = true)
+    @Schema(description = "Authenticated user ID", example = "1", required = true)
     Long id,
     
-    @Schema(description = "Nombre de usuario", example = "usuario123", required = true)
+    @Schema(description = "Username", example = "user123", required = true)
     String username,
     
-    @Schema(description = "Email del usuario", example = "usuario@example.com", required = true)
+    @Schema(description = "User email", example = "user@example.com", required = true)
     String email,
     
-    @Schema(description = "Nombre del usuario", example = "Juan", required = true)
-    String nombre,
+    @Schema(description = "User first name", example = "Juan", required = true)
+    String firstName,
     
-    @Schema(description = "Apellidos del usuario", example = "Pérez", required = true)
-    String apellidos,
+    @Schema(description = "User last name", example = "Perez", required = true)
+    String lastName,
     
-    @Schema(description = "Rol del usuario", example = "ALUMNO", required = true)
-    String rol
+    @Schema(description = "User role", example = "STUDENT", required = true)
+    String role
 ) {
     public static DTORespuestaLogin from(Usuario usuario, String token) {
         return new DTORespuestaLogin(
@@ -36,9 +36,9 @@ public record DTORespuestaLogin(
             usuario.getId(),
             usuario.getUsername(),
             usuario.getEmail(),
-            usuario.getNombre(),
-            usuario.getApellidos(),
-            usuario.getRol().name()
+            usuario.getFirstName(),
+            usuario.getLastName(),
+            usuario.getRole().name()
         );
     }
 } 

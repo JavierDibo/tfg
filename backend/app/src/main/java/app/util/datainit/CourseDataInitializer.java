@@ -3,7 +3,7 @@ package app.util.datainit;
 import app.dtos.DTOCurso;
 import app.dtos.DTOPeticionCrearClase;
 import app.dtos.DTOProfesor;
-import app.entidades.enums.ENivel;
+import app.entidades.enums.EDificultad;
 import app.entidades.enums.EPresencialidad;
 import app.servicios.ServicioClase;
 import org.springframework.stereotype.Component;
@@ -29,10 +29,10 @@ public class CourseDataInitializer extends BaseDataInitializer {
         for (DTOProfesor profesor : professorInit.getCreatedProfessors()) {
             for (int i = 0; i < COURSES_PER_PROFESSOR; i++) {
                 String title = generateRandomCourseName();
-                String description = "Curso de " + title + " impartido por " + profesor.nombre();
+                String description = "Curso de " + title + " impartido por " + profesor.firstName();
                 BigDecimal price = BigDecimal.valueOf(generateRandomPrice());
                 EPresencialidad presentiality = generateRandomPresentiality();
-                ENivel level = generateRandomLevel();
+                EDificultad level = generateRandomLevel();
                 
                 // Create dates for the course (start tomorrow, end in 3 months)
                 LocalDate startDate = LocalDate.now().plusDays(1);
@@ -79,8 +79,8 @@ public class CourseDataInitializer extends BaseDataInitializer {
         return 20.0 + (random.nextDouble() * 180.0); // Prices between 20 and 200
     }
     
-    private ENivel generateRandomLevel() {
-        ENivel[] levels = ENivel.values();
+    private EDificultad generateRandomLevel() {
+        EDificultad[] levels = EDificultad.values();
         return levels[random.nextInt(levels.length)];
     }
     

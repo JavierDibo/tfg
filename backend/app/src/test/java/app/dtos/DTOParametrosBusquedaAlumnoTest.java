@@ -19,11 +19,11 @@ class DTOParametrosBusquedaAlumnoTest {
             true
         );
 
-        assertEquals("Juan", dto.nombre());
-        assertEquals("Pérez García", dto.apellidos());
+        assertEquals("Juan", dto.firstName());
+        assertEquals("Pérez García", dto.lastName());
         assertEquals("12345678Z", dto.dni());
         assertEquals("juan@ejemplo.com", dto.email());
-        assertTrue(dto.matriculado());
+        assertTrue(dto.enrolled());
     }
 
     @Test
@@ -37,11 +37,11 @@ class DTOParametrosBusquedaAlumnoTest {
             null
         );
 
-        assertNull(dto.nombre());
-        assertNull(dto.apellidos());
+        assertNull(dto.firstName());
+        assertNull(dto.lastName());
         assertNull(dto.dni());
         assertNull(dto.email());
-        assertNull(dto.matriculado());
+        assertNull(dto.enrolled());
     }
 
     @Test
@@ -55,11 +55,11 @@ class DTOParametrosBusquedaAlumnoTest {
             false
         );
 
-        assertEquals("Juan", dto.nombre());
-        assertNull(dto.apellidos());
+        assertEquals("Juan", dto.firstName());
+        assertNull(dto.lastName());
         assertEquals("12345678Z", dto.dni());
         assertNull(dto.email());
-        assertFalse(dto.matriculado());
+        assertFalse(dto.enrolled());
     }
 
     @Test
@@ -75,8 +75,8 @@ class DTOParametrosBusquedaAlumnoTest {
 
         // Los records son inmutables por defecto, no se pueden modificar
         // Solo podemos verificar que los valores se mantienen
-        assertEquals("Juan", dto.nombre());
-        assertEquals("Pérez García", dto.apellidos());
+        assertEquals("Juan", dto.firstName());
+        assertEquals("Pérez García", dto.lastName());
         assertEquals("12345678Z", dto.dni());
     }
 
@@ -169,19 +169,19 @@ class DTOParametrosBusquedaAlumnoTest {
         DTOParametrosBusquedaAlumno dto1 = new DTOParametrosBusquedaAlumno(
             "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", true
         );
-        assertTrue(dto1.matriculado());
+        assertTrue(dto1.enrolled());
 
         // Alumno no matriculado
         DTOParametrosBusquedaAlumno dto2 = new DTOParametrosBusquedaAlumno(
             "María", "García", "87654321Y", "maria@ejemplo.com", false
         );
-        assertFalse(dto2.matriculado());
+        assertFalse(dto2.enrolled());
 
         // Sin especificar matrícula
         DTOParametrosBusquedaAlumno dto3 = new DTOParametrosBusquedaAlumno(
             "Carlos", "López", "11223344X", "carlos@ejemplo.com", null
         );
-        assertNull(dto3.matriculado());
+        assertNull(dto3.enrolled());
     }
 
     @Test
@@ -195,8 +195,8 @@ class DTOParametrosBusquedaAlumnoTest {
             true
         );
 
-        assertEquals("José María", dto.nombre());
-        assertEquals("García López", dto.apellidos());
+        assertEquals("José María", dto.firstName());
+        assertEquals("García López", dto.lastName());
     }
 
     @Test
@@ -238,11 +238,11 @@ class DTOParametrosBusquedaAlumnoTest {
             null
         );
 
-        assertEquals("Juan", dto.nombre());
-        assertNull(dto.apellidos());
+        assertEquals("Juan", dto.firstName());
+        assertNull(dto.lastName());
         assertNull(dto.dni());
         assertNull(dto.email());
-        assertNull(dto.matriculado());
+        assertNull(dto.enrolled());
     }
 
     @Test
@@ -256,11 +256,11 @@ class DTOParametrosBusquedaAlumnoTest {
             null
         );
 
-        assertNull(dto.nombre());
-        assertNull(dto.apellidos());
+        assertNull(dto.firstName());
+        assertNull(dto.lastName());
         assertNull(dto.dni());
         assertEquals("juan@ejemplo.com", dto.email());
-        assertNull(dto.matriculado());
+        assertNull(dto.enrolled());
     }
 
     @Test
@@ -274,10 +274,10 @@ class DTOParametrosBusquedaAlumnoTest {
             true
         );
 
-        assertNull(dto.nombre());
-        assertNull(dto.apellidos());
+        assertNull(dto.firstName());
+        assertNull(dto.lastName());
         assertNull(dto.dni());
         assertNull(dto.email());
-        assertTrue(dto.matriculado());
+        assertTrue(dto.enrolled());
     }
 }

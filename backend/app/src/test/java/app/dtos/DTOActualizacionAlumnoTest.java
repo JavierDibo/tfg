@@ -1,9 +1,10 @@
 package app.dtos;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.DisplayName;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 @DisplayName("Tests para DTOActualizacionAlumno")
 class DTOActualizacionAlumnoTest {
@@ -19,11 +20,11 @@ class DTOActualizacionAlumnoTest {
             "123456789"
         );
 
-        assertEquals("Juan", dto.nombre());
-        assertEquals("Pérez García", dto.apellidos());
+        assertEquals("Juan", dto.firstName());
+        assertEquals("Pérez García", dto.lastName());
         assertEquals("12345678Z", dto.dni());
         assertEquals("juan@ejemplo.com", dto.email());
-        assertEquals("123456789", dto.numeroTelefono());
+        assertEquals("123456789", dto.phoneNumber());
     }
 
     @Test
@@ -37,11 +38,11 @@ class DTOActualizacionAlumnoTest {
             null
         );
 
-        assertNull(dto.nombre());
-        assertNull(dto.apellidos());
+        assertNull(dto.firstName());
+        assertNull(dto.lastName());
         assertNull(dto.dni());
         assertNull(dto.email());
-        assertNull(dto.numeroTelefono());
+        assertNull(dto.phoneNumber());
     }
 
     @Test
@@ -55,11 +56,11 @@ class DTOActualizacionAlumnoTest {
             "123456789"
         );
 
-        assertEquals("Juan", dto.nombre());
-        assertNull(dto.apellidos());
+        assertEquals("Juan", dto.firstName());
+        assertNull(dto.lastName());
         assertEquals("12345678Z", dto.dni());
         assertNull(dto.email());
-        assertEquals("123456789", dto.numeroTelefono());
+        assertEquals("123456789", dto.phoneNumber());
     }
 
     @Test
@@ -75,8 +76,8 @@ class DTOActualizacionAlumnoTest {
 
         // Los records son inmutables por defecto, no se pueden modificar
         // Solo podemos verificar que los valores se mantienen
-        assertEquals("Juan", dto.nombre());
-        assertEquals("Pérez García", dto.apellidos());
+        assertEquals("Juan", dto.firstName());
+        assertEquals("Pérez García", dto.lastName());
         assertEquals("12345678Z", dto.dni());
     }
 
@@ -169,19 +170,19 @@ class DTOActualizacionAlumnoTest {
         DTOActualizacionAlumno dto1 = new DTOActualizacionAlumno(
             "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", "+34 123 456 789"
         );
-        assertEquals("+34 123 456 789", dto1.numeroTelefono());
+        assertEquals("+34 123 456 789", dto1.phoneNumber());
 
         // Teléfono sin prefijo
         DTOActualizacionAlumno dto2 = new DTOActualizacionAlumno(
             "María", "García", "87654321Y", "maria@ejemplo.com", "123456789"
         );
-        assertEquals("123456789", dto2.numeroTelefono());
+        assertEquals("123456789", dto2.phoneNumber());
 
         // Sin teléfono
         DTOActualizacionAlumno dto3 = new DTOActualizacionAlumno(
             "Carlos", "López", "11223344X", "carlos@ejemplo.com", null
         );
-        assertNull(dto3.numeroTelefono());
+        assertNull(dto3.phoneNumber());
     }
 
     @Test
@@ -195,8 +196,8 @@ class DTOActualizacionAlumnoTest {
             "123456789"
         );
 
-        assertEquals("José María", dto.nombre());
-        assertEquals("García López", dto.apellidos());
+        assertEquals("José María", dto.firstName());
+        assertEquals("García López", dto.lastName());
     }
 
     @Test
@@ -238,11 +239,11 @@ class DTOActualizacionAlumnoTest {
             null,
             null
         );
-        assertEquals("Nuevo Nombre", dto1.nombre());
-        assertNull(dto1.apellidos());
+        assertEquals("Nuevo Nombre", dto1.firstName());
+        assertNull(dto1.lastName());
         assertNull(dto1.dni());
         assertNull(dto1.email());
-        assertNull(dto1.numeroTelefono());
+        assertNull(dto1.phoneNumber());
 
         // Solo actualizar email
         DTOActualizacionAlumno dto2 = new DTOActualizacionAlumno(
@@ -252,10 +253,10 @@ class DTOActualizacionAlumnoTest {
             "nuevo@ejemplo.com",
             null
         );
-        assertNull(dto2.nombre());
-        assertNull(dto2.apellidos());
+        assertNull(dto2.firstName());
+        assertNull(dto2.lastName());
         assertNull(dto2.dni());
         assertEquals("nuevo@ejemplo.com", dto2.email());
-        assertNull(dto2.numeroTelefono());
+        assertNull(dto2.phoneNumber());
     }
 }
