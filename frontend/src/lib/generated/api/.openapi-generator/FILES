@@ -13,7 +13,7 @@ models/DTOActualizacionProfesor.ts
 models/DTOAlumno.ts
 models/DTOAlumnoPublico.ts
 models/DTOClase.ts
-models/DTOClaseConDetalles.ts
+models/DTOClaseConDetallesPublico.ts
 models/DTOClaseInscrita.ts
 models/DTOCurso.ts
 models/DTOEstadoInscripcion.ts
@@ -21,12 +21,12 @@ models/DTOMaterial.ts
 models/DTOMetadatosPaginacion.ts
 models/DTOPeticionCrearCurso.ts
 models/DTOPeticionCrearTaller.ts
-models/DTOPeticionEnrollment.ts
 models/DTOPeticionLogin.ts
 models/DTOPeticionRegistro.ts
 models/DTOPeticionRegistroAlumno.ts
 models/DTOPeticionRegistroProfesor.ts
 models/DTOProfesor.ts
+models/DTOProfesorPublico.ts
 models/DTORespuestaAlumnosClase.ts
 models/DTORespuestaEnrollment.ts
 models/DTORespuestaLogin.ts

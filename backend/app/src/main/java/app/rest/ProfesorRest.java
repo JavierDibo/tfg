@@ -21,17 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import app.dtos.DTOActualizacionProfesor;
 import app.dtos.DTOParametrosBusquedaProfesor;
-import app.dtos.DTOPeticionEnrollment;
 import app.dtos.DTOPeticionRegistroProfesor;
 import app.dtos.DTOProfesor;
-import app.dtos.DTORespuestaEnrollment;
+import app.dtos.DTOProfesorPublico;
 import app.dtos.DTORespuestaPaginada;
 import app.dtos.DTOClase;
 import app.servicios.ServicioClase;
 import app.servicios.ServicioProfesor;
 import app.util.SecurityUtils;
-import app.validation.ValidEmail;
-import app.validation.ValidDNI;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -169,6 +166,39 @@ public class ProfesorRest extends BaseRestController {
         return new ResponseEntity<>(dtoProfesor, HttpStatus.OK);
     }
 
+    // Public endpoint for students to access professor information
+    @GetMapping("/{id}/public")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
+    @Operation(
+        summary = "Get public professor information",
+        description = "Gets public information about a professor. Accessible to all authenticated users."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Public professor information retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOProfesorPublico.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Professor not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Authentication required"
+        )
+    })
+    public ResponseEntity<DTOProfesorPublico> obtenerProfesorPublico(
+            @Parameter(description = "Professor ID", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOProfesorPublico dtoProfesorPublico = servicioProfesor.obtenerProfesorPublicoPorId(id);
+        return new ResponseEntity<>(dtoProfesorPublico, HttpStatus.OK);
+    }
+
     // Standard POST create endpoint
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -281,48 +311,7 @@ public class ProfesorRest extends BaseRestController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // Business logic endpoints
 
-    @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(
-        summary = "Change enabled status",
-        description = "Enables or disables a professor in the system (requires ADMIN role)"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Enabled status updated successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOProfesor.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid input data"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Professor not found"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied - ADMIN role required"
-        )
-    })
-    public ResponseEntity<DTOProfesor> cambiarEstadoProfesor(
-            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
-            @RequestBody Map<String, Boolean> estado) {
-        
-        Boolean enabled = estado.get("enabled");
-        if (enabled == null) {
-            throw new IllegalArgumentException("Must provide the 'enabled' field");
-        }
-        
-        DTOProfesor dtoActualizado = servicioProfesor.cambiarEstadoProfesor(id, enabled);
-        return new ResponseEntity<>(dtoActualizado, HttpStatus.OK);
-    }
 
     // Class management endpoints
 
@@ -429,196 +418,4 @@ public class ProfesorRest extends BaseRestController {
         return new ResponseEntity<>(dtoActualizado, HttpStatus.OK);
     }
 
-    // Utility endpoints for specific lookups
-
-    // Class-specific endpoints
-
-    @GetMapping("/clase/{claseId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(
-        summary = "Get professors by class",
-        description = "Gets all professors assigned to a specific class"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Professors found successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOProfesor.class, type = "array")
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Class not found"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied"
-        )
-    })
-    public ResponseEntity<List<DTOProfesor>> obtenerProfesoresPorClase(
-            @PathVariable String claseId) {
-        
-        List<DTOProfesor> profesores = servicioProfesor.obtenerProfesoresPorClase(claseId);
-        return new ResponseEntity<>(profesores, HttpStatus.OK);
-    }
-
-    // ===== SPECIFIC SEARCH ENDPOINTS =====
-
-    @GetMapping("/email/{email}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(
-        summary = "Get professor by email",
-        description = "Gets a specific professor by their email address"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Professor found successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOProfesor.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Professor not found"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied"
-        )
-    })
-    public ResponseEntity<DTOProfesor> obtenerProfesorPorEmail(
-            @PathVariable @ValidEmail String email) {
-        
-        DTOProfesor profesor = servicioProfesor.obtenerProfesorPorEmail(email);
-        return ResponseEntity.ok(profesor);
-    }
-
-    @GetMapping("/dni/{dni}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(
-        summary = "Get professor by DNI",
-        description = "Gets a specific professor by their DNI number"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Professor found successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOProfesor.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Professor not found"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied"
-        )
-    })
-    public ResponseEntity<DTOProfesor> obtenerProfesorPorDni(
-            @PathVariable @ValidDNI String dni) {
-        
-        DTOProfesor profesor = servicioProfesor.obtenerProfesorPorDni(dni);
-        return ResponseEntity.ok(profesor);
-    }
-
-    // Student management endpoints for professors
-
-    @PostMapping("/{profesorId}/clases/{claseId}/alumnos")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESOR') and #profesorId == authentication.principal.id)")
-    @Operation(
-        summary = "Enroll student in professor's class",
-        description = "Allows a professor to enroll a student in one of their classes"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Student enrolled successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTORespuestaEnrollment.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid input data or enrollment error"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied - Not authorized to enroll in this class"
-        )
-    })
-    public ResponseEntity<DTORespuestaEnrollment> inscribirAlumnoEnMiClase(
-            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long profesorId,
-            @PathVariable String claseId,
-            @Valid @RequestBody DTOPeticionEnrollment peticion) {
-        
-        // Verify that the professor is trying to enroll in their own class
-        if (!peticion.classId().toString().equals(claseId)) {
-            return ResponseEntity.badRequest().body(
-                DTORespuestaEnrollment.failure(peticion.studentId(), peticion.classId(), 
-                    "The class ID in the URL does not match the request ID", "ENROLLMENT")
-            );
-        }
-        
-        DTORespuestaEnrollment respuesta = servicioClase.inscribirAlumnoEnClase(peticion);
-        
-        if (respuesta.success()) {
-            return ResponseEntity.ok(respuesta);
-        } else {
-            return ResponseEntity.badRequest().body(respuesta);
-        }
-    }
-
-    @DeleteMapping("/{profesorId}/clases/{claseId}/alumnos")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESOR') and #profesorId == authentication.principal.id)")
-    @Operation(
-        summary = "Unenroll student from professor's class",
-        description = "Allows a professor to unenroll a student from one of their classes"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Student unenrolled successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTORespuestaEnrollment.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid input data or unenrollment error"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied - Not authorized to unenroll in this class"
-        )
-    })
-    public ResponseEntity<DTORespuestaEnrollment> darDeBajaAlumnoDeMiClase(
-            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long profesorId,
-            @PathVariable String claseId,
-            @Valid @RequestBody DTOPeticionEnrollment peticion) {
-        
-        // Verify that the professor is trying to unenroll from their own class
-        if (!peticion.classId().toString().equals(claseId)) {
-            return ResponseEntity.badRequest().body(
-                DTORespuestaEnrollment.failure(peticion.studentId(), peticion.classId(), 
-                    "The class ID in the URL does not match the request ID", "UNENROLLMENT")
-            );
-        }
-        
-        DTORespuestaEnrollment respuesta = servicioClase.darDeBajaAlumnoDeClase(peticion);
-        
-        if (respuesta.success()) {
-            return ResponseEntity.ok(respuesta);
-        } else {
-            return ResponseEntity.badRequest().body(respuesta);
-        }
-    }
 }

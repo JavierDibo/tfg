@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import app.dtos.DTOClase;
 import app.dtos.DTOClaseConDetalles;
+import app.dtos.DTOClaseConDetallesPublico;
 import app.dtos.DTOEstadoInscripcion;
 import app.dtos.DTOPeticionEnrollment;
 import app.dtos.DTORespuestaEnrollment;
@@ -53,18 +54,18 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(summary = "Enroll student in class", description = "Enrolls a student in a specific class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Student enrolled successfully"),
-        @ApiResponse(responseCode = "400", description = "Enrollment error - Invalid data or business rule violation"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-        @ApiResponse(responseCode = "404", description = "Class or student not found")
+            @ApiResponse(responseCode = "200", description = "Student enrolled successfully"),
+            @ApiResponse(responseCode = "400", description = "Enrollment error - Invalid data or business rule violation"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
+            @ApiResponse(responseCode = "404", description = "Class or student not found")
     })
     public ResponseEntity<DTORespuestaEnrollment> inscribirAlumnoEnClase(
             @PathVariable Long claseId,
             @PathVariable Long studentId) {
-        
+
         DTOPeticionEnrollment peticion = new DTOPeticionEnrollment(studentId, claseId);
         DTORespuestaEnrollment respuesta = servicioClase.inscribirAlumnoEnClase(peticion);
-        
+
         if (respuesta.success()) {
             return ResponseEntity.ok(respuesta);
         } else {
@@ -79,18 +80,18 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(summary = "Unenroll student from class", description = "Unenrolls a student from a specific class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Student unenrolled successfully"),
-        @ApiResponse(responseCode = "400", description = "Unenrollment error - Invalid data or business rule violation"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-        @ApiResponse(responseCode = "404", description = "Class or student not found")
+            @ApiResponse(responseCode = "200", description = "Student unenrolled successfully"),
+            @ApiResponse(responseCode = "400", description = "Unenrollment error - Invalid data or business rule violation"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
+            @ApiResponse(responseCode = "404", description = "Class or student not found")
     })
     public ResponseEntity<DTORespuestaEnrollment> darDeBajaAlumnoDeClase(
             @PathVariable Long claseId,
             @PathVariable Long studentId) {
-        
+
         DTOPeticionEnrollment peticion = new DTOPeticionEnrollment(studentId, claseId);
         DTORespuestaEnrollment respuesta = servicioClase.darDeBajaAlumnoDeClase(peticion);
-        
+
         if (respuesta.success()) {
             return ResponseEntity.ok(respuesta);
         } else {
@@ -98,43 +99,7 @@ public class ClaseManagementRest {
         }
     }
 
-    /**
-     * Gets the enrollment status of a student in a specific class
-     */
-    @GetMapping("/students/{studentId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Get student enrollment in class", description = "Gets the enrollment information of a student in a specific class")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Enrollment information retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-        @ApiResponse(responseCode = "404", description = "Class or student not found")
-    })
-    public ResponseEntity<DTOEstadoInscripcion> obtenerInscripcionEstudiante(
-            @PathVariable Long claseId,
-            @PathVariable Long studentId) {
-        
-        DTOEstadoInscripcion estado = servicioClase.verificarEstadoInscripcion(studentId, claseId);
-        return ResponseEntity.ok(estado);
-    }
 
-    /**
-     * Gets detailed information about a class for a specific student
-     */
-    @GetMapping("/students/{studentId}/details")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Get class details for student", description = "Gets detailed information about a class for a specific student")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Class details retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-        @ApiResponse(responseCode = "404", description = "Class or student not found")
-    })
-    public ResponseEntity<DTOClaseConDetalles> obtenerDetallesClaseParaEstudiante(
-            @PathVariable Long claseId,
-            @PathVariable Long studentId) {
-        
-        DTOClaseConDetalles detalles = servicioClase.obtenerClaseConDetallesParaEstudiante(claseId, studentId);
-        return ResponseEntity.ok(detalles);
-    }
 
     // ===== SELF-ENROLLMENT OPERATIONS (for students) =====
 
@@ -145,14 +110,14 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ALUMNO')")
     @Operation(summary = "Self-enrollment in class", description = "Allows a student to enroll themselves in a class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Self-enrollment successful"),
-        @ApiResponse(responseCode = "400", description = "Enrollment error - Invalid data or business rule violation"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
-        @ApiResponse(responseCode = "404", description = "Class not found")
+            @ApiResponse(responseCode = "200", description = "Self-enrollment successful"),
+            @ApiResponse(responseCode = "400", description = "Enrollment error - Invalid data or business rule violation"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
+            @ApiResponse(responseCode = "404", description = "Class not found")
     })
     public ResponseEntity<DTORespuestaEnrollment> inscribirseEnClase(@PathVariable Long claseId) {
         DTORespuestaEnrollment respuesta = servicioClase.inscribirseEnClase(claseId);
-        
+
         if (respuesta.success()) {
             return ResponseEntity.ok(respuesta);
         } else {
@@ -167,14 +132,14 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ALUMNO')")
     @Operation(summary = "Self-unenrollment from class", description = "Allows a student to unenroll themselves from a class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Self-unenrollment successful"),
-        @ApiResponse(responseCode = "400", description = "Unenrollment error - Invalid data or business rule violation"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
-        @ApiResponse(responseCode = "404", description = "Class not found")
+            @ApiResponse(responseCode = "200", description = "Self-unenrollment successful"),
+            @ApiResponse(responseCode = "400", description = "Unenrollment error - Invalid data or business rule violation"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
+            @ApiResponse(responseCode = "404", description = "Class not found")
     })
     public ResponseEntity<DTORespuestaEnrollment> darseDeBajaDeClase(@PathVariable Long claseId) {
         DTORespuestaEnrollment respuesta = servicioClase.darseDeBajaDeClase(claseId);
-        
+
         if (respuesta.success()) {
             return ResponseEntity.ok(respuesta);
         } else {
@@ -189,9 +154,9 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ALUMNO')")
     @Operation(summary = "Get my enrollment in class", description = "Gets the enrollment information of the authenticated student in a class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Enrollment information retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
-        @ApiResponse(responseCode = "404", description = "Class not found")
+            @ApiResponse(responseCode = "200", description = "Enrollment information retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
+            @ApiResponse(responseCode = "404", description = "Class not found")
     })
     public ResponseEntity<DTOEstadoInscripcion> obtenerMiInscripcion(@PathVariable Long claseId) {
         Long alumnoId = securityUtils.getCurrentUserId();
@@ -204,15 +169,16 @@ public class ClaseManagementRest {
      */
     @GetMapping("/students/me/details")
     @PreAuthorize("hasRole('ALUMNO')")
-    @Operation(summary = "Get class details for me", description = "Gets detailed information about a class for the authenticated student")
+    @Operation(summary = "Get class details for me",
+            description = "Gets detailed information about a class for the authenticated student")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Class details retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
-        @ApiResponse(responseCode = "404", description = "Class not found")
+            @ApiResponse(responseCode = "200", description = "Class details retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
+            @ApiResponse(responseCode = "404", description = "Class not found")
     })
-    public ResponseEntity<DTOClaseConDetalles> obtenerMisDetallesClase(@PathVariable Long claseId) {
+    public ResponseEntity<DTOClaseConDetallesPublico> obtenerMisDetallesClase(@PathVariable Long claseId) {
         Long alumnoId = securityUtils.getCurrentUserId();
-        DTOClaseConDetalles detalles = servicioClase.obtenerClaseConDetallesParaEstudiante(claseId, alumnoId);
+        DTOClaseConDetallesPublico detalles = servicioClase.obtenerClaseConDetallesPublicoParaEstudiante(claseId, alumnoId);
         return ResponseEntity.ok(detalles);
     }
 
@@ -225,9 +191,9 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Add professor to class", description = "Adds a professor to a specific class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Professor added successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN permissions"),
-        @ApiResponse(responseCode = "404", description = "Class or professor not found")
+            @ApiResponse(responseCode = "200", description = "Professor added successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN permissions"),
+            @ApiResponse(responseCode = "404", description = "Class or professor not found")
     })
     public ResponseEntity<DTOClase> agregarProfesor(
             @PathVariable Long claseId,
@@ -242,9 +208,9 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Remove professor from class", description = "Removes a professor from a specific class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Professor removed successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN permissions"),
-        @ApiResponse(responseCode = "404", description = "Class or professor not found")
+            @ApiResponse(responseCode = "200", description = "Professor removed successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN permissions"),
+            @ApiResponse(responseCode = "404", description = "Class or professor not found")
     })
     public ResponseEntity<DTOClase> removerProfesor(
             @PathVariable Long claseId,
@@ -261,9 +227,9 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(summary = "Add exercise to class", description = "Adds an exercise to a specific class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Exercise added successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-        @ApiResponse(responseCode = "404", description = "Class or exercise not found")
+            @ApiResponse(responseCode = "200", description = "Exercise added successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
+            @ApiResponse(responseCode = "404", description = "Class or exercise not found")
     })
     public ResponseEntity<DTOClase> agregarEjercicio(
             @PathVariable Long claseId,
@@ -278,9 +244,9 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(summary = "Remove exercise from class", description = "Removes an exercise from a specific class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Exercise removed successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-        @ApiResponse(responseCode = "404", description = "Class or exercise not found")
+            @ApiResponse(responseCode = "200", description = "Exercise removed successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
+            @ApiResponse(responseCode = "404", description = "Class or exercise not found")
     })
     public ResponseEntity<DTOClase> removerEjercicio(
             @PathVariable Long claseId,
@@ -297,10 +263,10 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(summary = "Add material to class", description = "Adds material to a specific class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Material added successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid material data"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-        @ApiResponse(responseCode = "404", description = "Class not found")
+            @ApiResponse(responseCode = "200", description = "Material added successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid material data"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
+            @ApiResponse(responseCode = "404", description = "Class not found")
     })
     public ResponseEntity<DTOClase> agregarMaterial(
             @PathVariable Long claseId,
@@ -315,9 +281,9 @@ public class ClaseManagementRest {
     @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(summary = "Remove material from class", description = "Removes material from a specific class")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Material removed successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-        @ApiResponse(responseCode = "404", description = "Class or material not found")
+            @ApiResponse(responseCode = "200", description = "Material removed successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
+            @ApiResponse(responseCode = "404", description = "Class or material not found")
     })
     public ResponseEntity<DTOClase> removerMaterial(
             @PathVariable Long claseId,

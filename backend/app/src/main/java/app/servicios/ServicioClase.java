@@ -1,3 +1,4 @@
+// LLM_EDIT_TIMESTAMP: 25 ago. 13:59
 package app.servicios;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import app.dtos.DTOAlumnoPublico;
 import app.dtos.DTOClase;
 import app.dtos.DTOClaseConDetalles;
+import app.dtos.DTOClaseConDetallesPublico;
 import app.dtos.DTOClaseInscrita;
 import app.dtos.DTOCurso;
 import app.dtos.DTOEstadoInscripcion;
@@ -27,6 +29,7 @@ import app.dtos.DTOParametrosBusquedaClase;
 import app.dtos.DTOPeticionCrearClase;
 import app.dtos.DTOPeticionEnrollment;
 import app.dtos.DTOProfesor;
+import app.dtos.DTOProfesorPublico;
 import app.dtos.DTORespuestaEnrollment;
 import app.dtos.DTORespuestaPaginada;
 import app.dtos.DTOTaller;
@@ -271,6 +274,23 @@ public class ServicioClase {
         }
         
         Curso cursoGuardado = (Curso) repositorioClase.save(curso);
+        
+        // Actualizar la lista de clases de los profesores para mantener consistencia bidireccional
+        if (peticion.profesoresId() != null) {
+            for (String profesorId : peticion.profesoresId()) {
+                try {
+                    Long profesorIdLong = Long.parseLong(profesorId);
+                    Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
+                    if (profesor != null) {
+                        profesor.agregarClase(cursoGuardado.getId().toString());
+                        repositorioProfesor.save(profesor);
+                    }
+                } catch (NumberFormatException e) {
+                    // Si no se puede parsear el ID, continuar con el siguiente profesor
+                }
+            }
+        }
+        
         return new DTOCurso(cursoGuardado);
     }
 
@@ -311,6 +331,23 @@ public class ServicioClase {
         }
         
         Taller tallerGuardado = (Taller) repositorioClase.save(taller);
+        
+        // Actualizar la lista de clases de los profesores para mantener consistencia bidireccional
+        if (peticion.profesoresId() != null) {
+            for (String profesorId : peticion.profesoresId()) {
+                try {
+                    Long profesorIdLong = Long.parseLong(profesorId);
+                    Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
+                    if (profesor != null) {
+                        profesor.agregarClase(tallerGuardado.getId().toString());
+                        repositorioProfesor.save(profesor);
+                    }
+                } catch (NumberFormatException e) {
+                    // Si no se puede parsear el ID, continuar con el siguiente profesor
+                }
+            }
+        }
+        
         return new DTOTaller(tallerGuardado);
     }
 
@@ -623,6 +660,19 @@ public class ServicioClase {
         
         clase.agregarProfesor(profesorId);
         Clase claseActualizada = repositorioClase.save(clase);
+        
+        // Actualizar la lista de clases del profesor para mantener consistencia bidireccional
+        try {
+            Long profesorIdLong = Long.parseLong(profesorId);
+            Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
+            if (profesor != null) {
+                profesor.agregarClase(claseId.toString());
+                repositorioProfesor.save(profesor);
+            }
+        } catch (NumberFormatException e) {
+            // Si no se puede parsear el ID, continuar sin actualizar el profesor
+        }
+        
         return new DTOClase(claseActualizada);
     }
 
@@ -643,6 +693,19 @@ public class ServicioClase {
         
         clase.removerProfesor(profesorId);
         Clase claseActualizada = repositorioClase.save(clase);
+        
+        // Actualizar la lista de clases del profesor para mantener consistencia bidireccional
+        try {
+            Long profesorIdLong = Long.parseLong(profesorId);
+            Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
+            if (profesor != null) {
+                profesor.removerClase(claseId.toString());
+                repositorioProfesor.save(profesor);
+            }
+        } catch (NumberFormatException e) {
+            // Si no se puede parsear el ID, continuar sin actualizar el profesor
+        }
+        
         return new DTOClase(claseActualizada);
     }
 
@@ -959,6 +1022,42 @@ public class ServicioClase {
         int profesoresCount = clase.getTeacherIds().size();
         
         return new DTOClaseConDetalles(clase, profesor, isEnrolled, fechaInscripcion, alumnosCount, profesoresCount);
+    }
+
+    /**
+     * Obtiene información detallada de una clase para un estudiante con información pública del profesor
+     * @param claseId ID de la clase
+     * @param alumnoId ID del estudiante
+     * @return DTOClaseConDetallesPublico con información pública del profesor
+     */
+    public DTOClaseConDetallesPublico obtenerClaseConDetallesPublicoParaEstudiante(Long claseId, Long alumnoId) {
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
+        
+        // Obtener el primer profesor de la clase (profesor principal) con información pública
+        DTOProfesorPublico profesor = null;
+        if (!clase.getTeacherIds().isEmpty()) {
+            try {
+                Long profesorId = Long.parseLong(clase.getTeacherIds().get(0));
+                Profesor profesorEntity = repositorioProfesor.findById(profesorId)
+                        .orElse(null);
+                if (profesorEntity != null) {
+                    profesor = new DTOProfesorPublico(profesorEntity);
+                }
+            } catch (NumberFormatException e) {
+                // Si no se puede parsear el ID, continuar sin profesor
+            }
+        }
+        
+        // Verificar si el estudiante está inscrito
+        boolean isEnrolled = clase.getStudentIds().contains(alumnoId.toString());
+        LocalDateTime fechaInscripcion = isEnrolled ? LocalDateTime.now() : null;
+        
+        // Contar alumnos y profesores
+        int alumnosCount = clase.getStudentIds().size();
+        int profesoresCount = clase.getTeacherIds().size();
+        
+        return new DTOClaseConDetallesPublico(clase, profesor, isEnrolled, fechaInscripcion, alumnosCount, profesoresCount);
     }
 
     /**

@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import type { DTOClase, DTOEstadoInscripcion } from '$lib/generated/api';
+	import type {
+		DTOClase,
+		DTOClaseConDetallesPublico,
+		DTOEstadoInscripcion,
+		DTOAlumno,
+		DTORespuestaAlumnosClase,
+		DTOProfesor
+	} from '$lib/generated/api';
 	import { ClaseService } from '$lib/services/claseService';
 	import { EnrollmentService } from '$lib/services/enrollmentService';
 	import { authStore } from '$lib/stores/authStore.svelte';
@@ -10,14 +17,38 @@
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let clase = $state<DTOClase | null>(null);
+	let claseDetalles = $state<DTOClaseConDetallesPublico | null>(null);
 	let numeroAlumnos = $state(0);
 	let numeroProfesores = $state(0);
 	let enrollmentStatus = $state<DTOEstadoInscripcion | null>(null);
 	let enrollmentLoading = $state(false);
 	let enrollmentError = $state<string | null>(null);
 
+	// Students management state
+	let students = $state<DTOAlumno[]>([]);
+	let studentsLoading = $state(false);
+	let studentsError = $state<string | null>(null);
+	let unenrollLoading = $state<number | null>(null);
+
+	// Professor profile state
+	let profesores = $state<DTOProfesor[]>([]);
+	let profesorLoading = $state(false);
+	let profesorError = $state<string | null>(null);
+
 	// Get class ID from URL
 	const claseId = $derived(Number($page.params.id));
+
+	// Check if current user is the teacher of this class
+	let isClassTeacher = $state(false);
+
+	$effect(() => {
+		if ((!clase && !claseDetalles) || !authStore.user?.id) {
+			isClassTeacher = false;
+		} else {
+			const currentClase = clase || claseDetalles;
+			isClassTeacher = currentClase?.profesoresId?.includes(authStore.user.id.toString()) || false;
+		}
+	});
 
 	// Check authentication
 	$effect(() => {
@@ -34,6 +65,16 @@
 			if (authStore.isAlumno) {
 				checkEnrollmentStatus();
 			}
+			if (authStore.isProfesor || authStore.isAdmin) {
+				loadStudents();
+			}
+		}
+	});
+
+	// Load professor data when class is loaded (only for teachers/admins)
+	$effect(() => {
+		if (clase?.id && (authStore.isProfesor || authStore.isAdmin)) {
+			loadProfesores();
 		}
 	});
 
@@ -42,20 +83,48 @@
 		error = null;
 
 		try {
-			// Load class details
-			clase = await ClaseService.getClaseById(claseId);
+			if (authStore.isAlumno) {
+				// For students, use the student-specific API that includes professor information
+				claseDetalles = await EnrollmentService.getMyClassDetails(claseId);
 
-			// Load additional statistics - these methods no longer exist in the new API
-			// The statistics are now included in the class details response
-			if (clase?.id) {
-				numeroAlumnos = clase.numeroAlumnos || 0;
-				numeroProfesores = clase.numeroProfesores || 0;
+				// Set statistics from the detailed response
+				if (claseDetalles?.id) {
+					numeroAlumnos = claseDetalles.alumnosCount || 0;
+					numeroProfesores = claseDetalles.profesoresCount || 0;
+				}
+			} else {
+				// For teachers and admins, use the general class API
+				clase = await ClaseService.getClaseById(claseId);
+
+				// Load additional statistics - these methods no longer exist in the new API
+				// The statistics are now included in the class details response
+				if (clase?.id) {
+					numeroAlumnos = clase.numeroAlumnos || 0;
+					numeroProfesores = clase.numeroProfesores || 0;
+				}
 			}
 		} catch (err) {
 			error = `Error al cargar la clase: ${err}`;
 			console.error('Error loading class:', err);
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function loadProfesores() {
+		if (!claseId) return;
+
+		profesorLoading = true;
+		profesorError = null;
+
+		try {
+			// Use the new API endpoint to get professors for this class
+			profesores = await ClaseService.getProfesoresPorClase(claseId);
+		} catch (err) {
+			profesorError = `Error al cargar la información de los profesores: ${err}`;
+			console.error('Error loading professors:', err);
+		} finally {
+			profesorLoading = false;
 		}
 	}
 
@@ -68,6 +137,47 @@
 			console.warn('Error checking enrollment status:', err);
 			// Don't show error to user, just assume not enrolled
 			enrollmentStatus = { isEnrolled: false };
+		}
+	}
+
+	async function loadStudents() {
+		if (!claseId) return;
+
+		studentsLoading = true;
+		studentsError = null;
+
+		try {
+			const response: DTORespuestaAlumnosClase =
+				await EnrollmentService.getStudentsInClass(claseId);
+			students = response.content || [];
+		} catch (err) {
+			studentsError = `Error al cargar los estudiantes: ${err}`;
+			console.error('Error loading students:', err);
+		} finally {
+			studentsLoading = false;
+		}
+	}
+
+	async function handleUnenrollStudent(studentId: number) {
+		if (!claseId) return;
+
+		unenrollLoading = studentId;
+
+		try {
+			await EnrollmentService.unenrollStudentFromClass(studentId, claseId);
+
+			// Remove student from local state
+			students = students.filter((student) => student.id !== studentId);
+
+			// Update student count
+			if (clase) {
+				numeroAlumnos = Math.max(0, numeroAlumnos - 1);
+			}
+		} catch (err) {
+			studentsError = `Error al dar de baja al estudiante: ${err}`;
+			console.error('Error unenrolling student:', err);
+		} finally {
+			unenrollLoading = null;
 		}
 	}
 
@@ -89,7 +199,11 @@
 			}
 
 			// Refresh student count - use the class details from the response
-			if (clase?.id) {
+			if (claseDetalles?.id) {
+				// Reload the class to get updated statistics
+				const updatedClaseDetalles = await EnrollmentService.getMyClassDetails(claseDetalles.id);
+				numeroAlumnos = updatedClaseDetalles.alumnosCount || 0;
+			} else if (clase?.id) {
 				// Reload the class to get updated statistics
 				const updatedClase = await ClaseService.getClaseById(clase.id);
 				numeroAlumnos = updatedClase.numeroAlumnos || 0;
@@ -156,10 +270,13 @@
 				return 'N/A';
 		}
 	}
+
+	// Get the current class data (either from clase or claseDetalles)
+	let currentClase = $derived(clase || claseDetalles);
 </script>
 
 <svelte:head>
-	<title>{clase?.titulo || 'Clase'} - Academia</title>
+	<title>{currentClase?.titulo || 'Clase'} - Academia</title>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8">
@@ -186,28 +303,34 @@
 		<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
 			{error}
 		</div>
-	{:else if clase}
+	{:else if currentClase}
 		<!-- Class Details -->
 		<div class="overflow-hidden rounded-lg bg-white shadow-lg">
 			<!-- Header with Image -->
 			<div class="relative h-64 bg-gradient-to-r from-blue-500 to-purple-600">
-				{#if clase.imagenPortada}
-					<img src={clase.imagenPortada} alt={clase.titulo} class="h-full w-full object-cover" />
+				{#if currentClase.imagenPortada}
+					<img
+						src={currentClase.imagenPortada}
+						alt={currentClase.titulo}
+						class="h-full w-full object-cover"
+					/>
 				{/if}
 				<div class="bg-opacity-40 absolute inset-0 bg-black"></div>
 				<div class="absolute right-0 bottom-0 left-0 p-6 text-white">
-					<h1 class="mb-2 text-4xl font-bold">{clase.titulo || 'Sin título'}</h1>
+					<h1 class="mb-2 text-4xl font-bold">{currentClase.titulo || 'Sin título'}</h1>
 					<div class="flex items-center space-x-4">
-						<span class="text-2xl font-bold">{formatPrice(clase.precio)}</span>
-						<span class="rounded-full px-3 py-1 text-sm font-medium {getNivelColor(clase.nivel)}">
-							{getNivelText(clase.nivel)}
+						<span class="text-2xl font-bold">{formatPrice(currentClase.precio)}</span>
+						<span
+							class="rounded-full px-3 py-1 text-sm font-medium {getNivelColor(currentClase.nivel)}"
+						>
+							{getNivelText(currentClase.nivel)}
 						</span>
 						<span
 							class="rounded-full px-3 py-1 text-sm font-medium {getPresencialidadColor(
-								clase.presencialidad
+								currentClase.presencialidad
 							)}"
 						>
-							{getPresencialidadText(clase.presencialidad)}
+							{getPresencialidadText(currentClase.presencialidad)}
 						</span>
 					</div>
 				</div>
@@ -219,7 +342,7 @@
 				<div class="mb-8">
 					<h2 class="mb-4 text-2xl font-semibold text-gray-900">Descripción</h2>
 					<p class="leading-relaxed text-gray-700">
-						{clase.descripcion || 'No hay descripción disponible para esta clase.'}
+						{currentClase.descripcion || 'No hay descripción disponible para esta clase.'}
 					</p>
 				</div>
 
@@ -234,21 +357,131 @@
 						<div class="text-sm text-gray-600">Profesores</div>
 					</div>
 					<div class="rounded-lg bg-purple-50 p-4 text-center">
-						<div class="text-2xl font-bold text-purple-600">{clase.numeroMateriales || 0}</div>
+						<div class="text-2xl font-bold text-purple-600">
+							{'numeroMateriales' in currentClase
+								? currentClase.numeroMateriales
+								: currentClase.material?.length || 0}
+						</div>
 						<div class="text-sm text-gray-600">Materiales</div>
 					</div>
 					<div class="rounded-lg bg-orange-50 p-4 text-center">
-						<div class="text-2xl font-bold text-orange-600">{clase.numeroEjercicios || 0}</div>
+						<div class="text-2xl font-bold text-orange-600">
+							{'numeroEjercicios' in currentClase
+								? currentClase.numeroEjercicios
+								: currentClase.ejerciciosId?.length || 0}
+						</div>
 						<div class="text-sm text-gray-600">Ejercicios</div>
 					</div>
 				</div>
 
+				<!-- Professor Profile Section -->
+				{#if (authStore.isAlumno && claseDetalles?.profesor) || ((authStore.isProfesor || authStore.isAdmin) && (profesores.length > 0 || profesorLoading))}
+					<div class="mb-8">
+						<h2 class="mb-4 text-2xl font-semibold text-gray-900">
+							{(authStore.isAlumno && claseDetalles?.profesor) || profesores.length === 1
+								? 'Profesor de la Clase'
+								: 'Profesores de la Clase'}
+						</h2>
+
+						{#if authStore.isAlumno && claseDetalles?.profesor}
+							<!-- Student view: Show professor from class details -->
+							{@const profesor = claseDetalles.profesor}
+							<div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+								<div class="p-4">
+									<div class="flex items-center space-x-3">
+										<!-- Professor Avatar -->
+										<div class="flex-shrink-0">
+											<div
+												class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
+											>
+												<span class="text-lg font-bold text-white">
+													{profesor.firstName?.[0]}{profesor.lastName?.[0]}
+												</span>
+											</div>
+										</div>
+
+										<!-- Professor Information -->
+										<div class="min-w-0 flex-1">
+											<h3 class="text-base font-semibold text-gray-900">
+												{profesor.fullName || `${profesor.firstName} ${profesor.lastName}`}
+											</h3>
+											<p class="text-sm text-gray-600">
+												<a href="mailto:{profesor.email}" class="text-blue-600 hover:text-blue-800">
+													{profesor.email}
+												</a>
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						{:else if profesorLoading}
+							<div class="flex items-center justify-center py-8">
+								<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+							</div>
+						{:else if profesorError}
+							<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+								{profesorError}
+							</div>
+						{:else if profesores.length > 0}
+							<!-- Teacher/Admin view: Show professors from separate API call -->
+							<div class="space-y-4">
+								{#each profesores as profesor (profesor.id)}
+									<div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+										<div class="p-4">
+											<div class="flex items-center justify-between">
+												<div class="flex items-center space-x-3">
+													<!-- Professor Avatar -->
+													<div class="flex-shrink-0">
+														<div
+															class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
+														>
+															<span class="text-lg font-bold text-white">
+																{profesor.firstName?.[0]}{profesor.lastName?.[0]}
+															</span>
+														</div>
+													</div>
+
+													<!-- Professor Information -->
+													<div class="min-w-0 flex-1">
+														<h3 class="text-base font-semibold text-gray-900">
+															{profesor.firstName}
+															{profesor.lastName}
+														</h3>
+														<p class="text-sm text-gray-600">
+															<a
+																href="mailto:{profesor.email}"
+																class="text-blue-600 hover:text-blue-800"
+															>
+																{profesor.email}
+															</a>
+														</p>
+													</div>
+												</div>
+
+												<!-- View Profile Button -->
+												{#if authStore.isAdmin || authStore.isProfesor}
+													<a
+														href="/profesores/{profesor.id}"
+														class="text-sm font-medium text-blue-600 hover:text-blue-800"
+													>
+														Ver perfil completo →
+													</a>
+												{/if}
+											</div>
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/if}
+
 				<!-- Materials Section -->
-				{#if clase.material && clase.material.length > 0}
+				{#if currentClase.material && currentClase.material.length > 0}
 					<div class="mb-8">
 						<h2 class="mb-4 text-2xl font-semibold text-gray-900">Materiales</h2>
 						<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-							{#each clase.material as material (material.id)}
+							{#each currentClase.material as material (material.id)}
 								<div class="rounded-lg bg-gray-50 p-4">
 									<h3 class="mb-2 font-semibold text-gray-900">
 										{material.name || 'Sin nombre'}
@@ -270,16 +503,133 @@
 				{/if}
 
 				<!-- Class Type Information -->
-				{#if clase.tipoClase}
+				{#if currentClase.tipoClase}
 					<div class="mb-8">
 						<h2 class="mb-4 text-2xl font-semibold text-gray-900">Tipo de Clase</h2>
 						<div class="rounded-lg bg-gray-50 p-4">
 							<span
 								class="rounded-full bg-orange-100 px-3 py-1 text-sm font-medium text-orange-800"
 							>
-								{clase.tipoClase}
+								{currentClase.tipoClase}
 							</span>
 						</div>
+					</div>
+				{/if}
+
+				<!-- Students Section (for teachers and admins) -->
+				{#if (authStore.isProfesor && isClassTeacher) || authStore.isAdmin}
+					<div class="mb-8">
+						<h2 class="mb-4 text-2xl font-semibold text-gray-900">Estudiantes Inscritos</h2>
+
+						{#if studentsLoading}
+							<div class="flex items-center justify-center py-8">
+								<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+							</div>
+						{:else if studentsError}
+							<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+								{studentsError}
+							</div>
+						{:else if students.length === 0}
+							<div class="rounded-lg bg-gray-50 p-8 text-center">
+								<div class="mb-2 text-4xl">👥</div>
+								<h3 class="mb-2 text-lg font-medium text-gray-900">No hay estudiantes inscritos</h3>
+								<p class="text-gray-500">Aún no se ha inscrito ningún estudiante en esta clase.</p>
+							</div>
+						{:else}
+							<div class="overflow-hidden rounded-lg border border-gray-200">
+								<table class="min-w-full divide-y divide-gray-200">
+									<thead class="bg-gray-50">
+										<tr>
+											<th
+												class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+											>
+												Estudiante
+											</th>
+											<th
+												class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+											>
+												Email
+											</th>
+											<th
+												class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+											>
+												DNI
+											</th>
+											<th
+												class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+											>
+												Teléfono
+											</th>
+											<th
+												class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+											>
+												Estado
+											</th>
+											<th
+												class="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase"
+											>
+												Acciones
+											</th>
+										</tr>
+									</thead>
+									<tbody class="divide-y divide-gray-200 bg-white">
+										{#each students as student (student.id)}
+											<tr class="hover:bg-gray-50">
+												<td class="px-6 py-4 whitespace-nowrap">
+													<div class="flex items-center">
+														<div class="h-10 w-10 flex-shrink-0">
+															<div
+																class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100"
+															>
+																<span class="text-sm font-medium text-blue-600">
+																	{student.firstName?.[0]}{student.lastName?.[0]}
+																</span>
+															</div>
+														</div>
+														<div class="ml-4">
+															<div class="text-sm font-medium text-gray-900">
+																{student.firstName}
+																{student.lastName}
+															</div>
+															<div class="text-sm text-gray-500">
+																@{student.username}
+															</div>
+														</div>
+													</div>
+												</td>
+												<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+													{student.email}
+												</td>
+												<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+													{student.dni}
+												</td>
+												<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+													{student.phoneNumber || 'N/A'}
+												</td>
+												<td class="px-6 py-4 whitespace-nowrap">
+													<span
+														class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {student.enabled
+															? 'bg-green-100 text-green-800'
+															: 'bg-red-100 text-red-800'}"
+													>
+														{student.enabled ? 'Activo' : 'Inactivo'}
+													</span>
+												</td>
+												<td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+													<button
+														onclick={() => handleUnenrollStudent(student.id)}
+														disabled={unenrollLoading === student.id}
+														class="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+													>
+														{unenrollLoading === student.id ? 'Cargando...' : 'Dar de baja'}
+													</button>
+												</td>
+											</tr>
+										{/each}
+									</tbody>
+								</table>
+							</div>
+						{/if}
 					</div>
 				{/if}
 
@@ -300,7 +650,7 @@
 					{/if}
 					{#if authStore.isAdmin || authStore.isProfesor}
 						<a
-							href="/clases/{clase.id}/editar"
+							href="/clases/{currentClase.id}/editar"
 							class="flex-1 rounded-lg bg-green-600 px-6 py-3 text-center font-bold text-white hover:bg-green-700"
 						>
 							Editar Clase

@@ -42,19 +42,13 @@ export interface DTOMaterial {
      * @type {boolean}
      * @memberof DTOMaterial
      */
-    video?: boolean;
+    image?: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof DTOMaterial
      */
     document?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DTOMaterial
-     */
-    image?: boolean;
     /**
      * 
      * @type {string}
@@ -67,6 +61,12 @@ export interface DTOMaterial {
      * @memberof DTOMaterial
      */
     materialType?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOMaterial
+     */
+    video?: boolean;
 }
 
 /**
@@ -89,11 +89,11 @@ export function DTOMaterialFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'] == null ? undefined : json['name'],
         'url': json['url'] == null ? undefined : json['url'],
-        'video': json['video'] == null ? undefined : json['video'],
-        'document': json['document'] == null ? undefined : json['document'],
         'image': json['image'] == null ? undefined : json['image'],
+        'document': json['document'] == null ? undefined : json['document'],
         'fileExtension': json['fileExtension'] == null ? undefined : json['fileExtension'],
         'materialType': json['materialType'] == null ? undefined : json['materialType'],
+        'video': json['video'] == null ? undefined : json['video'],
     };
 }
 
@@ -111,11 +111,11 @@ export function DTOMaterialToJSONTyped(value?: DTOMaterial | null, ignoreDiscrim
         'id': value['id'],
         'name': value['name'],
         'url': value['url'],
-        'video': value['video'],
-        'document': value['document'],
         'image': value['image'],
+        'document': value['document'],
         'fileExtension': value['fileExtension'],
         'materialType': value['materialType'],
+        'video': value['video'],
     };
 }
 

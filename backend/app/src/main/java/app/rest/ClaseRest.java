@@ -23,10 +23,12 @@ import app.dtos.DTOPeticionCrearCurso;
 import app.dtos.DTOPeticionCrearTaller;
 import app.dtos.DTORespuestaPaginada;
 import app.dtos.DTOTaller;
+import app.dtos.DTOProfesor;
 import app.entidades.enums.EDificultad;
 import app.entidades.enums.EPresencialidad;
 import app.excepciones.ResourceNotFoundException;
 import app.servicios.ServicioClase;
+import app.servicios.ServicioProfesor;
 import app.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -53,6 +55,7 @@ import lombok.RequiredArgsConstructor;
 public class ClaseRest extends BaseRestController {
 
     private final ServicioClase servicioClase;
+    private final ServicioProfesor servicioProfesor;
     private final SecurityUtils securityUtils;
 
     // ===== READ OPERATIONS =====
@@ -161,6 +164,40 @@ public class ClaseRest extends BaseRestController {
             throw new ResourceNotFoundException("Class", "ID", id);
         }
         return ResponseEntity.ok(clase);
+    }
+
+    /**
+     * Gets all professors assigned to a specific class
+     */
+    @GetMapping("/{id}/profesores")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
+    @Operation(
+        summary = "Get professors by class",
+        description = "Gets all professors assigned to a specific class"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Professors found successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOProfesor.class, type = "array")
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Class not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied"
+        )
+    })
+    public ResponseEntity<List<DTOProfesor>> obtenerProfesoresPorClase(
+            @PathVariable Long id) {
+        
+        List<DTOProfesor> profesores = servicioProfesor.obtenerProfesoresPorClase(id.toString());
+        return ResponseEntity.ok(profesores);
     }
 
     // ===== CREATION OPERATIONS =====

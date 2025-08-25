@@ -35,6 +35,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import app.dtos.DTOClaseConDetallesPublico;
+import app.dtos.DTOPeticionCrearClase;
+import app.dtos.DTOProfesorPublico;
+import app.entidades.Profesor;
+
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para ServicioClase")
 class ServicioClaseTest {
@@ -452,5 +457,147 @@ class ServicioClaseTest {
         assertEquals(1, resultado);
         verify(repositorioClase).findById(1L);
         verify(repositorioClase).countProfesoresByClaseId(1L);
+    }
+}
+
+@DisplayName("Tests para ServicioClase - Bidirectional Relationship")
+class ServicioClaseTest {
+
+    @Mock
+    private RepositorioAlumno repositorioAlumno;
+
+    @Mock
+    private RepositorioClase repositorioClase;
+
+    @Mock
+    private RepositorioProfesor repositorioProfesor;
+
+    @Mock
+    private SecurityUtils securityUtils;
+
+    @InjectMocks
+    private ServicioClase servicioClase;
+
+    private Profesor profesor;
+    private Curso curso;
+    private DTOPeticionCrearClase peticionCrearClase;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        
+        // Crear profesor de prueba
+        profesor = new Profesor("prof1", "password", "Luis", "Muñoz López", "12345678A", "prof1@academia.com", "647940540");
+        profesor.setId(3L);
+        profesor.setEnabled(true);
+        
+        // Crear curso de prueba
+        curso = new Curso(
+            "Diseño Web",
+            "Curso de Diseño Web impartido por Luis",
+            new BigDecimal("176.40"),
+            EPresencialidad.ONLINE,
+            null,
+            EDificultad.AVANZADO,
+            LocalDate.now(),
+            LocalDate.now().plusMonths(3)
+        );
+        curso.setId(2L);
+        
+        // Crear petición de creación de clase
+        peticionCrearClase = new DTOPeticionCrearClase(
+            "Diseño Web",
+            "Curso de Diseño Web impartido por Luis",
+            new BigDecimal("176.40"),
+            EPresencialidad.ONLINE,
+            null,
+            EDificultad.AVANZADO,
+            Arrays.asList("3"), // ID del profesor
+            Arrays.asList()
+        );
+    }
+
+    @Test
+    @DisplayName("Crear curso debe actualizar la lista de clases del profesor")
+    void testCrearCursoActualizaProfesorClases() {
+        // Configurar mocks
+        when(repositorioClase.save(any(Curso.class))).thenReturn(curso);
+        when(repositorioProfesor.findById(3L)).thenReturn(Optional.of(profesor));
+        when(repositorioProfesor.save(any(Profesor.class))).thenReturn(profesor);
+        
+        // Ejecutar método
+        servicioClase.crearCurso(peticionCrearClase, LocalDate.now(), LocalDate.now().plusMonths(3));
+        
+        // Verificar que se llamó a agregarClase en el profesor
+        verify(repositorioProfesor, times(1)).findById(3L);
+        verify(repositorioProfesor, times(1)).save(any(Profesor.class));
+        
+        // Verificar que el profesor tiene la clase en su lista
+        assertTrue(profesor.getClasesId().contains("2"));
+        assertEquals(1, profesor.getClasesId().size());
+    }
+
+    @Test
+    @DisplayName("DTOProfesorPublico debe mostrar classCount correcto después de crear curso")
+    void testDTOProfesorPublicoClassCountCorrecto() {
+        // Configurar mocks
+        when(repositorioClase.save(any(Curso.class))).thenReturn(curso);
+        when(repositorioProfesor.findById(3L)).thenReturn(Optional.of(profesor));
+        when(repositorioProfesor.save(any(Profesor.class))).thenReturn(profesor);
+        
+        // Ejecutar método
+        servicioClase.crearCurso(peticionCrearClase, LocalDate.now(), LocalDate.now().plusMonths(3));
+        
+        // Crear DTOProfesorPublico y verificar classCount
+        DTOProfesorPublico dtoProfesor = new DTOProfesorPublico(profesor);
+        assertEquals(1, dtoProfesor.classCount());
+        assertTrue(dtoProfesor.hasClasses());
+    }
+
+    @Test
+    @DisplayName("Agregar profesor a clase debe actualizar la lista de clases del profesor")
+    void testAgregarProfesorActualizaProfesorClases() {
+        // Configurar mocks
+        when(repositorioClase.findById(2L)).thenReturn(Optional.of(curso));
+        when(repositorioClase.save(any(Clase.class))).thenReturn(curso);
+        when(repositorioProfesor.findById(3L)).thenReturn(Optional.of(profesor));
+        when(repositorioProfesor.save(any(Profesor.class))).thenReturn(profesor);
+        when(securityUtils.isAdmin()).thenReturn(true);
+        
+        // Ejecutar método
+        servicioClase.agregarProfesor(2L, "3");
+        
+        // Verificar que se llamó a agregarClase en el profesor
+        verify(repositorioProfesor, times(1)).findById(3L);
+        verify(repositorioProfesor, times(1)).save(any(Profesor.class));
+        
+        // Verificar que el profesor tiene la clase en su lista
+        assertTrue(profesor.getClasesId().contains("2"));
+        assertEquals(1, profesor.getClasesId().size());
+    }
+
+    @Test
+    @DisplayName("Remover profesor de clase debe actualizar la lista de clases del profesor")
+    void testRemoverProfesorActualizaProfesorClases() {
+        // Agregar clase al profesor primero
+        profesor.agregarClase("2");
+        
+        // Configurar mocks
+        when(repositorioClase.findById(2L)).thenReturn(Optional.of(curso));
+        when(repositorioClase.save(any(Clase.class))).thenReturn(curso);
+        when(repositorioProfesor.findById(3L)).thenReturn(Optional.of(profesor));
+        when(repositorioProfesor.save(any(Profesor.class))).thenReturn(profesor);
+        when(securityUtils.isAdmin()).thenReturn(true);
+        
+        // Ejecutar método
+        servicioClase.removerProfesor(2L, "3");
+        
+        // Verificar que se llamó a removerClase en el profesor
+        verify(repositorioProfesor, times(1)).findById(3L);
+        verify(repositorioProfesor, times(1)).save(any(Profesor.class));
+        
+        // Verificar que el profesor ya no tiene la clase en su lista
+        assertFalse(profesor.getClasesId().contains("2"));
+        assertEquals(0, profesor.getClasesId().size());
     }
 }

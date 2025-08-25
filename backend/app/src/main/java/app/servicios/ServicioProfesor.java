@@ -17,6 +17,7 @@ import app.dtos.DTOClase;
 import app.dtos.DTOParametrosBusquedaProfesor;
 import app.dtos.DTOPeticionRegistroProfesor;
 import app.dtos.DTOProfesor;
+import app.dtos.DTOProfesorPublico;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Clase;
 import app.entidades.Profesor;
@@ -103,6 +104,19 @@ public class ServicioProfesor {
         Profesor profesor = repositorioProfesor.findByDni(dni).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "DNI", dni);
         return new DTOProfesor(profesor);
+    }
+
+    /**
+     * Obtiene información pública de un profesor por su ID
+     * @param id ID del profesor
+     * @return DTOProfesorPublico
+     * @throws EntidadNoEncontradaException si no se encuentra el profesor
+     */
+    @Transactional(readOnly = true)
+    public DTOProfesorPublico obtenerProfesorPublicoPorId(Long id) {
+        Profesor profesor = repositorioProfesor.findById(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
+        return new DTOProfesorPublico(profesor);
     }
 
     // ===== MÉTODOS DE BÚSQUEDA =====

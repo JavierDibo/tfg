@@ -119,9 +119,9 @@ export const ProfesorService = {
 
 	async toggleAccountStatus(id: number, habilitado: boolean): Promise<DTOProfesor> {
 		try {
-			const response = await profesorApi.cambiarEstadoProfesor({
+			const response = await profesorApi.actualizarProfesor({
 				id,
-				requestBody: { enabled: habilitado }
+				dTOActualizacionProfesor: { enabled: habilitado }
 			});
 			return response;
 		} catch (error) {

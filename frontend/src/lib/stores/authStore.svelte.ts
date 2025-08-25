@@ -6,6 +6,7 @@ interface DecodedToken {
 	sub: string;
 	usuario?: string;
 	id?: number;
+	userId?: number;
 	roles?: string[];
 }
 
@@ -35,12 +36,25 @@ function updateUserFromToken(jwt: string) {
 		console.log('Decoded token:', decoded);
 		user = decoded;
 		token = jwt;
+
+		// Handle userId field from JWT token (priority: userId > id)
+		if (decoded.userId) {
+			user.id = decoded.userId;
+		} else if (decoded.id) {
+			user.id = decoded.id;
+		}
+
 		if (browser) {
 			localStorage.setItem('jwt_token', jwt);
-			// Restore the user ID from localStorage if available
+			// Store the user ID in localStorage for persistence
+			if (user.id) {
+				localStorage.setItem('user_id', user.id.toString());
+				console.log('Stored user ID in localStorage:', user.id);
+			}
+			// Restore the user ID from localStorage if available and not already set
 			const storedUserId = localStorage.getItem('user_id');
 			console.log('Stored user ID from localStorage:', storedUserId);
-			if (storedUserId) {
+			if (storedUserId && !user.id) {
 				user.id = parseInt(storedUserId);
 				console.log('Restored user ID:', user.id);
 			}

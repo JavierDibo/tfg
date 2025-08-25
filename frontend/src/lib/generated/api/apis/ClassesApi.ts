@@ -19,6 +19,7 @@ import type {
   DTOCurso,
   DTOPeticionCrearCurso,
   DTOPeticionCrearTaller,
+  DTOProfesor,
   DTORespuestaPaginada,
   DTORespuestaPaginadaDTOClase,
   DTOTaller,
@@ -32,6 +33,8 @@ import {
     DTOPeticionCrearCursoToJSON,
     DTOPeticionCrearTallerFromJSON,
     DTOPeticionCrearTallerToJSON,
+    DTOProfesorFromJSON,
+    DTOProfesorToJSON,
     DTORespuestaPaginadaFromJSON,
     DTORespuestaPaginadaToJSON,
     DTORespuestaPaginadaDTOClaseFromJSON,
@@ -70,6 +73,10 @@ export interface ObtenerClasesRequest {
     size?: number;
     sortBy?: string;
     sortDirection?: string;
+}
+
+export interface ObtenerProfesoresPorClaseRequest {
+    id: number;
 }
 
 /**
@@ -316,6 +323,45 @@ export class ClassesApi extends runtime.BaseAPI {
      */
     async obtenerClases(requestParameters: ObtenerClasesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
         const response = await this.obtenerClasesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets all professors assigned to a specific class
+     * Get professors by class
+     */
+    async obtenerProfesoresPorClaseRaw(requestParameters: ObtenerProfesoresPorClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor<any>>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerProfesoresPorClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/{id}/profesores`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Gets all professors assigned to a specific class
+     * Get professors by class
+     */
+    async obtenerProfesoresPorClase(requestParameters: ObtenerProfesoresPorClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor<any>> {
+        const response = await this.obtenerProfesoresPorClaseRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -28,7 +28,7 @@
 	let totalPages = $state(0);
 	let currentPage = $state(0); // 0-based for API
 	let pageSize = $state(20);
-	let sortBy = $state('id');
+	let sortBy = $state('name');
 	let sortDirection = $state<'ASC' | 'DESC'>('ASC');
 
 	// Search configuration
@@ -181,7 +181,6 @@
 
 	// Enhanced table configuration using utilities
 	const tableColumns = createColumns({
-		id: { key: 'id', header: 'ID', sortable: true, width: '80px' },
 		name: {
 			key: 'name',
 			header: 'Name',
@@ -253,7 +252,6 @@
 	});
 
 	const sortFields = [
-		{ value: 'id', label: 'ID' },
 		{ value: 'name', label: 'Name' },
 		{ value: 'url', label: 'URL' }
 	];

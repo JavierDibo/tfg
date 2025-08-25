@@ -16,7 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   DTOClase,
-  DTOClaseConDetalles,
+  DTOClaseConDetallesPublico,
   DTOEstadoInscripcion,
   DTORespuestaEnrollment,
   Material,
@@ -24,8 +24,8 @@ import type {
 import {
     DTOClaseFromJSON,
     DTOClaseToJSON,
-    DTOClaseConDetallesFromJSON,
-    DTOClaseConDetallesToJSON,
+    DTOClaseConDetallesPublicoFromJSON,
+    DTOClaseConDetallesPublicoToJSON,
     DTOEstadoInscripcionFromJSON,
     DTOEstadoInscripcionToJSON,
     DTORespuestaEnrollmentFromJSON,
@@ -65,16 +65,6 @@ export interface InscribirAlumnoEnClaseRequest {
 
 export interface InscribirseEnClaseRequest {
     claseId: number;
-}
-
-export interface ObtenerDetallesClaseParaEstudianteRequest {
-    claseId: number;
-    studentId: number;
-}
-
-export interface ObtenerInscripcionEstudianteRequest {
-    claseId: number;
-    studentId: number;
 }
 
 export interface ObtenerMiInscripcionRequest {
@@ -421,100 +411,6 @@ export class ClassManagementApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets detailed information about a class for a specific student
-     * Get class details for student
-     */
-    async obtenerDetallesClaseParaEstudianteRaw(requestParameters: ObtenerDetallesClaseParaEstudianteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClaseConDetalles>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling obtenerDetallesClaseParaEstudiante().'
-            );
-        }
-
-        if (requestParameters['studentId'] == null) {
-            throw new runtime.RequiredError(
-                'studentId',
-                'Required parameter "studentId" was null or undefined when calling obtenerDetallesClaseParaEstudiante().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/{claseId}/students/{studentId}/details`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-        urlPath = urlPath.replace(`{${"studentId"}}`, encodeURIComponent(String(requestParameters['studentId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseConDetallesFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets detailed information about a class for a specific student
-     * Get class details for student
-     */
-    async obtenerDetallesClaseParaEstudiante(requestParameters: ObtenerDetallesClaseParaEstudianteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClaseConDetalles> {
-        const response = await this.obtenerDetallesClaseParaEstudianteRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Gets the enrollment information of a student in a specific class
-     * Get student enrollment in class
-     */
-    async obtenerInscripcionEstudianteRaw(requestParameters: ObtenerInscripcionEstudianteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEstadoInscripcion>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling obtenerInscripcionEstudiante().'
-            );
-        }
-
-        if (requestParameters['studentId'] == null) {
-            throw new runtime.RequiredError(
-                'studentId',
-                'Required parameter "studentId" was null or undefined when calling obtenerInscripcionEstudiante().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/{claseId}/students/{studentId}`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-        urlPath = urlPath.replace(`{${"studentId"}}`, encodeURIComponent(String(requestParameters['studentId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEstadoInscripcionFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets the enrollment information of a student in a specific class
-     * Get student enrollment in class
-     */
-    async obtenerInscripcionEstudiante(requestParameters: ObtenerInscripcionEstudianteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEstadoInscripcion> {
-        const response = await this.obtenerInscripcionEstudianteRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Gets the enrollment information of the authenticated student in a class
      * Get my enrollment in class
      */
@@ -557,7 +453,7 @@ export class ClassManagementApi extends runtime.BaseAPI {
      * Gets detailed information about a class for the authenticated student
      * Get class details for me
      */
-    async obtenerMisDetallesClaseRaw(requestParameters: ObtenerMisDetallesClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClaseConDetalles>> {
+    async obtenerMisDetallesClaseRaw(requestParameters: ObtenerMisDetallesClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClaseConDetallesPublico>> {
         if (requestParameters['claseId'] == null) {
             throw new runtime.RequiredError(
                 'claseId',
@@ -580,14 +476,14 @@ export class ClassManagementApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseConDetallesFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseConDetallesPublicoFromJSON(jsonValue));
     }
 
     /**
      * Gets detailed information about a class for the authenticated student
      * Get class details for me
      */
-    async obtenerMisDetallesClase(requestParameters: ObtenerMisDetallesClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClaseConDetalles> {
+    async obtenerMisDetallesClase(requestParameters: ObtenerMisDetallesClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClaseConDetallesPublico> {
         const response = await this.obtenerMisDetallesClaseRaw(requestParameters, initOverrides);
         return await response.value();
     }

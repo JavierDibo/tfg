@@ -1,4 +1,4 @@
-// LLM_EDIT_TIMESTAMP: 25 ago. 11:28
+// LLM_EDIT_TIMESTAMP: 25 ago. 13:59
 package app.entidades;
 
 import jakarta.persistence.*;

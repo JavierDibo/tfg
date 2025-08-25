@@ -5,7 +5,8 @@ import type {
 	DTOPeticionCrearCurso,
 	DTOPeticionCrearTaller,
 	DTORespuestaPaginada,
-	DTORespuestaPaginadaDTOClase
+	DTORespuestaPaginadaDTOClase,
+	DTOProfesor
 } from '$lib/generated/api';
 import { claseApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
@@ -31,6 +32,19 @@ export class ClaseService {
 			return await claseApi.obtenerClasePorId({ id });
 		} catch (error) {
 			ErrorHandler.logError(error, 'getClaseById');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get professors for a specific class
+	 */
+	static async getProfesoresPorClase(claseId: number): Promise<DTOProfesor[]> {
+		try {
+			const response = await claseApi.obtenerProfesoresPorClase({ id: claseId });
+			return Array.isArray(response) ? response : [response];
+		} catch (error) {
+			ErrorHandler.logError(error, 'getProfesoresPorClase');
 			throw await ErrorHandler.parseError(error);
 		}
 	}

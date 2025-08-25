@@ -21,20 +21,12 @@ export class EnrollmentService {
 
 	/**
 	 * Check if a specific student is enrolled in a class (for admins/professors)
+	 * Note: This method has been removed from the API. Use general class information instead.
 	 */
-	static async checkStudentEnrollmentStatus(
-		claseId: number,
-		alumnoId: number
-	): Promise<DTOEstadoInscripcion> {
-		try {
-			return await classManagementApi.obtenerInscripcionEstudiante({
-				claseId,
-				studentId: alumnoId
-			});
-		} catch (error) {
-			ErrorHandler.logError(error, 'checkStudentEnrollmentStatus');
-			throw await ErrorHandler.parseError(error);
-		}
+	static async checkStudentEnrollmentStatus(): Promise<DTOEstadoInscripcion> {
+		throw new Error(
+			'This method has been removed from the API. Use general class information instead.'
+		);
 	}
 
 	/**
@@ -105,20 +97,12 @@ export class EnrollmentService {
 
 	/**
 	 * Get class details for a specific student (for admins/professors)
+	 * Note: This method has been removed from the API. Use general class information instead.
 	 */
-	static async getStudentClassDetails(
-		claseId: number,
-		alumnoId: number
-	): Promise<DTOClaseConDetalles> {
-		try {
-			return await classManagementApi.obtenerDetallesClaseParaEstudiante({
-				claseId,
-				studentId: alumnoId
-			});
-		} catch (error) {
-			ErrorHandler.logError(error, 'getStudentClassDetails');
-			throw await ErrorHandler.parseError(error);
-		}
+	static async getStudentClassDetails(): Promise<DTOClaseConDetalles> {
+		throw new Error(
+			'This method has been removed from the API. Use general class information instead.'
+		);
 	}
 
 	/**
