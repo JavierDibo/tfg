@@ -33,26 +33,23 @@ public class DataInitializationCoordinator {
         System.out.println("=== Starting Data Initialization ===");
         
         try {
-            System.out.println("Creating admin user...");
             adminInitializer.initialize();
-            System.out.println("Admin initialized successfully: (admin,admin)");
+            System.out.println("Admin user created");
             
-            System.out.println("Creating professors...");
             professorInitializer.initialize();
+            System.out.println("Professors created");
             
-            System.out.println("Creating students...");
             studentInitializer.initialize();
+            System.out.println("Students created");
             
-            System.out.println("Creating courses...");
+            materialDataInitializer.initialize();
+            System.out.println("Materials created");
+            
             courseInitializer.initialize();
             
-            System.out.println("Enrolling students in courses...");
             studentEnrollmentInitializer.initialize();
             
-            System.out.println("Creating materials...");
-            materialDataInitializer.initialize();
-            
-            System.out.println("=== Data Initialization Completed Successfully ===");
+            System.out.println("=== Data Initialization Completed ===");
             
         } catch (Exception e) {
             System.err.println("❌ Error during data initialization: " + e.getMessage());

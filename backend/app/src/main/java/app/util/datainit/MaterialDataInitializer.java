@@ -9,22 +9,19 @@ import java.util.List;
 
 @Component
 public class MaterialDataInitializer extends BaseDataInitializer {
-    private static final int MATERIALS_TO_CREATE = 20;
+    private static final int MATERIALS_TO_CREATE = 45;
     private final List<DTOMaterial> createdMaterials = new ArrayList<>();
 
     @Override
     public void initialize() {
         ServicioMaterial servicioMaterial = context.getBean(ServicioMaterial.class);
         
-        System.out.println("Creating sample materials...");
-        
         // Create various types of educational materials
         createDocumentMaterials(servicioMaterial);
         createImageMaterials(servicioMaterial);
         createVideoMaterials(servicioMaterial);
-        createPresentationMaterials(servicioMaterial);
         
-        System.out.println("Material creation completed. Total created: " + createdMaterials.size());
+        System.out.println("MaterialDataInitializer: Created " + createdMaterials.size() + " materials");
     }
     
     private void createDocumentMaterials(ServicioMaterial servicioMaterial) {
@@ -36,21 +33,35 @@ public class MaterialDataInitializer extends BaseDataInitializer {
             "Documentación de Spring Boot",
             "Libro de Química Orgánica",
             "Guía de Diseño Web",
-            "Manual de Inglés Empresarial"
+            "Manual de Inglés Empresarial",
+            "Guía de Álgebra Lineal",
+            "Manual de Python Avanzado",
+            "Apuntes de Cálculo Diferencial",
+            "Tutorial de Machine Learning",
+            "Documentación de React",
+            "Libro de Biología Molecular",
+            "Guía de UX/UI Design"
         };
         
         String[] documentUrls = {
-            "https://example.com/materials/matematicas-basicas.pdf",
-            "https://example.com/materials/java-programming.pdf",
-            "https://example.com/materials/fisica-cuantica.pdf",
-            "https://example.com/materials/bases-datos.pdf",
-            "https://example.com/materials/spring-boot-docs.pdf",
-            "https://example.com/materials/quimica-organica.pdf",
-            "https://example.com/materials/diseno-web.pdf",
-            "https://example.com/materials/ingles-empresarial.pdf"
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-file.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-download-10-mb.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-with-images.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-file.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-download-10-mb.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-with-images.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-file.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-download-10-mb.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-file.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-download-10-mb.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-with-images.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-file.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-download-10-mb.pdf",
+            "https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-with-images.pdf"
         };
         
-        for (int i = 0; i < documentNames.length; i++) {
+        int minLength = Math.min(documentNames.length, documentUrls.length);
+        for (int i = 0; i < minLength; i++) {
             try {
                 DTOMaterial material = servicioMaterial.crearMaterial(documentNames[i], documentUrls[i]);
                 createdMaterials.add(material);
@@ -69,21 +80,36 @@ public class MaterialDataInitializer extends BaseDataInitializer {
             "Flujo de Autenticación",
             "Modelo de Datos",
             "Interfaz de Usuario",
-            "Diagrama de Red"
+            "Diagrama de Red",
+            "Diagrama de Secuencia",
+            "Arquitectura de Microservicios",
+            "Flujo de Datos",
+            "Modelo Entidad-Relación",
+            "Interfaz de Usuario Responsiva",
+            "Diagrama de Componentes",
+            "Flujo de Trabajo"
         };
         
         String[] imageUrls = {
-            "https://example.com/images/diagrama-flujo.png",
-            "https://example.com/images/estructura-bd.jpg",
-            "https://example.com/images/arquitectura-app.png",
-            "https://example.com/images/uml-clases.jpg",
-            "https://example.com/images/flujo-auth.png",
-            "https://example.com/images/modelo-datos.jpg",
-            "https://example.com/images/interfaz-ui.png",
-            "https://example.com/images/diagrama-red.jpg"
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Large-Sample-png-Image-download-for-Testing.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Sample-PNG-File-for-Testing.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Sample-Image-file-Download.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Sample-Small-Image-PNG-file-Download.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Small-Sample-png-Image-File-Download.jpg",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Large-Sample-png-Image-download-for-Testing.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Sample-PNG-File-for-Testing.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Sample-Image-file-Download.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Large-Sample-png-Image-download-for-Testing.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Sample-PNG-File-for-Testing.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Sample-Image-file-Download.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Sample-Small-Image-PNG-file-Download.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Small-Sample-png-Image-File-Download.jpg",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Large-Sample-png-Image-download-for-Testing.png",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/08/Sample-PNG-File-for-Testing.png"
         };
         
-        for (int i = 0; i < imageNames.length; i++) {
+        int minLength = Math.min(imageNames.length, imageUrls.length);
+        for (int i = 0; i < minLength; i++) {
             try {
                 DTOMaterial material = servicioMaterial.crearMaterial(imageNames[i], imageUrls[i]);
                 createdMaterials.add(material);
@@ -102,59 +128,41 @@ public class MaterialDataInitializer extends BaseDataInitializer {
             "Explicación de Conceptos",
             "Resolución de Problemas",
             "Mejores Prácticas",
-            "Casos de Uso Reales"
+            "Casos de Uso Reales",
+            "Tutorial de Despliegue",
+            "Demostración de API",
+            "Guía de Testing",
+            "Ejercicios de Debugging",
+            "Explicación de Patrones",
+            "Resolución de Errores",
+            "Mejores Prácticas de Seguridad"
         };
         
         String[] videoUrls = {
-            "https://example.com/videos/tutorial-instalacion.mp4",
-            "https://example.com/videos/demo-funcionalidades.mp4",
-            "https://example.com/videos/guia-configuracion.mp4",
-            "https://example.com/videos/ejercicios-practicos.mp4",
-            "https://example.com/videos/explicacion-conceptos.mp4",
-            "https://example.com/videos/resolucion-problemas.mp4",
-            "https://example.com/videos/mejores-practicas.mp4",
-            "https://example.com/videos/casos-uso-reales.mp4"
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4"
         };
         
-        for (int i = 0; i < videoNames.length; i++) {
+        int minLength = Math.min(videoNames.length, videoUrls.length);
+        for (int i = 0; i < minLength; i++) {
             try {
                 DTOMaterial material = servicioMaterial.crearMaterial(videoNames[i], videoUrls[i]);
                 createdMaterials.add(material);
             } catch (Exception e) {
                 System.err.println("Error creating video material: " + e.getMessage());
-            }
-        }
-    }
-    
-    private void createPresentationMaterials(ServicioMaterial servicioMaterial) {
-        String[] presentationNames = {
-            "Introducción al Curso",
-            "Conceptos Fundamentales",
-            "Metodología de Trabajo",
-            "Evaluación y Criterios",
-            "Recursos Adicionales",
-            "Preguntas Frecuentes",
-            "Calendario del Curso",
-            "Contacto y Soporte"
-        };
-        
-        String[] presentationUrls = {
-            "https://example.com/presentations/introduccion-curso.pptx",
-            "https://example.com/presentations/conceptos-fundamentales.pptx",
-            "https://example.com/presentations/metodologia-trabajo.pptx",
-            "https://example.com/presentations/evaluacion-criterios.pptx",
-            "https://example.com/presentations/recursos-adicionales.pptx",
-            "https://example.com/presentations/preguntas-frecuentes.pptx",
-            "https://example.com/presentations/calendario-curso.pptx",
-            "https://example.com/presentations/contacto-soporte.pptx"
-        };
-        
-        for (int i = 0; i < presentationNames.length; i++) {
-            try {
-                DTOMaterial material = servicioMaterial.crearMaterial(presentationNames[i], presentationUrls[i]);
-                createdMaterials.add(material);
-            } catch (Exception e) {
-                System.err.println("Error creating presentation material: " + e.getMessage());
             }
         }
     }

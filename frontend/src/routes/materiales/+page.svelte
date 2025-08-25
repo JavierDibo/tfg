@@ -1,44 +1,194 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { MaterialService } from '$lib/services/materialService';
-	import { getSearchConfig } from '$lib/components/common/searchConfigs';
-	import EntityDataTable from '$lib/components/common/EntityDataTable.svelte';
-	import EntitySearchSection from '$lib/components/common/EntitySearchSection.svelte';
-	import ErrorDisplay from '$lib/components/common/ErrorDisplay.svelte';
 	import type { DTOMaterial } from '$lib/generated/api';
-	import type { EntityColumn, EntityAction } from '$lib/components/common/types';
+	import { MaterialService } from '$lib/services/materialService';
+	import { authStore } from '$lib/stores/authStore.svelte';
+	import {
+		EntitySearchSection,
+		EnhancedDataTable,
+		EntityPaginationControls,
+		EntityMessages,
+		EntityDeleteModal,
+		createColumns
+	} from '$lib/components/common';
+	import type {
+		EntityFilters,
+		PaginatedEntities,
+		EntityColumn,
+		EntityAction
+	} from '$lib/components/common/types';
+	import { getSearchConfig } from '$lib/components/common/searchConfigs';
 
-	let materials: DTOMaterial[] = [];
-	let loading = true;
-	let error: string | null = null;
-	let totalElements = 0;
-	let currentPage = 0;
-	let pageSize = 20;
-	let sortBy = 'id';
-	let sortDirection = 'ASC';
+	// State
+	let loading = $state(false);
+	let error = $state<string | null>(null);
+	let successMessage = $state<string | null>(null);
+	let materials = $state<DTOMaterial[]>([]);
+	let totalElements = $state(0);
+	let totalPages = $state(0);
+	let currentPage = $state(0); // 0-based for API
+	let pageSize = $state(20);
+	let sortBy = $state('id');
+	let sortDirection = $state<'ASC' | 'DESC'>('ASC');
 
-	// Search parameters
-	let searchParams = {
-		searchMode: 'simple' as const,
+	// Search configuration
+	const searchConfig = getSearchConfig('materiales');
+
+	// Search and filters
+	let currentFilters = $state<EntityFilters>({
+		searchMode: 'simple',
 		q: '',
 		name: '',
 		url: '',
 		type: ''
-	};
+	});
 
-	// Table configuration
-	const materialSearchConfig = getSearchConfig('materiales');
+	// Modal state
+	let showDeleteModal = $state(false);
+	let materialToDelete: DTOMaterial | null = $state(null);
 
-	const columns: EntityColumn<DTOMaterial>[] = [
-		{
+	// Check authentication and permissions
+	$effect(() => {
+		if (!authStore.isAuthenticated) {
+			goto('/auth');
+			return;
+		}
+
+		if (!authStore.isAdmin && !authStore.isProfesor) {
+			goto('/');
+			return;
+		}
+	});
+
+	// Load data when component mounts or filters change
+	$effect(() => {
+		if (authStore.isAuthenticated && (authStore.isAdmin || authStore.isProfesor)) {
+			loadMaterials();
+		}
+	});
+
+	// Data loading with new search parameters
+	async function loadMaterials() {
+		loading = true;
+		error = null;
+
+		try {
+			const params: Record<string, unknown> = {
+				page: currentPage, // 0-based for API
+				size: pageSize,
+				sortBy: sortBy,
+				sortDirection: sortDirection
+			};
+
+			// Add search parameters
+			if (currentFilters.q && typeof currentFilters.q === 'string' && currentFilters.q.trim()) {
+				params.q = currentFilters.q.trim();
+			}
+			if (
+				currentFilters.name &&
+				typeof currentFilters.name === 'string' &&
+				currentFilters.name.trim()
+			) {
+				params.name = currentFilters.name.trim();
+			}
+			if (
+				currentFilters.url &&
+				typeof currentFilters.url === 'string' &&
+				currentFilters.url.trim()
+			) {
+				params.url = currentFilters.url.trim();
+			}
+			if (
+				currentFilters.type &&
+				typeof currentFilters.type === 'string' &&
+				currentFilters.type.trim()
+			) {
+				params.type = currentFilters.type.trim();
+			}
+
+			console.log('Loading materials with params:', params);
+			const response = await MaterialService.getMaterials(params);
+			console.log('Materials response:', response);
+
+			materials = response.content || [];
+			totalElements = response.totalElements || 0;
+			totalPages = response.totalPages || 0;
+		} catch (err) {
+			error = `Error al cargar materiales: ${err}`;
+			console.error('Error loading materials:', err);
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Navigation functions - convert 1-based UI to 0-based API
+	function goToPage(page: number) {
+		// Convert from 1-based UI to 0-based API
+		currentPage = page - 1;
+		loadMaterials();
+	}
+
+	function changePageSize(newSize: number) {
+		pageSize = newSize;
+		currentPage = 0; // Reset to first page (0-based)
+		loadMaterials();
+	}
+
+	// Search and filter functions
+	function updateFilters(filters: Record<string, unknown>) {
+		Object.assign(currentFilters, filters);
+		currentPage = 0; // Reset to first page (0-based)
+		loadMaterials();
+	}
+
+	function clearFilters() {
+		currentFilters = {
+			searchMode: 'simple',
+			q: '',
+			name: '',
+			url: '',
+			type: ''
+		};
+		currentPage = 0; // Reset to first page (0-based)
+		loadMaterials();
+	}
+
+	function switchSearchMode(mode: 'simple' | 'advanced') {
+		currentFilters.searchMode = mode;
+	}
+
+	function openDeleteModal(material: DTOMaterial) {
+		materialToDelete = material;
+		showDeleteModal = true;
+	}
+
+	async function deleteMaterial() {
+		if (!materialToDelete || !authStore.isAdmin) return;
+
+		try {
+			loading = true;
+			await MaterialService.deleteMaterial(materialToDelete.id!);
+			successMessage = 'Material eliminado exitosamente';
+			showDeleteModal = false;
+			materialToDelete = null;
+			loadMaterials();
+		} catch (err) {
+			error = `Error al eliminar material: ${err}`;
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Enhanced table configuration using utilities
+	const tableColumns = createColumns({
+		id: { key: 'id', header: 'ID', sortable: true, width: '80px' },
+		name: {
 			key: 'name',
 			header: 'Name',
 			sortable: true,
 			formatter: (value) => value as string
 		},
-		{
+		url: {
 			key: 'url',
 			header: 'URL',
 			sortable: true,
@@ -47,181 +197,189 @@
 				return url.length > 50 ? url.substring(0, 50) + '...' : url;
 			}
 		},
-		{
+		type: {
 			key: 'materialType',
 			header: 'Type',
-			sortable: true,
+			sortable: false, // Disable sorting for now since it's computed
 			formatter: (value, entity) => {
-				return MaterialService.getMaterialTypeLabel(entity);
+				return MaterialService.getMaterialTypeLabel(entity as DTOMaterial);
 			}
 		},
-		{
-			key: 'id',
-			header: 'Actions',
+		icon: {
+			key: 'icon',
+			header: 'Icon',
 			sortable: false,
 			cell: (entity) => {
-				const icon = MaterialService.getMaterialIcon(entity);
-				return `<span class="text-2xl">${icon}</span>`;
-			},
-			html: true
+				return MaterialService.getMaterialIcon(entity as DTOMaterial);
+			}
 		}
-	];
+	});
 
-	const actions: EntityAction<DTOMaterial>[] = [
+	const tableActions = [
 		{
-			label: 'Edit',
-			icon: '✏️',
+			label: 'Ver',
 			color: 'blue',
-			hoverColor: 'indigo',
-			action: handleEdit
+			hoverColor: 'blue',
+			action: (material: DTOMaterial) => goto(`/materiales/${material.id}`),
+			condition: () => true
 		},
 		{
-			label: 'Delete',
-			icon: '🗑️',
+			label: 'Eliminar',
 			color: 'red',
-			hoverColor: 'rose',
-			action: handleDelete
+			hoverColor: 'red',
+			action: openDeleteModal,
+			condition: () => authStore.isAdmin
 		}
 	];
 
-	$: urlParams = $page.url.searchParams;
-	$: currentPage = parseInt(urlParams.get('page') || '0');
-	$: pageSize = parseInt(urlParams.get('size') || '20');
-	$: sortBy = urlParams.get('sortBy') || 'id';
-	$: sortDirection = urlParams.get('sortDirection') || 'ASC';
-	$: searchParams.q = urlParams.get('q') || '';
-	$: searchParams.name = urlParams.get('name') || '';
-	$: searchParams.url = urlParams.get('url') || '';
-	$: searchParams.type = urlParams.get('type') || '';
-
-	async function loadMaterials() {
-		try {
-			loading = true;
-			error = null;
-
-			const response = await MaterialService.getMaterials({
-				...searchParams,
-				page: currentPage,
-				size: pageSize,
-				sortBy,
-				sortDirection
-			});
-
-			materials = response.content || [];
-			totalElements = response.totalElements || 0;
-		} catch (err) {
-			error = err instanceof Error ? err.message : 'Error loading materials';
-		} finally {
-			loading = false;
-		}
-	}
-
-	function handleSearch(newParams: typeof searchParams) {
-		searchParams = { ...newParams };
-		currentPage = 0;
-		updateUrl();
-	}
-
-	function handleSort(field: string, direction: string) {
-		sortBy = field;
-		sortDirection = direction;
-		updateUrl();
-	}
-
-	function updateUrl() {
-		const params = new URLSearchParams();
-
-		if (currentPage > 0) params.set('page', currentPage.toString());
-		if (pageSize !== 20) params.set('size', pageSize.toString());
-		if (sortBy !== 'id') params.set('sortBy', sortBy);
-		if (sortDirection !== 'ASC') params.set('sortDirection', sortDirection);
-
-		if (searchParams.q) params.set('q', searchParams.q);
-		if (searchParams.name) params.set('name', searchParams.name);
-		if (searchParams.url) params.set('url', searchParams.url);
-		if (searchParams.type) params.set('type', searchParams.type);
-
-		const queryString = params.toString();
-		goto(`/materiales${queryString ? `?${queryString}` : ''}`);
-	}
-
-	function handleEdit(material: DTOMaterial) {
-		goto(`/materiales/${material.id}`);
-	}
-
-	function handleDelete(material: DTOMaterial) {
-		// This will be handled by the EntityDataTable component
-		return MaterialService.deleteMaterial(material.id!);
-	}
-
-	function handleCreate() {
-		goto('/materiales/nuevo');
-	}
-
-	$: if ($page.url.searchParams.toString() !== '') {
-		loadMaterials();
-	}
-
-	onMount(() => {
-		loadMaterials();
+	// Pagination configuration - use proper pageDisplayInfo with 1-based indexing for UI
+	const pageDisplayInfo = $derived({
+		currentPage: currentPage + 1, // Convert to 1-based for UI
+		totalPages,
+		totalItems: totalElements,
+		startItem: totalElements > 0 ? currentPage * pageSize + 1 : 0,
+		endItem: Math.min(totalElements, (currentPage + 1) * pageSize),
+		hasNext: currentPage < totalPages - 1,
+		hasPrevious: currentPage > 0,
+		isFirstPage: currentPage === 0,
+		isLastPage: currentPage >= totalPages - 1
 	});
-</script>
 
-<svelte:head>
-	<title>Materials - Academia App</title>
-</svelte:head>
+	const currentPagination = $derived({
+		page: currentPage, // Keep 0-based for API
+		size: pageSize,
+		sortBy: sortBy,
+		sortDirection: sortDirection
+	});
+
+	const sortFields = [
+		{ value: 'id', label: 'ID' },
+		{ value: 'name', label: 'Name' },
+		{ value: 'url', label: 'URL' }
+	];
+
+	const pageSizeOptions = [10, 20, 50, 100];
+
+	function changeSorting(field: string | { value: string; direction: 'ASC' | 'DESC' }) {
+		if (typeof field === 'string') {
+			// Toggle direction if same field, otherwise set to ASC
+			if (sortBy === field) {
+				sortDirection = sortDirection === 'ASC' ? 'DESC' : 'ASC';
+			} else {
+				sortBy = field;
+				sortDirection = 'ASC';
+			}
+		} else {
+			sortBy = field.value;
+			sortDirection = field.direction;
+		}
+
+		currentPage = 0; // Reset to first page (0-based) when sorting
+		loadMaterials();
+	}
+
+	function exportResults() {
+		// Implement export functionality
+		console.log('Export functionality to be implemented');
+	}
+</script>
 
 <div class="container mx-auto px-4 py-8">
 	<div class="mb-6 flex items-center justify-between">
 		<h1 class="text-3xl font-bold text-gray-900">Materials</h1>
-		<button
-			on:click={handleCreate}
-			class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-		>
-			<span>➕</span>
-			Add Material
-		</button>
+		{#if authStore.isAdmin}
+			<button
+				onclick={() => goto('/materiales/nuevo')}
+				class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+			>
+				Add Material
+			</button>
+		{/if}
 	</div>
 
-	{#if error}
-		<ErrorDisplay error={{ type: 'error', message: error, title: 'Error' }} />
-	{/if}
+	<EntityMessages
+		{successMessage}
+		{error}
+		on:clearSuccess={() => (successMessage = null)}
+		on:clearError={() => (error = null)}
+	/>
 
 	<EntitySearchSection
-		currentFilters={searchParams}
-		entityNamePlural="materiales"
-		advancedFields={materialSearchConfig.advancedFields}
-		entityType="materiales"
-		on:updateFilters={(event) => handleSearch(event.detail)}
-		on:clearFilters={() =>
-			handleSearch({ searchMode: 'simple', q: '', name: '', url: '', type: '' })}
+		{currentFilters}
+		paginatedData={{
+			content: materials as unknown as Record<string, unknown>[],
+			totalElements,
+			totalPages,
+			currentPage
+		} as PaginatedEntities<Record<string, unknown>>}
+		{loading}
+		entityNamePlural={searchConfig.entityNamePlural}
+		advancedFields={searchConfig.advancedFields}
+		statusField={searchConfig.statusField}
+		entityType={searchConfig.entityType}
+		on:updateFilters={(e) => updateFilters(e.detail)}
+		on:clearFilters={clearFilters}
+		on:switchSearchMode={(e) => switchSearchMode(e.detail)}
+		on:exportResults={exportResults}
 	/>
 
-	<EntityDataTable
+	<div class="pt-10 pb-5">
+		<EntityPaginationControls
+			{pageDisplayInfo}
+			{currentPagination}
+			{sortFields}
+			{pageSizeOptions}
+			on:goToPage={(e) => goToPage(e.detail)}
+			on:changePageSize={(e) => changePageSize(e.detail)}
+			on:changeSorting={(e) => changeSorting(e.detail)}
+		/>
+	</div>
+
+	<EnhancedDataTable
 		{loading}
 		paginatedData={{
-			content: materials as Record<string, unknown>[],
-			page: {
-				number: currentPage,
-				size: pageSize,
-				totalElements,
-				totalPages: Math.ceil(totalElements / pageSize),
-				first: currentPage === 0,
-				last: currentPage >= Math.ceil(totalElements / pageSize) - 1,
-				hasNext: currentPage < Math.ceil(totalElements / pageSize) - 1,
-				hasPrevious: currentPage > 0
-			}
-		}}
-		currentPagination={{
-			page: currentPage,
-			size: pageSize,
-			sortBy,
-			sortDirection: sortDirection as 'ASC' | 'DESC'
-		}}
-		{columns}
+			content: materials as unknown as Record<string, unknown>[],
+			totalElements,
+			totalPages,
+			currentPage
+		} as PaginatedEntities<Record<string, unknown>>}
+		{currentPagination}
+		{authStore}
+		columns={tableColumns as unknown as EntityColumn<Record<string, unknown>>[]}
+		actions={tableActions as unknown as EntityAction<Record<string, unknown>>[]}
 		entityName="material"
 		entityNamePlural="materiales"
-		{actions}
-		on:changeSorting={(event) => handleSort(event.detail, sortDirection === 'ASC' ? 'DESC' : 'ASC')}
+		theme="modern"
+		showRowNumbers={true}
+		on:changeSorting={(e) => changeSorting(e.detail)}
 	/>
+
+	{#if pageDisplayInfo && pageDisplayInfo.totalPages > 1}
+		<div class="mt-6 flex flex-col items-center gap-4">
+			<EntityPaginationControls
+				{pageDisplayInfo}
+				{currentPagination}
+				{sortFields}
+				{pageSizeOptions}
+				justifyContent="center"
+				showSortAndSize={false}
+				on:goToPage={(e) => goToPage(e.detail)}
+				on:changePageSize={(e) => changePageSize(e.detail)}
+				on:changeSorting={(e) => changeSorting(e.detail)}
+			/>
+		</div>
+	{/if}
 </div>
+
+<EntityDeleteModal
+	showModal={showDeleteModal}
+	entity={materialToDelete as unknown as Record<string, unknown>}
+	entityName="material"
+	entityNameCapitalized="Material"
+	displayNameField="name"
+	on:cancelDelete={() => {
+		showDeleteModal = false;
+		materialToDelete = null;
+	}}
+	on:confirmDelete={deleteMaterial}
+/>

@@ -14,6 +14,7 @@
 	let showSortAndSize = $derived(props.showSortAndSize ?? true);
 	let justifyContent = $derived(props.justifyContent ?? 'between');
 
+	// Use a reactive statement to update selectedPage when pageDisplayInfo changes
 	let selectedPage = $derived(pageDisplayInfo?.currentPage || 1);
 
 	function goToPage(page: number) {
@@ -54,7 +55,10 @@
 	function handlePageInputKeyDown(e: KeyboardEvent) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
-			goToPage(selectedPage);
+			if (selectedPage && pageDisplayInfo) {
+				const clampedPage = Math.min(Math.max(1, selectedPage), pageDisplayInfo.totalPages);
+				goToPage(clampedPage);
+			}
 		}
 	}
 

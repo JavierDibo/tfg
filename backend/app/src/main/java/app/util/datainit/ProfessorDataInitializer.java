@@ -74,7 +74,7 @@ public class ProfessorDataInitializer extends BaseDataInitializer {
             }
         }
         
-        System.out.println("Professor creation completed. Total created: " + createdProfessors.size());
+        System.out.println("Professors created: " + createdProfessors.size());
     }
     
     public List<DTOProfesor> getCreatedProfessors() {

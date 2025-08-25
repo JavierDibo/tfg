@@ -19,8 +19,6 @@ public class StudentDataInitializer extends BaseDataInitializer {
 
         // Password service is now injected automatically
 
-        // System.out.println("Creating hardcoded student and " + NUM_STUDENTS + " additional students...");
-
         // Create hardcoded student first
         DTOPeticionRegistroAlumno hardcodedStudent = new DTOPeticionRegistroAlumno(
                 "estudiante", // username
@@ -35,7 +33,6 @@ public class StudentDataInitializer extends BaseDataInitializer {
         try {
             DTOAlumno alumno = servicioAlumno.crearAlumno(hardcodedStudent);
             createdStudents.add(alumno);
-            System.out.println("Created hardcoded student: (estudiante, password)");
         } catch (Exception e) {
             System.err.println("✗ Error creating hardcoded student: " + e.getMessage());
         }
@@ -71,7 +68,7 @@ public class StudentDataInitializer extends BaseDataInitializer {
             }
         }
 
-        System.out.println("Student creation completed. Total created: " + createdStudents.size());
+        System.out.println("Students created: " + createdStudents.size());
     }
 
     public List<DTOAlumno> getCreatedStudents() {

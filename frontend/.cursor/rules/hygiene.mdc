@@ -1,4 +1,0 @@
----
-alwaysApply: true
----
-After each reasonably sized changes to the codebase, run "npm run hygiene" and fix any mistakes.

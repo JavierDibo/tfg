@@ -3,6 +3,7 @@ package app.util.datainit;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOCurso;
 import app.servicios.ServicioAlumno;
+import app.repositorios.RepositorioClase;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
     @Override
     public void initialize() {
         ServicioAlumno servicioAlumno = context.getBean(ServicioAlumno.class);
+        RepositorioClase repositorioClase = context.getBean(RepositorioClase.class);
         StudentDataInitializer studentInit = context.getBean(StudentDataInitializer.class);
         CourseDataInitializer courseInit = context.getBean(CourseDataInitializer.class);
         
@@ -30,8 +32,23 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
             return;
         }
         
-        // System.out.println("Enrolling students in courses...");
         System.out.println("Students: " + students.size() + ", Courses: " + courses.size());
+        
+        // Verify courses exist in database
+        List<Long> verifiedCourseIds = new ArrayList<>();
+        for (DTOCurso course : courses) {
+            var savedCourse = repositorioClase.findById(course.id());
+            if (savedCourse.isPresent()) {
+                verifiedCourseIds.add(course.id());
+            } else {
+                System.err.println("✗ Course " + course.titulo() + " (ID: " + course.id() + ") NOT found in database - skipping enrollment");
+            }
+        }
+        
+        if (verifiedCourseIds.isEmpty()) {
+            System.err.println("No courses found in database for enrollment!");
+            return;
+        }
         
         int totalEnrollments = 0;
         
@@ -44,6 +61,11 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
             int enrolledInThisStudent = 0;
             
             for (DTOCurso course : shuffledCourses) {
+                // Only try to enroll in courses that we verified exist in the database
+                if (!verifiedCourseIds.contains(course.id())) {
+                    continue;
+                }
+                
                 // Stop if student has reached max courses
                 if (enrolledInThisStudent >= MAX_COURSES_PER_STUDENT) {
                     break;
@@ -64,15 +86,13 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
             }
         }
         
-        System.out.println("Enrollment completed. Total enrollments: " + totalEnrollments);
+        System.out.println("Enrollments completed: " + totalEnrollments);
         
         // Print enrollment statistics
         printEnrollmentStatistics(students, courses, servicioAlumno);
     }
     
     private void printEnrollmentStatistics(List<DTOAlumno> students, List<DTOCurso> courses, ServicioAlumno servicioAlumno) {
-        System.out.println("\n=== Enrollment Statistics ===");
-        
         // Count students per course
         int totalStudentsInCourses = 0;
         for (DTOCurso course : courses) {
@@ -83,7 +103,6 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
                 System.err.println("Error getting students for course " + course.titulo() + ": " + e.getMessage());
             }
         }
-        System.out.println("Total students enrolled across all courses: " + totalStudentsInCourses);
         
         // Count courses per student
         int studentsWithCourses = 0;
@@ -101,10 +120,7 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
             }
         }
         
-        System.out.println("Students with courses: " + studentsWithCourses + "/" + students.size());
-        if (studentsWithCourses > 0) {
-            System.out.println("Average courses per enrolled student: " + 
-                String.format("%.2f", (double) totalStudentCourses / studentsWithCourses));
-        }
+        System.out.println("Students enrolled: " + studentsWithCourses + "/" + students.size() + 
+            " (avg " + String.format("%.1f", (double) totalStudentCourses / studentsWithCourses) + " courses each)");
     }
 }

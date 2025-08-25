@@ -1,353 +1,271 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
 	import type { DTOProfesor } from '$lib/generated/api';
 	import { ProfesorService } from '$lib/services/profesorService';
 	import { authStore } from '$lib/stores/authStore.svelte';
-	import type { PageData } from './$types';
-	import { getPageDisplayInfo, type PaginatedData } from '$lib/types/pagination';
 	import {
-		EnhancedDataTable,
 		EntitySearchSection,
+		EnhancedDataTable,
 		EntityPaginationControls,
-		EntityDeleteModal,
 		EntityMessages,
+		EntityDeleteModal,
 		createColumns,
-		commonColumns,
-		type EntityColumn,
-		type EntityAction,
-		type PaginatedEntities
+		commonColumns
 	} from '$lib/components/common';
-
-	// Props from load function
-	const { data }: { data: PageData } = $props();
+	import type {
+		EntityFilters,
+		PaginatedEntities,
+		EntityColumn,
+		EntityAction
+	} from '$lib/components/common/types';
+	import { getSearchConfig } from '$lib/components/common/searchConfigs';
 
 	// State
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
-	let allProfesores = $state<DTOProfesor[]>([]);
-	let filteredAndSortedProfesores = $state<DTOProfesor[]>([]);
+	let profesores = $state<DTOProfesor[]>([]);
+	let totalElements = $state(0);
+	let totalPages = $state(0);
+	let currentPage = $state(0);
+	let pageSize = $state(20);
+	let sortBy = $state('id');
+	let sortDirection = $state<'ASC' | 'DESC'>('ASC');
+
+	// Search configuration
+	const searchConfig = getSearchConfig('profesores');
+
+	// Search and filters
+	let currentFilters = $state<EntityFilters>({
+		searchMode: 'simple',
+		q: '',
+		firstName: '',
+		lastName: '',
+		dni: '',
+		email: '',
+		enabled: ''
+	});
 
 	// Modal state
 	let showDeleteModal = $state(false);
 	let profesorToDelete: DTOProfesor | null = $state(null);
 
-	// Derived from URL
-	const currentPagination = $derived(data.pagination);
-	const currentFilters = $derived(data.filters);
-	const currentUrl = $derived($page.url);
-
-	// Load initial data
-	$effect(() => {
-		if (authStore.isAuthenticated && (authStore.isAdmin || authStore.isProfesor)) {
-			loadData();
-		}
-	});
-
-	// Reactive filtering, sorting, and pagination
-	$effect(() => {
-		let result = [...allProfesores];
-
-		// Filtering
-		if (currentFilters.searchMode === 'simple' && currentFilters.q) {
-			const searchTerm = normalizeText(currentFilters.q);
-			const searchWords = searchTerm.split(/\s+/).filter(Boolean);
-			result = result.filter((p) => {
-				const searchableText = [p.firstName, p.lastName, p.username, p.dni, p.email, p.phoneNumber]
-					.map((field) => normalizeText(field || ''))
-					.join(' ');
-				return searchWords.every((word) => searchableText.includes(word));
-			});
-		} else if (currentFilters.searchMode === 'advanced') {
-			if (currentFilters.q) {
-				const searchTerm = normalizeText(currentFilters.q);
-				const searchWords = searchTerm.split(/\s+/).filter(Boolean);
-				result = result.filter((p) => {
-					const searchableText = [
-						p.firstName,
-						p.lastName,
-						p.username,
-						p.dni,
-						p.email,
-						p.phoneNumber
-					]
-						.map((field) => normalizeText(field || ''))
-						.join(' ');
-					return searchWords.every((word) => searchableText.includes(word));
-				});
-			}
-			if (currentFilters.firstName) {
-				result = result.filter((p) =>
-					normalizeText(p.firstName || '').includes(normalizeText(currentFilters.firstName!))
-				);
-			}
-			if (currentFilters.lastName) {
-				result = result.filter((p) =>
-					normalizeText(p.lastName || '').includes(normalizeText(currentFilters.lastName!))
-				);
-			}
-			if (currentFilters.dni) {
-				result = result.filter((p) =>
-					normalizeText(p.dni || '').includes(normalizeText(currentFilters.dni!))
-				);
-			}
-			if (currentFilters.email) {
-				result = result.filter((p) =>
-					normalizeText(p.email || '').includes(normalizeText(currentFilters.email!))
-				);
-			}
-		}
-		if (currentFilters.enabled !== undefined) {
-			result = result.filter((p) => p.enabled === currentFilters.enabled);
-		}
-
-		// Sorting
-		const { sortBy, sortDirection } = currentPagination;
-		result.sort((a, b) => {
-			const aValue = (a as unknown as Record<string, unknown>)[sortBy];
-			const bValue = (b as unknown as Record<string, unknown>)[sortBy];
-			if (aValue == null || bValue == null) return 0;
-
-			let comparison = 0;
-			if (typeof aValue === 'string' && typeof bValue === 'string') {
-				comparison = aValue.localeCompare(bValue);
-			} else if (aValue > bValue) {
-				comparison = 1;
-			} else if (aValue < bValue) {
-				comparison = -1;
-			}
-			return sortDirection === 'DESC' ? -comparison : comparison;
-		});
-
-		filteredAndSortedProfesores = result;
-	});
-
-	// Derived paginated data and display info
-	const { paginatedData, pageDisplayInfo } = $derived.by(() => {
-		const start = currentPagination.page * currentPagination.size;
-		const end = start + currentPagination.size;
-		const pageContent = filteredAndSortedProfesores.slice(start, end);
-
-		const totalElements = filteredAndSortedProfesores.length;
-		const totalPages = Math.ceil(totalElements / currentPagination.size);
-
-		const pageData = {
-			content: pageContent,
-			page: {
-				size: currentPagination.size,
-				number: currentPagination.page,
-				totalElements: totalElements,
-				totalPages: totalPages,
-				first: currentPagination.page === 0,
-				last: currentPagination.page >= totalPages - 1,
-				hasNext: currentPagination.page < totalPages - 1,
-				hasPrevious: currentPagination.page > 0
-			}
-		} as PaginatedData<DTOProfesor>;
-
-		return {
-			paginatedData: pageData,
-			pageDisplayInfo: pageData.page ? getPageDisplayInfo(pageData.page) : null
-		};
-	});
-
-	// Auth check
+	// Check authentication and permissions
 	$effect(() => {
 		if (!authStore.isAuthenticated) {
 			goto('/auth');
-		} else if (!authStore.isAdmin) {
+			return;
+		}
+
+		if (!authStore.isAdmin && !authStore.isProfesor) {
 			goto('/');
+			return;
 		}
 	});
 
-	async function loadData() {
+	// Load data when component mounts or filters change
+	$effect(() => {
+		if (authStore.isAuthenticated && (authStore.isAdmin || authStore.isProfesor)) {
+			loadProfesores();
+		}
+	});
+
+	// Data loading with new search parameters
+	async function loadProfesores() {
 		loading = true;
 		error = null;
+
 		try {
-			allProfesores = await ProfesorService.getAllProfesores({});
+			const filters: Record<string, unknown> = {};
+
+			// Add search parameters
+			if (currentFilters.q && typeof currentFilters.q === 'string' && currentFilters.q.trim()) {
+				filters.q = currentFilters.q.trim();
+			}
+			if (
+				currentFilters.firstName &&
+				typeof currentFilters.firstName === 'string' &&
+				currentFilters.firstName.trim()
+			) {
+				filters.firstName = currentFilters.firstName.trim();
+			}
+			if (
+				currentFilters.lastName &&
+				typeof currentFilters.lastName === 'string' &&
+				currentFilters.lastName.trim()
+			) {
+				filters.lastName = currentFilters.lastName.trim();
+			}
+			if (
+				currentFilters.dni &&
+				typeof currentFilters.dni === 'string' &&
+				currentFilters.dni.trim()
+			) {
+				filters.dni = currentFilters.dni.trim();
+			}
+			if (
+				currentFilters.email &&
+				typeof currentFilters.email === 'string' &&
+				currentFilters.email.trim()
+			) {
+				filters.email = currentFilters.email.trim();
+			}
+			if (currentFilters.enabled !== '' && currentFilters.enabled !== null) {
+				filters.enabled = currentFilters.enabled === 'true';
+			}
+
+			const response = await ProfesorService.getProfesoresPaginados(filters, {
+				page: currentPage,
+				size: pageSize,
+				sortBy: sortBy,
+				sortDirection: sortDirection
+			});
+
+			profesores = response.content || [];
+			totalElements = response.totalElements || 0;
+			totalPages = response.totalPages || 0;
+			// currentPage is managed locally, not returned from API
 		} catch (err) {
-			error = `Error al cargar profesores: ${(err as Error).message}`;
+			error = `Error al cargar profesores: ${err}`;
+			console.error('Error loading profesores:', err);
 		} finally {
 			loading = false;
 		}
 	}
 
-	function normalizeText(text: string): string {
-		return text
-			.toLowerCase()
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.trim();
-	}
-
-	// Navigation and filter handlers
-	function updateUrl(params: Record<string, string | number | boolean | undefined>) {
-		const url = new URL(currentUrl);
-		Object.entries(params).forEach(([key, value]) => {
-			if (value !== undefined && value !== null && value !== '') {
-				url.searchParams.set(key, String(value));
-			} else {
-				url.searchParams.delete(key);
-			}
-		});
-		goto(url.toString());
-	}
-
+	// Navigation functions - convert 1-based UI to 0-based API
 	function goToPage(page: number) {
-		updateUrl({ page: Math.max(0, page - 1) });
+		// Convert from 1-based UI to 0-based API
+		currentPage = page - 1;
+		loadProfesores();
 	}
 
 	function changePageSize(newSize: number) {
-		updateUrl({ size: newSize, page: 0 });
+		pageSize = newSize;
+		currentPage = 0; // Reset to first page (0-based)
+		loadProfesores();
 	}
 
-	function changeSorting(newSortBy: string | { value: string; direction: 'ASC' | 'DESC' }) {
-		if (typeof newSortBy === 'string') {
-			const newDirection =
-				currentPagination.sortBy === newSortBy
-					? currentPagination.sortDirection === 'ASC'
-						? 'DESC'
-						: 'ASC'
-					: 'ASC';
-			updateUrl({ sortBy: newSortBy, sortDirection: newDirection, page: 0 });
-		} else {
-			updateUrl({ sortBy: newSortBy.value, sortDirection: newSortBy.direction, page: 0 });
-		}
-	}
-
-	function updateFilters(newFilters: Record<string, string | boolean | undefined>) {
-		updateUrl({ ...newFilters, page: 0 });
+	// Search and filter functions
+	function updateFilters(filters: Record<string, unknown>) {
+		Object.assign(currentFilters, filters);
+		currentPage = 0; // Reset to first page (0-based)
+		loadProfesores();
 	}
 
 	function clearFilters() {
-		const url = new URL(currentUrl);
-		['firstName', 'lastName', 'dni', 'email', 'enabled', 'busquedaGeneral'].forEach((key) => {
-			url.searchParams.delete(key);
-		});
-		url.searchParams.set('page', '0');
-		url.searchParams.set('searchMode', 'simple');
-		goto(url.toString());
+		currentFilters = {
+			searchMode: 'simple',
+			q: '',
+			firstName: '',
+			lastName: '',
+			dni: '',
+			email: '',
+			enabled: ''
+		};
+		currentPage = 0; // Reset to first page (0-based)
+		loadProfesores();
 	}
 
 	function switchSearchMode(mode: 'simple' | 'advanced') {
-		const url = new URL(currentUrl);
-		url.searchParams.set('searchMode', mode);
-		url.searchParams.set('page', '0');
-		if (mode === 'simple') {
-			['firstName', 'lastName', 'dni', 'email'].forEach((k) => url.searchParams.delete(k));
-		} else {
-			url.searchParams.delete('busquedaGeneral');
-		}
-		goto(url.toString());
+		currentFilters.searchMode = mode;
 	}
 
+	// Professor actions
 	async function toggleAccountStatus(profesor: DTOProfesor) {
 		if (!authStore.isAdmin) return;
+
 		try {
 			loading = true;
 			const updatedProfesor = await ProfesorService.toggleAccountStatus(
 				profesor.id!,
 				!profesor.enabled
 			);
-			const index = allProfesores.findIndex((p) => p.id === profesor.id);
-			if (index !== -1) {
-				allProfesores[index] = updatedProfesor;
-				allProfesores = [...allProfesores]; // Trigger reactivity
-			}
 			successMessage = `Cuenta ${updatedProfesor.enabled ? 'habilitada' : 'deshabilitada'}`;
+			loadProfesores();
 		} catch (err) {
-			error = `Error al cambiar estado de cuenta: ${(err as Error).message}`;
+			error = `Error al cambiar estado de cuenta: ${err}`;
 		} finally {
 			loading = false;
 		}
 	}
 
-	function confirmDelete(profesor: DTOProfesor) {
+	function openDeleteModal(profesor: DTOProfesor) {
 		profesorToDelete = profesor;
 		showDeleteModal = true;
 	}
 
 	async function deleteProfesor() {
 		if (!profesorToDelete || !authStore.isAdmin) return;
+
 		try {
 			loading = true;
 			await ProfesorService.deleteProfesor(profesorToDelete.id!);
-			allProfesores = allProfesores.filter((p) => p.id !== profesorToDelete!.id);
 			successMessage = 'Profesor eliminado correctamente';
-		} catch (err) {
-			error = `Error al eliminar profesor: ${(err as Error).message}`;
-		} finally {
 			showDeleteModal = false;
 			profesorToDelete = null;
-			loading = false;
-		}
-	}
-
-	async function exportResults() {
-		try {
-			loading = true;
-
-			// Filter by current filters
-			const filteredData = [...filteredAndSortedProfesores];
-
-			if (filteredData.length === 0) {
-				error = 'No hay datos para exportar con los filtros actuales';
-				return;
-			}
-
-			const csvContent = generateCSV(filteredData);
-			downloadCSV(csvContent, `profesores-export-${filteredData.length}-records.csv`);
-
-			successMessage = `Exportados ${filteredData.length} profesores correctamente`;
+			loadProfesores();
 		} catch (err) {
-			error = `Error al exportar datos: ${err}`;
+			error = `Error al eliminar profesor: ${err}`;
 		} finally {
 			loading = false;
 		}
 	}
 
-	function generateCSV(data: DTOProfesor[]): string {
-		const headers = [
-			'ID',
-			'Nombre Completo',
-			'DNI',
-			'Email',
-			'Teléfono',
-			'Fecha Creación',
-			'Habilitado'
-		];
-		const rows = data.map((profesor) => [
-			profesor.id || '',
-			profesor.fullName || `${profesor.firstName} ${profesor.lastName}`,
-			profesor.dni,
-			profesor.email,
-			profesor.phoneNumber || '',
-			profesor.createdAt ? formatDate(profesor.createdAt) : '',
-			profesor.enabled ? 'Sí' : 'No'
-		]);
+	// Enhanced table configuration using utilities
+	const tableColumns = createColumns({
+		id: commonColumns.teacher.id,
+		name: commonColumns.teacher.name,
+		email: commonColumns.teacher.email,
+		dni: commonColumns.teacher.dni,
+		enabled: commonColumns.teacher.enabled,
+		createdAt: commonColumns.teacher.createdAt
+	});
 
-		return [headers, ...rows].map((row) => row.map((field) => `"${field}"`).join(',')).join('\n');
-	}
-
-	function downloadCSV(content: string, filename: string) {
-		const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-		const link = document.createElement('a');
-		if (link.download !== undefined) {
-			const url = URL.createObjectURL(blob);
-			link.setAttribute('href', url);
-			link.setAttribute('download', filename);
-			link.style.visibility = 'hidden';
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
+	const tableActions = [
+		{
+			label: 'Ver',
+			color: 'blue',
+			hoverColor: 'blue',
+			action: (profesor: DTOProfesor) => goto(`/profesores/${profesor.id}`),
+			condition: () => true
+		},
+		{
+			label: 'Habilitar/Deshabilitar',
+			dynamicLabel: (profesor: DTOProfesor) => (profesor.enabled ? 'Deshabilitar' : 'Habilitar'),
+			color: 'yellow',
+			hoverColor: 'yellow',
+			condition: () => !!authStore.isAdmin,
+			action: toggleAccountStatus
+		},
+		{
+			label: 'Eliminar',
+			color: 'red',
+			hoverColor: 'red',
+			condition: () => !!authStore.isAdmin,
+			action: openDeleteModal
 		}
-	}
+	];
 
-	function formatDate(date: Date | string | undefined): string {
-		if (!date) return '-';
-		return new Date(date).toLocaleDateString('es-ES');
-	}
+	// Pagination configuration - use proper pageDisplayInfo with 1-based indexing for UI
+	const pageDisplayInfo = $derived({
+		currentPage: currentPage + 1, // Convert to 1-based for UI
+		totalPages,
+		totalItems: totalElements,
+		startItem: totalElements > 0 ? currentPage * pageSize + 1 : 0,
+		endItem: Math.min(totalElements, (currentPage + 1) * pageSize),
+		hasNext: currentPage < totalPages - 1,
+		hasPrevious: currentPage > 0,
+		isFirstPage: currentPage === 0,
+		isLastPage: currentPage >= totalPages - 1
+	});
+
+	const currentPagination = $derived({
+		page: currentPage, // Keep 0-based for API
+		size: pageSize,
+		sortBy: sortBy,
+		sortDirection: sortDirection
+	});
 
 	const sortFields = [
 		{ value: 'id', label: 'ID' },
@@ -362,59 +280,28 @@
 
 	const pageSizeOptions = [10, 20, 50, 100];
 
-	// Table columns configuration
-	const tableColumns = createColumns({
-		id: commonColumns.teacher.id,
-		name: commonColumns.teacher.name,
-		email: commonColumns.teacher.email,
-		dni: commonColumns.teacher.dni,
-		enabled: commonColumns.teacher.enabled,
-		createdAt: commonColumns.teacher.createdAt
-	});
-
-	// Table actions
-	const tableActions: EntityAction<DTOProfesor>[] = [
-		{
-			label: 'Ver',
-			color: 'blue',
-			hoverColor: 'blue',
-			action: (profesor) => goto(`/profesores/${profesor.id}`)
-		},
-		{
-			label: 'Habilitar/Deshabilitar',
-			dynamicLabel: (profesor) => (profesor.enabled ? 'Deshabilitar' : 'Habilitar'),
-			color: 'yellow',
-			hoverColor: 'yellow',
-			condition: () => !!authStore.isAdmin,
-			action: toggleAccountStatus
-		},
-		{
-			label: 'Eliminar',
-			color: 'red',
-			hoverColor: 'red',
-			condition: () => !!authStore.isAdmin,
-			action: confirmDelete
+	function changeSorting(field: string | { value: string; direction: 'ASC' | 'DESC' }) {
+		if (typeof field === 'string') {
+			// Toggle direction if same field, otherwise set to ASC
+			if (sortBy === field) {
+				sortDirection = sortDirection === 'ASC' ? 'DESC' : 'ASC';
+			} else {
+				sortBy = field;
+				sortDirection = 'ASC';
+			}
+		} else {
+			sortBy = field.value;
+			sortDirection = field.direction;
 		}
-	];
 
-	// Search fields configuration
-	const advancedSearchFields = [
-		{ key: 'firstName', label: 'Nombre', type: 'text', placeholder: 'Ej: Juan' },
-		{ key: 'lastName', label: 'Apellidos', type: 'text', placeholder: 'Ej: García López' },
-		{ key: 'dni', label: 'DNI', type: 'text', placeholder: 'Ej: 12345678Z' },
-		{ key: 'email', label: 'Email', type: 'email', placeholder: 'Ej: juan@universidad.es' }
-	];
+		currentPage = 0; // Reset to first page (0-based) when sorting
+		loadProfesores();
+	}
 
-	// Status field configuration
-	const statusField = {
-		key: 'enabled',
-		label: 'Estado de la cuenta',
-		options: [
-			{ value: '', label: 'Todos' },
-			{ value: 'true', label: 'Habilitado' },
-			{ value: 'false', label: 'Deshabilitado' }
-		]
-	};
+	function exportResults() {
+		// Implement export functionality
+		console.log('Export functionality to be implemented');
+	}
 </script>
 
 <div class="container mx-auto px-4 py-8">
@@ -439,11 +326,17 @@
 
 	<EntitySearchSection
 		{currentFilters}
-		paginatedData={paginatedData as unknown as PaginatedEntities<Record<string, unknown>>}
+		paginatedData={{
+			content: profesores as unknown as Record<string, unknown>[],
+			totalElements,
+			totalPages,
+			currentPage
+		} as PaginatedEntities<Record<string, unknown>>}
 		{loading}
-		entityNamePlural="profesores"
-		advancedFields={advancedSearchFields}
-		{statusField}
+		entityNamePlural={searchConfig.entityNamePlural}
+		advancedFields={searchConfig.advancedFields}
+		statusField={searchConfig.statusField}
+		entityType={searchConfig.entityType}
 		on:updateFilters={(e) => updateFilters(e.detail)}
 		on:clearFilters={clearFilters}
 		on:switchSearchMode={(e) => switchSearchMode(e.detail)}
@@ -464,7 +357,12 @@
 
 	<EnhancedDataTable
 		{loading}
-		paginatedData={paginatedData as unknown as PaginatedEntities<Record<string, unknown>>}
+		paginatedData={{
+			content: profesores as unknown as Record<string, unknown>[],
+			totalElements,
+			totalPages,
+			currentPage
+		} as PaginatedEntities<Record<string, unknown>>}
 		{currentPagination}
 		{authStore}
 		columns={tableColumns as unknown as EntityColumn<Record<string, unknown>>[]}

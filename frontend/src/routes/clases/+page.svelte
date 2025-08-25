@@ -146,22 +146,23 @@
 		}
 	}
 
-	// Navigation functions
+	// Navigation functions - convert 1-based UI to 0-based API
 	function goToPage(page: number) {
-		currentPage = page;
+		// Convert from 1-based UI to 0-based API
+		currentPage = page - 1;
 		loadClases();
 	}
 
 	function changePageSize(newSize: number) {
 		pageSize = newSize;
-		currentPage = 0;
+		currentPage = 0; // Reset to first page (0-based)
 		loadClases();
 	}
 
 	// Search and filter functions
 	function updateFilters(filters: Record<string, unknown>) {
 		Object.assign(currentFilters, filters);
-		currentPage = 0;
+		currentPage = 0; // Reset to first page (0-based)
 		loadClases();
 	}
 
@@ -176,7 +177,7 @@
 			precioMinimo: '',
 			precioMaximo: ''
 		};
-		currentPage = 0;
+		currentPage = 0; // Reset to first page (0-based)
 		loadClases();
 	}
 
@@ -237,16 +238,21 @@
 		}
 	];
 
-	// Pagination configuration
+	// Pagination configuration - use proper pageDisplayInfo with 1-based indexing for UI
 	const pageDisplayInfo = $derived({
-		currentPage,
+		currentPage: currentPage + 1, // Convert to 1-based for UI
 		totalPages,
-		totalElements,
-		pageSize
+		totalItems: totalElements,
+		startItem: totalElements > 0 ? currentPage * pageSize + 1 : 0,
+		endItem: Math.min(totalElements, (currentPage + 1) * pageSize),
+		hasNext: currentPage < totalPages - 1,
+		hasPrevious: currentPage > 0,
+		isFirstPage: currentPage === 0,
+		isLastPage: currentPage >= totalPages - 1
 	});
 
 	const currentPagination = $derived({
-		page: currentPage,
+		page: currentPage, // Keep 0-based for API
 		size: pageSize,
 		sortBy: sortBy,
 		sortDirection: sortDirection
@@ -277,7 +283,7 @@
 			sortDirection = field.direction;
 		}
 
-		currentPage = 0; // Reset to first page when sorting
+		currentPage = 0; // Reset to first page (0-based) when sorting
 		loadClases();
 	}
 
@@ -292,98 +298,100 @@
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8">
-	<div class="mb-8">
-		<div class="mb-6 flex items-center justify-between">
-			<h1 class="text-3xl font-bold text-gray-900">
-				{#if authStore.isAdmin}
-					Gestión de Clases
-				{:else if authStore.isProfesor}
-					Mis Clases
-				{:else if authStore.isAlumno}
-					Clases Disponibles
-				{:else}
-					Clases
-				{/if}
-			</h1>
-			{#if authStore.isAdmin || authStore.isProfesor}
-				<a
-					href="/clases/nuevo"
-					class="rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700"
-				>
-					Nueva Clase
-				</a>
+	<div class="mb-6 flex items-center justify-between">
+		<h1 class="text-3xl font-bold text-gray-900">
+			{#if authStore.isAdmin}
+				Gestión de Clases
+			{:else if authStore.isProfesor}
+				Mis Clases
+			{:else if authStore.isAlumno}
+				Clases Disponibles
+			{:else}
+				Clases
 			{/if}
-		</div>
-
-		<!-- Search and Filters Section -->
-		<div class="mb-6 rounded-lg bg-white p-6 shadow-md">
-			<EntitySearchSection
-				{currentFilters}
-				paginatedData={{
-					content: clases as unknown as Record<string, unknown>[],
-					totalElements,
-					totalPages,
-					currentPage
-				} as PaginatedEntities<Record<string, unknown>>}
-				{loading}
-				entityNamePlural={searchConfig.entityNamePlural}
-				advancedFields={searchConfig.advancedFields}
-				statusField={searchConfig.statusField}
-				entityType={searchConfig.entityType}
-				on:updateFilters={(e) => updateFilters(e.detail)}
-				on:clearFilters={clearFilters}
-				on:switchSearchMode={(e) => switchSearchMode(e.detail)}
-				on:exportResults={exportResults}
-			/>
-		</div>
-
-		<!-- Messages -->
-		{#if error}
-			<EntityMessages {error} on:clearError={() => (error = null)} />
+		</h1>
+		{#if authStore.isAdmin || authStore.isProfesor}
+			<button
+				onclick={() => goto('/clases/nuevo')}
+				class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+			>
+				Nueva Clase
+			</button>
 		{/if}
+	</div>
 
-		{#if successMessage}
-			<EntityMessages {successMessage} on:clearSuccess={() => (successMessage = null)} />
-		{/if}
+	<EntityMessages
+		{successMessage}
+		{error}
+		on:clearSuccess={() => (successMessage = null)}
+		on:clearError={() => (error = null)}
+	/>
 
-		<!-- Loading State -->
-		{#if loading}
-			<div class="flex items-center justify-center py-8">
-				<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-			</div>
-		{:else}
-			<!-- Enhanced Classes Table -->
-			<EnhancedDataTable
-				{loading}
-				paginatedData={{
-					content: clases as unknown as Record<string, unknown>[],
-					totalElements,
-					totalPages,
-					currentPage
-				} as PaginatedEntities<Record<string, unknown>>}
-				{currentPagination}
-				{authStore}
-				columns={tableColumns as unknown as EntityColumn<Record<string, unknown>>[]}
-				actions={tableActions as unknown as EntityAction<Record<string, unknown>>[]}
-				entityName="clase"
-				entityNamePlural="clases"
-				theme="modern"
-				showRowNumbers={true}
-				on:changeSorting={(e) => changeSorting(e.detail)}
-			/>
+	<EntitySearchSection
+		{currentFilters}
+		paginatedData={{
+			content: clases as unknown as Record<string, unknown>[],
+			totalElements,
+			totalPages,
+			currentPage
+		} as PaginatedEntities<Record<string, unknown>>}
+		{loading}
+		entityNamePlural={searchConfig.entityNamePlural}
+		advancedFields={searchConfig.advancedFields}
+		statusField={searchConfig.statusField}
+		entityType={searchConfig.entityType}
+		on:updateFilters={(e) => updateFilters(e.detail)}
+		on:clearFilters={clearFilters}
+		on:switchSearchMode={(e) => switchSearchMode(e.detail)}
+		on:exportResults={exportResults}
+	/>
 
-			<!-- Pagination -->
+	<div class="pt-10 pb-5">
+		<EntityPaginationControls
+			{pageDisplayInfo}
+			{currentPagination}
+			{sortFields}
+			{pageSizeOptions}
+			on:goToPage={(e) => goToPage(e.detail)}
+			on:changePageSize={(e) => changePageSize(e.detail)}
+			on:changeSorting={(e) => changeSorting(e.detail)}
+		/>
+	</div>
+
+	<EnhancedDataTable
+		{loading}
+		paginatedData={{
+			content: clases as unknown as Record<string, unknown>[],
+			totalElements,
+			totalPages,
+			currentPage
+		} as PaginatedEntities<Record<string, unknown>>}
+		{currentPagination}
+		{authStore}
+		columns={tableColumns as unknown as EntityColumn<Record<string, unknown>>[]}
+		actions={tableActions as unknown as EntityAction<Record<string, unknown>>[]}
+		entityName="clase"
+		entityNamePlural="clases"
+		theme="modern"
+		showRowNumbers={true}
+		on:changeSorting={(e) => changeSorting(e.detail)}
+	/>
+
+	{#if pageDisplayInfo && pageDisplayInfo.totalPages > 1}
+		<div class="mt-6 flex flex-col items-center gap-4">
 			<EntityPaginationControls
 				{pageDisplayInfo}
 				{currentPagination}
 				{sortFields}
 				{pageSizeOptions}
+				justifyContent="center"
+				showSortAndSize={false}
 				on:goToPage={(e) => goToPage(e.detail)}
 				on:changePageSize={(e) => changePageSize(e.detail)}
 				on:changeSorting={(e) => changeSorting(e.detail)}
 			/>
-		{/if}
-	</div>
+		</div>
+	{/if}
 </div>
 
 <EntityDeleteModal

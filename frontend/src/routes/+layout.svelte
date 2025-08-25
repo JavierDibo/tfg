@@ -1,3 +1,4 @@
+<!-- LLM_EDIT_TIMESTAMP: 25 ago. 12:26 -->
 <script lang="ts">
 	import '../app.css';
 	import { authStore } from '$lib/stores/authStore.svelte';
@@ -31,13 +32,7 @@
 									href="/alumnos"
 									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 								>
-									Gestión de Alumnos
-								</a>
-								<a
-									href="/alumnos/estadisticas"
-									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-								>
-									Estadísticas Alumnos
+									Alumnos
 								</a>
 								<a
 									href="/profesores"
@@ -46,16 +41,10 @@
 									Profesores
 								</a>
 								<a
-									href="/profesores/estadisticas"
+									href="/materiales"
 									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 								>
-									Estadísticas Profesores
-								</a>
-								<a
-									href="/entidades"
-									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-								>
-									Entidades
+									Materiales
 								</a>
 								<!-- Professor Navigation -->
 							{:else if authStore.isProfesor}
@@ -70,12 +59,6 @@
 									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 								>
 									Mis Alumnos
-								</a>
-								<a
-									href="/profesores/estadisticas"
-									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-								>
-									Estadísticas
 								</a>
 								<a
 									href="/profesores/perfil"

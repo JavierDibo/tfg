@@ -194,6 +194,28 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<!-- Plugin to run timestamp update script during compile -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>update-timestamps</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>cmd</executable>
+							<arguments>
+								<argument>/c</argument>
+								<argument>${project.basedir}/update-timestamps.bat</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>

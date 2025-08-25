@@ -43,7 +43,8 @@
 		lastName: '',
 		dni: '',
 		email: '',
-		enrolled: ''
+		enrolled: '',
+		enabled: ''
 	});
 
 	// Modal state
@@ -118,6 +119,9 @@
 			if (currentFilters.enrolled !== '' && currentFilters.enrolled !== null) {
 				params.enrolled = currentFilters.enrolled === 'true';
 			}
+			if (currentFilters.enabled !== '' && currentFilters.enabled !== null) {
+				params.enabled = currentFilters.enabled === 'true';
+			}
 
 			const response = await AlumnoService.getAlumnos(params);
 
@@ -133,22 +137,23 @@
 		}
 	}
 
-	// Navigation functions
+	// Navigation functions - convert 1-based UI to 0-based API
 	function goToPage(page: number) {
-		currentPage = page;
+		// Convert from 1-based UI to 0-based API
+		currentPage = page - 1;
 		loadAlumnos();
 	}
 
 	function changePageSize(newSize: number) {
 		pageSize = newSize;
-		currentPage = 0;
+		currentPage = 0; // Reset to first page (0-based)
 		loadAlumnos();
 	}
 
 	// Search and filter functions
 	function updateFilters(filters: Record<string, unknown>) {
 		Object.assign(currentFilters, filters);
-		currentPage = 0;
+		currentPage = 0; // Reset to first page (0-based)
 		loadAlumnos();
 	}
 
@@ -160,9 +165,10 @@
 			lastName: '',
 			dni: '',
 			email: '',
-			enrolled: ''
+			enrolled: '',
+			enabled: ''
 		};
-		currentPage = 0;
+		currentPage = 0; // Reset to first page (0-based)
 		loadAlumnos();
 	}
 
@@ -278,16 +284,21 @@
 		}
 	];
 
-	// Pagination configuration
+	// Pagination configuration - use proper pageDisplayInfo with 1-based indexing for UI
 	const pageDisplayInfo = $derived({
-		currentPage,
+		currentPage: currentPage + 1, // Convert to 1-based for UI
 		totalPages,
-		totalElements,
-		pageSize
+		totalItems: totalElements,
+		startItem: totalElements > 0 ? currentPage * pageSize + 1 : 0,
+		endItem: Math.min(totalElements, (currentPage + 1) * pageSize),
+		hasNext: currentPage < totalPages - 1,
+		hasPrevious: currentPage > 0,
+		isFirstPage: currentPage === 0,
+		isLastPage: currentPage >= totalPages - 1
 	});
 
 	const currentPagination = $derived({
-		page: currentPage,
+		page: currentPage, // Keep 0-based for API
 		size: pageSize,
 		sortBy: sortBy,
 		sortDirection: sortDirection
@@ -319,7 +330,7 @@
 			sortDirection = field.direction;
 		}
 
-		currentPage = 0; // Reset to first page when sorting
+		currentPage = 0; // Reset to first page (0-based) when sorting
 		loadAlumnos();
 	}
 
@@ -400,12 +411,14 @@
 	/>
 
 	{#if pageDisplayInfo && pageDisplayInfo.totalPages > 1}
-		<div class="mt-6">
+		<div class="mt-6 flex flex-col items-center gap-4">
 			<EntityPaginationControls
 				{pageDisplayInfo}
 				{currentPagination}
 				{sortFields}
 				{pageSizeOptions}
+				justifyContent="center"
+				showSortAndSize={false}
 				on:goToPage={(e) => goToPage(e.detail)}
 				on:changePageSize={(e) => changePageSize(e.detail)}
 				on:changeSorting={(e) => changeSorting(e.detail)}
