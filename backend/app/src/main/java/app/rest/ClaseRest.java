@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -99,23 +98,20 @@ public class ClaseRest extends BaseRestController {
             @Parameter(description = "Filter by description")
             @RequestParam(required = false) String descripcion,
             
-            @Parameter(description = "Filter by format (PRESENCIAL, ONLINE, HIBRIDO)")
+            @Parameter(description = "Filter by difficulty level")
+            @RequestParam(required = false) EDificultad dificultad,
+            
+            @Parameter(description = "Filter by modality (PRESENCIAL, ONLINE, HIBRIDO)")
             @RequestParam(required = false) EPresencialidad presencialidad,
             
-            @Parameter(description = "Filter by difficulty level (PRINCIPIANTE, INTERMEDIO, AVANZADO)")
-            @RequestParam(required = false) EDificultad nivel,
+            @Parameter(description = "Filter by professor ID")
+            @RequestParam(required = false) String profesorId,
             
-            @Parameter(description = "Minimum price filter")
-            @RequestParam(required = false) @Min(0) Double precioMinimo,
+            @Parameter(description = "Filter by course ID")
+            @RequestParam(required = false) String cursoId,
             
-            @Parameter(description = "Maximum price filter")
-            @RequestParam(required = false) @Min(0) Double precioMaximo,
-            
-            @Parameter(description = "Filter for classes with available spots only")
-            @RequestParam(required = false) Boolean soloConPlazasDisponibles,
-            
-            @Parameter(description = "Filter for upcoming classes only")
-            @RequestParam(required = false) Boolean soloProximas,
+            @Parameter(description = "Filter by workshop ID")
+            @RequestParam(required = false) String tallerId,
             
             @Parameter(description = "Page number (0-indexed)")
             @RequestParam(defaultValue = "0") @Min(0) int page,
@@ -126,62 +122,38 @@ public class ClaseRest extends BaseRestController {
             @Parameter(description = "Field to sort by")
             @RequestParam(defaultValue = "id") String sortBy,
             
-            @Parameter(description = "Sort direction (ASC or DESC)")
-            @RequestParam(defaultValue = "ASC") @Pattern(regexp = "ASC|DESC") String sortDirection) {
+            @Parameter(description = "Sort direction")
+            @RequestParam(defaultValue = "ASC") @Pattern(regexp = "(?i)^(ASC|DESC)$") String sortDirection) {
         
-        // Validate and normalize parameters
+        // Validate and standardize parameters using BaseRestController
         page = validatePageNumber(page);
         size = validatePageSize(size);
-        sortBy = validateSortBy(sortBy, "id", "titulo", "precio", "presencialidad", "nivel");
+        sortBy = validateSortBy(sortBy, "id", "titulo", "descripcion", "dificultad", "presencialidad", "profesorId", "cursoId", "tallerId");
         sortDirection = validateSortDirection(sortDirection);
         
-        // Create search parameters DTO
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            q, titulo, descripcion, presencialidad, nivel,
-            precioMinimo != null ? java.math.BigDecimal.valueOf(precioMinimo) : null,
-            precioMaximo != null ? java.math.BigDecimal.valueOf(precioMaximo) : null,
-            soloConPlazasDisponibles, soloProximas,
-            page, size, sortBy, sortDirection
-        );
+            titulo, descripcion, presencialidad, dificultad, null, null, null, null, page, size, sortBy, sortDirection);
         
-        DTORespuestaPaginada<DTOClase> resultado = servicioClase.buscarClasesSegunRol(parametros);
-        return ResponseEntity.ok(resultado);
+        DTORespuestaPaginada<DTOClase> respuesta = servicioClase.buscarClasesSegunRol(parametros);
+        
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
     }
 
     /**
-     * Gets a class by its ID
+     * Gets a specific class by ID
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Get class by ID", description = "Gets a specific class by its ID")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Class found successfully"),
-        @ApiResponse(responseCode = "404", description = "Class not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied")
-    })
-    public ResponseEntity<DTOClase> obtenerClasePorId(@PathVariable Long id) {
-        DTOClase clase = servicioClase.obtenerClasePorId(id);
-        if (clase == null) {
-            throw new ResourceNotFoundException("Class", "ID", id);
-        }
-        return ResponseEntity.ok(clase);
-    }
-
-    /**
-     * Gets all professors assigned to a specific class
-     */
-    @GetMapping("/{id}/profesores")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
     @Operation(
-        summary = "Get professors by class",
-        description = "Gets all professors assigned to a specific class"
+        summary = "Get class by ID",
+        description = "Gets a specific class by its ID"
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Professors found successfully",
+            description = "Class found successfully",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = DTOProfesor.class, type = "array")
+                schema = @Schema(implementation = DTOClase.class)
             )
         ),
         @ApiResponse(
@@ -190,92 +162,135 @@ public class ClaseRest extends BaseRestController {
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Access denied"
+            description = "Access denied - Not authorized to view this class"
         )
     })
-    public ResponseEntity<List<DTOProfesor>> obtenerProfesoresPorClase(
-            @PathVariable Long id) {
+    public ResponseEntity<DTOClase> obtenerClasePorId(
+            @Parameter(description = "ID of the class", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
-        List<DTOProfesor> profesores = servicioProfesor.obtenerProfesoresPorClase(id.toString());
-        return ResponseEntity.ok(profesores);
+        DTOClase dtoClase = servicioClase.obtenerClasePorId(id);
+        return new ResponseEntity<>(dtoClase, HttpStatus.OK);
     }
 
-    // ===== CREATION OPERATIONS =====
+    // ===== CREATE OPERATIONS =====
 
     /**
      * Creates a new course
      */
     @PostMapping("/cursos")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Create course", description = "Creates a new course. Requires ADMIN or PROFESOR permissions")
+    @Operation(
+        summary = "Create new course",
+        description = "Creates a new course in the system (requires ADMIN or PROFESOR role)"
+    )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Course created successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-        @ApiResponse(responseCode = "400", description = "Invalid input data")
+        @ApiResponse(
+            responseCode = "201",
+            description = "Course created successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOCurso.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input data"
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Conflict - Course already exists"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ADMIN or PROFESOR role is required"
+        )
     })
-    public ResponseEntity<DTOCurso> crearCurso(@Valid @RequestBody DTOPeticionCrearCurso peticion) {
-        DTOCurso curso = servicioClase.crearCurso(
-                new DTOPeticionCrearClase(
-                        peticion.titulo(),
-                        peticion.descripcion(),
-                        peticion.precio(),
-                        peticion.presencialidad(),
-                        peticion.imagenPortada(),
-                        peticion.nivel(),
-                        peticion.profesoresId(),
-                        peticion.material()
-                ),
-                peticion.fechaInicio(),
-                peticion.fechaFin()
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(curso);
+    public ResponseEntity<DTOCurso> crearCurso(
+            @Parameter(description = "Course creation data", required = true)
+            @Valid @RequestBody DTOPeticionCrearCurso peticion) {
+        
+        DTOPeticionCrearClase peticionClase = new DTOPeticionCrearClase(
+            peticion.titulo(), peticion.descripcion(), peticion.precio(), 
+            peticion.presencialidad(), peticion.imagenPortada(), peticion.nivel(), 
+            peticion.profesoresId(), peticion.material());
+        
+        DTOCurso dtoCursoNuevo = servicioClase.crearCurso(peticionClase, peticion.fechaInicio(), peticion.fechaFin());
+        return new ResponseEntity<>(dtoCursoNuevo, HttpStatus.CREATED);
     }
 
     /**
      * Creates a new workshop
      */
     @PostMapping("/talleres")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Create workshop", description = "Creates a new workshop. Requires ADMIN or PROFESOR permissions")
+    @Operation(
+        summary = "Create new workshop",
+        description = "Creates a new workshop in the system (requires ADMIN or PROFESOR role)"
+    )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Workshop created successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-        @ApiResponse(responseCode = "400", description = "Invalid input data")
+        @ApiResponse(
+            responseCode = "201",
+            description = "Workshop created successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOTaller.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input data"
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Conflict - Workshop already exists"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ADMIN or PROFESOR role is required"
+        )
     })
-    public ResponseEntity<DTOTaller> crearTaller(@Valid @RequestBody DTOPeticionCrearTaller peticion) {
-        DTOTaller taller = servicioClase.crearTaller(
-                new DTOPeticionCrearClase(
-                        peticion.titulo(),
-                        peticion.descripcion(),
-                        peticion.precio(),
-                        peticion.presencialidad(),
-                        peticion.imagenPortada(),
-                        peticion.nivel(),
-                        peticion.profesoresId(),
-                        peticion.material()
-                ),
-                peticion.duracionHoras(),
-                peticion.fechaRealizacion(),
-                peticion.horaComienzo()
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(taller);
+    public ResponseEntity<DTOTaller> crearTaller(
+            @Parameter(description = "Workshop creation data", required = true)
+            @Valid @RequestBody DTOPeticionCrearTaller peticion) {
+        
+        DTOPeticionCrearClase peticionClase = new DTOPeticionCrearClase(
+            peticion.titulo(), peticion.descripcion(), peticion.precio(), 
+            peticion.presencialidad(), peticion.imagenPortada(), peticion.nivel(), 
+            peticion.profesoresId(), peticion.material());
+        
+        DTOTaller dtoTallerNuevo = servicioClase.crearTaller(peticionClase, peticion.duracionHoras(), 
+            peticion.fechaRealizacion(), peticion.horaComienzo());
+        return new ResponseEntity<>(dtoTallerNuevo, HttpStatus.CREATED);
     }
 
-    // ===== DELETION OPERATIONS =====
+    // ===== DELETE OPERATIONS =====
 
     /**
-     * Deletes a class by its ID
+     * Deletes a class
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Delete class by ID", description = "Deletes a class by its ID. Requires ADMIN permissions")
+    @Operation(
+        summary = "Delete class",
+        description = "Deletes a class from the system (requires ADMIN role)"
+    )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Class deleted successfully"),
-        @ApiResponse(responseCode = "404", description = "Class not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN permissions")
+        @ApiResponse(
+            responseCode = "204",
+            description = "Class deleted successfully"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Class not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ADMIN role is required"
+        )
     })
-    public ResponseEntity<Void> borrarClasePorId(@PathVariable Long id) {
-        boolean resultado = servicioClase.borrarClasePorId(id);
-        return resultado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    public ResponseEntity<Void> eliminarClase(
+            @Parameter(description = "ID of the class", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        servicioClase.borrarClasePorId(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

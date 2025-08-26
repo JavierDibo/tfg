@@ -10,6 +10,9 @@ import app.servicios.ServicioMaterial;
 import app.entidades.Material;
 import app.repositorios.RepositorioMaterial;
 import app.repositorios.RepositorioClase;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManager;
@@ -33,6 +36,9 @@ public class CourseDataInitializer extends BaseDataInitializer {
 
     @Override
     public void initialize() {
+        // Set up security context for course creation (as a teacher)
+        setupSecurityContext();
+        
         ServicioClase servicioClase = context.getBean(ServicioClase.class);
         ServicioMaterial servicioMaterial = context.getBean(ServicioMaterial.class);
         RepositorioMaterial repositorioMaterial = context.getBean(RepositorioMaterial.class);
@@ -93,6 +99,17 @@ public class CourseDataInitializer extends BaseDataInitializer {
             .sum();
         System.out.println("Courses created: " + createdCourses.size() + " (avg " + 
             String.format("%.1f", (double) totalMaterialsAssigned / createdCourses.size()) + " materials each)");
+    }
+    
+    private void setupSecurityContext() {
+        // Create a teacher authentication context for course creation
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_PROFESOR"));
+        
+        UsernamePasswordAuthenticationToken authentication = 
+            new UsernamePasswordAuthenticationToken("teacher-init", "password", authorities);
+        
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
     
     private String generateRandomCourseName() {
@@ -160,10 +177,12 @@ public class CourseDataInitializer extends BaseDataInitializer {
      */
     private List<Material> fetchMaterialsByIds(List<String> materialIds) {
         List<Material> materials = new ArrayList<>();
+        RepositorioMaterial repositorioMaterial = context.getBean(RepositorioMaterial.class);
+        
         for (String materialId : materialIds) {
             try {
-                // Use EntityManager to get a fresh reference to avoid session conflicts
-                Material material = entityManager.find(Material.class, materialId);
+                // Use repository to get existing materials
+                Material material = repositorioMaterial.findById(materialId).orElse(null);
                 if (material != null) {
                     materials.add(material);
                 } else {

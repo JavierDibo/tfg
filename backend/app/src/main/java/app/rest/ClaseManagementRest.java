@@ -3,7 +3,6 @@ package app.rest;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,7 +50,6 @@ public class ClaseManagementRest {
      * Enrolls a student in a class (for professors and administrators)
      */
     @PostMapping("/students/{studentId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(summary = "Enroll student in class", description = "Enrolls a student in a specific class")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Student enrolled successfully"),
@@ -77,7 +75,6 @@ public class ClaseManagementRest {
      * Unenrolls a student from a class (for professors and administrators)
      */
     @DeleteMapping("/students/{studentId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(summary = "Unenroll student from class", description = "Unenrolls a student from a specific class")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Student unenrolled successfully"),
@@ -99,159 +96,52 @@ public class ClaseManagementRest {
         }
     }
 
-
-
-    // ===== SELF-ENROLLMENT OPERATIONS (for students) =====
-
-    /**
-     * Allows a student to enroll themselves in a class
-     */
-    @PostMapping("/students/me")
-    @PreAuthorize("hasRole('ALUMNO')")
-    @Operation(summary = "Self-enrollment in class", description = "Allows a student to enroll themselves in a class")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Self-enrollment successful"),
-            @ApiResponse(responseCode = "400", description = "Enrollment error - Invalid data or business rule violation"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
-            @ApiResponse(responseCode = "404", description = "Class not found")
-    })
-    public ResponseEntity<DTORespuestaEnrollment> inscribirseEnClase(@PathVariable Long claseId) {
-        DTORespuestaEnrollment respuesta = servicioClase.inscribirseEnClase(claseId);
-
-        if (respuesta.success()) {
-            return ResponseEntity.ok(respuesta);
-        } else {
-            return ResponseEntity.badRequest().body(respuesta);
-        }
-    }
-
-    /**
-     * Allows a student to unenroll themselves from a class
-     */
-    @DeleteMapping("/students/me")
-    @PreAuthorize("hasRole('ALUMNO')")
-    @Operation(summary = "Self-unenrollment from class", description = "Allows a student to unenroll themselves from a class")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Self-unenrollment successful"),
-            @ApiResponse(responseCode = "400", description = "Unenrollment error - Invalid data or business rule violation"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
-            @ApiResponse(responseCode = "404", description = "Class not found")
-    })
-    public ResponseEntity<DTORespuestaEnrollment> darseDeBajaDeClase(@PathVariable Long claseId) {
-        DTORespuestaEnrollment respuesta = servicioClase.darseDeBajaDeClase(claseId);
-
-        if (respuesta.success()) {
-            return ResponseEntity.ok(respuesta);
-        } else {
-            return ResponseEntity.badRequest().body(respuesta);
-        }
-    }
-
-    /**
-     * Gets the enrollment status of the authenticated student in a class
-     */
-    @GetMapping("/students/me")
-    @PreAuthorize("hasRole('ALUMNO')")
-    @Operation(summary = "Get my enrollment in class", description = "Gets the enrollment information of the authenticated student in a class")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Enrollment information retrieved successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
-            @ApiResponse(responseCode = "404", description = "Class not found")
-    })
-    public ResponseEntity<DTOEstadoInscripcion> obtenerMiInscripcion(@PathVariable Long claseId) {
-        Long alumnoId = securityUtils.getCurrentUserId();
-        DTOEstadoInscripcion estado = servicioClase.verificarEstadoInscripcion(alumnoId, claseId);
-        return ResponseEntity.ok(estado);
-    }
-
-    /**
-     * Gets detailed information about a class for the authenticated student
-     */
-    @GetMapping("/students/me/details")
-    @PreAuthorize("hasRole('ALUMNO')")
-    @Operation(summary = "Get class details for me",
-            description = "Gets detailed information about a class for the authenticated student")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Class details retrieved successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Requires ALUMNO permissions"),
-            @ApiResponse(responseCode = "404", description = "Class not found")
-    })
-    public ResponseEntity<DTOClaseConDetallesPublico> obtenerMisDetallesClase(@PathVariable Long claseId) {
-        Long alumnoId = securityUtils.getCurrentUserId();
-        DTOClaseConDetallesPublico detalles = servicioClase.obtenerClaseConDetallesPublicoParaEstudiante(claseId, alumnoId);
-        return ResponseEntity.ok(detalles);
-    }
-
     // ===== PROFESSOR MANAGEMENT =====
 
     /**
      * Adds a professor to a class
      */
-    @PostMapping("/profesores/{profesorId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/professors/{professorId}")
     @Operation(summary = "Add professor to class", description = "Adds a professor to a specific class")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Professor added successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN permissions"),
+            @ApiResponse(responseCode = "400", description = "Error adding professor - Invalid data or business rule violation"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
             @ApiResponse(responseCode = "404", description = "Class or professor not found")
     })
-    public ResponseEntity<DTOClase> agregarProfesor(
+    public ResponseEntity<String> agregarProfesorAClase(
             @PathVariable Long claseId,
-            @PathVariable String profesorId) {
-        return ResponseEntity.ok(servicioClase.agregarProfesor(claseId, profesorId));
+            @PathVariable Long professorId) {
+
+        DTOClase resultado = servicioClase.agregarProfesor(claseId, professorId.toString());
+        if (resultado != null) {
+            return ResponseEntity.ok("Professor added successfully to class");
+        } else {
+            return ResponseEntity.badRequest().body("Error adding professor to class");
+        }
     }
 
     /**
      * Removes a professor from a class
      */
-    @DeleteMapping("/profesores/{profesorId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/professors/{professorId}")
     @Operation(summary = "Remove professor from class", description = "Removes a professor from a specific class")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Professor removed successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN permissions"),
+            @ApiResponse(responseCode = "400", description = "Error removing professor - Invalid data or business rule violation"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
             @ApiResponse(responseCode = "404", description = "Class or professor not found")
     })
-    public ResponseEntity<DTOClase> removerProfesor(
+    public ResponseEntity<String> quitarProfesorDeClase(
             @PathVariable Long claseId,
-            @PathVariable String profesorId) {
-        return ResponseEntity.ok(servicioClase.removerProfesor(claseId, profesorId));
-    }
+            @PathVariable Long professorId) {
 
-    // ===== EXERCISE MANAGEMENT =====
-
-    /**
-     * Adds an exercise to a class
-     */
-    @PostMapping("/ejercicios/{ejercicioId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Add exercise to class", description = "Adds an exercise to a specific class")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Exercise added successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-            @ApiResponse(responseCode = "404", description = "Class or exercise not found")
-    })
-    public ResponseEntity<DTOClase> agregarEjercicio(
-            @PathVariable Long claseId,
-            @PathVariable String ejercicioId) {
-        return ResponseEntity.ok(servicioClase.agregarEjercicio(claseId, ejercicioId));
-    }
-
-    /**
-     * Removes an exercise from a class
-     */
-    @DeleteMapping("/ejercicios/{ejercicioId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Remove exercise from class", description = "Removes an exercise from a specific class")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Exercise removed successfully"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
-            @ApiResponse(responseCode = "404", description = "Class or exercise not found")
-    })
-    public ResponseEntity<DTOClase> removerEjercicio(
-            @PathVariable Long claseId,
-            @PathVariable String ejercicioId) {
-        return ResponseEntity.ok(servicioClase.removerEjercicio(claseId, ejercicioId));
+        DTOClase resultado = servicioClase.removerProfesor(claseId, professorId.toString());
+        if (resultado != null) {
+            return ResponseEntity.ok("Professor removed successfully from class");
+        } else {
+            return ResponseEntity.badRequest().body("Error removing professor from class");
+        }
     }
 
     // ===== MATERIAL MANAGEMENT =====
@@ -259,35 +149,46 @@ public class ClaseManagementRest {
     /**
      * Adds material to a class
      */
-    @PostMapping("/material")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Add material to class", description = "Adds material to a specific class")
+    @PostMapping("/materials")
+    @Operation(summary = "Add material to class", description = "Adds educational material to a specific class")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Material added successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid material data"),
+            @ApiResponse(responseCode = "400", description = "Error adding material - Invalid data or business rule violation"),
             @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
             @ApiResponse(responseCode = "404", description = "Class not found")
     })
-    public ResponseEntity<DTOClase> agregarMaterial(
+    public ResponseEntity<String> agregarMaterialAClase(
             @PathVariable Long claseId,
             @Valid @RequestBody Material material) {
-        return ResponseEntity.ok(servicioClase.agregarMaterial(claseId, material));
+
+        DTOClase resultado = servicioClase.agregarMaterial(claseId, material);
+        if (resultado != null) {
+            return ResponseEntity.ok("Material added successfully to class");
+        } else {
+            return ResponseEntity.badRequest().body("Error adding material to class");
+        }
     }
 
     /**
      * Removes material from a class
      */
-    @DeleteMapping("/material/{materialId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(summary = "Remove material from class", description = "Removes material from a specific class")
+    @DeleteMapping("/materials/{materialId}")
+    @Operation(summary = "Remove material from class", description = "Removes educational material from a specific class")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Material removed successfully"),
+            @ApiResponse(responseCode = "400", description = "Error removing material - Invalid data or business rule violation"),
             @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
             @ApiResponse(responseCode = "404", description = "Class or material not found")
     })
-    public ResponseEntity<DTOClase> removerMaterial(
+    public ResponseEntity<String> quitarMaterialDeClase(
             @PathVariable Long claseId,
             @PathVariable String materialId) {
-        return ResponseEntity.ok(servicioClase.removerMaterial(claseId, materialId));
+
+        DTOClase resultado = servicioClase.removerMaterial(claseId, materialId);
+        if (resultado != null) {
+            return ResponseEntity.ok("Material removed successfully from class");
+        } else {
+            return ResponseEntity.badRequest().body("Error removing material from class");
+        }
     }
 }

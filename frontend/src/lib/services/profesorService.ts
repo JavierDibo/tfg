@@ -97,7 +97,7 @@ export const ProfesorService = {
 
 	async updateProfesor(id: number, updateData: DTOActualizacionProfesor): Promise<DTOProfesor> {
 		try {
-			const response = await profesorApi.actualizarProfesor({
+			const response = await profesorApi.actualizarProfesorParcial({
 				id,
 				dTOActualizacionProfesor: updateData
 			});
@@ -110,7 +110,7 @@ export const ProfesorService = {
 
 	async deleteProfesor(id: number): Promise<void> {
 		try {
-			await profesorApi.borrarProfesorPorId({ id });
+			await profesorApi.eliminarProfesor({ id });
 		} catch (error) {
 			ErrorHandler.logError(error, `deleteProfesor(${id})`);
 			throw await ErrorHandler.parseError(error);
@@ -119,7 +119,7 @@ export const ProfesorService = {
 
 	async toggleAccountStatus(id: number, habilitado: boolean): Promise<DTOProfesor> {
 		try {
-			const response = await profesorApi.actualizarProfesor({
+			const response = await profesorApi.actualizarProfesorParcial({
 				id,
 				dTOActualizacionProfesor: { enabled: habilitado }
 			});

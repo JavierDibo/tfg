@@ -21,9 +21,11 @@ import app.dtos.DTOProfesorPublico;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Clase;
 import app.entidades.Profesor;
+import app.excepciones.EntidadNoEncontradaException;
 import app.repositorios.RepositorioClase;
 import app.repositorios.RepositorioProfesor;
 import app.util.ExceptionUtils;
+import app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -39,6 +41,7 @@ public class ServicioProfesor {
     private final RepositorioClase repositorioClase;
     private final PasswordEncoder passwordEncoder;
     private final ServicioCachePassword servicioCachePassword;
+    private final SecurityUtils securityUtils;
 
     // ===== MÉTODOS DE CONSULTA BÁSICOS =====
 
@@ -48,6 +51,11 @@ public class ServicioProfesor {
      */
     @Transactional(readOnly = true)
     public List<DTOProfesor> obtenerProfesores() {
+        // Security check: Only ADMIN can see all professors
+        if (!securityUtils.hasRole("ADMIN")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para ver todos los profesores");
+        }
+        
         return repositorioProfesor.findAllOrderedById()
                 .stream()
                 .map(DTOProfesor::new)
@@ -64,7 +72,23 @@ public class ServicioProfesor {
     public DTOProfesor obtenerProfesorPorId(Long id) {
         Profesor profesor = repositorioProfesor.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
-        return new DTOProfesor(profesor);
+        
+        // Security check: Only ADMIN, or the professor themselves can access professor data
+        if (securityUtils.hasRole("ADMIN")) {
+            // Admins can see any professor's data
+            return new DTOProfesor(profesor);
+        } else if (securityUtils.hasRole("PROFESOR")) {
+            // Professors can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!id.equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros profesores");
+            }
+            return new DTOProfesor(profesor);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de profesores");
+            return null; // This line will never be reached due to the exception above
+        }
     }
 
     /**
@@ -77,7 +101,23 @@ public class ServicioProfesor {
     public DTOProfesor obtenerProfesorPorEmail(String email) {
         Profesor profesor = repositorioProfesor.findByEmail(email).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "email", email);
-        return new DTOProfesor(profesor);
+        
+        // Security check: Only ADMIN, or the professor themselves can access professor data
+        if (securityUtils.hasRole("ADMIN")) {
+            // Admins can see any professor's data
+            return new DTOProfesor(profesor);
+        } else if (securityUtils.hasRole("PROFESOR")) {
+            // Professors can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!profesor.getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros profesores");
+            }
+            return new DTOProfesor(profesor);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de profesores");
+            return null; // This line will never be reached due to the exception above
+        }
     }
 
     /**
@@ -90,7 +130,23 @@ public class ServicioProfesor {
     public DTOProfesor obtenerProfesorPorUsuario(String usuario) {
         Profesor profesor = repositorioProfesor.findByUsername(usuario).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "usuario", usuario);
-        return new DTOProfesor(profesor);
+        
+        // Security check: Only ADMIN, or the professor themselves can access professor data
+        if (securityUtils.hasRole("ADMIN")) {
+            // Admins can see any professor's data
+            return new DTOProfesor(profesor);
+        } else if (securityUtils.hasRole("PROFESOR")) {
+            // Professors can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!profesor.getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros profesores");
+            }
+            return new DTOProfesor(profesor);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de profesores");
+            return null; // This line will never be reached due to the exception above
+        }
     }
 
     /**
@@ -103,7 +159,23 @@ public class ServicioProfesor {
     public DTOProfesor obtenerProfesorPorDni(String dni) {
         Profesor profesor = repositorioProfesor.findByDni(dni).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "DNI", dni);
-        return new DTOProfesor(profesor);
+        
+        // Security check: Only ADMIN, or the professor themselves can access professor data
+        if (securityUtils.hasRole("ADMIN")) {
+            // Admins can see any professor's data
+            return new DTOProfesor(profesor);
+        } else if (securityUtils.hasRole("PROFESOR")) {
+            // Professors can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!profesor.getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros profesores");
+            }
+            return new DTOProfesor(profesor);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de profesores");
+            return null; // This line will never be reached due to the exception above
+        }
     }
 
     /**
@@ -116,6 +188,12 @@ public class ServicioProfesor {
     public DTOProfesorPublico obtenerProfesorPublicoPorId(Long id) {
         Profesor profesor = repositorioProfesor.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
+        
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access public professor data
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de profesores");
+        }
+        
         return new DTOProfesorPublico(profesor);
     }
 
@@ -128,6 +206,11 @@ public class ServicioProfesor {
      */
     @Transactional(readOnly = true)
     public List<DTOProfesor> buscarProfesoresPorNombre(String nombre) {
+        // Security check: Only ADMIN can search professors
+        if (!securityUtils.hasRole("ADMIN")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para buscar profesores");
+        }
+        
         List<Profesor> profesores = repositorioProfesor.findByNombreContainingIgnoreCase(nombre);
         return profesores.stream()
                 .map(DTOProfesor::new)
@@ -141,6 +224,10 @@ public class ServicioProfesor {
      */
     @Transactional(readOnly = true)
     public List<DTOProfesor> buscarProfesoresPorApellidos(String apellidos) {
+        // Security check: Only ADMIN can search professors
+        if (!securityUtils.hasRole("ADMIN")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para buscar profesores");
+        }
         List<Profesor> profesores = repositorioProfesor.findByApellidosContainingIgnoreCase(apellidos);
         return profesores.stream()
                 .map(DTOProfesor::new)
@@ -229,6 +316,11 @@ public class ServicioProfesor {
      * @throws IllegalArgumentException si ya existe un profesor con el mismo usuario, email o DNI
      */
     public DTOProfesor crearProfesor(DTOPeticionRegistroProfesor peticion) {
+        // Security check: Only ADMIN can create professors
+        if (!securityUtils.hasRole("ADMIN")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para crear profesores");
+        }
+        
         // Validar que no existan duplicados
         if (repositorioProfesor.findByUsername(peticion.username()).isPresent()) {
             ExceptionUtils.throwValidationError("Ya existe un profesor con el usuario: " + peticion.username());
@@ -268,6 +360,11 @@ public class ServicioProfesor {
     public DTOProfesor actualizarProfesor(Long id, DTOActualizacionProfesor dtoParcial) {
         Profesor profesor = repositorioProfesor.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
+
+        // Security check: Only ADMIN, or the professor themselves can update professor data
+        if (!securityUtils.hasRole("ADMIN") && !profesor.getId().equals(securityUtils.getCurrentUserId())) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para actualizar los datos de otros profesores");
+        }
 
         // Actualizar campos no nulos
         if (dtoParcial.firstName() != null) {
@@ -315,6 +412,11 @@ public class ServicioProfesor {
         Profesor profesor = repositorioProfesor.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
         
+        // Security check: Only ADMIN can enable/disable professors
+        if (!securityUtils.hasRole("ADMIN")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para habilitar/deshabilitar profesores");
+        }
+        
         profesor.setEnabled(habilitar);
         Profesor profesorActualizado = repositorioProfesor.save(profesor);
         return new DTOProfesor(profesorActualizado);
@@ -341,6 +443,11 @@ public class ServicioProfesor {
         Profesor profesor = repositorioProfesor.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
 
+        // Security check: Only ADMIN can delete professors
+        if (!securityUtils.hasRole("ADMIN")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para borrar profesores");
+        }
+
         repositorioProfesor.deleteById(id);
         return true;
     }
@@ -358,6 +465,11 @@ public class ServicioProfesor {
             Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
             ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
             
+            // Security check: Only ADMIN, or the professor themselves can assign classes
+            if (!securityUtils.hasRole("ADMIN") && !profesor.getId().equals(securityUtils.getCurrentUserId())) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para asignar clases a otros profesores");
+            }
+
             Long claseIdLong = Long.parseLong(claseId);
             Clase clase = repositorioClase.findById(claseIdLong).orElse(null);
             ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
@@ -394,6 +506,11 @@ public class ServicioProfesor {
             Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
             ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
             
+            // Security check: Only ADMIN, or the professor themselves can remove classes
+            if (!securityUtils.hasRole("ADMIN") && !profesor.getId().equals(securityUtils.getCurrentUserId())) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para remover clases a otros profesores");
+            }
+
             Long claseIdLong = Long.parseLong(claseId);
             Clase clase = repositorioClase.findById(claseIdLong).orElse(null);
             ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);

@@ -110,13 +110,7 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
-    numeroAlumnos?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    duracionEnSemanas?: number;
+    duracionEnDias?: number;
     /**
      * 
      * @type {number}
@@ -128,13 +122,19 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
-    duracionEnDias?: number;
+    duracionEnSemanas?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOCurso
      */
     numeroProfesores?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOCurso
+     */
+    numeroAlumnos?: number;
 }
 
 
@@ -188,11 +188,11 @@ export function DTOCursoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(MaterialFromJSON)),
         'fechaInicio': json['fechaInicio'] == null ? undefined : (new Date(json['fechaInicio'])),
         'fechaFin': json['fechaFin'] == null ? undefined : (new Date(json['fechaFin'])),
-        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
-        'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
-        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
         'duracionEnDias': json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
+        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
+        'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
         'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
+        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
     };
 }
 
@@ -220,11 +220,11 @@ export function DTOCursoToJSONTyped(value?: DTOCurso | null, ignoreDiscriminator
         'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(MaterialToJSON)),
         'fechaInicio': value['fechaInicio'] == null ? undefined : ((value['fechaInicio']).toISOString().substring(0,10)),
         'fechaFin': value['fechaFin'] == null ? undefined : ((value['fechaFin']).toISOString().substring(0,10)),
-        'numeroAlumnos': value['numeroAlumnos'],
-        'duracionEnSemanas': value['duracionEnSemanas'],
-        'porcentajeProgreso': value['porcentajeProgreso'],
         'duracionEnDias': value['duracionEnDias'],
+        'porcentajeProgreso': value['porcentajeProgreso'],
+        'duracionEnSemanas': value['duracionEnSemanas'],
         'numeroProfesores': value['numeroProfesores'],
+        'numeroAlumnos': value['numeroAlumnos'],
     };
 }
 

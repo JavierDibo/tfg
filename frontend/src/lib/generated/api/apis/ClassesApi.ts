@@ -19,7 +19,6 @@ import type {
   DTOCurso,
   DTOPeticionCrearCurso,
   DTOPeticionCrearTaller,
-  DTOProfesor,
   DTORespuestaPaginada,
   DTORespuestaPaginadaDTOClase,
   DTOTaller,
@@ -33,8 +32,6 @@ import {
     DTOPeticionCrearCursoToJSON,
     DTOPeticionCrearTallerFromJSON,
     DTOPeticionCrearTallerToJSON,
-    DTOProfesorFromJSON,
-    DTOProfesorToJSON,
     DTORespuestaPaginadaFromJSON,
     DTORespuestaPaginadaToJSON,
     DTORespuestaPaginadaDTOClaseFromJSON,
@@ -43,16 +40,16 @@ import {
     DTOTallerToJSON,
 } from '../models/index';
 
-export interface BorrarClasePorIdRequest {
-    id: number;
-}
-
 export interface CrearCursoRequest {
     dTOPeticionCrearCurso: DTOPeticionCrearCurso;
 }
 
 export interface CrearTallerRequest {
     dTOPeticionCrearTaller: DTOPeticionCrearTaller;
+}
+
+export interface EliminarClaseRequest {
+    id: number;
 }
 
 export interface ObtenerClasePorIdRequest {
@@ -63,20 +60,15 @@ export interface ObtenerClasesRequest {
     q?: string;
     titulo?: string;
     descripcion?: string;
+    dificultad?: ObtenerClasesDificultadEnum;
     presencialidad?: ObtenerClasesPresencialidadEnum;
-    nivel?: ObtenerClasesNivelEnum;
-    precioMinimo?: number;
-    precioMaximo?: number;
-    soloConPlazasDisponibles?: boolean;
-    soloProximas?: boolean;
+    profesorId?: string;
+    cursoId?: string;
+    tallerId?: string;
     page?: number;
     size?: number;
     sortBy?: string;
     sortDirection?: string;
-}
-
-export interface ObtenerProfesoresPorClaseRequest {
-    id: number;
 }
 
 /**
@@ -85,46 +77,8 @@ export interface ObtenerProfesoresPorClaseRequest {
 export class ClassesApi extends runtime.BaseAPI {
 
     /**
-     * Deletes a class by its ID. Requires ADMIN permissions
-     * Delete class by ID
-     */
-    async borrarClasePorIdRaw(requestParameters: BorrarClasePorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling borrarClasePorId().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Deletes a class by its ID. Requires ADMIN permissions
-     * Delete class by ID
-     */
-    async borrarClasePorId(requestParameters: BorrarClasePorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.borrarClasePorIdRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Creates a new course. Requires ADMIN or PROFESOR permissions
-     * Create course
+     * Creates a new course in the system (requires ADMIN or PROFESOR role)
+     * Create new course
      */
     async crearCursoRaw(requestParameters: CrearCursoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOCurso>> {
         if (requestParameters['dTOPeticionCrearCurso'] == null) {
@@ -155,8 +109,8 @@ export class ClassesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates a new course. Requires ADMIN or PROFESOR permissions
-     * Create course
+     * Creates a new course in the system (requires ADMIN or PROFESOR role)
+     * Create new course
      */
     async crearCurso(requestParameters: CrearCursoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOCurso> {
         const response = await this.crearCursoRaw(requestParameters, initOverrides);
@@ -164,8 +118,8 @@ export class ClassesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates a new workshop. Requires ADMIN or PROFESOR permissions
-     * Create workshop
+     * Creates a new workshop in the system (requires ADMIN or PROFESOR role)
+     * Create new workshop
      */
     async crearTallerRaw(requestParameters: CrearTallerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOTaller>> {
         if (requestParameters['dTOPeticionCrearTaller'] == null) {
@@ -196,12 +150,50 @@ export class ClassesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates a new workshop. Requires ADMIN or PROFESOR permissions
-     * Create workshop
+     * Creates a new workshop in the system (requires ADMIN or PROFESOR role)
+     * Create new workshop
      */
     async crearTaller(requestParameters: CrearTallerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOTaller> {
         const response = await this.crearTallerRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Deletes a class from the system (requires ADMIN role)
+     * Delete class
+     */
+    async eliminarClaseRaw(requestParameters: EliminarClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling eliminarClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Deletes a class from the system (requires ADMIN role)
+     * Delete class
+     */
+    async eliminarClase(requestParameters: EliminarClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.eliminarClaseRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -262,28 +254,24 @@ export class ClassesApi extends runtime.BaseAPI {
             queryParameters['descripcion'] = requestParameters['descripcion'];
         }
 
+        if (requestParameters['dificultad'] != null) {
+            queryParameters['dificultad'] = requestParameters['dificultad'];
+        }
+
         if (requestParameters['presencialidad'] != null) {
             queryParameters['presencialidad'] = requestParameters['presencialidad'];
         }
 
-        if (requestParameters['nivel'] != null) {
-            queryParameters['nivel'] = requestParameters['nivel'];
+        if (requestParameters['profesorId'] != null) {
+            queryParameters['profesorId'] = requestParameters['profesorId'];
         }
 
-        if (requestParameters['precioMinimo'] != null) {
-            queryParameters['precioMinimo'] = requestParameters['precioMinimo'];
+        if (requestParameters['cursoId'] != null) {
+            queryParameters['cursoId'] = requestParameters['cursoId'];
         }
 
-        if (requestParameters['precioMaximo'] != null) {
-            queryParameters['precioMaximo'] = requestParameters['precioMaximo'];
-        }
-
-        if (requestParameters['soloConPlazasDisponibles'] != null) {
-            queryParameters['soloConPlazasDisponibles'] = requestParameters['soloConPlazasDisponibles'];
-        }
-
-        if (requestParameters['soloProximas'] != null) {
-            queryParameters['soloProximas'] = requestParameters['soloProximas'];
+        if (requestParameters['tallerId'] != null) {
+            queryParameters['tallerId'] = requestParameters['tallerId'];
         }
 
         if (requestParameters['page'] != null) {
@@ -326,47 +314,17 @@ export class ClassesApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
-     * Gets all professors assigned to a specific class
-     * Get professors by class
-     */
-    async obtenerProfesoresPorClaseRaw(requestParameters: ObtenerProfesoresPorClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor<any>>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling obtenerProfesoresPorClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/{id}/profesores`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     * Gets all professors assigned to a specific class
-     * Get professors by class
-     */
-    async obtenerProfesoresPorClase(requestParameters: ObtenerProfesoresPorClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor<any>> {
-        const response = await this.obtenerProfesoresPorClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
 }
 
+/**
+ * @export
+ */
+export const ObtenerClasesDificultadEnum = {
+    Principiante: 'PRINCIPIANTE',
+    Intermedio: 'INTERMEDIO',
+    Avanzado: 'AVANZADO'
+} as const;
+export type ObtenerClasesDificultadEnum = typeof ObtenerClasesDificultadEnum[keyof typeof ObtenerClasesDificultadEnum];
 /**
  * @export
  */
@@ -375,12 +333,3 @@ export const ObtenerClasesPresencialidadEnum = {
     Presencial: 'PRESENCIAL'
 } as const;
 export type ObtenerClasesPresencialidadEnum = typeof ObtenerClasesPresencialidadEnum[keyof typeof ObtenerClasesPresencialidadEnum];
-/**
- * @export
- */
-export const ObtenerClasesNivelEnum = {
-    Principiante: 'PRINCIPIANTE',
-    Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
-} as const;
-export type ObtenerClasesNivelEnum = typeof ObtenerClasesNivelEnum[keyof typeof ObtenerClasesNivelEnum];

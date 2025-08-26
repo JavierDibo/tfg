@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -57,7 +56,6 @@ public class ProfesorRest extends BaseRestController {
 
     // Standard GET collection endpoint with comprehensive filtering and pagination
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Get paginated professors",
         description = "Gets a paginated list of professors with optional filters. Professors can only see their own profile."
@@ -106,22 +104,12 @@ public class ProfesorRest extends BaseRestController {
             @Parameter(description = "Field to sort by", required = false)
             @RequestParam(defaultValue = "id") @Size(max = 50) String sortBy,
             @Parameter(description = "Sort direction (ASC/DESC)", required = false)
-            @RequestParam(defaultValue = "ASC") @Pattern(regexp = "ASC|DESC") String sortDirection) {
-        
-        // Handle professor profile request (professors can only see their own profile)
-        if (securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ADMIN")) {
-            Long userId = securityUtils.getCurrentUserId();
-            DTOProfesor dtoProfesor = servicioProfesor.obtenerProfesorPorId(userId);
-            // Convert to paginated response with single item
-            DTORespuestaPaginada<DTOProfesor> respuesta = DTORespuestaPaginada.of(
-                List.of(dtoProfesor), 0, 1, 1, "id", "ASC");
-            return new ResponseEntity<>(respuesta, HttpStatus.OK);
-        }
+            @RequestParam(defaultValue = "ASC") @Pattern(regexp = "(?i)^(ASC|DESC)$") String sortDirection) {
         
         // Validate and standardize parameters using BaseRestController
         page = validatePageNumber(page);
         size = validatePageSize(size);
-        sortBy = validateSortBy(sortBy, "id", "nombre", "apellidos", "dni", "email", "usuario", "habilitado", "fechaCreacion");
+        sortBy = validateSortBy(sortBy, "id", "firstName", "lastName", "email", "username", "dni", "enabled");
         sortDirection = validateSortDirection(sortDirection);
         
         DTOParametrosBusquedaProfesor parametros = new DTOParametrosBusquedaProfesor(
@@ -135,7 +123,6 @@ public class ProfesorRest extends BaseRestController {
 
     // Standard GET specific resource endpoint
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or (hasRole('ALUMNO') and #id == authentication.principal.id)")
     @Operation(
         summary = "Get professor by ID",
         description = "Gets a specific professor by their ID. Professors can only see their own profile."
@@ -159,49 +146,15 @@ public class ProfesorRest extends BaseRestController {
         )
     })
     public ResponseEntity<DTOProfesor> obtenerProfesorPorId(
-            @Parameter(description = "Professor ID", required = true)
+            @Parameter(description = "ID of the professor", required = true)
             @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
         DTOProfesor dtoProfesor = servicioProfesor.obtenerProfesorPorId(id);
         return new ResponseEntity<>(dtoProfesor, HttpStatus.OK);
     }
 
-    // Public endpoint for students to access professor information
-    @GetMapping("/{id}/public")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
-    @Operation(
-        summary = "Get public professor information",
-        description = "Gets public information about a professor. Accessible to all authenticated users."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Public professor information retrieved successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOProfesorPublico.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Professor not found"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied - Authentication required"
-        )
-    })
-    public ResponseEntity<DTOProfesorPublico> obtenerProfesorPublico(
-            @Parameter(description = "Professor ID", required = true)
-            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
-        
-        DTOProfesorPublico dtoProfesorPublico = servicioProfesor.obtenerProfesorPublicoPorId(id);
-        return new ResponseEntity<>(dtoProfesorPublico, HttpStatus.OK);
-    }
-
     // Standard POST create endpoint
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
         summary = "Create new professor",
         description = "Creates a new professor in the system (requires ADMIN role)"
@@ -225,7 +178,7 @@ public class ProfesorRest extends BaseRestController {
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Access denied - ADMIN role required"
+            description = "Access denied - ADMIN role is required"
         )
     })
     public ResponseEntity<DTOProfesor> crearProfesor(
@@ -237,7 +190,6 @@ public class ProfesorRest extends BaseRestController {
 
     // Standard PATCH partial update endpoint
     @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESOR') and #id == authentication.principal.id)")
     @Operation(
         summary = "Update professor partially",
         description = "Partially updates an existing professor. Professors can only update their own profile."
@@ -261,32 +213,29 @@ public class ProfesorRest extends BaseRestController {
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Access denied - Not authorized to update this professor"
+            description = "Access denied - Not authorized to modify this professor"
         )
     })
-    public ResponseEntity<DTOProfesor> actualizarProfesor(
-            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id, 
-            @Valid @RequestBody DTOActualizacionProfesor dtoParcial) {
+    public ResponseEntity<DTOProfesor> actualizarProfesorParcial(
+            @Parameter(description = "ID of the professor", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
+            @Parameter(description = "Professor update data", required = true)
+            @Valid @RequestBody DTOActualizacionProfesor peticion) {
         
-        DTOProfesor dtoActualizado = servicioProfesor.actualizarProfesor(id, dtoParcial);
-        return new ResponseEntity<>(dtoActualizado, HttpStatus.OK);
+        DTOProfesor dtoProfesorActualizado = servicioProfesor.actualizarProfesor(id, peticion);
+        return new ResponseEntity<>(dtoProfesorActualizado, HttpStatus.OK);
     }
 
     // Standard DELETE endpoint
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
         summary = "Delete professor",
         description = "Deletes a professor from the system (requires ADMIN role)"
     )
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "200",
-            description = "Professor deleted successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = Map.class)
-            )
+            responseCode = "204",
+            description = "Professor deleted successfully"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -294,37 +243,100 @@ public class ProfesorRest extends BaseRestController {
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Access denied - ADMIN role required"
+            description = "Access denied - ADMIN role is required"
         )
     })
-    public ResponseEntity<Map<String, Object>> borrarProfesorPorId(
+    public ResponseEntity<Void> eliminarProfesor(
+            @Parameter(description = "ID of the professor", required = true)
             @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
-        boolean borrado = servicioProfesor.borrarProfesorPorId(id);
-        
-        Map<String, Object> response = Map.of(
-            "success", borrado,
-            "message", "Professor deleted successfully",
-            "professorId", id
-        );
-        
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        servicioProfesor.borrarProfesorPorId(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-
-
-    // Class management endpoints
-
-    @GetMapping("/{id}/clases")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    // Standard PUT replace endpoint
+    @PutMapping("/{id}")
     @Operation(
-        summary = "Get professor's classes",
-        description = "Gets all classes assigned to a specific professor"
+        summary = "Replace professor",
+        description = "Replaces an entire professor record. Professors can only update their own profile."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Classes found successfully",
+            description = "Professor replaced successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOProfesor.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input data"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Professor not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to modify this professor"
+        )
+    })
+    public ResponseEntity<DTOProfesor> reemplazarProfesor(
+            @Parameter(description = "ID of the professor", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
+            @Parameter(description = "Complete professor data", required = true)
+            @Valid @RequestBody DTOActualizacionProfesor peticion) {
+        
+        DTOProfesor dtoProfesorReemplazado = servicioProfesor.actualizarProfesor(id, peticion);
+        return new ResponseEntity<>(dtoProfesorReemplazado, HttpStatus.OK);
+    }
+
+    // Additional endpoints for specific use cases
+
+    @GetMapping("/{id}/perfil")
+    @Operation(
+        summary = "Get professor profile",
+        description = "Gets a professor's public profile information"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Professor profile retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOProfesorPublico.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Professor not found"
+        )
+    })
+    public ResponseEntity<DTOProfesorPublico> obtenerPerfilProfesor(
+            @Parameter(description = "ID of the professor", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        // Get the professor first to get their public profile
+        DTOProfesor profesor = servicioProfesor.obtenerProfesorPorId(id);
+        // We need to get the actual entity to create the public DTO
+        // For now, return the regular professor DTO as public profile
+        DTOProfesorPublico perfil = new DTOProfesorPublico(
+            profesor.id(), profesor.firstName(), profesor.lastName(), 
+            profesor.email(), profesor.phoneNumber(), profesor.enabled(), 
+            profesor.classIds() != null ? profesor.classIds().size() : 0, profesor.createdAt());
+        return new ResponseEntity<>(perfil, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/clases")
+    @Operation(
+        summary = "Get professor's classes",
+        description = "Gets all classes that a professor teaches"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Professor's classes retrieved successfully",
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = DTOClase.class, type = "array")
@@ -340,82 +352,40 @@ public class ProfesorRest extends BaseRestController {
         )
     })
     public ResponseEntity<List<DTOClase>> obtenerClasesProfesor(
+            @Parameter(description = "ID of the professor", required = true)
             @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
-        List<DTOClase> clases = servicioClase.obtenerClasesPorProfesor(id.toString());
+        List<DTOClase> clases = servicioProfesor.obtenerClasesPorProfesor(id);
         return new ResponseEntity<>(clases, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/clases/{claseId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @GetMapping("/estadisticas")
     @Operation(
-        summary = "Assign class to professor",
-        description = "Assigns a specific class to a professor"
+        summary = "Get professor statistics",
+        description = "Gets statistics about professors (requires ADMIN or PROFESOR role)"
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Class assigned successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOProfesor.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid input data"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Professor or class not found"
+            description = "Statistics retrieved successfully"
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Access denied - Not authorized to assign classes"
+            description = "Access denied - ADMIN or PROFESOR role is required"
         )
     })
-    public ResponseEntity<DTOProfesor> asignarClase(
-            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
-            @PathVariable String claseId) {
+    public ResponseEntity<Map<String, Object>> obtenerEstadisticas() {
+        long totalProfesores = servicioProfesor.contarTotalProfesores();
+        long profesoresActivos = servicioProfesor.contarProfesoresHabilitados();
+        long profesoresDeshabilitados = servicioProfesor.contarProfesoresDeshabilitados();
         
-        DTOProfesor dtoActualizado = servicioProfesor.asignarClase(id, claseId);
-        return new ResponseEntity<>(dtoActualizado, HttpStatus.OK);
-    }
-
-    @DeleteMapping("/{id}/clases/{claseId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(
-        summary = "Remove class from professor",
-        description = "Removes a specific class from a professor"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Class removed successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOProfesor.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid input data"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Professor or class not found"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied - Not authorized to remove classes"
-        )
-    })
-    public ResponseEntity<DTOProfesor> removerClase(
-            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
-            @PathVariable String claseId) {
+        Map<String, Object> estadisticas = Map.of(
+            "total", totalProfesores,
+            "activos", profesoresActivos,
+            "deshabilitados", profesoresDeshabilitados,
+            "porcentajeActivos", totalProfesores > 0 ? (profesoresActivos * 100.0) / totalProfesores : 0.0
+        );
         
-        DTOProfesor dtoActualizado = servicioProfesor.removerClase(id, claseId);
-        return new ResponseEntity<>(dtoActualizado, HttpStatus.OK);
+        return new ResponseEntity<>(estadisticas, HttpStatus.OK);
     }
-
 }

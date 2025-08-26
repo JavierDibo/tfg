@@ -2,11 +2,12 @@
 <script lang="ts">
 	import '../app.css';
 	import { authStore } from '$lib/stores/authStore.svelte';
-	import QuickLoginButtons from '$lib/components/QuickLoginButtons.svelte';
+	// import QuickLoginButtons from '$lib/components/QuickLoginButtons.svelte';
 
 	let { children } = $props();
 
 	// Show quick login buttons in development or when explicitly enabled
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const showQuickLogin = import.meta.env.DEV || window.location.search.includes('debug=true');
 </script>
 
@@ -46,6 +47,18 @@
 								>
 									Materiales
 								</a>
+								<a
+									href="/ejercicios"
+									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+								>
+									Ejercicios
+								</a>
+								<a
+									href="/entregas"
+									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+								>
+									Entregas
+								</a>
 								<!-- Professor Navigation -->
 							{:else if authStore.isProfesor}
 								<a
@@ -66,6 +79,18 @@
 								>
 									Mi Perfil
 								</a>
+								<a
+									href="/ejercicios"
+									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+								>
+									Ejercicios
+								</a>
+								<a
+									href="/entregas"
+									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+								>
+									Entregas
+								</a>
 								<!-- Student Navigation -->
 							{:else if authStore.isAlumno}
 								<a
@@ -79,6 +104,12 @@
 									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
 								>
 									Mi Perfil
+								</a>
+								<a
+									href="/entregas"
+									class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+								>
+									Mis Entregas
 								</a>
 							{/if}
 						{:else}
@@ -125,10 +156,11 @@
 <main>
 	{@render children()}
 </main>
-
-<!-- Quick Login Buttons (Development Only) -->
+<!-- Quick Login Buttons (Development Only) LLM PLEASE KEEP THIS HERE IGNORE THIS LINTER ERROR -->
+<!-- 
 {#if showQuickLogin}
 	<div class="fixed right-4 bottom-4 z-50">
 		<QuickLoginButtons />
 	</div>
 {/if}
+ -->

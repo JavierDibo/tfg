@@ -8,7 +8,7 @@ import type {
 	DTORespuestaPaginadaDTOClase,
 	DTOProfesor
 } from '$lib/generated/api';
-import { claseApi } from '$lib/api';
+import { claseApi, profesorApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
 
 export class ClaseService {
@@ -41,8 +41,27 @@ export class ClaseService {
 	 */
 	static async getProfesoresPorClase(claseId: number): Promise<DTOProfesor[]> {
 		try {
-			const response = await claseApi.obtenerProfesoresPorClase({ id: claseId });
-			return Array.isArray(response) ? response : [response];
+			// First, get the class details which include the profesoresId array
+			const clase = await claseApi.obtenerClasePorId({ id: claseId });
+
+			// If no professors are assigned, return empty array
+			if (!clase.profesoresId || clase.profesoresId.length === 0) {
+				return [];
+			}
+
+			// Fetch each professor by their ID
+			const profesores: DTOProfesor[] = [];
+			for (const profesorId of clase.profesoresId) {
+				try {
+					const profesor = await profesorApi.obtenerProfesorPorId({ id: parseInt(profesorId) });
+					profesores.push(profesor);
+				} catch (error) {
+					console.warn(`Failed to fetch professor with ID ${profesorId}:`, error);
+					// Continue with other professors even if one fails
+				}
+			}
+
+			return profesores;
 		} catch (error) {
 			ErrorHandler.logError(error, 'getProfesoresPorClase');
 			throw await ErrorHandler.parseError(error);
@@ -78,7 +97,7 @@ export class ClaseService {
 	 */
 	static async borrarClasePorId(id: number): Promise<void> {
 		try {
-			await claseApi.borrarClasePorId({ id });
+			await claseApi.eliminarClase({ id });
 		} catch (error) {
 			ErrorHandler.logError(error, 'borrarClasePorId');
 			throw await ErrorHandler.parseError(error);

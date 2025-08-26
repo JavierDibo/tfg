@@ -14,7 +14,7 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ * Student update data
  * @export
  * @interface DTOActualizacionAlumno
  */

@@ -22,7 +22,7 @@ import {
 } from './Material';
 
 /**
- * 
+ * Workshop creation data
  * @export
  * @interface DTOPeticionCrearTaller
  */

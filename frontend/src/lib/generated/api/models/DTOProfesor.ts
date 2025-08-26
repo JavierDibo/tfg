@@ -93,16 +93,16 @@ export interface DTOProfesor {
     fullName?: string;
     /**
      * 
-     * @type {number}
-     * @memberof DTOProfesor
-     */
-    classCount?: number;
-    /**
-     * 
      * @type {string}
      * @memberof DTOProfesor
      */
     enabledStatus?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOProfesor
+     */
+    classCount?: number;
 }
 
 
@@ -155,8 +155,8 @@ export function DTOProfesorFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'classIds': json['classIds'] == null ? undefined : json['classIds'],
         'createdAt': json['createdAt'] == null ? undefined : (new Date(json['createdAt'])),
         'fullName': json['fullName'] == null ? undefined : json['fullName'],
-        'classCount': json['classCount'] == null ? undefined : json['classCount'],
         'enabledStatus': json['enabledStatus'] == null ? undefined : json['enabledStatus'],
+        'classCount': json['classCount'] == null ? undefined : json['classCount'],
     };
 }
 
@@ -183,8 +183,8 @@ export function DTOProfesorToJSONTyped(value?: DTOProfesor | null, ignoreDiscrim
         'classIds': value['classIds'],
         'createdAt': value['createdAt'] == null ? undefined : ((value['createdAt']).toISOString()),
         'fullName': value['fullName'],
-        'classCount': value['classCount'],
         'enabledStatus': value['enabledStatus'],
+        'classCount': value['classCount'],
     };
 }
 

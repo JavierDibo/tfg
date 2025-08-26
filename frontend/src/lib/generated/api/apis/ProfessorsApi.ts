@@ -40,33 +40,28 @@ import {
     DTORespuestaPaginadaDTOProfesorToJSON,
 } from '../models/index';
 
-export interface ActualizarProfesorRequest {
+export interface ActualizarProfesorParcialRequest {
     id: number;
     dTOActualizacionProfesor: DTOActualizacionProfesor;
-}
-
-export interface AsignarClaseRequest {
-    id: number;
-    claseId: string;
-}
-
-export interface BorrarProfesorPorIdRequest {
-    id: number;
 }
 
 export interface CrearProfesorRequest {
     dTOPeticionRegistroProfesor: DTOPeticionRegistroProfesor;
 }
 
+export interface EliminarProfesorRequest {
+    id: number;
+}
+
 export interface ObtenerClasesProfesorRequest {
     id: number;
 }
 
-export interface ObtenerProfesorPorIdRequest {
+export interface ObtenerPerfilProfesorRequest {
     id: number;
 }
 
-export interface ObtenerProfesorPublicoRequest {
+export interface ObtenerProfesorPorIdRequest {
     id: number;
 }
 
@@ -86,9 +81,9 @@ export interface ObtenerProfesoresRequest {
     sortDirection?: string;
 }
 
-export interface RemoverClaseRequest {
+export interface ReemplazarProfesorRequest {
     id: number;
-    claseId: string;
+    dTOActualizacionProfesor: DTOActualizacionProfesor;
 }
 
 /**
@@ -100,18 +95,18 @@ export class ProfessorsApi extends runtime.BaseAPI {
      * Partially updates an existing professor. Professors can only update their own profile.
      * Update professor partially
      */
-    async actualizarProfesorRaw(requestParameters: ActualizarProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
+    async actualizarProfesorParcialRaw(requestParameters: ActualizarProfesorParcialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError(
                 'id',
-                'Required parameter "id" was null or undefined when calling actualizarProfesor().'
+                'Required parameter "id" was null or undefined when calling actualizarProfesorParcial().'
             );
         }
 
         if (requestParameters['dTOActualizacionProfesor'] == null) {
             throw new runtime.RequiredError(
                 'dTOActualizacionProfesor',
-                'Required parameter "dTOActualizacionProfesor" was null or undefined when calling actualizarProfesor().'
+                'Required parameter "dTOActualizacionProfesor" was null or undefined when calling actualizarProfesorParcial().'
             );
         }
 
@@ -140,98 +135,8 @@ export class ProfessorsApi extends runtime.BaseAPI {
      * Partially updates an existing professor. Professors can only update their own profile.
      * Update professor partially
      */
-    async actualizarProfesor(requestParameters: ActualizarProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.actualizarProfesorRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Assigns a specific class to a professor
-     * Assign class to professor
-     */
-    async asignarClaseRaw(requestParameters: AsignarClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling asignarClase().'
-            );
-        }
-
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling asignarClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/{id}/clases/{claseId}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'PUT',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
-    }
-
-    /**
-     * Assigns a specific class to a professor
-     * Assign class to professor
-     */
-    async asignarClase(requestParameters: AsignarClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.asignarClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Deletes a professor from the system (requires ADMIN role)
-     * Delete professor
-     */
-    async borrarProfesorPorIdRaw(requestParameters: BorrarProfesorPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling borrarProfesorPorId().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
-
-    /**
-     * Deletes a professor from the system (requires ADMIN role)
-     * Delete professor
-     */
-    async borrarProfesorPorId(requestParameters: BorrarProfesorPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.borrarProfesorPorIdRaw(requestParameters, initOverrides);
+    async actualizarProfesorParcial(requestParameters: ActualizarProfesorParcialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
+        const response = await this.actualizarProfesorParcialRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -277,7 +182,45 @@ export class ProfessorsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets all classes assigned to a specific professor
+     * Deletes a professor from the system (requires ADMIN role)
+     * Delete professor
+     */
+    async eliminarProfesorRaw(requestParameters: EliminarProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling eliminarProfesor().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/profesores/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Deletes a professor from the system (requires ADMIN role)
+     * Delete professor
+     */
+    async eliminarProfesor(requestParameters: EliminarProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.eliminarProfesorRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Gets all classes that a professor teaches
      * Get professor\'s classes
      */
     async obtenerClasesProfesorRaw(requestParameters: ObtenerClasesProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase<any>>> {
@@ -307,11 +250,81 @@ export class ProfessorsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets all classes assigned to a specific professor
+     * Gets all classes that a professor teaches
      * Get professor\'s classes
      */
     async obtenerClasesProfesor(requestParameters: ObtenerClasesProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase<any>> {
         const response = await this.obtenerClasesProfesorRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets statistics about professors (requires ADMIN or PROFESOR role)
+     * Get professor statistics
+     */
+    async obtenerEstadisticasRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/profesores/estadisticas`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Gets statistics about professors (requires ADMIN or PROFESOR role)
+     * Get professor statistics
+     */
+    async obtenerEstadisticas(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
+        const response = await this.obtenerEstadisticasRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets a professor\'s public profile information
+     * Get professor profile
+     */
+    async obtenerPerfilProfesorRaw(requestParameters: ObtenerPerfilProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesorPublico>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerPerfilProfesor().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/profesores/{id}/perfil`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorPublicoFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a professor\'s public profile information
+     * Get professor profile
+     */
+    async obtenerPerfilProfesor(requestParameters: ObtenerPerfilProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesorPublico> {
+        const response = await this.obtenerPerfilProfesorRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -351,45 +364,6 @@ export class ProfessorsApi extends runtime.BaseAPI {
      */
     async obtenerProfesorPorId(requestParameters: ObtenerProfesorPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
         const response = await this.obtenerProfesorPorIdRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Gets public information about a professor. Accessible to all authenticated users.
-     * Get public professor information
-     */
-    async obtenerProfesorPublicoRaw(requestParameters: ObtenerProfesorPublicoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesorPublico>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling obtenerProfesorPublico().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/profesores/{id}/public`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorPublicoFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets public information about a professor. Accessible to all authenticated users.
-     * Get public professor information
-     */
-    async obtenerProfesorPublico(requestParameters: ObtenerProfesorPublicoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesorPublico> {
-        const response = await this.obtenerProfesorPublicoRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -477,21 +451,21 @@ export class ProfessorsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Removes a specific class from a professor
-     * Remove class from professor
+     * Replaces an entire professor record. Professors can only update their own profile.
+     * Replace professor
      */
-    async removerClaseRaw(requestParameters: RemoverClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
+    async reemplazarProfesorRaw(requestParameters: ReemplazarProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError(
                 'id',
-                'Required parameter "id" was null or undefined when calling removerClase().'
+                'Required parameter "id" was null or undefined when calling reemplazarProfesor().'
             );
         }
 
-        if (requestParameters['claseId'] == null) {
+        if (requestParameters['dTOActualizacionProfesor'] == null) {
             throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling removerClase().'
+                'dTOActualizacionProfesor',
+                'Required parameter "dTOActualizacionProfesor" was null or undefined when calling reemplazarProfesor().'
             );
         }
 
@@ -499,27 +473,29 @@ export class ProfessorsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        headerParameters['Content-Type'] = 'application/json';
 
-        let urlPath = `/api/profesores/{id}/clases/{claseId}`;
+
+        let urlPath = `/api/profesores/{id}`;
         urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
 
         const response = await this.request({
             path: urlPath,
-            method: 'DELETE',
+            method: 'PUT',
             headers: headerParameters,
             query: queryParameters,
+            body: DTOActualizacionProfesorToJSON(requestParameters['dTOActualizacionProfesor']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
     }
 
     /**
-     * Removes a specific class from a professor
-     * Remove class from professor
+     * Replaces an entire professor record. Professors can only update their own profile.
+     * Replace professor
      */
-    async removerClase(requestParameters: RemoverClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
-        const response = await this.removerClaseRaw(requestParameters, initOverrides);
+    async reemplazarProfesor(requestParameters: ReemplazarProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
+        const response = await this.reemplazarProfesorRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

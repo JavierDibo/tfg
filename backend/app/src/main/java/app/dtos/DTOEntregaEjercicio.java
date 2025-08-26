@@ -19,7 +19,8 @@ public record DTOEntregaEjercicio(
         List<String> archivosEntregados,
         String alumnoEntreganteId,
         String ejercicioId,
-        int numeroArchivos
+        int numeroArchivos,
+        String comentarios
 ) {
     
     /**
@@ -34,7 +35,8 @@ public record DTOEntregaEjercicio(
                 entrega.getArchivosEntregados(),
                 entrega.getAlumnoEntreganteId(),
                 entrega.getEjercicioId(),
-                entrega.contarArchivos()
+                entrega.contarArchivos(),
+                entrega.getComentarios()
         );
     }
     
@@ -130,5 +132,37 @@ public record DTOEntregaEjercicio(
      */
     public boolean puedeSerModificada() {
         return this.estado == EEstadoEjercicio.PENDIENTE;
+    }
+    
+    /**
+     * Verifica si la entrega tiene comentarios del profesor
+     */
+    public boolean tieneComentarios() {
+        return this.comentarios != null && !this.comentarios.trim().isEmpty();
+    }
+    
+    /**
+     * Obtiene los comentarios del profesor o un mensaje por defecto
+     */
+    public String getComentariosFormateados() {
+        if (this.comentarios == null || this.comentarios.trim().isEmpty()) {
+            return "Sin comentarios";
+        }
+        return this.comentarios.trim();
+    }
+    
+    /**
+     * Obtiene un resumen de los comentarios (primeros 100 caracteres)
+     */
+    public String getResumenComentarios() {
+        if (!tieneComentarios()) {
+            return "Sin comentarios";
+        }
+        
+        String comentarios = this.comentarios.trim();
+        if (comentarios.length() <= 100) {
+            return comentarios;
+        }
+        return comentarios.substring(0, 97) + "...";
     }
 }

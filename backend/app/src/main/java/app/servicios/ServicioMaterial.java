@@ -16,6 +16,7 @@ import app.dtos.DTORespuestaPaginada;
 import app.entidades.Material;
 import app.repositorios.RepositorioMaterial;
 import app.util.ExceptionUtils;
+import app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -24,11 +25,18 @@ import lombok.RequiredArgsConstructor;
 public class ServicioMaterial {
 
     private final RepositorioMaterial repositorioMaterial;
+    private final SecurityUtils securityUtils;
 
     @Transactional(readOnly = true)
     public DTOMaterial obtenerMaterialPorId(String id) {
         Material material = repositorioMaterial.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(material, "Material", "ID", id);
+        
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a materiales");
+        }
+        
         return new DTOMaterial(material);
     }
 
@@ -36,11 +44,22 @@ public class ServicioMaterial {
     public DTOMaterial obtenerMaterialPorNombre(String name) {
         Material material = repositorioMaterial.findByName(name).orElse(null);
         ExceptionUtils.throwIfNotFound(material, "Material", "name", name);
+        
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a materiales");
+        }
+        
         return new DTOMaterial(material);
     }
 
     @Transactional(readOnly = true)
     public List<DTOMaterial> obtenerTodosLosMateriales() {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a materiales");
+        }
+        
         return repositorioMaterial.findAll().stream()
                 .map(DTOMaterial::new)
                 .collect(Collectors.toList());
@@ -48,6 +67,11 @@ public class ServicioMaterial {
 
     @Transactional(readOnly = true)
     public List<DTOMaterial> obtenerMaterialesPorNombre(String name) {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a materiales");
+        }
+        
         return repositorioMaterial.findByNameContainingIgnoreCase(name).stream()
                 .map(DTOMaterial::new)
                 .collect(Collectors.toList());
@@ -55,6 +79,11 @@ public class ServicioMaterial {
 
     @Transactional(readOnly = true)
     public List<DTOMaterial> obtenerMaterialesPorUrl(String url) {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a materiales");
+        }
+        
         return repositorioMaterial.findByUrlContainingIgnoreCase(url).stream()
                 .map(DTOMaterial::new)
                 .collect(Collectors.toList());
@@ -62,6 +91,11 @@ public class ServicioMaterial {
 
     @Transactional(readOnly = true)
     public List<DTOMaterial> obtenerMaterialesPorExtension(String extension) {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a materiales");
+        }
+        
         return repositorioMaterial.findByFileExtension(extension).stream()
                 .map(DTOMaterial::new)
                 .collect(Collectors.toList());
@@ -69,6 +103,11 @@ public class ServicioMaterial {
 
     @Transactional(readOnly = true)
     public List<DTOMaterial> obtenerDocumentos() {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a materiales");
+        }
+        
         return repositorioMaterial.findDocuments().stream()
                 .map(DTOMaterial::new)
                 .collect(Collectors.toList());
@@ -76,6 +115,11 @@ public class ServicioMaterial {
 
     @Transactional(readOnly = true)
     public List<DTOMaterial> obtenerImagenes() {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a materiales");
+        }
+        
         return repositorioMaterial.findImages().stream()
                 .map(DTOMaterial::new)
                 .collect(Collectors.toList());
@@ -83,12 +127,22 @@ public class ServicioMaterial {
 
     @Transactional(readOnly = true)
     public List<DTOMaterial> obtenerVideos() {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a materiales");
+        }
+        
         return repositorioMaterial.findVideos().stream()
                 .map(DTOMaterial::new)
                 .collect(Collectors.toList());
     }
 
     public DTOMaterial crearMaterial(String name, String url) {
+        // Security check: Only ADMIN and PROFESOR can create materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para crear materiales");
+        }
+        
         // Validate input
         if (name == null || name.trim().isEmpty()) {
             ExceptionUtils.throwValidationError("El nombre del material no puede estar vacío");
@@ -117,6 +171,11 @@ public class ServicioMaterial {
     public DTOMaterial actualizarMaterial(String id, String name, String url) {
         Material material = repositorioMaterial.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(material, "Material", "ID", id);
+
+        // Security check: Only ADMIN and PROFESOR can update materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para actualizar materiales");
+        }
 
         // Validate input
         if (name == null || name.trim().isEmpty()) {
@@ -169,6 +228,11 @@ public class ServicioMaterial {
             String sortBy,
             String sortDirection) {
 
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access materials
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a materiales");
+        }
+
         // Validate pagination parameters
         if (page < 0) {
             ExceptionUtils.throwValidationError("El número de página no puede ser negativo");
@@ -181,38 +245,18 @@ public class ServicioMaterial {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        // Build query based on filters
+        // Build query based on filters using flexible approach
         Page<Material> materialPage;
         
-        if (q != null && !q.trim().isEmpty()) {
-            // General search
-            materialPage = repositorioMaterial.findByNameContainingIgnoreCaseOrUrlContainingIgnoreCase(
-                q.trim(), q.trim(), pageable);
-        } else if (name != null && !name.trim().isEmpty()) {
-            // Name filter
-            materialPage = repositorioMaterial.findByNameContainingIgnoreCase(name.trim(), pageable);
-        } else if (url != null && !url.trim().isEmpty()) {
-            // URL filter
-            materialPage = repositorioMaterial.findByUrlContainingIgnoreCase(url.trim(), pageable);
-        } else if (type != null && !type.trim().isEmpty()) {
-            // Type filter
-            switch (type.toUpperCase()) {
-                case "DOCUMENT":
-                    materialPage = repositorioMaterial.findDocuments(pageable);
-                    break;
-                case "IMAGE":
-                    materialPage = repositorioMaterial.findImages(pageable);
-                    break;
-                case "VIDEO":
-                    materialPage = repositorioMaterial.findVideos(pageable);
-                    break;
-                default:
-                    materialPage = repositorioMaterial.findAll(pageable);
-            }
-        } else {
-            // No filters
-            materialPage = repositorioMaterial.findAll(pageable);
-        }
+        // Prepare filter parameters
+        String searchTerm = (q != null && !q.trim().isEmpty()) ? q.trim() : null;
+        String nombreFilter = (name != null && !name.trim().isEmpty()) ? name.trim() : null;
+        String urlFilter = (url != null && !url.trim().isEmpty()) ? url.trim() : null;
+        String tipoFilter = (type != null && !type.trim().isEmpty()) ? type.toUpperCase() : null;
+        
+        // Use flexible query that handles all combinations
+        materialPage = repositorioMaterial.findByFiltrosFlexibles(
+            searchTerm, nombreFilter, urlFilter, tipoFilter, pageable);
 
         // Convert to DTOs
         List<DTOMaterial> materiales = materialPage.getContent().stream()

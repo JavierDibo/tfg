@@ -2,6 +2,9 @@ package app.util.datainit;
 
 import app.dtos.DTOMaterial;
 import app.servicios.ServicioMaterial;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -14,7 +17,16 @@ public class MaterialDataInitializer extends BaseDataInitializer {
 
     @Override
     public void initialize() {
+        // Set up security context for material creation (as a teacher)
+        setupSecurityContext();
+        
         ServicioMaterial servicioMaterial = context.getBean(ServicioMaterial.class);
+        
+        // Check if materials already exist to avoid duplicates
+        if (servicioMaterial.obtenerTodosLosMateriales().size() > 0) {
+            System.out.println("Materials already exist, skipping material creation");
+            return;
+        }
         
         // Create various types of educational materials
         createDocumentMaterials(servicioMaterial);
@@ -22,6 +34,17 @@ public class MaterialDataInitializer extends BaseDataInitializer {
         createVideoMaterials(servicioMaterial);
         
         System.out.println("MaterialDataInitializer: Created " + createdMaterials.size() + " materials");
+    }
+    
+    private void setupSecurityContext() {
+        // Create a teacher authentication context for material creation
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_PROFESOR"));
+        
+        UsernamePasswordAuthenticationToken authentication = 
+            new UsernamePasswordAuthenticationToken("teacher-init", "password", authorities);
+        
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
     
     private void createDocumentMaterials(ServicioMaterial servicioMaterial) {

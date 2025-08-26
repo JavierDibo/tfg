@@ -27,8 +27,13 @@ public class DataInitializationCoordinator {
     @Autowired
     private MaterialDataInitializer materialDataInitializer;
     
+    @Autowired
+    private EjercicioDataInitializer ejercicioDataInitializer;
+    
+    @Autowired
+    private EntregaEjercicioDataInitializer entregaEjercicioDataInitializer;
+    
     @EventListener(ApplicationReadyEvent.class)
-    @Transactional
     public void initializeData() {
         System.out.println("=== Starting Data Initialization ===");
         
@@ -48,6 +53,12 @@ public class DataInitializationCoordinator {
             courseInitializer.initialize();
             
             studentEnrollmentInitializer.initialize();
+            
+            ejercicioDataInitializer.initialize();
+            System.out.println("Exercises created");
+            
+            entregaEjercicioDataInitializer.initialize();
+            System.out.println("Exercise deliveries created");
             
             System.out.println("=== Data Initialization Completed ===");
             

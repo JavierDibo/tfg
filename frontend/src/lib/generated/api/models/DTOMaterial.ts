@@ -39,18 +39,6 @@ export interface DTOMaterial {
     url?: string;
     /**
      * 
-     * @type {boolean}
-     * @memberof DTOMaterial
-     */
-    image?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DTOMaterial
-     */
-    document?: boolean;
-    /**
-     * 
      * @type {string}
      * @memberof DTOMaterial
      */
@@ -61,6 +49,18 @@ export interface DTOMaterial {
      * @memberof DTOMaterial
      */
     materialType?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOMaterial
+     */
+    document?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOMaterial
+     */
+    image?: boolean;
     /**
      * 
      * @type {boolean}
@@ -89,10 +89,10 @@ export function DTOMaterialFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'] == null ? undefined : json['name'],
         'url': json['url'] == null ? undefined : json['url'],
-        'image': json['image'] == null ? undefined : json['image'],
-        'document': json['document'] == null ? undefined : json['document'],
         'fileExtension': json['fileExtension'] == null ? undefined : json['fileExtension'],
         'materialType': json['materialType'] == null ? undefined : json['materialType'],
+        'document': json['document'] == null ? undefined : json['document'],
+        'image': json['image'] == null ? undefined : json['image'],
         'video': json['video'] == null ? undefined : json['video'],
     };
 }
@@ -111,10 +111,10 @@ export function DTOMaterialToJSONTyped(value?: DTOMaterial | null, ignoreDiscrim
         'id': value['id'],
         'name': value['name'],
         'url': value['url'],
-        'image': value['image'],
-        'document': value['document'],
         'fileExtension': value['fileExtension'],
         'materialType': value['materialType'],
+        'document': value['document'],
+        'image': value['image'],
         'video': value['video'],
     };
 }

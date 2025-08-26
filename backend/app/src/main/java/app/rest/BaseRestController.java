@@ -33,7 +33,7 @@ public abstract class BaseRestController {
             @Min(0) int page,
             @Min(1) @Max(100) int size,
             @Size(max = 50) String sortBy,
-            @Pattern(regexp = "ASC|DESC") String sortDirection) {
+            @Pattern(regexp = "(?i)^(ASC|DESC)$") String sortDirection) {
         
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         return PageRequest.of(page, size, sort);

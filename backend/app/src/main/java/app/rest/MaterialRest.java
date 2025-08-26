@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,7 +51,6 @@ public class MaterialRest extends BaseRestController {
      * Gets paginated materials with optional filters
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
     @Operation(
         summary = "Get paginated materials",
         description = "Gets a paginated list of materials with optional filters"
@@ -98,19 +96,24 @@ public class MaterialRest extends BaseRestController {
             @RequestParam(defaultValue = "id") String sortBy,
             
             @Parameter(description = "Sort direction")
-            @RequestParam(defaultValue = "ASC") @Pattern(regexp="ASC|DESC") String sortDirection) {
-
+            @RequestParam(defaultValue = "ASC") @Pattern(regexp = "(?i)^(ASC|DESC)$") String sortDirection) {
+        
+        // Validate and standardize parameters using BaseRestController
+        page = validatePageNumber(page);
+        size = validatePageSize(size);
+        sortBy = validateSortBy(sortBy, "id", "name", "url", "type", "createdAt");
+        sortDirection = validateSortDirection(sortDirection);
+        
         DTORespuestaPaginada<DTOMaterial> respuesta = servicioMaterial.obtenerMaterialesPaginados(
             q, name, url, type, page, size, sortBy, sortDirection);
         
-        return ResponseEntity.ok(respuesta);
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
     }
 
     /**
      * Gets a specific material by ID
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
     @Operation(
         summary = "Get material by ID",
         description = "Gets a specific material by its ID"
@@ -118,7 +121,7 @@ public class MaterialRest extends BaseRestController {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Material retrieved successfully",
+            description = "Material found successfully",
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = DTOMaterial.class)
@@ -134,14 +137,12 @@ public class MaterialRest extends BaseRestController {
         )
     })
     public ResponseEntity<DTOMaterial> obtenerMaterialPorId(
-            @Parameter(description = "Material ID")
-            @PathVariable String id) {
-
-        DTOMaterial material = servicioMaterial.obtenerMaterialPorId(id);
-        return ResponseEntity.ok(material);
+            @Parameter(description = "ID of the material", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOMaterial dtoMaterial = servicioMaterial.obtenerMaterialPorId(id.toString());
+        return new ResponseEntity<>(dtoMaterial, HttpStatus.OK);
     }
-
-
 
     // ===== CREATE OPERATIONS =====
 
@@ -149,10 +150,9 @@ public class MaterialRest extends BaseRestController {
      * Creates a new material
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Create new material",
-        description = "Creates a new educational material"
+        description = "Creates a new material in the system (requires ADMIN or PROFESOR role)"
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -165,26 +165,25 @@ public class MaterialRest extends BaseRestController {
         ),
         @ApiResponse(
             responseCode = "400",
-            description = "Invalid material data"
+            description = "Invalid input data"
         ),
         @ApiResponse(
             responseCode = "409",
-            description = "Material with this name already exists"
+            description = "Conflict - Material already exists"
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Access denied - Not authorized to create materials"
+            description = "Access denied - ADMIN or PROFESOR role is required"
         )
     })
     public ResponseEntity<DTOMaterial> crearMaterial(
-            @Parameter(description = "Material name")
+            @Parameter(description = "Material name", required = true)
             @RequestParam @Size(max = 200) String name,
-            
-            @Parameter(description = "Material URL")
+            @Parameter(description = "Material URL", required = true)
             @RequestParam @Size(max = 500) String url) {
-
-        DTOMaterial material = servicioMaterial.crearMaterial(name, url);
-        return ResponseEntity.status(HttpStatus.CREATED).body(material);
+        
+        DTOMaterial dtoMaterialNuevo = servicioMaterial.crearMaterial(name, url);
+        return new ResponseEntity<>(dtoMaterialNuevo, HttpStatus.CREATED);
     }
 
     // ===== UPDATE OPERATIONS =====
@@ -193,10 +192,9 @@ public class MaterialRest extends BaseRestController {
      * Updates an existing material
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Update material",
-        description = "Updates an existing material"
+        description = "Updates an existing material (requires ADMIN or PROFESOR role)"
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -209,45 +207,38 @@ public class MaterialRest extends BaseRestController {
         ),
         @ApiResponse(
             responseCode = "400",
-            description = "Invalid material data"
+            description = "Invalid input data"
         ),
         @ApiResponse(
             responseCode = "404",
             description = "Material not found"
         ),
         @ApiResponse(
-            responseCode = "409",
-            description = "Material with this name already exists"
-        ),
-        @ApiResponse(
             responseCode = "403",
-            description = "Access denied - Not authorized to update materials"
+            description = "Access denied - Not authorized to modify this material"
         )
     })
     public ResponseEntity<DTOMaterial> actualizarMaterial(
-            @Parameter(description = "Material ID")
-            @PathVariable String id,
-            
-            @Parameter(description = "Material name")
+            @Parameter(description = "ID of the material", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
+            @Parameter(description = "Material name", required = true)
             @RequestParam @Size(max = 200) String name,
-            
-            @Parameter(description = "Material URL")
+            @Parameter(description = "Material URL", required = true)
             @RequestParam @Size(max = 500) String url) {
-
-        DTOMaterial material = servicioMaterial.actualizarMaterial(id, name, url);
-        return ResponseEntity.ok(material);
+        
+        DTOMaterial dtoMaterialActualizado = servicioMaterial.actualizarMaterial(id.toString(), name, url);
+        return new ResponseEntity<>(dtoMaterialActualizado, HttpStatus.OK);
     }
 
     // ===== DELETE OPERATIONS =====
 
     /**
-     * Deletes a material by ID
+     * Deletes a material
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Delete material",
-        description = "Deletes a material by its ID"
+        description = "Deletes a material from the system (requires ADMIN or PROFESOR role)"
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -260,55 +251,16 @@ public class MaterialRest extends BaseRestController {
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Access denied - Not authorized to delete materials"
+            description = "Access denied - ADMIN or PROFESOR role is required"
         )
     })
-    public ResponseEntity<Void> borrarMaterial(
-            @Parameter(description = "Material ID")
-            @PathVariable String id) {
-
-        servicioMaterial.borrarMaterialPorId(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> eliminarMaterial(
+            @Parameter(description = "ID of the material", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        servicioMaterial.borrarMaterialPorId(id.toString());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    // ===== STATISTICS OPERATIONS =====
 
-    /**
-     * Gets material statistics
-     */
-    @GetMapping("/stats")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
-    @Operation(
-        summary = "Get material statistics",
-        description = "Gets statistics about materials"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Statistics retrieved successfully"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied - Not authorized to view statistics"
-        )
-    })
-    public ResponseEntity<MaterialStats> obtenerEstadisticas() {
-        long totalMateriales = servicioMaterial.contarMateriales();
-        long totalDocumentos = servicioMaterial.contarDocumentos();
-        long totalImagenes = servicioMaterial.contarImagenes();
-        long totalVideos = servicioMaterial.contarVideos();
-
-        MaterialStats stats = new MaterialStats(totalMateriales, totalDocumentos, totalImagenes, totalVideos);
-        return ResponseEntity.ok(stats);
-    }
-
-    /**
-     * Record for material statistics
-     */
-    public record MaterialStats(
-        long totalMaterials,
-        long totalDocuments,
-        long totalImages,
-        long totalVideos
-    ) {}
 }

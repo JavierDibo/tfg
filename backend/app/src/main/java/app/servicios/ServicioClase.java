@@ -1,4 +1,4 @@
-// LLM_EDIT_TIMESTAMP: 25 ago. 13:59
+// LLM_EDIT_TIMESTAMP: 25 ago. 14:00
 package app.servicios;
 
 import java.time.LocalDate;
@@ -67,6 +67,11 @@ public class ServicioClase {
      */
     @Transactional(readOnly = true)
     public List<DTOClase> obtenerClases() {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access classes
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
+        }
+        
         return repositorioClase.findAllOrderedById().stream()
                 .map(DTOClase::new)
                 .collect(Collectors.toList());
@@ -248,6 +253,11 @@ public class ServicioClase {
      * @return DTOCurso con los datos del curso creado
      */
     public DTOCurso crearCurso(DTOPeticionCrearClase peticion, LocalDate fechaInicio, LocalDate fechaFin) {
+        // Security check: Only ADMIN and PROFESOR can create courses
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para crear cursos");
+        }
+        
         Curso curso = new Curso(
                 peticion.titulo(),
                 peticion.descripcion(),
@@ -304,6 +314,11 @@ public class ServicioClase {
      */
     public DTOTaller crearTaller(DTOPeticionCrearClase peticion, Integer duracionHoras, 
                                 LocalDate fechaRealizacion, LocalTime horaComienzo) {
+        // Security check: Only ADMIN and PROFESOR can create workshops
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para crear talleres");
+        }
+        
         Taller taller = new Taller(
                 peticion.titulo(),
                 peticion.descripcion(),
@@ -448,26 +463,19 @@ public class ServicioClase {
                 resultado = repositorioClase.findByGeneralSearch(parametros.q(), pageable);
             }
         } else {
-            // Use existing specific search logic
-            if (parametros.titulo() != null && !parametros.titulo().isEmpty()) {
-                // Aplicar paginación manualmente ya que el repositorio no tiene sobrecarga con Pageable
-                List<Clase> clases = repositorioClase.findByTitleContainingIgnoreCase(parametros.titulo());
-                resultado = convertirListaAPagina(clases, pageable);
-            } else if (parametros.descripcion() != null && !parametros.descripcion().isEmpty()) {
-                List<Clase> clases = repositorioClase.findByDescriptionContainingIgnoreCase(parametros.descripcion());
-                resultado = convertirListaAPagina(clases, pageable);
-            } else if (parametros.presencialidad() != null) {
-                List<Clase> clases = repositorioClase.findByFormat(parametros.presencialidad());
-                resultado = convertirListaAPagina(clases, pageable);
-            } else if (parametros.nivel() != null) {
-                List<Clase> clases = repositorioClase.findByDifficulty(parametros.nivel());
-                resultado = convertirListaAPagina(clases, pageable);
-            } else if (parametros.precioMinimo() != null && parametros.precioMaximo() != null) {
-                List<Clase> clases = repositorioClase.findByPriceBetween(parametros.precioMinimo(), parametros.precioMaximo());
-                resultado = convertirListaAPagina(clases, pageable);
-            } else if (parametros.precioMaximo() != null) {
-                List<Clase> clases = repositorioClase.findByPriceLessThanEqual(parametros.precioMaximo());
-                resultado = convertirListaAPagina(clases, pageable);
+            // Use existing specific search logic with flexible approach
+            if (parametros.hasSpecificFilters()) {
+                // Use flexible query that handles all combinations
+                resultado = repositorioClase.findByGeneralAndSpecificFilters(
+                    null, // No general search term
+                    parametros.titulo(),
+                    parametros.descripcion(),
+                    parametros.presencialidad(),
+                    parametros.nivel(),
+                    parametros.precioMinimo(),
+                    parametros.precioMaximo(),
+                    pageable
+                );
             } else {
                 // Si no hay criterios específicos, obtener todas las clases
                 List<Clase> todasLasClases = repositorioClase.findAllOrderedById();
@@ -487,6 +495,11 @@ public class ServicioClase {
      * @return Lista de DTOClase que coinciden con el título
      */
     public List<DTOClase> buscarClasesPorTitulo(String titulo) {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can search classes
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para buscar clases");
+        }
+        
         return repositorioClase.findByTitleContainingIgnoreCase(titulo)
                 .stream()
                 .map(DTOClase::new)

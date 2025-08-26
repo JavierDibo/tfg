@@ -3,6 +3,9 @@ package app.util.datainit;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
 import app.servicios.ServicioAlumno;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -15,6 +18,9 @@ public class StudentDataInitializer extends BaseDataInitializer {
 
     @Override
     public void initialize() {
+        // Set up security context for student creation (as an admin)
+        setupSecurityContext();
+        
         ServicioAlumno servicioAlumno = context.getBean(ServicioAlumno.class);
 
         // Password service is now injected automatically
@@ -69,6 +75,17 @@ public class StudentDataInitializer extends BaseDataInitializer {
         }
 
         System.out.println("Students created: " + createdStudents.size());
+    }
+    
+    private void setupSecurityContext() {
+        // Create an admin authentication context for student creation
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        
+        UsernamePasswordAuthenticationToken authentication = 
+            new UsernamePasswordAuthenticationToken("admin-init", "password", authorities);
+        
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     public List<DTOAlumno> getCreatedStudents() {

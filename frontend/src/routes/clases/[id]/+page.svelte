@@ -3,24 +3,24 @@
 	import { page } from '$app/stores';
 	import type {
 		DTOClase,
-		DTOClaseConDetallesPublico,
-		DTOEstadoInscripcion,
 		DTOAlumno,
 		DTORespuestaAlumnosClase,
-		DTOProfesor
+		DTOProfesor,
+		DTOEjercicio
 	} from '$lib/generated/api';
 	import { ClaseService } from '$lib/services/claseService';
 	import { EnrollmentService } from '$lib/services/enrollmentService';
+	import { ejercicioService } from '$lib/services/ejercicioService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 
 	// State
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let clase = $state<DTOClase | null>(null);
-	let claseDetalles = $state<DTOClaseConDetallesPublico | null>(null);
+	let claseDetalles = $state<DTOClase | null>(null);
 	let numeroAlumnos = $state(0);
 	let numeroProfesores = $state(0);
-	let enrollmentStatus = $state<DTOEstadoInscripcion | null>(null);
+	let enrollmentStatus = $state<{ isEnrolled: boolean; claseId?: number; alumnoId?: number } | null>(null);
 	let enrollmentLoading = $state(false);
 	let enrollmentError = $state<string | null>(null);
 
@@ -34,6 +34,11 @@
 	let profesores = $state<DTOProfesor[]>([]);
 	let profesorLoading = $state(false);
 	let profesorError = $state<string | null>(null);
+
+	// Exercises state
+	let ejercicios = $state<DTOEjercicio[]>([]);
+	let ejerciciosLoading = $state(false);
+	let ejerciciosError = $state<string | null>(null);
 
 	// Get class ID from URL
 	const claseId = $derived(Number($page.params.id));
@@ -78,6 +83,13 @@
 		}
 	});
 
+	// Load exercises when class is loaded
+	$effect(() => {
+		if (currentClase?.id) {
+			loadEjercicios();
+		}
+	});
+
 	async function loadClase() {
 		loading = true;
 		error = null;
@@ -89,8 +101,8 @@
 
 				// Set statistics from the detailed response
 				if (claseDetalles?.id) {
-					numeroAlumnos = claseDetalles.alumnosCount || 0;
-					numeroProfesores = claseDetalles.profesoresCount || 0;
+					numeroAlumnos = claseDetalles.numeroAlumnos || 0;
+					numeroProfesores = claseDetalles.numeroProfesores || 0;
 				}
 			} else {
 				// For teachers and admins, use the general class API
@@ -155,6 +167,23 @@
 			console.error('Error loading students:', err);
 		} finally {
 			studentsLoading = false;
+		}
+	}
+
+	async function loadEjercicios() {
+		if (!claseId) return;
+
+		ejerciciosLoading = true;
+		ejerciciosError = null;
+
+		try {
+			const response = await ejercicioService.getEjercicios({ classId: claseId.toString() });
+			ejercicios = response.content || [];
+		} catch (err) {
+			ejerciciosError = `Error al cargar los ejercicios: ${err}`;
+			console.error('Error loading exercises:', err);
+		} finally {
+			ejerciciosLoading = false;
 		}
 	}
 
@@ -271,12 +300,48 @@
 		}
 	}
 
+	function formatDate(date: Date | undefined): string {
+		if (!date) return 'N/A';
+		return new Date(date).toLocaleDateString('es-ES', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+	}
+
+	function getExerciseStatusColor(estado: string | undefined): string {
+		switch (estado) {
+			case 'ACTIVO':
+				return 'bg-green-100 text-green-800';
+			case 'VENCIDO':
+				return 'bg-red-100 text-red-800';
+			case 'FUTURO':
+				return 'bg-blue-100 text-blue-800';
+			default:
+				return 'bg-gray-100 text-gray-800';
+		}
+	}
+
 	// Get the current class data (either from clase or claseDetalles)
 	let currentClase = $derived(clase || claseDetalles);
 </script>
 
 <svelte:head>
 	<title>{currentClase?.titulo || 'Clase'} - Academia</title>
+	<style>
+		.line-clamp-2 {
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+		.line-clamp-3 {
+			display: -webkit-box;
+			-webkit-line-clamp: 3;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+	</style>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8">
@@ -375,46 +440,13 @@
 				</div>
 
 				<!-- Professor Profile Section -->
-				{#if (authStore.isAlumno && claseDetalles?.profesor) || ((authStore.isProfesor || authStore.isAdmin) && (profesores.length > 0 || profesorLoading))}
+				{#if (authStore.isProfesor || authStore.isAdmin) && (profesores.length > 0 || profesorLoading)}
 					<div class="mb-8">
 						<h2 class="mb-4 text-2xl font-semibold text-gray-900">
-							{(authStore.isAlumno && claseDetalles?.profesor) || profesores.length === 1
-								? 'Profesor de la Clase'
-								: 'Profesores de la Clase'}
+							{profesores.length === 1 ? 'Profesor de la Clase' : 'Profesores de la Clase'}
 						</h2>
 
-						{#if authStore.isAlumno && claseDetalles?.profesor}
-							<!-- Student view: Show professor from class details -->
-							{@const profesor = claseDetalles.profesor}
-							<div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
-								<div class="p-4">
-									<div class="flex items-center space-x-3">
-										<!-- Professor Avatar -->
-										<div class="flex-shrink-0">
-											<div
-												class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
-											>
-												<span class="text-lg font-bold text-white">
-													{profesor.firstName?.[0]}{profesor.lastName?.[0]}
-												</span>
-											</div>
-										</div>
-
-										<!-- Professor Information -->
-										<div class="min-w-0 flex-1">
-											<h3 class="text-base font-semibold text-gray-900">
-												{profesor.fullName || `${profesor.firstName} ${profesor.lastName}`}
-											</h3>
-											<p class="text-sm text-gray-600">
-												<a href="mailto:{profesor.email}" class="text-blue-600 hover:text-blue-800">
-													{profesor.email}
-												</a>
-											</p>
-										</div>
-									</div>
-								</div>
-							</div>
-						{:else if profesorLoading}
+						{#if profesorLoading}
 							<div class="flex items-center justify-center py-8">
 								<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
 							</div>
@@ -501,6 +533,110 @@
 						</div>
 					</div>
 				{/if}
+
+				<!-- Exercises Section -->
+				<div class="mb-8">
+					<div class="mb-4 flex items-center justify-between">
+						<h2 class="text-2xl font-semibold text-gray-900">Ejercicios</h2>
+						{#if authStore.isProfesor || authStore.isAdmin}
+							<a
+								href="/ejercicios?classId={currentClase.id}"
+								class="text-sm font-medium text-blue-600 hover:text-blue-800"
+							>
+								Ver todos los ejercicios →
+							</a>
+						{/if}
+					</div>
+
+					{#if ejerciciosLoading}
+						<div class="flex items-center justify-center py-8">
+							<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+						</div>
+					{:else if ejerciciosError}
+						<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+							{ejerciciosError}
+						</div>
+					{:else if ejercicios.length === 0}
+						<div class="rounded-lg bg-gray-50 p-6">
+							<div class="text-center">
+								<div class="mb-2 text-4xl text-gray-400">📝</div>
+								<h3 class="mb-2 text-lg font-medium text-gray-900">Ejercicios de la clase</h3>
+								<p class="mb-4 text-gray-500">
+									Esta clase tiene {'numeroEjercicios' in currentClase
+										? currentClase.numeroEjercicios
+										: 0} ejercicios asignados.
+								</p>
+								<a
+									href="/ejercicios?classId={currentClase.id}"
+									class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+								>
+									Ver ejercicios
+								</a>
+							</div>
+						</div>
+					{:else}
+						<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+							{#each ejercicios as ejercicio (ejercicio.id)}
+								<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+									<div class="flex items-start justify-between mb-3">
+										<h3 class="font-semibold text-gray-900 line-clamp-2">
+											{ejercicio.name || 'Sin nombre'}
+										</h3>
+										<span
+											class="ml-2 flex-shrink-0 rounded-full px-2 py-1 text-xs font-medium {getExerciseStatusColor(
+												ejercicio.estado
+											)}"
+										>
+											{ejercicio.estado || 'N/A'}
+										</span>
+									</div>
+									
+									{#if ejercicio.statement}
+										<p class="mb-3 text-sm text-gray-600 line-clamp-3">
+											{ejercicio.statement}
+										</p>
+									{/if}
+									
+									<div class="space-y-2 text-xs text-gray-500">
+										{#if ejercicio.startDate}
+											<div class="flex items-center">
+												<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+												</svg>
+												Inicio: {formatDate(ejercicio.startDate)}
+											</div>
+										{/if}
+										{#if ejercicio.endDate}
+											<div class="flex items-center">
+												<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+												</svg>
+												Fin: {formatDate(ejercicio.endDate)}
+											</div>
+										{/if}
+										{#if ejercicio.numeroEntregas !== undefined}
+											<div class="flex items-center">
+												<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+												</svg>
+												Entregas: {ejercicio.numeroEntregas}
+											</div>
+										{/if}
+									</div>
+									
+									<div class="mt-4 flex justify-end">
+										<a
+											href="/ejercicios/{ejercicio.id}"
+											class="text-sm font-medium text-blue-600 hover:text-blue-800"
+										>
+											Ver ejercicio →
+										</a>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
 
 				<!-- Class Type Information -->
 				{#if currentClase.tipoClase}

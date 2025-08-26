@@ -31,7 +31,7 @@ import {
     DTORespuestaAlumnosClaseToJSON,
 } from '../models/index';
 
-export interface ObtenerAlumnosDeClaseRequest {
+export interface ObtenerAlumnosClaseRequest {
     claseId: number;
     page?: number;
     size?: number;
@@ -39,8 +39,9 @@ export interface ObtenerAlumnosDeClaseRequest {
     sortDirection?: string;
 }
 
-export interface ObtenerAlumnosPublicosDeClaseRequest {
+export interface ObtenerPerfilAlumnoClaseRequest {
     claseId: number;
+    studentId: number;
 }
 
 /**
@@ -49,14 +50,14 @@ export interface ObtenerAlumnosPublicosDeClaseRequest {
 export class UserOperationsApi extends runtime.BaseAPI {
 
     /**
-     * Gets the list of students enrolled in a specific class. The level of detail of the information depends on the user\'s role: - ADMIN: complete information of all students - PROFESOR: complete information if they are the professor of the class, public information if not - ALUMNO: only public information of the students
-     * Get students in a class
+     * Gets the list of students enrolled in a specific class with pagination
+     * Get students in class
      */
-    async obtenerAlumnosDeClaseRaw(requestParameters: ObtenerAlumnosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaAlumnosClase>> {
+    async obtenerAlumnosClaseRaw(requestParameters: ObtenerAlumnosClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaAlumnosClase>> {
         if (requestParameters['claseId'] == null) {
             throw new runtime.RequiredError(
                 'claseId',
-                'Required parameter "claseId" was null or undefined when calling obtenerAlumnosDeClase().'
+                'Required parameter "claseId" was null or undefined when calling obtenerAlumnosClase().'
             );
         }
 
@@ -95,50 +96,11 @@ export class UserOperationsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the list of students enrolled in a specific class. The level of detail of the information depends on the user\'s role: - ADMIN: complete information of all students - PROFESOR: complete information if they are the professor of the class, public information if not - ALUMNO: only public information of the students
-     * Get students in a class
+     * Gets the list of students enrolled in a specific class with pagination
+     * Get students in class
      */
-    async obtenerAlumnosDeClase(requestParameters: ObtenerAlumnosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaAlumnosClase> {
-        const response = await this.obtenerAlumnosDeClaseRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Gets the list of students enrolled in a class with only public information (first name and last name). This endpoint always returns public information regardless of the user\'s role.
-     * Get public information of students in a class
-     */
-    async obtenerAlumnosPublicosDeClaseRaw(requestParameters: ObtenerAlumnosPublicosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumnoPublico<any>>> {
-        if (requestParameters['claseId'] == null) {
-            throw new runtime.RequiredError(
-                'claseId',
-                'Required parameter "claseId" was null or undefined when calling obtenerAlumnosPublicosDeClase().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/my/classes/{claseId}/students/public`;
-        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     * Gets the list of students enrolled in a class with only public information (first name and last name). This endpoint always returns public information regardless of the user\'s role.
-     * Get public information of students in a class
-     */
-    async obtenerAlumnosPublicosDeClase(requestParameters: ObtenerAlumnosPublicosDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumnoPublico<any>> {
-        const response = await this.obtenerAlumnosPublicosDeClaseRaw(requestParameters, initOverrides);
+    async obtenerAlumnosClase(requestParameters: ObtenerAlumnosClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaAlumnosClase> {
+        const response = await this.obtenerAlumnosClaseRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -201,6 +163,53 @@ export class UserOperationsApi extends runtime.BaseAPI {
      */
     async obtenerMisClasesInscritas(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClaseInscrita<any>> {
         const response = await this.obtenerMisClasesInscritasRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets the public profile of a specific student in a class
+     * Get student profile in class
+     */
+    async obtenerPerfilAlumnoClaseRaw(requestParameters: ObtenerPerfilAlumnoClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumnoPublico>> {
+        if (requestParameters['claseId'] == null) {
+            throw new runtime.RequiredError(
+                'claseId',
+                'Required parameter "claseId" was null or undefined when calling obtenerPerfilAlumnoClase().'
+            );
+        }
+
+        if (requestParameters['studentId'] == null) {
+            throw new runtime.RequiredError(
+                'studentId',
+                'Required parameter "studentId" was null or undefined when calling obtenerPerfilAlumnoClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/my/classes/{claseId}/students/{studentId}`;
+        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
+        urlPath = urlPath.replace(`{${"studentId"}}`, encodeURIComponent(String(requestParameters['studentId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOAlumnoPublicoFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the public profile of a specific student in a class
+     * Get student profile in class
+     */
+    async obtenerPerfilAlumnoClase(requestParameters: ObtenerPerfilAlumnoClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumnoPublico> {
+        const response = await this.obtenerPerfilAlumnoClaseRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -132,7 +132,7 @@
 				enrolledClasses = await EnrollmentService.getMyEnrolledClasses();
 			} else if (authStore.isAdmin) {
 				// Admin viewing any student's profile - use the student API directly
-				enrolledClasses = await alumnoApi.obtenerClasesInscritas({ id: alumno.id });
+				enrolledClasses = await alumnoApi.obtenerClasesAlumno({ id: alumno.id });
 			}
 		} catch (err) {
 			console.error('Error loading enrolled classes:', err);

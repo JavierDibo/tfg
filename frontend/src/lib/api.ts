@@ -8,9 +8,12 @@ import {
 	AuthenticationApi,
 	UserOperationsApi,
 	MaterialsApi,
-	PruebasApi
+	PruebasApi,
+	ExerciseDeliveriesApi,
+	ExercisesApi
 } from './generated/api';
 import { authStore } from './stores/authStore.svelte';
+import { getApiBasePath } from './config';
 
 export * from './generated/api';
 
@@ -32,7 +35,7 @@ const authMiddleware: Middleware = {
 };
 
 const config = new Configuration({
-	basePath: 'http://localhost:8080',
+	basePath: getApiBasePath(),
 	middleware: [authMiddleware]
 });
 
@@ -45,3 +48,5 @@ export const autenticacionApi = new AuthenticationApi(config);
 export const userOperationsApi = new UserOperationsApi(config);
 export const materialApi = new MaterialsApi(config);
 export const pruebasApi = new PruebasApi(config);
+export const entregaApi = new ExerciseDeliveriesApi(config);
+export const ejercicioApi = new ExercisesApi(config);

@@ -25,6 +25,7 @@ import app.entidades.Clase;
 import app.repositorios.RepositorioAlumno;
 import app.repositorios.RepositorioClase;
 import app.util.ExceptionUtils;
+import app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -36,26 +37,75 @@ public class ServicioAlumno {
     private final RepositorioClase repositorioClase;
     private final PasswordEncoder passwordEncoder;
     private final ServicioCachePassword servicioCachePassword;
+    private final SecurityUtils securityUtils;
 
     @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorId(Long id) {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
-        return new DTOAlumno(alumno);
+        
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can access student data
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can see any student's data
+            return new DTOAlumno(alumno);
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!id.equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros alumnos");
+            }
+            return new DTOAlumno(alumno);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de alumnos");
+            return null; // This line will never be reached due to the exception above
+        }
     }
 
     @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorEmail(String email) {
         Alumno alumno = repositorioAlumno.findByEmail(email).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "email", email);
-        return new DTOAlumno(alumno);
+        
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can access student data
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can see any student's data
+            return new DTOAlumno(alumno);
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!alumno.getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros alumnos");
+            }
+            return new DTOAlumno(alumno);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de alumnos");
+            return null; // This line will never be reached due to the exception above
+        }
     }
 
     @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorUsuario(String usuario) {
         Alumno alumno = repositorioAlumno.findByUsername(usuario).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "usuario", usuario);
-        return new DTOAlumno(alumno);
+        
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can access student data
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can see any student's data
+            return new DTOAlumno(alumno);
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!alumno.getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros alumnos");
+            }
+            return new DTOAlumno(alumno);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de alumnos");
+            return null; // This line will never be reached due to the exception above
+        }
     }
 
     /**
@@ -67,17 +117,54 @@ public class ServicioAlumno {
     public DTOPerfilAlumno obtenerPerfilAlumnoPorUsuario(String usuario) {
         Alumno alumno = repositorioAlumno.findByUsername(usuario).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "usuario", usuario);
-        return new DTOPerfilAlumno(alumno);
+        
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can access student data
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can see any student's data
+            return new DTOPerfilAlumno(alumno);
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!alumno.getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros alumnos");
+            }
+            return new DTOPerfilAlumno(alumno);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de alumnos");
+            return null; // This line will never be reached due to the exception above
+        }
     }
 
     @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorDni(String dni) {
         Alumno alumno = repositorioAlumno.findByDni(dni).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "DNI", dni);
-        return new DTOAlumno(alumno);
+        
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can access student data
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can see any student's data
+            return new DTOAlumno(alumno);
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!alumno.getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros alumnos");
+            }
+            return new DTOAlumno(alumno);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de alumnos");
+            return null; // This line will never be reached due to the exception above
+        }
     }
 
     public DTOAlumno crearAlumno(DTOPeticionRegistroAlumno peticion) {
+        // Security check: Only ADMIN can create students
+        if (!securityUtils.hasRole("ADMIN")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para crear alumnos");
+        }
+        
         // Validar que no existan duplicados
         if (repositorioAlumno.existsByUsername(peticion.username())) {
             ExceptionUtils.throwValidationError("Ya existe un alumno con el usuario: " + peticion.username());
@@ -109,6 +196,20 @@ public class ServicioAlumno {
     public DTOAlumno actualizarAlumno(Long id, DTOActualizacionAlumno dtoParcial) {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
+
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can update student data
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can update any student's data
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only update their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!id.equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para modificar los datos de otros alumnos");
+            }
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar datos de alumnos");
+        }
 
         // Update non-null fields
         if (dtoParcial.firstName() != null) {
@@ -159,6 +260,20 @@ public class ServicioAlumno {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
         
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can update enrollment status
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can update any student's enrollment status
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only update their own enrollment status
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!id.equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para modificar el estado de matriculación de otros alumnos");
+            }
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar el estado de matriculación de alumnos");
+        }
+        
         alumno.setEnrolled(matriculado);
         Alumno alumnoActualizado = repositorioAlumno.save(alumno);
         return new DTOAlumno(alumnoActualizado);
@@ -168,6 +283,20 @@ public class ServicioAlumno {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
         
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can update enabled status
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can update any student's enabled status
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only update their own enabled status
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!id.equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para modificar el estado de habilitación de otros alumnos");
+            }
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar el estado de habilitación de alumnos");
+        }
+        
         alumno.setEnabled(habilitar);
         Alumno alumnoActualizado = repositorioAlumno.save(alumno);
         return new DTOAlumno(alumnoActualizado);
@@ -176,6 +305,11 @@ public class ServicioAlumno {
     public DTOAlumno borrarAlumnoPorId(Long id) {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
+        
+        // Security check: Only ADMIN can delete students
+        if (!securityUtils.hasRole("ADMIN")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para eliminar alumnos");
+        }
         
         repositorioAlumno.deleteById(id);
         return new DTOAlumno(alumno);
@@ -203,6 +337,20 @@ public class ServicioAlumno {
      * @return DTOAlumno actualizado
      */
     public DTOAlumno inscribirEnClase(Long alumnoId, Long claseId) {
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can enroll in classes
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can enroll any student
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only enroll themselves
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!alumnoId.equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No puedes inscribir a otros alumnos en clases");
+            }
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para inscribir alumnos en clases");
+        }
+        
         Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
                 

@@ -57,6 +57,10 @@ public class EntregaEjercicio {
     @Size(max = 255)
     private String ejercicioId;
     
+    @Size(max = 1000)
+    @Column(columnDefinition = "TEXT")
+    private String comentarios;
+    
     // Relación bidireccional con Ejercicio
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ejercicio_entity_id")
@@ -101,6 +105,40 @@ public class EntregaEjercicio {
         }
         this.nota = nota;
         this.estado = EEstadoEjercicio.CALIFICADO;
+    }
+    
+    /**
+     * Califica la entrega con comentarios
+     * @param nota Nota a asignar (0-10)
+     * @param comentarios Comentarios del profesor
+     */
+    public void calificar(BigDecimal nota, String comentarios) {
+        calificar(nota);
+        this.comentarios = comentarios;
+    }
+    
+    /**
+     * Agrega o actualiza comentarios a la entrega
+     * @param comentarios Comentarios del profesor
+     */
+    public void agregarComentarios(String comentarios) {
+        this.comentarios = comentarios;
+    }
+    
+    /**
+     * Obtiene los comentarios de la entrega
+     * @return Comentarios del profesor o null si no hay
+     */
+    public String getComentarios() {
+        return this.comentarios;
+    }
+    
+    /**
+     * Verifica si la entrega tiene comentarios
+     * @return true si tiene comentarios, false en caso contrario
+     */
+    public boolean tieneComentarios() {
+        return this.comentarios != null && !this.comentarios.trim().isEmpty();
     }
     
     /**

@@ -18,7 +18,6 @@ import type {
   DTOMaterial,
   DTORespuestaPaginada,
   DTORespuestaPaginadaDTOMaterial,
-  MaterialStats,
 } from '../models/index';
 import {
     DTOMaterialFromJSON,
@@ -27,18 +26,12 @@ import {
     DTORespuestaPaginadaToJSON,
     DTORespuestaPaginadaDTOMaterialFromJSON,
     DTORespuestaPaginadaDTOMaterialToJSON,
-    MaterialStatsFromJSON,
-    MaterialStatsToJSON,
 } from '../models/index';
 
 export interface ActualizarMaterialRequest {
-    id: string;
+    id: number;
     name: string;
     url: string;
-}
-
-export interface BorrarMaterialRequest {
-    id: string;
 }
 
 export interface CrearMaterialRequest {
@@ -46,8 +39,12 @@ export interface CrearMaterialRequest {
     url: string;
 }
 
+export interface EliminarMaterialRequest {
+    id: number;
+}
+
 export interface ObtenerMaterialPorIdRequest {
-    id: string;
+    id: number;
 }
 
 export interface ObtenerMaterialesRequest {
@@ -67,7 +64,7 @@ export interface ObtenerMaterialesRequest {
 export class MaterialsApi extends runtime.BaseAPI {
 
     /**
-     * Updates an existing material
+     * Updates an existing material (requires ADMIN or PROFESOR role)
      * Update material
      */
     async actualizarMaterialRaw(requestParameters: ActualizarMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOMaterial>> {
@@ -119,7 +116,7 @@ export class MaterialsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Updates an existing material
+     * Updates an existing material (requires ADMIN or PROFESOR role)
      * Update material
      */
     async actualizarMaterial(requestParameters: ActualizarMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOMaterial> {
@@ -128,45 +125,7 @@ export class MaterialsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Deletes a material by its ID
-     * Delete material
-     */
-    async borrarMaterialRaw(requestParameters: BorrarMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling borrarMaterial().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/material/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Deletes a material by its ID
-     * Delete material
-     */
-    async borrarMaterial(requestParameters: BorrarMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.borrarMaterialRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Creates a new educational material
+     * Creates a new material in the system (requires ADMIN or PROFESOR role)
      * Create new material
      */
     async crearMaterialRaw(requestParameters: CrearMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOMaterial>> {
@@ -210,7 +169,7 @@ export class MaterialsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates a new educational material
+     * Creates a new material in the system (requires ADMIN or PROFESOR role)
      * Create new material
      */
     async crearMaterial(requestParameters: CrearMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOMaterial> {
@@ -219,34 +178,41 @@ export class MaterialsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets statistics about materials
-     * Get material statistics
+     * Deletes a material from the system (requires ADMIN or PROFESOR role)
+     * Delete material
      */
-    async obtenerEstadisticasRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MaterialStats>> {
+    async eliminarMaterialRaw(requestParameters: EliminarMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling eliminarMaterial().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/api/material/stats`;
+        let urlPath = `/api/material/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
 
         const response = await this.request({
             path: urlPath,
-            method: 'GET',
+            method: 'DELETE',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => MaterialStatsFromJSON(jsonValue));
+        return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * Gets statistics about materials
-     * Get material statistics
+     * Deletes a material from the system (requires ADMIN or PROFESOR role)
+     * Delete material
      */
-    async obtenerEstadisticas(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MaterialStats> {
-        const response = await this.obtenerEstadisticasRaw(initOverrides);
-        return await response.value();
+    async eliminarMaterial(requestParameters: EliminarMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.eliminarMaterialRaw(requestParameters, initOverrides);
     }
 
     /**

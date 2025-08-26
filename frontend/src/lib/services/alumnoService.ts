@@ -71,7 +71,7 @@ export class AlumnoService {
 	 */
 	static async updateAlumno(id: number, alumnoData: DTOActualizacionAlumno): Promise<DTOAlumno> {
 		try {
-			return await alumnoApi.actualizarAlumno({
+			return await alumnoApi.actualizarAlumnoParcial({
 				id,
 				dTOActualizacionAlumno: alumnoData
 			});
@@ -86,7 +86,7 @@ export class AlumnoService {
 	 */
 	static async deleteAlumno(id: number): Promise<void> {
 		try {
-			await alumnoApi.borrarAlumnoPorId({ id });
+			await alumnoApi.eliminarAlumno({ id });
 		} catch (error) {
 			ErrorHandler.logError(error, `deleteAlumno(${id})`);
 			throw await ErrorHandler.parseError(error);
@@ -100,7 +100,7 @@ export class AlumnoService {
 	 */
 	static async getClasesInscritas(alumnoId: number): Promise<DTOClaseInscrita> {
 		try {
-			return await alumnoApi.obtenerClasesInscritas({ id: alumnoId });
+			return await alumnoApi.obtenerClasesAlumno({ id: alumnoId });
 		} catch (error) {
 			ErrorHandler.logError(error, `getClasesInscritas(${alumnoId})`);
 			throw await ErrorHandler.parseError(error);
@@ -124,7 +124,7 @@ export class AlumnoService {
 				updateData
 			});
 
-			const result = await alumnoApi.actualizarAlumno({
+			const result = await alumnoApi.actualizarAlumnoParcial({
 				id,
 				dTOActualizacionAlumno: updateData
 			});
@@ -152,7 +152,7 @@ export class AlumnoService {
 				updateData
 			});
 
-			const result = await alumnoApi.actualizarAlumno({
+			const result = await alumnoApi.actualizarAlumnoParcial({
 				id,
 				dTOActualizacionAlumno: updateData
 			});

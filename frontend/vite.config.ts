@@ -7,6 +7,7 @@ import { defineConfig } from 'vite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
+import { getApiBasePath } from './src/lib/config.js';
 const dirname =
 	typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
@@ -23,7 +24,7 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api': {
-				target: 'http://localhost:8080',
+				target: getApiBasePath(),
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, ''),
 				configure: (proxy, _options) => {

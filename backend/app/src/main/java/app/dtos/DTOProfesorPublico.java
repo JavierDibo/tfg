@@ -1,4 +1,4 @@
-// LLM_EDIT_TIMESTAMP: 25 ago. 13:59
+// LLM_EDIT_TIMESTAMP: 25 ago. 14:00
 package app.dtos;
 
 import app.entidades.Profesor;

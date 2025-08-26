@@ -81,6 +81,96 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
     Page<Ejercicio> findByClassId(String claseId, Pageable pageable);
     
     /**
+     * Búsqueda flexible de ejercicios con múltiples filtros opcionales
+     * Permite combinar filtros de nombre, enunciado, clase, estado y fechas
+     */
+    @Query(value = "SELECT * FROM ejercicios e WHERE " +
+           "(:nombre IS NULL OR normalize_text(e.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:enunciado IS NULL OR normalize_text(e.enunciado) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
+           "(:classId IS NULL OR e.class_id = :classId) AND " +
+           "(:status IS NULL OR (" +
+           "  CASE WHEN :status = 'ACTIVE' THEN e.fecha_fin_plazo > :now " +
+           "       WHEN :status = 'EXPIRED' THEN e.fecha_fin_plazo <= :now " +
+           "       WHEN :status = 'FUTURE' THEN e.fecha_inicio_plazo > :now " +
+           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "       ELSE TRUE END))",
+           countQuery = "SELECT COUNT(*) FROM ejercicios e WHERE " +
+           "(:nombre IS NULL OR normalize_text(e.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:enunciado IS NULL OR normalize_text(e.enunciado) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
+           "(:classId IS NULL OR e.class_id = :classId) AND " +
+           "(:status IS NULL OR (" +
+           "  CASE WHEN :status = 'ACTIVE' THEN e.fecha_fin_plazo > :now " +
+           "       WHEN :status = 'EXPIRED' THEN e.fecha_fin_plazo <= :now " +
+           "       WHEN :status = 'FUTURE' THEN e.fecha_inicio_plazo > :now " +
+           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "       ELSE TRUE END))",
+           nativeQuery = true)
+    Page<Ejercicio> findByFiltrosFlexibles(
+        @Param("nombre") String nombre,
+        @Param("enunciado") String enunciado,
+        @Param("classId") String classId,
+        @Param("status") String status,
+        @Param("now") LocalDateTime now,
+        Pageable pageable
+    );
+    
+    /**
+     * Búsqueda general con término de búsqueda "q" que busca en nombre y enunciado
+     */
+    @Query(value = "SELECT * FROM ejercicios e WHERE " +
+           "(normalize_text(e.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(e.enunciado) LIKE '%' || normalize_text(:searchTerm) || '%')",
+           countQuery = "SELECT COUNT(*) FROM ejercicios e WHERE " +
+           "(normalize_text(e.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(e.enunciado) LIKE '%' || normalize_text(:searchTerm) || '%')",
+           nativeQuery = true)
+    Page<Ejercicio> findByGeneralSearch(@Param("searchTerm") String searchTerm, Pageable pageable);
+    
+    /**
+     * Búsqueda combinada con término general y filtros específicos
+     */
+    @Query(value = "SELECT * FROM ejercicios e WHERE " +
+           "(:searchTerm IS NULL OR (" +
+           "normalize_text(e.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(e.enunciado) LIKE '%' || normalize_text(:searchTerm) || '%')) AND " +
+           "(:nombre IS NULL OR normalize_text(e.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:enunciado IS NULL OR normalize_text(e.enunciado) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
+           "(:classId IS NULL OR e.class_id = :classId) AND " +
+           "(:status IS NULL OR (" +
+           "  CASE WHEN :status = 'ACTIVE' THEN e.fecha_fin_plazo > :now " +
+           "       WHEN :status = 'EXPIRED' THEN e.fecha_fin_plazo <= :now " +
+           "       WHEN :status = 'FUTURE' THEN e.fecha_inicio_plazo > :now " +
+           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "       ELSE TRUE END))",
+           countQuery = "SELECT COUNT(*) FROM ejercicios e WHERE " +
+           "(:searchTerm IS NULL OR (" +
+           "normalize_text(e.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(e.enunciado) LIKE '%' || normalize_text(:searchTerm) || '%')) AND " +
+           "(:nombre IS NULL OR normalize_text(e.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:enunciado IS NULL OR normalize_text(e.enunciado) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
+           "(:classId IS NULL OR e.class_id = :classId) AND " +
+           "(:status IS NULL OR (" +
+           "  CASE WHEN :status = 'ACTIVE' THEN e.fecha_fin_plazo > :now " +
+           "       WHEN :status = 'EXPIRED' THEN e.fecha_fin_plazo <= :now " +
+           "       WHEN :status = 'FUTURE' THEN e.fecha_inicio_plazo > :now " +
+           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "       ELSE TRUE END))",
+           nativeQuery = true)
+    Page<Ejercicio> findByGeneralAndSpecificFilters(
+        @Param("searchTerm") String searchTerm,
+        @Param("nombre") String nombre,
+        @Param("enunciado") String enunciado,
+        @Param("classId") String classId,
+        @Param("status") String status,
+        @Param("now") LocalDateTime now,
+        Pageable pageable
+    );
+    
+    /**
      * Busca ejercicios por rango de fechas de inicio de plazo
      * @param fechaInicio Fecha de inicio del rango
      * @param fechaFin Fecha de fin del rango

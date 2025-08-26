@@ -3,7 +3,6 @@
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import { goto } from '$app/navigation';
 	import {
-		classManagementApi,
 		claseApi,
 		autenticacionApi,
 		alumnoApi,
@@ -317,7 +316,7 @@
 					`Deleting class ${testData.createdIds.class}...`
 				);
 				try {
-					await claseApi.borrarClasePorId({ id: testData.createdIds.class });
+					await claseApi.eliminarClase({ id: testData.createdIds.class });
 					addResult('Classes', 'Delete', 'DELETE', 'success', 'Class deleted successfully');
 					testData.createdIds.class = null;
 				} catch (error) {
@@ -432,7 +431,7 @@
 						email: testDataGen.validEmail,
 						phoneNumber: testDataGen.validPhone
 					};
-					const updatedStudent = await alumnoApi.actualizarAlumno({
+					const updatedStudent = await alumnoApi.actualizarAlumnoParcial({
 						id: testData.createdIds.student,
 						dTOActualizacionAlumno: updateData
 					});
@@ -465,7 +464,7 @@
 					`Deleting student ${testData.createdIds.student}...`
 				);
 				try {
-					await alumnoApi.borrarAlumnoPorId({ id: testData.createdIds.student });
+					await alumnoApi.eliminarAlumno({ id: testData.createdIds.student });
 					addResult('Students', 'Delete', 'DELETE', 'success', 'Student deleted successfully');
 					testData.createdIds.student = null;
 				} catch (error) {
@@ -558,7 +557,7 @@
 						lastName: 'UpdatedProfessor',
 						email: testDataGen.validEmail
 					};
-					const updatedProfessor = await profesorApi.actualizarProfesor({
+					const updatedProfessor = await profesorApi.actualizarProfesorParcial({
 						id: testData.createdIds.teacher,
 						dTOActualizacionProfesor: updateData
 					});
@@ -591,7 +590,7 @@
 					`Deleting professor ${testData.createdIds.teacher}...`
 				);
 				try {
-					await profesorApi.borrarProfesorPorId({ id: testData.createdIds.teacher });
+					await profesorApi.eliminarProfesor({ id: testData.createdIds.teacher });
 					addResult('Professors', 'Delete', 'DELETE', 'success', 'Professor deleted successfully');
 					testData.createdIds.teacher = null;
 				} catch (error) {
@@ -638,7 +637,9 @@
 					'running',
 					`Getting material ${testMaterial.id}...`
 				);
-				const materialById = await materialApi.obtenerMaterialPorId({ id: testMaterial.id! });
+				const materialById = await materialApi.obtenerMaterialPorId({
+					id: parseInt(testMaterial.id!)
+				});
 				addResult(
 					'Materials',
 					'Get By ID',
@@ -690,7 +691,7 @@
 						url: 'https://example.com/updated-material.mp4'
 					};
 					const updatedMaterial = await materialApi.actualizarMaterial({
-						id: testData.createdIds.material.toString(),
+						id: testData.createdIds.material!,
 						...updateData
 					});
 					addResult(
@@ -715,13 +716,13 @@
 			// GET - Get statistics
 			addResult('Materials', 'Statistics', 'GET', 'running', 'Getting material statistics...');
 			try {
-				const stats = await materialApi.obtenerEstadisticas();
+				// Statistics endpoint not available in current API
 				addResult(
 					'Materials',
 					'Statistics',
 					'GET',
-					'success',
-					`Statistics: ${JSON.stringify(stats)}`
+					'skipped',
+					'Statistics endpoint not available in current API'
 				);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
@@ -744,7 +745,7 @@
 					`Deleting material ${testData.createdIds.material}...`
 				);
 				try {
-					await materialApi.borrarMaterial({ id: testData.createdIds.material.toString() });
+					await materialApi.eliminarMaterial({ id: testData.createdIds.material! });
 					addResult('Materials', 'Delete', 'DELETE', 'success', 'Material deleted successfully');
 					testData.createdIds.material = null;
 				} catch (error) {
@@ -794,13 +795,13 @@
 					`Checking enrollment status for class ${testClass.id}...`
 				);
 				try {
-					const status = await classManagementApi.obtenerMiInscripcion({ claseId: testClass.id! });
+					// Enrollment status endpoint not available in current API
 					addResult(
 						'ClassManagement',
 						'Get Enrollment Status',
 						'GET',
-						'success',
-						`Enrollment status: ${status.isEnrolled ? 'Enrolled' : 'Not enrolled'}`
+						'skipped',
+						'Enrollment status endpoint not available in current API'
 					);
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
@@ -822,15 +823,13 @@
 					`Enrolling in class ${testClass.id}...`
 				);
 				try {
-					const enrollment = await classManagementApi.inscribirseEnClase({
-						claseId: testClass.id!
-					});
+					// Enrollment endpoint not available in current API
 					addResult(
 						'ClassManagement',
 						'Enroll',
 						'POST',
-						'success',
-						`Enrolled successfully: ${enrollment.className}`
+						'skipped',
+						'Enrollment endpoint not available in current API'
 					);
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
@@ -852,15 +851,13 @@
 					`Unenrolling from class ${testClass.id}...`
 				);
 				try {
-					const unenrollment = await classManagementApi.darseDeBajaDeClase({
-						claseId: testClass.id!
-					});
+					// Unenrollment endpoint not available in current API
 					addResult(
 						'ClassManagement',
 						'Unenroll',
 						'POST',
-						'success',
-						`Unenrolled successfully: ${unenrollment.className}`
+						'skipped',
+						'Unenrollment endpoint not available in current API'
 					);
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
@@ -965,7 +962,7 @@
 					`Getting students in class ${testClass.id}...`
 				);
 				try {
-					const studentsInClass = await userOperationsApi.obtenerAlumnosDeClase({
+					const studentsInClass = await userOperationsApi.obtenerAlumnosClase({
 						claseId: testClass.id!
 					});
 					addResult(

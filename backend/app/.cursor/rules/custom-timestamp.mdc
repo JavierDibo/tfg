@@ -1,6 +1,0 @@
----
-alwaysApply: true
----
-After editing a file that doesn't include it, include a comment in the relevant language comment format at the top of the file that includes this string: "LLM_EDIT_TIMESTAMP: [TIMESTAMP_PLACEHOLDER]". This is necessary to then run a custom script I have set up that replaces this string.
-
-If you find a string that includes "LLM_EDIT_TIMESTAMP" at the top of the file, you can safely ignore this rule.

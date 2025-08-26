@@ -18,6 +18,7 @@ import type {
   DTOActualizacionAlumno,
   DTOAlumno,
   DTOClaseInscrita,
+  DTOPerfilAlumno,
   DTOPeticionRegistroAlumno,
   DTORespuestaPaginada,
   DTORespuestaPaginadaDTOAlumno,
@@ -29,6 +30,8 @@ import {
     DTOAlumnoToJSON,
     DTOClaseInscritaFromJSON,
     DTOClaseInscritaToJSON,
+    DTOPerfilAlumnoFromJSON,
+    DTOPerfilAlumnoToJSON,
     DTOPeticionRegistroAlumnoFromJSON,
     DTOPeticionRegistroAlumnoToJSON,
     DTORespuestaPaginadaFromJSON,
@@ -37,17 +40,17 @@ import {
     DTORespuestaPaginadaDTOAlumnoToJSON,
 } from '../models/index';
 
-export interface ActualizarAlumnoRequest {
+export interface ActualizarAlumnoParcialRequest {
     id: number;
     dTOActualizacionAlumno: DTOActualizacionAlumno;
 }
 
-export interface BorrarAlumnoPorIdRequest {
-    id: number;
-}
-
 export interface CrearAlumnoRequest {
     dTOPeticionRegistroAlumno: DTOPeticionRegistroAlumno;
+}
+
+export interface EliminarAlumnoRequest {
+    id: number;
 }
 
 export interface ObtenerAlumnoPorIdRequest {
@@ -61,16 +64,23 @@ export interface ObtenerAlumnosRequest {
     dni?: string;
     email?: string;
     enrolled?: boolean;
-    enabled?: boolean;
-    available?: boolean;
     page?: number;
     size?: number;
     sortBy?: string;
     sortDirection?: string;
 }
 
-export interface ObtenerClasesInscritasRequest {
+export interface ObtenerClasesAlumnoRequest {
     id: number;
+}
+
+export interface ObtenerPerfilAlumnoRequest {
+    id: number;
+}
+
+export interface ReemplazarAlumnoRequest {
+    id: number;
+    dTOActualizacionAlumno: DTOActualizacionAlumno;
 }
 
 /**
@@ -82,18 +92,18 @@ export class StudentsApi extends runtime.BaseAPI {
      * Partially updates an existing student. Students can only update their own profile. Administrators can change enrollment and enabled status.
      * Update student partially
      */
-    async actualizarAlumnoRaw(requestParameters: ActualizarAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumno>> {
+    async actualizarAlumnoParcialRaw(requestParameters: ActualizarAlumnoParcialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumno>> {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError(
                 'id',
-                'Required parameter "id" was null or undefined when calling actualizarAlumno().'
+                'Required parameter "id" was null or undefined when calling actualizarAlumnoParcial().'
             );
         }
 
         if (requestParameters['dTOActualizacionAlumno'] == null) {
             throw new runtime.RequiredError(
                 'dTOActualizacionAlumno',
-                'Required parameter "dTOActualizacionAlumno" was null or undefined when calling actualizarAlumno().'
+                'Required parameter "dTOActualizacionAlumno" was null or undefined when calling actualizarAlumnoParcial().'
             );
         }
 
@@ -122,47 +132,8 @@ export class StudentsApi extends runtime.BaseAPI {
      * Partially updates an existing student. Students can only update their own profile. Administrators can change enrollment and enabled status.
      * Update student partially
      */
-    async actualizarAlumno(requestParameters: ActualizarAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumno> {
-        const response = await this.actualizarAlumnoRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Deletes a student from the system (requires ADMIN role)
-     * Delete student
-     */
-    async borrarAlumnoPorIdRaw(requestParameters: BorrarAlumnoPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumno>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling borrarAlumnoPorId().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/alumnos/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOAlumnoFromJSON(jsonValue));
-    }
-
-    /**
-     * Deletes a student from the system (requires ADMIN role)
-     * Delete student
-     */
-    async borrarAlumnoPorId(requestParameters: BorrarAlumnoPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumno> {
-        const response = await this.borrarAlumnoPorIdRaw(requestParameters, initOverrides);
+    async actualizarAlumnoParcial(requestParameters: ActualizarAlumnoParcialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumno> {
+        const response = await this.actualizarAlumnoParcialRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -205,6 +176,44 @@ export class StudentsApi extends runtime.BaseAPI {
     async crearAlumno(requestParameters: CrearAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumno> {
         const response = await this.crearAlumnoRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Deletes a student from the system (requires ADMIN role)
+     * Delete student
+     */
+    async eliminarAlumnoRaw(requestParameters: EliminarAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling eliminarAlumno().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/alumnos/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Deletes a student from the system (requires ADMIN role)
+     * Delete student
+     */
+    async eliminarAlumno(requestParameters: EliminarAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.eliminarAlumnoRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -277,14 +286,6 @@ export class StudentsApi extends runtime.BaseAPI {
             queryParameters['enrolled'] = requestParameters['enrolled'];
         }
 
-        if (requestParameters['enabled'] != null) {
-            queryParameters['enabled'] = requestParameters['enabled'];
-        }
-
-        if (requestParameters['available'] != null) {
-            queryParameters['available'] = requestParameters['available'];
-        }
-
         if (requestParameters['page'] != null) {
             queryParameters['page'] = requestParameters['page'];
         }
@@ -326,14 +327,14 @@ export class StudentsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the classes in which a specific student is enrolled
-     * Get classes enrolled by student
+     * Gets all classes that a student is enrolled in
+     * Get student\'s classes
      */
-    async obtenerClasesInscritasRaw(requestParameters: ObtenerClasesInscritasRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClaseInscrita<any>>> {
+    async obtenerClasesAlumnoRaw(requestParameters: ObtenerClasesAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClaseInscrita<any>>> {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError(
                 'id',
-                'Required parameter "id" was null or undefined when calling obtenerClasesInscritas().'
+                'Required parameter "id" was null or undefined when calling obtenerClasesAlumno().'
             );
         }
 
@@ -356,11 +357,99 @@ export class StudentsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the classes in which a specific student is enrolled
-     * Get classes enrolled by student
+     * Gets all classes that a student is enrolled in
+     * Get student\'s classes
      */
-    async obtenerClasesInscritas(requestParameters: ObtenerClasesInscritasRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClaseInscrita<any>> {
-        const response = await this.obtenerClasesInscritasRaw(requestParameters, initOverrides);
+    async obtenerClasesAlumno(requestParameters: ObtenerClasesAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClaseInscrita<any>> {
+        const response = await this.obtenerClasesAlumnoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets a student\'s public profile information
+     * Get student profile
+     */
+    async obtenerPerfilAlumnoRaw(requestParameters: ObtenerPerfilAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOPerfilAlumno>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerPerfilAlumno().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/alumnos/{id}/perfil`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOPerfilAlumnoFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a student\'s public profile information
+     * Get student profile
+     */
+    async obtenerPerfilAlumno(requestParameters: ObtenerPerfilAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOPerfilAlumno> {
+        const response = await this.obtenerPerfilAlumnoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Replaces an entire student record. Students can only update their own profile.
+     * Replace student
+     */
+    async reemplazarAlumnoRaw(requestParameters: ReemplazarAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumno>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling reemplazarAlumno().'
+            );
+        }
+
+        if (requestParameters['dTOActualizacionAlumno'] == null) {
+            throw new runtime.RequiredError(
+                'dTOActualizacionAlumno',
+                'Required parameter "dTOActualizacionAlumno" was null or undefined when calling reemplazarAlumno().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/alumnos/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DTOActualizacionAlumnoToJSON(requestParameters['dTOActualizacionAlumno']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOAlumnoFromJSON(jsonValue));
+    }
+
+    /**
+     * Replaces an entire student record. Students can only update their own profile.
+     * Replace student
+     */
+    async reemplazarAlumno(requestParameters: ReemplazarAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumno> {
+        const response = await this.reemplazarAlumnoRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -4,6 +4,9 @@ import app.dtos.DTOAlumno;
 import app.dtos.DTOCurso;
 import app.servicios.ServicioAlumno;
 import app.repositorios.RepositorioClase;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,6 +22,9 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
 
     @Override
     public void initialize() {
+        // Set up security context for enrollment (as an admin)
+        setupSecurityContext();
+        
         ServicioAlumno servicioAlumno = context.getBean(ServicioAlumno.class);
         RepositorioClase repositorioClase = context.getBean(RepositorioClase.class);
         StudentDataInitializer studentInit = context.getBean(StudentDataInitializer.class);
@@ -90,6 +96,17 @@ public class StudentEnrollmentInitializer extends BaseDataInitializer {
         
         // Print enrollment statistics
         printEnrollmentStatistics(students, courses, servicioAlumno);
+    }
+    
+    private void setupSecurityContext() {
+        // Create an admin authentication context for enrollment operations
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        
+        UsernamePasswordAuthenticationToken authentication = 
+            new UsernamePasswordAuthenticationToken("admin-init", "password", authorities);
+        
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
     
     private void printEnrollmentStatistics(List<DTOAlumno> students, List<DTOCurso> courses, ServicioAlumno servicioAlumno) {

@@ -72,7 +72,7 @@ public abstract class Clase {
     private List<String> exerciseIds = new ArrayList<>();
     
     // Relación Many-to-Many con Material
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
     @JoinTable(
         name = "clase_materiales",
         joinColumns = @JoinColumn(name = "clase_id"),
