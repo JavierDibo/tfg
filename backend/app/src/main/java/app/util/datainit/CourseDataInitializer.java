@@ -13,6 +13,7 @@ import app.repositorios.RepositorioClase;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManager;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Random;
 
 @Component
+@Profile("!test")
 public class CourseDataInitializer extends BaseDataInitializer {
     private static final int COURSES_PER_PROFESSOR = 1;
     private final List<DTOCurso> createdCourses = new ArrayList<>();
@@ -44,6 +46,12 @@ public class CourseDataInitializer extends BaseDataInitializer {
         RepositorioMaterial repositorioMaterial = context.getBean(RepositorioMaterial.class);
         RepositorioClase repositorioClase = context.getBean(RepositorioClase.class);
         ProfessorDataInitializer professorInit = context.getBean(ProfessorDataInitializer.class);
+        
+        // Check if courses already exist to avoid duplicates
+        if (repositorioClase.count() > 0) {
+            System.out.println("ℹ Courses already exist, skipping course creation");
+            return;
+        }
         
         // Get all available materials to associate with courses (get actual entities from repository)
         List<Material> availableMaterials = repositorioMaterial.findAll();

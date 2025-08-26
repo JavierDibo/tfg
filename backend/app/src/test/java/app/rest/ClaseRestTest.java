@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -49,57 +48,37 @@ class ClaseRestTest {
     @Test
     void obtenerClases_ShouldCallServiceWithRoleBasedMethod() {
         // Given
-        List<DTOClase> expectedClases = Arrays.asList(mockClase);
-        when(servicioClase.obtenerClasesSegunRol()).thenReturn(expectedClases);
-
-        // When
-        ResponseEntity<List<DTOClase>> response = claseRest.obtenerClases();
-
-        // Then
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(expectedClases, response.getBody());
-        verify(servicioClase).obtenerClasesSegunRol();
-    }
-
-    @Test
-    void buscarClasesPorTitulo_ShouldCallServiceWithRoleBasedMethod() {
-        // Given
-        String titulo = "Test";
-        List<DTOClase> expectedClases = Arrays.asList(mockClase);
-        when(servicioClase.buscarClasesPorTituloSegunRol(titulo)).thenReturn(expectedClases);
-
-        // When
-        ResponseEntity<List<DTOClase>> response = claseRest.buscarClasesPorTitulo(titulo);
-
-        // Then
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(expectedClases, response.getBody());
-        verify(servicioClase).buscarClasesPorTituloSegunRol(titulo);
-    }
-
-    @Test
-    void buscarClases_ShouldCallServiceWithRoleBasedMethod() {
-        // Given
-        DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            "Test", null, null, null, null, null, null, null, 0, 10, "titulo", "ASC"
-        );
         // Create a mock Page for testing
         org.springframework.data.domain.Page<DTOClase> mockPage = new org.springframework.data.domain.PageImpl<>(
             Arrays.asList(mockClase), 
-            org.springframework.data.domain.PageRequest.of(0, 10), 
+            org.springframework.data.domain.PageRequest.of(0, 20), 
             1
         );
-        DTORespuestaPaginada<DTOClase> expectedResponse = DTORespuestaPaginada.fromPage(mockPage, "titulo", "ASC");
-        when(servicioClase.buscarClasesSegunRol(parametros)).thenReturn(expectedResponse);
+        DTORespuestaPaginada<DTOClase> expectedResponse = DTORespuestaPaginada.fromPage(mockPage, "id", "ASC");
+        when(servicioClase.buscarClasesSegunRol(any(DTOParametrosBusquedaClase.class))).thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<DTORespuestaPaginada<DTOClase>> response = claseRest.buscarClases(parametros);
+        ResponseEntity<DTORespuestaPaginada<DTOClase>> response = claseRest.obtenerClases(
+            null, null, null, null, null, null, null, null, 0, 20, "id", "ASC"
+        );
 
         // Then
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(expectedResponse, response.getBody());
-        verify(servicioClase).buscarClasesSegunRol(parametros);
+        verify(servicioClase).buscarClasesSegunRol(any(DTOParametrosBusquedaClase.class));
     }
 
+    @Test
+    void obtenerClasePorId_ShouldCallService() {
+        // Given
+        when(servicioClase.obtenerClasePorId(1L)).thenReturn(mockClase);
 
+        // When
+        ResponseEntity<DTOClase> response = claseRest.obtenerClasePorId(1L);
+
+        // Then
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(mockClase, response.getBody());
+        verify(servicioClase).obtenerClasePorId(1L);
+    }
 }

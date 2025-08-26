@@ -24,6 +24,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -148,6 +150,44 @@ public class GlobalExceptionHandler {
                 .build();
         
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    // HttpMessageNotReadableException - JSON parsing errors
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex, WebRequest request) {
+        
+        log.warn("[ERROR] JSON parse error: {}", ex.getMessage());
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message("El JSON enviado no es válido")
+                .errorCode("JSON_PARSE_ERROR")
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    // HttpMediaTypeNotSupportedException - Content-Type not supported
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMediaTypeNotSupported(
+            HttpMediaTypeNotSupportedException ex, WebRequest request) {
+        
+        log.warn("[ERROR] Media type not supported: {}", ex.getMessage());
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value())
+                .error(HttpStatus.UNSUPPORTED_MEDIA_TYPE.getReasonPhrase())
+                .message("El tipo de contenido no es soportado")
+                .errorCode("UNSUPPORTED_MEDIA_TYPE")
+                .path(getPath(request))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
 
     // Resource Not Found Exceptions

@@ -3,15 +3,18 @@ package app.util.datainit;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOPeticionRegistroAlumno;
 import app.servicios.ServicioAlumno;
+import app.repositorios.RepositorioAlumno;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Profile("!test")
 public class StudentDataInitializer extends BaseDataInitializer {
     private static final int NUM_STUDENTS = 50;
     private final List<DTOAlumno> createdStudents = new ArrayList<>();
@@ -22,6 +25,13 @@ public class StudentDataInitializer extends BaseDataInitializer {
         setupSecurityContext();
         
         ServicioAlumno servicioAlumno = context.getBean(ServicioAlumno.class);
+        RepositorioAlumno repositorioAlumno = context.getBean(RepositorioAlumno.class);
+
+        // Check if students already exist to avoid duplicates
+        if (repositorioAlumno.count() > 0) {
+            System.out.println("ℹ Students already exist, skipping student creation");
+            return;
+        }
 
         // Password service is now injected automatically
 

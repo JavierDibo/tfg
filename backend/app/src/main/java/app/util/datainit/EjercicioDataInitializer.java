@@ -3,9 +3,11 @@ package app.util.datainit;
 import app.dtos.DTOEjercicio;
 import app.dtos.DTOPeticionCrearEjercicio;
 import app.servicios.ServicioEjercicio;
+import app.repositorios.RepositorioEjercicio;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Random;
 
 @Component
+@Profile("!test")
 public class EjercicioDataInitializer extends BaseDataInitializer {
     private static final int EXERCISES_PER_COURSE = 3;
     private final List<DTOEjercicio> createdExercises = new ArrayList<>();
@@ -26,7 +29,14 @@ public class EjercicioDataInitializer extends BaseDataInitializer {
         setupSecurityContext();
         
         ServicioEjercicio servicioEjercicio = context.getBean(ServicioEjercicio.class);
+        RepositorioEjercicio repositorioEjercicio = context.getBean(RepositorioEjercicio.class);
         CourseDataInitializer courseInit = context.getBean(CourseDataInitializer.class);
+        
+        // Check if exercises already exist to avoid duplicates
+        if (repositorioEjercicio.count() > 0) {
+            System.out.println("ℹ Exercises already exist, skipping exercise creation");
+            return;
+        }
         
         // Get all created courses to assign exercises to them
         List<String> courseIds = courseInit.getCreatedCourses().stream()

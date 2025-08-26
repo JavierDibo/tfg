@@ -7,6 +7,7 @@ import app.repositorios.RepositorioClase;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Random;
 
 @Component
+@Profile("!test")
 public class StudentEnrollmentInitializer extends BaseDataInitializer {
     private static final double ENROLLMENT_PROBABILITY = 0.7; // 70% chance a student enrolls in a course
     private static final int MAX_COURSES_PER_STUDENT = 5; // Maximum courses a student can enroll in

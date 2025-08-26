@@ -2,9 +2,11 @@ package app.util.datainit;
 
 import app.dtos.DTOEntregaEjercicio;
 import app.servicios.ServicioEntregaEjercicio;
+import app.repositorios.RepositorioEntregaEjercicio;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Random;
 
 @Component
+@Profile("!test")
 public class EntregaEjercicioDataInitializer extends BaseDataInitializer {
     private static final double DELIVERY_RATE = 0.7; // 70% of students will deliver exercises
     private static final double GRADING_RATE = 0.8; // 80% of deliveries will be graded
@@ -59,7 +62,14 @@ public class EntregaEjercicioDataInitializer extends BaseDataInitializer {
         setupSecurityContext();
         
         ServicioEntregaEjercicio servicioEntregaEjercicio = context.getBean(ServicioEntregaEjercicio.class);
+        RepositorioEntregaEjercicio repositorioEntregaEjercicio = context.getBean(RepositorioEntregaEjercicio.class);
         EjercicioDataInitializer ejercicioInit = context.getBean(EjercicioDataInitializer.class);
+        
+        // Check if exercise deliveries already exist to avoid duplicates
+        if (repositorioEntregaEjercicio.count() > 0) {
+            System.out.println("ℹ Exercise deliveries already exist, skipping delivery creation");
+            return;
+        }
         
         // Get all created exercises
         List<String> exerciseIds = ejercicioInit.getCreatedExercises().stream()

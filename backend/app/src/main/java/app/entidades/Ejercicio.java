@@ -1,4 +1,3 @@
-// LLM_EDIT_TIMESTAMP: 25 ago. 14:00
 package app.entidades;
 
 import jakarta.persistence.*;
@@ -28,20 +27,25 @@ public class Ejercicio {
     
     @NotNull
     @Size(max = 200)
+    @Column(name = "name", length = 200, nullable = false)
     private String name;
     
     @NotNull
     @Size(max = 2000)
+    @Column(name = "statement", length = 2000, nullable = false, columnDefinition = "VARCHAR(2000)")
     private String statement;
     
     @NotNull
+    @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;
     
     @NotNull
+    @Column(name = "end_date", nullable = false)
     private LocalDateTime endDate;
     
     @NotNull
     @Size(max = 255)
+    @Column(name = "class_id", length = 255, nullable = false)
     private String classId;
     
     // Relación con entregas - por ahora como lista de entidades

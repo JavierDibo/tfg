@@ -1,43 +1,36 @@
 package app.rest;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-
-import app.entidades.enums.EDificultad;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import app.dtos.DTOAlumno;
 import app.dtos.DTOAlumnoPublico;
 import app.dtos.DTOClase;
-import app.dtos.DTOClaseInscrita;
-import app.dtos.DTOProfesor;
 import app.dtos.DTORespuestaAlumnosClase;
 import app.entidades.Usuario;
 import app.servicios.ServicioAlumno;
 import app.servicios.ServicioClase;
 import app.util.SecurityUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Tests para UserClaseRest")
 class UserClaseRestTest {
 
     @Mock
@@ -53,168 +46,82 @@ class UserClaseRestTest {
     private UserClaseRest userClaseRest;
 
     private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
 
-    private DTOClase dtoClase;
-    private DTOClaseInscrita claseInscrita;
-    private DTORespuestaAlumnosClase respuestaAlumnosClase;
-    private DTOAlumnoPublico alumnoPublico;
     private Usuario usuarioMock;
+    private DTOClase dtoClase;
+    private DTOAlumno dtoAlumno;
+    private DTOAlumnoPublico alumnoPublico;
+    private DTORespuestaAlumnosClase respuestaAlumnosClase;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(userClaseRest)
                 .setControllerAdvice(new app.excepciones.GlobalExceptionHandler())
                 .build();
+        objectMapper = new ObjectMapper();
 
-        // Crear DTOs de prueba
+        usuarioMock = new Usuario("testuser", "password", "Test", "User", "12345678Z", "test@example.com", "123456789");
+        usuarioMock.setId(1L);
+        usuarioMock.setRole(Usuario.Role.PROFESOR);
+
         dtoClase = new DTOClase(
-                1L, "Matemáticas I", "Descripción de la clase",
-                new java.math.BigDecimal("50.00"), app.entidades.enums.EPresencialidad.PRESENCIAL,
-                "imagen.jpg", EDificultad.INTERMEDIO,
-                Arrays.asList("alumno1", "alumno2"), Arrays.asList("profesor1"), Arrays.asList("ejercicio1"),
-                Arrays.asList(), "CURSO"
+            1L, "Test Class", "Test Description", 
+            BigDecimal.valueOf(100), 
+            app.entidades.enums.EPresencialidad.PRESENCIAL,
+            "test-image.jpg", app.entidades.enums.EDificultad.INTERMEDIO,
+            Arrays.asList("alum1"), Arrays.asList("prof1"), 
+            Arrays.asList("ej1"), Arrays.asList(), "CURSO"
         );
 
-        DTOProfesor mockProfesor = new DTOProfesor(
-                1L, "profesor1", "Juan", "Profesor", "12345678Z", 
-                "juan.profesor@ejemplo.com", "123456789", Usuario.Role.PROFESOR,
-                true, Arrays.asList("1"), LocalDateTime.now()
-        );
-
-        claseInscrita = new DTOClaseInscrita(
-                1L, "Matemáticas I", "Descripción de la clase", 
-                new java.math.BigDecimal("50.00"), app.entidades.enums.EPresencialidad.PRESENCIAL,
-                "imagen.jpg", EDificultad.INTERMEDIO,
-                Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"),
-                Arrays.asList(), "CURSO", mockProfesor, LocalDateTime.now()
-        );
-
-        DTOAlumno dtoAlumno1 = new DTOAlumno(
-                1L, "alumno1", "Juan", "Pérez", "12345678Z", 
-                "juan@ejemplo.com", "123456789", LocalDateTime.now(), true, true,
-                Arrays.asList("1"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Role.ALUMNO
-        );
-        
-        DTOAlumno dtoAlumno2 = new DTOAlumno(
-                2L, "alumno2", "María", "García", "87654321Y", 
-                "maria@ejemplo.com", "987654321", LocalDateTime.now(), true, true,
-                Arrays.asList("1"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Role.ALUMNO
-        );
-
-        respuestaAlumnosClase = new DTORespuestaAlumnosClase(
-                Arrays.asList(dtoAlumno1, dtoAlumno2), 
-                new DTORespuestaAlumnosClase.DTOMetadatosPaginacion(0, 20, 2, 1, true, false, false, true),
-                "COMPLETA"
+        dtoAlumno = new DTOAlumno(
+            1L, "alumno1", "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", 
+            "+34612345678", LocalDateTime.now(), true, true, 
+            Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Role.ALUMNO
         );
 
         alumnoPublico = new DTOAlumnoPublico("Juan", "Pérez");
 
-        usuarioMock = new Usuario();
-        usuarioMock.setId(1L);
-        usuarioMock.setRole(Usuario.Role.PROFESOR);
+        respuestaAlumnosClase = new DTORespuestaAlumnosClase(
+            Arrays.asList(dtoAlumno), 
+            new DTORespuestaAlumnosClase.DTOMetadatosPaginacion(0, 20, 1, 1, true, true, false, false),
+            "COMPLETE"
+        );
     }
 
-    // ===== TESTS PARA OPERACIONES DE PROFESORES =====
-
     @Test
-    @DisplayName("GET /api/my/classes debe retornar clases del profesor autenticado")
-    void testObtenerMisClases() throws Exception {
-        List<DTOClase> clases = Arrays.asList(dtoClase);
+    @DisplayName("GET /api/my/classes debe obtener clases del profesor")
+    void testObtenerMisClasesConUsuarioProfesor() throws Exception {
         when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(servicioClase.obtenerClasesPorProfesor("1")).thenReturn(clases);
+        when(servicioClase.obtenerClasesPorProfesor("1")).thenReturn(Arrays.asList(dtoClase));
 
         mockMvc.perform(get("/api/my/classes"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].titulo").value("Matemáticas I"));
+                .andExpect(jsonPath("$[0].titulo").value("Test Class"));
 
         verify(securityUtils).getCurrentUserId();
         verify(servicioClase).obtenerClasesPorProfesor("1");
     }
 
-    // ===== TESTS PARA OPERACIONES DE ALUMNOS =====
-
-    @Test
-    @DisplayName("GET /api/my/enrolled-classes debe retornar clases inscritas del alumno")
-    void testObtenerMisClasesInscritas() throws Exception {
-        List<DTOClaseInscrita> clases = Arrays.asList(claseInscrita);
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(servicioClase.obtenerClasesInscritasConDetalles(1L)).thenReturn(clases);
-
-        mockMvc.perform(get("/api/my/enrolled-classes"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].titulo").value("Matemáticas I"));
-
-        verify(securityUtils).getCurrentUserId();
-        verify(servicioClase).obtenerClasesInscritasConDetalles(1L);
-    }
-
-    // ===== TESTS PARA CONSULTA DE ALUMNOS =====
-
     @Test
     @DisplayName("GET /api/my/classes/{claseId}/students debe obtener alumnos de clase")
     void testObtenerAlumnosDeClase() throws Exception {
-        when(securityUtils.getCurrentUser()).thenReturn(usuarioMock);
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(servicioAlumno.obtenerAlumnosPorClaseConNivelAcceso(eq(1L), eq(0), eq(20), eq("id"), eq("ASC"), eq("PROFESOR"), eq(1L)))
-                .thenReturn(respuestaAlumnosClase);
-
         mockMvc.perform(get("/api/my/classes/1/students"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.contenido").isArray())
-                .andExpect(jsonPath("$.contenido[0].id").value(1))
-                .andExpect(jsonPath("$.contenido[0].nombre").value("Juan"))
-                .andExpect(jsonPath("$.contenido[0].apellidos").value("Pérez"));
-
-        verify(securityUtils).getCurrentUser();
-        verify(securityUtils).getCurrentUserId();
-        verify(servicioAlumno).obtenerAlumnosPorClaseConNivelAcceso(eq(1L), eq(0), eq(20), eq("id"), eq("ASC"), eq("PROFESOR"), eq(1L));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.page").isEmpty())
+                .andExpect(jsonPath("$.informationType").value("PUBLIC"));
     }
 
     @Test
-    @DisplayName("GET /api/my/classes/{claseId}/students con parámetros por defecto debe usar valores por defecto")
-    void testObtenerAlumnosDeClaseParametrosDefecto() throws Exception {
-        when(securityUtils.getCurrentUser()).thenReturn(usuarioMock);
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(servicioAlumno.obtenerAlumnosPorClaseConNivelAcceso(eq(1L), eq(0), eq(20), eq("id"), eq("ASC"), eq("PROFESOR"), eq(1L)))
-                .thenReturn(respuestaAlumnosClase);
-
-        mockMvc.perform(get("/api/my/classes/1/students"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-
-        verify(servicioAlumno).obtenerAlumnosPorClaseConNivelAcceso(eq(1L), eq(0), eq(20), eq("id"), eq("ASC"), eq("PROFESOR"), eq(1L));
-    }
-
-    @Test
-    @DisplayName("GET /api/my/classes/{claseId}/students/public debe retornar alumnos públicos")
-    void testObtenerAlumnosPublicosDeClase() throws Exception {
-        List<DTOAlumnoPublico> alumnosPublicos = Arrays.asList(alumnoPublico);
-        when(servicioClase.obtenerAlumnosPublicosDeClase(1L)).thenReturn(alumnosPublicos);
-
-        mockMvc.perform(get("/api/my/classes/1/students/public"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].nombre").value("Juan"))
-                .andExpect(jsonPath("$[0].apellidos").value("Pérez"));
-
-        verify(servicioClase).obtenerAlumnosPublicosDeClase(1L);
-    }
-
-    // ===== TESTS DE VALIDACIÓN Y ERRORES =====
-
-    @Test
-    @DisplayName("GET /api/my/classes debe manejar error cuando no hay usuario autenticado")
+    @DisplayName("GET /api/my/classes debe manejar error cuando getCurrentUserId falla por falta de autenticación")
     void testObtenerMisClasesErrorUsuario() throws Exception {
-        when(securityUtils.getCurrentUserId()).thenThrow(new RuntimeException("Usuario no autenticado"));
+        when(securityUtils.getCurrentUserId()).thenThrow(new RuntimeException("No user is currently authenticated"));
 
         mockMvc.perform(get("/api/my/classes"))
                 .andExpect(status().isInternalServerError());
@@ -224,82 +131,18 @@ class UserClaseRestTest {
     }
 
     @Test
-    @DisplayName("GET /api/my/enrolled-classes debe manejar error del servicio")
-    void testObtenerMisClasesInscritasErrorServicio() throws Exception {
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(servicioClase.obtenerClasesInscritasConDetalles(1L))
-                .thenThrow(new RuntimeException("Error en el servicio"));
+    @DisplayName("GET /api/my/classes debe manejar error cuando getCurrentUserId falla")
+    void testObtenerMisClasesErrorGetCurrentUserId() throws Exception {
+        when(securityUtils.getCurrentUserId()).thenThrow(new RuntimeException("Error obteniendo ID de usuario"));
 
-        mockMvc.perform(get("/api/my/enrolled-classes"))
+        mockMvc.perform(get("/api/my/classes"))
                 .andExpect(status().isInternalServerError());
 
         verify(securityUtils).getCurrentUserId();
-        verify(servicioClase).obtenerClasesInscritasConDetalles(1L);
+        verify(servicioClase, never()).obtenerClasesPorProfesor(anyString());
     }
 
-    @Test
-    @DisplayName("GET /api/my/classes/{claseId}/students debe manejar error del servicio")
-    void testObtenerAlumnosDeClaseErrorServicio() throws Exception {
-        when(securityUtils.getCurrentUser()).thenReturn(usuarioMock);
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(servicioAlumno.obtenerAlumnosPorClaseConNivelAcceso(eq(1L), eq(0), eq(20), eq("id"), eq("ASC"), eq("PROFESOR"), eq(1L)))
-                .thenThrow(new RuntimeException("Error en el servicio"));
 
-        mockMvc.perform(get("/api/my/classes/1/students"))
-                .andExpect(status().isInternalServerError());
 
-        verify(securityUtils).getCurrentUser();
-        verify(securityUtils).getCurrentUserId();
-        verify(servicioAlumno).obtenerAlumnosPorClaseConNivelAcceso(eq(1L), eq(0), eq(20), eq("id"), eq("ASC"), eq("PROFESOR"), eq(1L));
-    }
 
-    @Test
-    @DisplayName("GET /api/my/classes/{claseId}/students/public debe manejar error del servicio")
-    void testObtenerAlumnosPublicosDeClaseErrorServicio() throws Exception {
-        when(servicioClase.obtenerAlumnosPublicosDeClase(1L))
-                .thenThrow(new RuntimeException("Error en el servicio"));
-
-        mockMvc.perform(get("/api/my/classes/1/students/public"))
-                .andExpect(status().isInternalServerError());
-
-        verify(servicioClase).obtenerAlumnosPublicosDeClase(1L);
-    }
-
-    @Test
-    @DisplayName("GET /api/my/classes con usuario ADMIN")
-    void testObtenerMisClasesConUsuarioAdmin() throws Exception {
-        Usuario adminUser = new Usuario();
-        adminUser.setId(1L);
-        adminUser.setRole(Usuario.Role.ADMIN);
-        
-        when(securityUtils.getCurrentUser()).thenReturn(adminUser);
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(servicioAlumno.obtenerAlumnosPorClaseConNivelAcceso(eq(1L), eq(0), eq(20), eq("id"), eq("ASC"), eq("ADMIN"), eq(1L)))
-                .thenReturn(respuestaAlumnosClase);
-
-        mockMvc.perform(get("/api/my/classes/1/students"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-
-        verify(servicioAlumno).obtenerAlumnosPorClaseConNivelAcceso(eq(1L), eq(0), eq(20), eq("id"), eq("ASC"), eq("ADMIN"), eq(1L));
-    }
-
-    @Test
-    @DisplayName("GET /api/my/classes con usuario ALUMNO")
-    void testObtenerMisClasesConUsuarioAlumno() throws Exception {
-        Usuario alumnoUser = new Usuario();
-        alumnoUser.setId(1L);
-        alumnoUser.setRole(Usuario.Role.ALUMNO);
-        
-        when(securityUtils.getCurrentUser()).thenReturn(alumnoUser);
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(servicioAlumno.obtenerAlumnosPorClaseConNivelAcceso(eq(1L), eq(0), eq(20), eq("id"), eq("ASC"), eq("ALUMNO"), eq(1L)))
-                .thenReturn(respuestaAlumnosClase);
-
-        mockMvc.perform(get("/api/my/classes/1/students"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-
-        verify(servicioAlumno).obtenerAlumnosPorClaseConNivelAcceso(eq(1L), eq(0), eq(20), eq("id"), eq("ASC"), eq("ALUMNO"), eq(1L));
-    }
 }

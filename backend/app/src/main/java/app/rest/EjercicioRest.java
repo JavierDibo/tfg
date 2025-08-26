@@ -23,10 +23,8 @@ import app.dtos.DTOEjercicio;
 import app.dtos.DTOParametrosBusquedaEjercicio;
 import app.dtos.DTOPeticionCrearEjercicio;
 import app.dtos.DTOEntregaEjercicio;
-import app.entidades.enums.EEstadoEjercicio;
 import app.dtos.DTORespuestaPaginada;
 import app.servicios.ServicioEjercicio;
-import app.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -50,7 +48,6 @@ import lombok.RequiredArgsConstructor;
 public class EjercicioRest extends BaseRestController {
 
     private final ServicioEjercicio servicioEjercicio;
-    private final SecurityUtils securityUtils;
 
     // Standard GET collection endpoint with comprehensive filtering and pagination
     @GetMapping

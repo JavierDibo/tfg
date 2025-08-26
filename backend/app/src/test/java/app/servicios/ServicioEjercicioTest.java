@@ -1,6 +1,7 @@
 package app.servicios;
 
 import app.dtos.DTOEjercicio;
+import app.dtos.DTORespuestaPaginada;
 import app.entidades.Clase;
 import app.entidades.Curso;
 import app.entidades.Ejercicio;
@@ -15,6 +16,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +33,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 class ServicioEjercicioTest {
@@ -195,10 +202,10 @@ class ServicioEjercicioTest {
         });
     }
 
-    // ===== TESTS PARA FILTRADO FLEXIBLE =====
+    // ===== TESTS PARA FILTRADO FLEXIBLE - CORREGIDOS =====
 
     @Test
-    @DisplayName("obtenerEjerciciosPaginados con filtros combinados debe usar findByFiltrosFlexibles")
+    @DisplayName("obtenerEjerciciosPaginados con filtros combinados debe usar findByGeneralAndSpecificFilters")
     void testObtenerEjerciciosPaginadosConFiltrosCombinados() {
         // Arrange
         String q = "Java";
@@ -224,8 +231,8 @@ class ServicioEjercicioTest {
         Pageable pageable = PageRequest.of(page, size);
 
         // Mock repository call for flexible filtering
-        when(repositorioEjercicio.findByFiltrosFlexibles(
-            eq(q), eq(name), eq(statement), eq(classId), eq(status), any(Pageable.class))).thenReturn(ejercicioPage);
+        when(repositorioEjercicio.findByGeneralAndSpecificFilters(
+            eq(q), eq(name), eq(statement), eq(classId), eq(status), any(LocalDateTime.class), any(Pageable.class))).thenReturn(ejercicioPage);
 
         // Act
         DTORespuestaPaginada<DTOEjercicio> resultado = servicioEjercicio.obtenerEjerciciosPaginados(
@@ -237,7 +244,7 @@ class ServicioEjercicioTest {
         assertEquals("Test Exercise", resultado.content().get(0).name());
         
         // Verify that the flexible filtering method was called with correct parameters
-        verify(repositorioEjercicio).findByFiltrosFlexibles(q, name, statement, classId, status, pageable);
+        verify(repositorioEjercicio).findByGeneralAndSpecificFilters(eq(q), eq(name), eq(statement), eq(classId), eq(status), any(LocalDateTime.class), any(Pageable.class));
     }
 
     @Test
@@ -267,8 +274,8 @@ class ServicioEjercicioTest {
         Pageable pageable = PageRequest.of(page, size);
 
         // Mock repository call for flexible filtering
-        when(repositorioEjercicio.findByFiltrosFlexibles(
-            eq(q), isNull(), isNull(), isNull(), isNull(), any(Pageable.class))).thenReturn(ejercicioPage);
+        when(repositorioEjercicio.findByGeneralAndSpecificFilters(
+            eq(q), isNull(), isNull(), isNull(), isNull(), any(LocalDateTime.class), any(Pageable.class))).thenReturn(ejercicioPage);
 
         // Act
         DTORespuestaPaginada<DTOEjercicio> resultado = servicioEjercicio.obtenerEjerciciosPaginados(
@@ -280,7 +287,7 @@ class ServicioEjercicioTest {
         assertEquals("Test Exercise", resultado.content().get(0).name());
         
         // Verify that the flexible filtering method was called with correct parameters
-        verify(repositorioEjercicio).findByFiltrosFlexibles(q, null, null, null, null, pageable);
+        verify(repositorioEjercicio).findByGeneralAndSpecificFilters(eq(q), isNull(), isNull(), isNull(), isNull(), any(LocalDateTime.class), any(Pageable.class));
     }
 
     @Test
@@ -310,8 +317,8 @@ class ServicioEjercicioTest {
         Pageable pageable = PageRequest.of(page, size);
 
         // Mock repository call for flexible filtering
-        when(repositorioEjercicio.findByFiltrosFlexibles(
-            isNull(), eq(name), isNull(), isNull(), isNull(), any(Pageable.class))).thenReturn(ejercicioPage);
+        when(repositorioEjercicio.findByGeneralAndSpecificFilters(
+            isNull(), eq(name), isNull(), isNull(), isNull(), any(LocalDateTime.class), any(Pageable.class))).thenReturn(ejercicioPage);
 
         // Act
         DTORespuestaPaginada<DTOEjercicio> resultado = servicioEjercicio.obtenerEjerciciosPaginados(
@@ -323,7 +330,7 @@ class ServicioEjercicioTest {
         assertEquals("Test Exercise", resultado.content().get(0).name());
         
         // Verify that the flexible filtering method was called with correct parameters
-        verify(repositorioEjercicio).findByFiltrosFlexibles(null, name, null, null, null, pageable);
+        verify(repositorioEjercicio).findByGeneralAndSpecificFilters(isNull(), eq(name), isNull(), isNull(), isNull(), any(LocalDateTime.class), any(Pageable.class));
     }
 
     @Test
@@ -353,8 +360,8 @@ class ServicioEjercicioTest {
         Pageable pageable = PageRequest.of(page, size);
 
         // Mock repository call for flexible filtering
-        when(repositorioEjercicio.findByFiltrosFlexibles(
-            isNull(), isNull(), isNull(), eq(classId), isNull(), any(Pageable.class))).thenReturn(ejercicioPage);
+        when(repositorioEjercicio.findByGeneralAndSpecificFilters(
+            isNull(), isNull(), isNull(), eq(classId), isNull(), any(LocalDateTime.class), any(Pageable.class))).thenReturn(ejercicioPage);
 
         // Act
         DTORespuestaPaginada<DTOEjercicio> resultado = servicioEjercicio.obtenerEjerciciosPaginados(
@@ -366,7 +373,7 @@ class ServicioEjercicioTest {
         assertEquals("Test Exercise", resultado.content().get(0).name());
         
         // Verify that the flexible filtering method was called with correct parameters
-        verify(repositorioEjercicio).findByFiltrosFlexibles(null, null, null, classId, null, pageable);
+        verify(repositorioEjercicio).findByGeneralAndSpecificFilters(isNull(), isNull(), isNull(), eq(classId), isNull(), any(LocalDateTime.class), any(Pageable.class));
     }
 
     @Test
@@ -396,8 +403,8 @@ class ServicioEjercicioTest {
         Pageable pageable = PageRequest.of(page, size);
 
         // Mock repository call for flexible filtering
-        when(repositorioEjercicio.findByFiltrosFlexibles(
-            isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class))).thenReturn(ejercicioPage);
+        when(repositorioEjercicio.findByGeneralAndSpecificFilters(
+            isNull(), isNull(), isNull(), isNull(), isNull(), any(LocalDateTime.class), any(Pageable.class))).thenReturn(ejercicioPage);
 
         // Act
         DTORespuestaPaginada<DTOEjercicio> resultado = servicioEjercicio.obtenerEjerciciosPaginados(
@@ -408,7 +415,7 @@ class ServicioEjercicioTest {
         assertEquals(1, resultado.content().size());
         
         // Verify that the flexible filtering method was called with null parameters
-        verify(repositorioEjercicio).findByFiltrosFlexibles(null, null, null, null, null, pageable);
+        verify(repositorioEjercicio).findByGeneralAndSpecificFilters(isNull(), isNull(), isNull(), isNull(), isNull(), any(LocalDateTime.class), any(Pageable.class));
     }
 
     @Test
@@ -438,8 +445,8 @@ class ServicioEjercicioTest {
         Pageable pageable = PageRequest.of(page, size);
 
         // Mock repository call for flexible filtering
-        when(repositorioEjercicio.findByFiltrosFlexibles(
-            isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class))).thenReturn(ejercicioPage);
+        when(repositorioEjercicio.findByGeneralAndSpecificFilters(
+            isNull(), isNull(), isNull(), isNull(), isNull(), any(LocalDateTime.class), any(Pageable.class))).thenReturn(ejercicioPage);
 
         // Act
         DTORespuestaPaginada<DTOEjercicio> resultado = servicioEjercicio.obtenerEjerciciosPaginados(
@@ -450,7 +457,7 @@ class ServicioEjercicioTest {
         assertEquals(1, resultado.content().size());
         
         // Verify that the flexible filtering method was called with null parameters
-        verify(repositorioEjercicio).findByFiltrosFlexibles(null, null, null, null, null, pageable);
+        verify(repositorioEjercicio).findByGeneralAndSpecificFilters(isNull(), isNull(), isNull(), isNull(), isNull(), any(LocalDateTime.class), any(Pageable.class));
     }
 
     @Test
@@ -480,8 +487,8 @@ class ServicioEjercicioTest {
         Pageable pageable = PageRequest.of(page, size);
 
         // Mock repository call for flexible filtering
-        when(repositorioEjercicio.findByFiltrosFlexibles(
-            eq(q), isNull(), isNull(), isNull(), isNull(), any(Pageable.class))).thenReturn(ejercicioPage);
+        when(repositorioEjercicio.findByGeneralAndSpecificFilters(
+            eq(q), isNull(), isNull(), isNull(), isNull(), any(LocalDateTime.class), any(Pageable.class))).thenReturn(ejercicioPage);
 
         // Act
         DTORespuestaPaginada<DTOEjercicio> resultado = servicioEjercicio.obtenerEjerciciosPaginados(
@@ -497,7 +504,7 @@ class ServicioEjercicioTest {
         assertEquals("DESC", resultado.sortDirection());
         
         // Verify that the method was called with correct pagination
-        verify(repositorioEjercicio).findByFiltrosFlexibles(q, null, null, null, null, pageable);
+        verify(repositorioEjercicio).findByGeneralAndSpecificFilters(eq(q), isNull(), isNull(), isNull(), isNull(), any(LocalDateTime.class), any(Pageable.class));
     }
 
     @Test
@@ -526,7 +533,7 @@ class ServicioEjercicioTest {
         });
         
         // Verify that no repository methods were called
-        verify(repositorioEjercicio, never()).findByFiltrosFlexibles(any(), any(), any(), any(), any(), any());
+        verify(repositorioEjercicio, never()).findByGeneralAndSpecificFilters(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -555,6 +562,6 @@ class ServicioEjercicioTest {
         });
         
         // Verify that no repository methods were called
-        verify(repositorioEjercicio, never()).findByFiltrosFlexibles(any(), any(), any(), any(), any(), any());
+        verify(repositorioEjercicio, never()).findByGeneralAndSpecificFilters(any(), any(), any(), any(), any(), any(), any());
     }
 }

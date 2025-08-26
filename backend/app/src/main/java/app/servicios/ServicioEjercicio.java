@@ -380,6 +380,8 @@ public class ServicioEjercicio {
         String statusFilter = (status != null && !status.trim().isEmpty()) ? status.toUpperCase() : null;
         LocalDateTime now = LocalDateTime.now();
         
+
+        
         // Use flexible query that handles all combinations
         ejercicioPage = repositorioEjercicio.findByGeneralAndSpecificFilters(
             searchTerm, nombreFilter, enunciadoFilter, classIdFilter, statusFilter, now, pageable);

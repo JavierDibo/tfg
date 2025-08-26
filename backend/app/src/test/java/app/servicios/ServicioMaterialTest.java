@@ -11,10 +11,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +31,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ServicioMaterialTest {
 
     @Mock
@@ -75,8 +79,8 @@ class ServicioMaterialTest {
         materiales.add(material1);
         materiales.add(material2);
 
-        Page<Material> materialPage = new PageImpl<>(materiales);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
+        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
 
         // Mock repository call for flexible filtering
         when(repositorioMaterial.findByFiltrosFlexibles(
@@ -120,8 +124,8 @@ class ServicioMaterialTest {
         Material material = new Material("1", "Java Programming", "https://example.com/java.pdf");
         materiales.add(material);
 
-        Page<Material> materialPage = new PageImpl<>(materiales);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
+        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
 
         // Mock repository call for flexible filtering
         when(repositorioMaterial.findByFiltrosFlexibles(
@@ -162,8 +166,8 @@ class ServicioMaterialTest {
         Material material = new Material("1", "Apuntes de Matemáticas", "https://example.com/math.pdf");
         materiales.add(material);
 
-        Page<Material> materialPage = new PageImpl<>(materiales);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
+        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
 
         // Mock repository call for flexible filtering
         when(repositorioMaterial.findByFiltrosFlexibles(
@@ -204,8 +208,8 @@ class ServicioMaterialTest {
         Material material = new Material("1", "Tutorial Video", "https://example.com/tutorial.mp4");
         materiales.add(material);
 
-        Page<Material> materialPage = new PageImpl<>(materiales);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
+        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
 
         // Mock repository call for flexible filtering
         when(repositorioMaterial.findByFiltrosFlexibles(
@@ -248,8 +252,8 @@ class ServicioMaterialTest {
         materiales.add(material1);
         materiales.add(material2);
 
-        Page<Material> materialPage = new PageImpl<>(materiales);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
+        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
 
         // Mock repository call for flexible filtering
         when(repositorioMaterial.findByFiltrosFlexibles(
@@ -289,8 +293,8 @@ class ServicioMaterialTest {
         Material material = new Material("1", "Test Material", "https://example.com/test.pdf");
         materiales.add(material);
 
-        Page<Material> materialPage = new PageImpl<>(materiales);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
+        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
 
         // Mock repository call for flexible filtering
         when(repositorioMaterial.findByFiltrosFlexibles(
@@ -330,8 +334,8 @@ class ServicioMaterialTest {
         Material material = new Material("1", "Document", "https://example.com/doc.pdf");
         materiales.add(material);
 
-        Page<Material> materialPage = new PageImpl<>(materiales);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
+        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
 
         // Mock repository call for flexible filtering
         when(repositorioMaterial.findByFiltrosFlexibles(
@@ -372,7 +376,7 @@ class ServicioMaterialTest {
         materiales.add(material);
 
         Page<Material> materialPage = new PageImpl<>(materiales, PageRequest.of(page, size), 25);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy));
 
         // Mock repository call for flexible filtering
         when(repositorioMaterial.findByFiltrosFlexibles(
@@ -434,11 +438,6 @@ class ServicioMaterialTest {
         String sortBy = "name";
         String sortDirection = "ASC";
 
-        // Mock security check
-        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        when(securityUtils.hasRole("PROFESOR")).thenReturn(true);
-        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
-
         // Act & Assert
         assertThrows(RuntimeException.class, () -> {
             servicioMaterial.obtenerMaterialesPaginados(
@@ -460,11 +459,6 @@ class ServicioMaterialTest {
         int size = 101; // Invalid size (max is 100)
         String sortBy = "name";
         String sortDirection = "ASC";
-
-        // Mock security check
-        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        when(securityUtils.hasRole("PROFESOR")).thenReturn(true);
-        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> {

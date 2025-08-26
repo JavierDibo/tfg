@@ -5,12 +5,14 @@ import app.servicios.ServicioMaterial;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Profile("!test")
 public class MaterialDataInitializer extends BaseDataInitializer {
     private static final int MATERIALS_TO_CREATE = 45;
     private final List<DTOMaterial> createdMaterials = new ArrayList<>();

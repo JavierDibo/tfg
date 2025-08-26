@@ -53,9 +53,9 @@ class RepositorioProfesorTest {
     }
 
     @Test
-    @DisplayName("findByUsuario debe encontrar profesor por usuario")
-    void testFindByUsuario() {
-        Optional<Profesor> resultado = repositorioProfesor.findByUsuario("profesor1");
+    @DisplayName("findByUsername debe encontrar profesor por usuario")
+    void testFindByUsername() {
+        Optional<Profesor> resultado = repositorioProfesor.findByUsername("profesor1");
 
         assertTrue(resultado.isPresent());
         assertEquals("profesor1", resultado.get().getUsername());
@@ -63,9 +63,9 @@ class RepositorioProfesorTest {
     }
 
     @Test
-    @DisplayName("findByUsuario debe retornar empty cuando no existe")
-    void testFindByUsuarioNoExiste() {
-        Optional<Profesor> resultado = repositorioProfesor.findByUsuario("inexistente");
+    @DisplayName("findByUsername debe retornar empty cuando no existe")
+    void testFindByUsernameNoExiste() {
+        Optional<Profesor> resultado = repositorioProfesor.findByUsername("inexistente");
 
         assertFalse(resultado.isPresent());
     }

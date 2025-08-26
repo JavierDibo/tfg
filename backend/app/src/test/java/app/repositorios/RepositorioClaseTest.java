@@ -41,6 +41,8 @@ class RepositorioClaseTest {
     @BeforeEach
     void setUp() {
         material = new Material("mat1", "Apuntes de Java", "https://ejemplo.com/apuntes.pdf");
+        // Save the material first to avoid TransientObjectException
+        material = entityManager.persistAndFlush(material);
         
         curso = new Curso(
                 "Curso de Java", "Aprende Java desde cero", new BigDecimal("99.99"),
@@ -101,89 +103,89 @@ class RepositorioClaseTest {
     }
 
     @Test
-    @DisplayName("findByTitulo debe encontrar una clase por título")
-    void testFindByTitulo() {
+    @DisplayName("findByTitle debe encontrar una clase por título")
+    void testFindByTitle() {
         repositorioClase.save(curso);
 
-        Optional<Clase> resultado = repositorioClase.findByTitulo("Curso de Java");
+        Optional<Clase> resultado = repositorioClase.findByTitle("Curso de Java");
 
         assertTrue(resultado.isPresent());
         assertEquals("Curso de Java", resultado.get().getTitle());
     }
 
     @Test
-    @DisplayName("findByTitulo debe retornar empty cuando no existe")
-    void testFindByTituloNoExiste() {
-        Optional<Clase> resultado = repositorioClase.findByTitulo("Clase Inexistente");
+    @DisplayName("findByTitle debe retornar empty cuando no existe")
+    void testFindByTitleNoExiste() {
+        Optional<Clase> resultado = repositorioClase.findByTitle("Clase Inexistente");
 
         assertFalse(resultado.isPresent());
     }
 
     @Test
-    @DisplayName("findByTituloContainingIgnoreCase debe encontrar clases por título parcial")
-    void testFindByTituloContainingIgnoreCase() {
+    @DisplayName("findByTitleContainingIgnoreCase debe encontrar clases por título parcial")
+    void testFindByTitleContainingIgnoreCase() {
         repositorioClase.save(curso);
         repositorioClase.save(taller);
 
-        List<Clase> resultado = repositorioClase.findByTituloContainingIgnoreCase("Java");
+        List<Clase> resultado = repositorioClase.findByTitleContainingIgnoreCase("Java");
 
         assertEquals(1, resultado.size());
         assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
-    @DisplayName("findByTituloContainingIgnoreCase debe ser case insensitive")
-    void testFindByTituloContainingIgnoreCaseCaseInsensitive() {
+    @DisplayName("findByTitleContainingIgnoreCase debe ser case insensitive")
+    void testFindByTitleContainingIgnoreCaseCaseInsensitive() {
         repositorioClase.save(curso);
 
-        List<Clase> resultado = repositorioClase.findByTituloContainingIgnoreCase("java");
+        List<Clase> resultado = repositorioClase.findByTitleContainingIgnoreCase("java");
 
         assertEquals(1, resultado.size());
         assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
-    @DisplayName("findByDescripcionContainingIgnoreCase debe encontrar clases por descripción")
-    void testFindByDescripcionContainingIgnoreCase() {
+    @DisplayName("findByDescriptionContainingIgnoreCase debe encontrar clases por descripción")
+    void testFindByDescriptionContainingIgnoreCase() {
         repositorioClase.save(curso);
 
-        List<Clase> resultado = repositorioClase.findByDescripcionContainingIgnoreCase("Java");
+        List<Clase> resultado = repositorioClase.findByDescriptionContainingIgnoreCase("Java");
 
         assertEquals(1, resultado.size());
         assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
-    @DisplayName("findByPresencialidad debe encontrar clases por presencialidad")
-    void testFindByPresencialidad() {
-        repositorioClase.save(curso);
-        repositorioClase.save(taller);
-
-        List<Clase> resultado = repositorioClase.findByPresencialidad(EPresencialidad.ONLINE);
-
-        assertEquals(1, resultado.size());
-        assertEquals("Curso de Java", resultado.get(0).getTitle());
-    }
-
-    @Test
-    @DisplayName("findByNivel debe encontrar clases por nivel")
-    void testFindByNivel() {
+    @DisplayName("findByFormat debe encontrar clases por presencialidad")
+    void testFindByFormat() {
         repositorioClase.save(curso);
         repositorioClase.save(taller);
 
-        List<Clase> resultado = repositorioClase.findByNivel(EDificultad.PRINCIPIANTE);
+        List<Clase> resultado = repositorioClase.findByFormat(EPresencialidad.ONLINE);
 
         assertEquals(1, resultado.size());
         assertEquals("Curso de Java", resultado.get(0).getTitle());
     }
 
     @Test
-    @DisplayName("findByPrecioBetween debe encontrar clases por rango de precio")
-    void testFindByPrecioBetween() {
+    @DisplayName("findByDifficulty debe encontrar clases por nivel")
+    void testFindByDifficulty() {
         repositorioClase.save(curso);
         repositorioClase.save(taller);
 
-        List<Clase> resultado = repositorioClase.findByPrecioBetween(
+        List<Clase> resultado = repositorioClase.findByDifficulty(EDificultad.PRINCIPIANTE);
+
+        assertEquals(1, resultado.size());
+        assertEquals("Curso de Java", resultado.get(0).getTitle());
+    }
+
+    @Test
+    @DisplayName("findByPriceBetween debe encontrar clases por rango de precio")
+    void testFindByPriceBetween() {
+        repositorioClase.save(curso);
+        repositorioClase.save(taller);
+
+        List<Clase> resultado = repositorioClase.findByPriceBetween(
                 new BigDecimal("40.00"), new BigDecimal("60.00"));
 
         assertEquals(1, resultado.size());
@@ -191,12 +193,12 @@ class RepositorioClaseTest {
     }
 
     @Test
-    @DisplayName("findByPrecioLessThanEqual debe encontrar clases por precio máximo")
-    void testFindByPrecioLessThanEqual() {
+    @DisplayName("findByPriceLessThanEqual debe encontrar clases por precio máximo")
+    void testFindByPriceLessThanEqual() {
         repositorioClase.save(curso);
         repositorioClase.save(taller);
 
-        List<Clase> resultado = repositorioClase.findByPrecioLessThanEqual(new BigDecimal("50.00"));
+        List<Clase> resultado = repositorioClase.findByPriceLessThanEqual(new BigDecimal("50.00"));
 
         assertEquals(1, resultado.size());
         assertEquals("Taller de Spring", resultado.get(0).getTitle());

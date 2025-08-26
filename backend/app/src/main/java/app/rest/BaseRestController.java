@@ -1,6 +1,7 @@
 package app.rest;
 
 import app.dtos.DTORespuestaPaginada;
+import app.excepciones.ValidationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -60,13 +61,14 @@ public abstract class BaseRestController {
      * 
      * @param size Requested page size
      * @return Validated page size
+     * @throws ValidationException if size is invalid
      */
     protected int validatePageSize(int size) {
         if (size < 1) {
-            return 20; // Default value
+            throw new ValidationException("Page size must be greater than 0");
         }
         if (size > 100) {
-            return 100; // Maximum limit
+            throw new ValidationException("Page size cannot exceed 100");
         }
         return size;
     }
@@ -76,9 +78,13 @@ public abstract class BaseRestController {
      * 
      * @param page Requested page number
      * @return Validated page number
+     * @throws ValidationException if page is invalid
      */
     protected int validatePageNumber(int page) {
-        return Math.max(0, page); // Cannot be negative
+        if (page < 0) {
+            throw new ValidationException("Page number cannot be negative");
+        }
+        return page;
     }
 
     /**
@@ -87,6 +93,7 @@ public abstract class BaseRestController {
      * @param sortBy Requested sort field
      * @param allowedFields Allowed fields for sorting
      * @return Validated sort field
+     * @throws ValidationException if sortBy is not allowed
      */
     protected String validateSortBy(String sortBy, String... allowedFields) {
         if (sortBy == null || sortBy.trim().isEmpty()) {
@@ -100,7 +107,7 @@ public abstract class BaseRestController {
                     return allowedField;
                 }
             }
-            return "id"; // Default field if not allowed
+            throw new ValidationException("Invalid sort field: " + sortBy);
         }
         
         return sortBy;
@@ -111,6 +118,7 @@ public abstract class BaseRestController {
      * 
      * @param sortDirection Requested sort direction
      * @return Validated sort direction
+     * @throws ValidationException if sortDirection is invalid
      */
     protected String validateSortDirection(String sortDirection) {
         if (sortDirection == null || sortDirection.trim().isEmpty()) {
@@ -122,6 +130,6 @@ public abstract class BaseRestController {
             return upperDirection;
         }
         
-        return "ASC"; // Default value if not valid
+        throw new ValidationException("Invalid sort direction: " + sortDirection);
     }
 } 

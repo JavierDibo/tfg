@@ -18,7 +18,7 @@ public class RefactoringTest {
     private ClaseRest claseRest;
 
     @Autowired(required = false)
-    private EnrollmentRest enrollmentRest;
+    private EntregaEjercicioRest entregaEjercicioRest;
 
     @Autowired(required = false)
     private ClaseManagementRest claseManagementRest;
@@ -33,9 +33,9 @@ public class RefactoringTest {
     }
 
     @Test
-    public void testEnrollmentRestInstantiation() {
-        // Verificar que el controlador de inscripciones se puede instanciar
-        assertNotNull(enrollmentRest, "EnrollmentRest should be instantiated");
+    public void testEntregaEjercicioRestInstantiation() {
+        // Verificar que el controlador de entregas de ejercicios se puede instanciar
+        assertNotNull(entregaEjercicioRest, "EntregaEjercicioRest should be instantiated");
     }
 
     @Test

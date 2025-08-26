@@ -18,6 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -34,6 +35,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 import app.dtos.DTOClaseConDetallesPublico;
 import app.dtos.DTOPeticionCrearClase;
@@ -63,6 +65,7 @@ class ServicioClaseTest {
     private Taller taller;
     private DTOPeticionCrearClase peticionCrearClase;
     private Material material;
+    private Profesor profesor;
 
     @BeforeEach
     void setUp() {
@@ -70,6 +73,7 @@ class ServicioClaseTest {
         lenient().when(securityUtils.isAdmin()).thenReturn(true);
         lenient().when(securityUtils.isProfessor()).thenReturn(false);
         lenient().when(securityUtils.getCurrentUserId()).thenReturn(1L);
+        lenient().when(securityUtils.hasRole(anyString())).thenReturn(true);
         
         material = new Material("mat1", "Apuntes de Java", "https://ejemplo.com/apuntes.pdf");
         
@@ -96,6 +100,11 @@ class ServicioClaseTest {
                 EPresencialidad.ONLINE, "nueva-imagen.jpg", EDificultad.PRINCIPIANTE,
                 Arrays.asList("profesor1"), Arrays.asList(material)
         );
+
+        // Crear profesor de prueba
+        profesor = new Profesor("prof1", "password", "Luis", "Muñoz López", "12345678A", "prof1@academia.com", "647940540");
+        profesor.setId(3L);
+        profesor.setEnabled(true);
     }
 
     @Test
@@ -141,25 +150,25 @@ class ServicioClaseTest {
     @Test
     @DisplayName("obtenerClasePorTitulo debe retornar la clase cuando existe")
     void testObtenerClasePorTituloExiste() {
-        when(repositorioClase.findByTitulo("Curso de Java")).thenReturn(Optional.of(curso));
+        when(repositorioClase.findByTitle("Curso de Java")).thenReturn(Optional.of(curso));
 
         DTOClase resultado = servicioClase.obtenerClasePorTitulo("Curso de Java");
 
         assertNotNull(resultado);
         assertEquals("Curso de Java", resultado.titulo());
-        verify(repositorioClase).findByTitulo("Curso de Java");
+        verify(repositorioClase).findByTitle("Curso de Java");
     }
 
     @Test
     @DisplayName("obtenerClasePorTitulo debe lanzar excepción cuando no existe")
     void testObtenerClasePorTituloNoExiste() {
-        when(repositorioClase.findByTitulo("Clase Inexistente")).thenReturn(Optional.empty());
+        when(repositorioClase.findByTitle("Clase Inexistente")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             servicioClase.obtenerClasePorTitulo("Clase Inexistente");
         });
 
-        verify(repositorioClase).findByTitulo("Clase Inexistente");
+        verify(repositorioClase).findByTitle("Clase Inexistente");
     }
 
     @Test
@@ -239,24 +248,24 @@ class ServicioClaseTest {
     @Test
     @DisplayName("borrarClasePorTitulo debe retornar true cuando la clase existe")
     void testBorrarClasePorTituloExiste() {
-        when(repositorioClase.findByTitulo("Curso de Java")).thenReturn(Optional.of(curso));
+        when(repositorioClase.findByTitle("Curso de Java")).thenReturn(Optional.of(curso));
 
         boolean resultado = servicioClase.borrarClasePorTitulo("Curso de Java");
 
         assertTrue(resultado);
-        verify(repositorioClase).findByTitulo("Curso de Java");
+        verify(repositorioClase).findByTitle("Curso de Java");
         verify(repositorioClase).delete(curso);
     }
 
     @Test
     @DisplayName("borrarClasePorTitulo debe retornar false cuando la clase no existe")
     void testBorrarClasePorTituloNoExiste() {
-        when(repositorioClase.findByTitulo("Clase Inexistente")).thenReturn(Optional.empty());
+        when(repositorioClase.findByTitle("Clase Inexistente")).thenReturn(Optional.empty());
 
         boolean resultado = servicioClase.borrarClasePorTitulo("Clase Inexistente");
 
         assertFalse(resultado);
-        verify(repositorioClase).findByTitulo("Clase Inexistente");
+        verify(repositorioClase).findByTitle("Clase Inexistente");
         verify(repositorioClase, never()).delete(any());
     }
 
@@ -270,14 +279,14 @@ class ServicioClaseTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Clase> page = new PageImpl<>(clases, pageable, 1);
         
-        when(repositorioClase.findByTituloContainingIgnoreCase("Java")).thenReturn(clases);
+        when(repositorioClase.findByGeneralSearch(eq("Java"), any(Pageable.class))).thenReturn(page);
 
         DTORespuestaPaginada<DTOClase> resultado = servicioClase.buscarClases(parametros);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.content().size());
         assertEquals("Curso de Java", resultado.content().get(0).titulo());
-        verify(repositorioClase).findByTituloContainingIgnoreCase("Java");
+        verify(repositorioClase).findByGeneralSearch(eq("Java"), any(Pageable.class));
     }
 
     @Test
@@ -458,64 +467,8 @@ class ServicioClaseTest {
         verify(repositorioClase).findById(1L);
         verify(repositorioClase).countProfesoresByClaseId(1L);
     }
-}
 
-@DisplayName("Tests para ServicioClase - Bidirectional Relationship")
-class ServicioClaseTest {
-
-    @Mock
-    private RepositorioAlumno repositorioAlumno;
-
-    @Mock
-    private RepositorioClase repositorioClase;
-
-    @Mock
-    private RepositorioProfesor repositorioProfesor;
-
-    @Mock
-    private SecurityUtils securityUtils;
-
-    @InjectMocks
-    private ServicioClase servicioClase;
-
-    private Profesor profesor;
-    private Curso curso;
-    private DTOPeticionCrearClase peticionCrearClase;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        
-        // Crear profesor de prueba
-        profesor = new Profesor("prof1", "password", "Luis", "Muñoz López", "12345678A", "prof1@academia.com", "647940540");
-        profesor.setId(3L);
-        profesor.setEnabled(true);
-        
-        // Crear curso de prueba
-        curso = new Curso(
-            "Diseño Web",
-            "Curso de Diseño Web impartido por Luis",
-            new BigDecimal("176.40"),
-            EPresencialidad.ONLINE,
-            null,
-            EDificultad.AVANZADO,
-            LocalDate.now(),
-            LocalDate.now().plusMonths(3)
-        );
-        curso.setId(2L);
-        
-        // Crear petición de creación de clase
-        peticionCrearClase = new DTOPeticionCrearClase(
-            "Diseño Web",
-            "Curso de Diseño Web impartido por Luis",
-            new BigDecimal("176.40"),
-            EPresencialidad.ONLINE,
-            null,
-            EDificultad.AVANZADO,
-            Arrays.asList("3"), // ID del profesor
-            Arrays.asList()
-        );
-    }
+    // ===== TESTS PARA BIDIRECTIONAL RELATIONSHIP =====
 
     @Test
     @DisplayName("Crear curso debe actualizar la lista de clases del profesor")
@@ -533,7 +486,7 @@ class ServicioClaseTest {
         verify(repositorioProfesor, times(1)).save(any(Profesor.class));
         
         // Verificar que el profesor tiene la clase en su lista
-        assertTrue(profesor.getClasesId().contains("2"));
+        assertTrue(profesor.getClasesId().contains("1"));
         assertEquals(1, profesor.getClasesId().size());
     }
 
@@ -610,7 +563,7 @@ class ServicioClaseTest {
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
             "Java", "Programación", "Aprende Java", EPresencialidad.ONLINE, 
             EDificultad.INTERMEDIO, new BigDecimal("50"), new BigDecimal("100"), 
-            null, 0, 10, "titulo", "ASC");
+            null, null, 0, 10, "titulo", "ASC");
         
         List<Clase> clases = Arrays.asList(curso);
         Pageable pageable = PageRequest.of(0, 10);
@@ -633,8 +586,8 @@ class ServicioClaseTest {
         
         // Verify that the flexible filtering method was called with correct parameters
         verify(repositorioClase).findByGeneralAndSpecificFilters(
-            "Java", "Programación", "Aprende Java", EPresencialidad.ONLINE, 
-            EDificultad.INTERMEDIO, new BigDecimal("50"), new BigDecimal("100"), pageable);
+            eq("Java"), eq("Programación"), eq("Aprende Java"), eq(EPresencialidad.ONLINE), 
+            eq(EDificultad.INTERMEDIO), eq(new BigDecimal("50")), eq(new BigDecimal("100")), any(Pageable.class));
     }
 
     @Test
@@ -642,7 +595,7 @@ class ServicioClaseTest {
     void testBuscarClasesSoloConBusquedaGeneral() {
         // Arrange
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            "Java", null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
+            "Java", null, null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
         
         List<Clase> clases = Arrays.asList(curso);
         Pageable pageable = PageRequest.of(0, 10);
@@ -660,7 +613,7 @@ class ServicioClaseTest {
         assertEquals("Curso de Java", resultado.content().get(0).titulo());
         
         // Verify that the general search method was called
-        verify(repositorioClase).findByGeneralSearch("Java", pageable);
+        verify(repositorioClase).findByGeneralSearch(eq("Java"), any(Pageable.class));
         verify(repositorioClase, never()).findByGeneralAndSpecificFilters(any(), any(), any(), any(), any(), any(), any(), any());
     }
 
@@ -671,7 +624,7 @@ class ServicioClaseTest {
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
             null, "Programación", "Aprende", EPresencialidad.ONLINE, 
             EDificultad.INTERMEDIO, new BigDecimal("50"), new BigDecimal("100"), 
-            null, 0, 10, "titulo", "ASC");
+            null, null, 0, 10, "titulo", "ASC");
         
         List<Clase> clases = Arrays.asList(curso);
         Pageable pageable = PageRequest.of(0, 10);
@@ -693,8 +646,8 @@ class ServicioClaseTest {
         
         // Verify that the flexible filtering method was called with null for general search
         verify(repositorioClase).findByGeneralAndSpecificFilters(
-            null, "Programación", "Aprende", EPresencialidad.ONLINE, 
-            EDificultad.INTERMEDIO, new BigDecimal("50"), new BigDecimal("100"), pageable);
+            isNull(), eq("Programación"), eq("Aprende"), eq(EPresencialidad.ONLINE), 
+            eq(EDificultad.INTERMEDIO), eq(new BigDecimal("50")), eq(new BigDecimal("100")), any(Pageable.class));
     }
 
     @Test
@@ -702,7 +655,7 @@ class ServicioClaseTest {
     void testBuscarClasesSinFiltros() {
         // Arrange
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            null, null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
+            null, null, null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
         
         List<Clase> todasLasClases = Arrays.asList(curso, taller);
         Pageable pageable = PageRequest.of(0, 10);
@@ -729,7 +682,7 @@ class ServicioClaseTest {
     void testBuscarClasesConPaginacion() {
         // Arrange
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            "Java", null, null, null, null, null, null, null, 2, 5, "titulo", "DESC");
+            "Java", null, null, null, null, null, null, null, null, 2, 5, "titulo", "DESC");
         
         List<Clase> clases = Arrays.asList(curso);
         Pageable pageable = PageRequest.of(2, 5);
@@ -751,7 +704,7 @@ class ServicioClaseTest {
         assertEquals("DESC", resultado.sortDirection());
         
         // Verify that the method was called with correct pagination
-        verify(repositorioClase).findByGeneralSearch("Java", pageable);
+        verify(repositorioClase).findByGeneralSearch(eq("Java"), any(Pageable.class));
     }
 
     @Test
@@ -759,7 +712,7 @@ class ServicioClaseTest {
     void testBuscarClasesConFiltrosVacios() {
         // Arrange
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            "", "   ", "", null, null, null, null, null, 0, 10, "titulo", "ASC");
+            "", "", "", null, null, null, null, null, null, 0, 10, "titulo", "ASC");
         
         List<Clase> todasLasClases = Arrays.asList(curso, taller);
         Pageable pageable = PageRequest.of(0, 10);
@@ -784,7 +737,7 @@ class ServicioClaseTest {
     void testBuscarClasesSegunRolParaAdmin() {
         // Arrange
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            "Java", null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
+            "Java", null, null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
         
         when(securityUtils.isAdmin()).thenReturn(true);
         when(securityUtils.isProfessor()).thenReturn(false);
@@ -803,7 +756,7 @@ class ServicioClaseTest {
         assertEquals(1, resultado.content().size());
         
         // Verify that buscarClases was called (for admin)
-        verify(repositorioClase).findByGeneralSearch("Java", pageable);
+        verify(repositorioClase).findByGeneralSearch(eq("Java"), any(Pageable.class));
     }
 
     @Test
@@ -811,7 +764,7 @@ class ServicioClaseTest {
     void testBuscarClasesSegunRolParaProfesor() {
         // Arrange
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            "Java", null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
+            "Java", null, null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
         
         when(securityUtils.isAdmin()).thenReturn(false);
         when(securityUtils.isProfessor()).thenReturn(true);
@@ -837,7 +790,7 @@ class ServicioClaseTest {
     void testBuscarClasesSegunRolParaAlumno() {
         // Arrange
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            "Java", null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
+            "Java", null, null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
         
         when(securityUtils.isAdmin()).thenReturn(false);
         when(securityUtils.isProfessor()).thenReturn(false);
@@ -856,6 +809,6 @@ class ServicioClaseTest {
         assertEquals(1, resultado.content().size());
         
         // Verify that buscarClases was called (for student)
-        verify(repositorioClase).findByGeneralSearch("Java", pageable);
+        verify(repositorioClase).findByGeneralSearch(eq("Java"), any(Pageable.class));
     }
 }

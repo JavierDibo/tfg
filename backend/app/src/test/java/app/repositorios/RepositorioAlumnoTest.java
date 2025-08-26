@@ -53,26 +53,26 @@ class RepositorioAlumnoTest {
     }
 
     @Test
-    @DisplayName("findByUsuario debe retornar alumno cuando existe")
-    void testFindByUsuarioExiste() {
-        when(repositorioAlumno.findByUsuario("alumno1")).thenReturn(Optional.of(alumno1));
+    @DisplayName("findByUsername debe retornar alumno cuando existe")
+    void testFindByUsernameExiste() {
+        when(repositorioAlumno.findByUsername("alumno1")).thenReturn(Optional.of(alumno1));
 
-        Optional<Alumno> resultado = repositorioAlumno.findByUsuario("alumno1");
+        Optional<Alumno> resultado = repositorioAlumno.findByUsername("alumno1");
 
         assertTrue(resultado.isPresent());
         assertEquals(alumno1, resultado.get());
-        verify(repositorioAlumno).findByUsuario("alumno1");
+        verify(repositorioAlumno).findByUsername("alumno1");
     }
 
     @Test
-    @DisplayName("findByUsuario debe retornar empty cuando no existe")
-    void testFindByUsuarioNoExiste() {
-        when(repositorioAlumno.findByUsuario("inexistente")).thenReturn(Optional.empty());
+    @DisplayName("findByUsername debe retornar empty cuando no existe")
+    void testFindByUsernameNoExiste() {
+        when(repositorioAlumno.findByUsername("inexistente")).thenReturn(Optional.empty());
 
-        Optional<Alumno> resultado = repositorioAlumno.findByUsuario("inexistente");
+        Optional<Alumno> resultado = repositorioAlumno.findByUsername("inexistente");
 
         assertFalse(resultado.isPresent());
-        verify(repositorioAlumno).findByUsuario("inexistente");
+        verify(repositorioAlumno).findByUsername("inexistente");
     }
 
     @Test
@@ -100,14 +100,14 @@ class RepositorioAlumnoTest {
     }
 
     @Test
-    @DisplayName("existsByUsuario debe retornar true cuando existe")
-    void testExistsByUsuarioExiste() {
-        when(repositorioAlumno.existsByUsuario("alumno1")).thenReturn(true);
+    @DisplayName("existsByUsername debe retornar true cuando existe")
+    void testExistsByUsernameExiste() {
+        when(repositorioAlumno.existsByUsername("alumno1")).thenReturn(true);
 
-        boolean resultado = repositorioAlumno.existsByUsuario("alumno1");
+        boolean resultado = repositorioAlumno.existsByUsername("alumno1");
 
         assertTrue(resultado);
-        verify(repositorioAlumno).existsByUsuario("alumno1");
+        verify(repositorioAlumno).existsByUsername("alumno1");
     }
 
     @Test

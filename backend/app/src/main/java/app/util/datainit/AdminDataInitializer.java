@@ -2,9 +2,11 @@ package app.util.datainit;
 
 import app.entidades.Usuario;
 import app.repositorios.RepositorioUsuario;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("!test")
 public class AdminDataInitializer extends BaseDataInitializer {
     
     @Override

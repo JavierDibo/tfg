@@ -57,7 +57,7 @@ class ClaseManagementRestTest {
 
         material = new Material();
         material.setId("material1");
-        material.setNombre("Material de prueba");
+        material.setName("Material de prueba");
     }
 
     // ===== TESTS PARA GESTIÓN DE PROFESORES =====
@@ -133,8 +133,8 @@ class ClaseManagementRestTest {
                 .content(objectMapper.writeValueAsString(material)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value("1"))
-                .andExpect(jsonPath("$.nombre").value("Matemáticas I"));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.titulo").value("Matemáticas I"));
 
         verify(servicioClase).agregarMaterial(eq(1L), any(Material.class));
     }
@@ -142,12 +142,34 @@ class ClaseManagementRestTest {
     @Test
     @DisplayName("POST /api/clases/{claseId}/material debe validar datos requeridos")
     void testAgregarMaterialValidacion() throws Exception {
+        // Test with null required fields (id, name, url)
         Material materialInvalido = new Material();
 
         mockMvc.perform(post("/api/clases/1/material")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(materialInvalido)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(servicioClase, never()).agregarMaterial(anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("POST /api/clases/{claseId}/material debe validar tamaño máximo de campos")
+    void testAgregarMaterialValidacionTamano() throws Exception {
+        // Test with fields exceeding maximum size limits
+        Material materialTamanoInvalido = new Material();
+        materialTamanoInvalido.setId("a".repeat(256)); // Exceeds @Size(max = 255)
+        materialTamanoInvalido.setName("b".repeat(201)); // Exceeds @Size(max = 200)
+        materialTamanoInvalido.setUrl("c".repeat(501)); // Exceeds @Size(max = 500)
+
+        mockMvc.perform(post("/api/clases/1/material")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(materialTamanoInvalido)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.timestamp").exists());
 
         verify(servicioClase, never()).agregarMaterial(anyLong(), any());
     }
@@ -160,8 +182,8 @@ class ClaseManagementRestTest {
         mockMvc.perform(delete("/api/clases/1/material/material1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value("1"))
-                .andExpect(jsonPath("$.nombre").value("Matemáticas I"));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.titulo").value("Matemáticas I"));
 
         verify(servicioClase).removerMaterial(1L, "material1");
     }
@@ -176,7 +198,7 @@ class ClaseManagementRestTest {
         mockMvc.perform(post("/api/clases/1/alumnos/alumno1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value("1"))
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.alumnosId").isArray());
 
         verify(servicioClase).agregarAlumno(1L, "alumno1");
@@ -190,8 +212,8 @@ class ClaseManagementRestTest {
         mockMvc.perform(delete("/api/clases/1/alumnos/alumno1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value("1"))
-                .andExpect(jsonPath("$.nombre").value("Matemáticas I"));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.titulo").value("Matemáticas I"));
 
         verify(servicioClase).removerAlumno(1L, "alumno1");
     }

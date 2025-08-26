@@ -29,6 +29,7 @@ import static org.mockito.Mockito.*;
 import app.entidades.Usuario;
 import app.excepciones.ValidationException;
 import app.repositorios.RepositorioUsuario;
+import app.util.SecurityUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para ServicioProfesor")
@@ -49,6 +50,9 @@ class ServicioProfesorTest {
     @Mock
     private RepositorioUsuario repositorioUsuario;
 
+    @Mock
+    private SecurityUtils securityUtils;
+
     @InjectMocks
     private ServicioProfesor servicioProfesor;
 
@@ -61,6 +65,10 @@ class ServicioProfesorTest {
 
     @BeforeEach
     void setUp() {
+        // Mock security utils to allow all operations for testing
+        lenient().when(securityUtils.hasRole(anyString())).thenReturn(true);
+        lenient().when(securityUtils.getCurrentUserId()).thenReturn(1L);
+        
         profesor1 = new Profesor("profesor1", "password1", "María", "García", "12345678Z", "maria@ejemplo.com", "123456789");
         profesor1.setId(1L);
         profesor1.setEnabled(true);
@@ -207,7 +215,7 @@ class ServicioProfesorTest {
     @Test
     @DisplayName("obtenerProfesorPorUsuario debe retornar DTO cuando existe")
     void testObtenerProfesorPorUsuarioExiste() {
-        when(repositorioProfesor.findByUsuario("profesor1")).thenReturn(Optional.of(profesor1));
+        when(repositorioProfesor.findByUsername("profesor1")).thenReturn(Optional.of(profesor1));
 
         DTOProfesor resultado = servicioProfesor.obtenerProfesorPorUsuario("profesor1");
 
@@ -222,18 +230,18 @@ class ServicioProfesorTest {
         assertEquals(dtoProfesor1.role(), resultado.role());
         assertEquals(dtoProfesor1.enabled(), resultado.enabled());
         assertEquals(dtoProfesor1.classIds(), resultado.classIds());
-        verify(repositorioProfesor).findByUsuario("profesor1");
+        verify(repositorioProfesor).findByUsername("profesor1");
     }
 
     @Test
     @DisplayName("obtenerProfesorPorUsuario debe lanzar excepción cuando no existe")
     void testObtenerProfesorPorUsuarioNoExiste() {
-        when(repositorioProfesor.findByUsuario("inexistente")).thenReturn(Optional.empty());
+        when(repositorioProfesor.findByUsername("inexistente")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             servicioProfesor.obtenerProfesorPorUsuario("inexistente");
         });
-        verify(repositorioProfesor).findByUsuario("inexistente");
+        verify(repositorioProfesor).findByUsername("inexistente");
     }
 
     @Test
@@ -455,7 +463,7 @@ class ServicioProfesorTest {
         // Arrange
         DTOPeticionRegistroProfesor peticion = new DTOPeticionRegistroProfesor(
                 "existente", "password123", "Existente", "Profesor", "12345678Z", "existente@ejemplo.com", "555123456");
-        when(repositorioProfesor.findByUsuario("existente")).thenReturn(Optional.of(profesor1));
+        when(repositorioProfesor.findByUsername("existente")).thenReturn(Optional.of(profesor1));
 
         // Act & Assert
         ValidationException exception = assertThrows(ValidationException.class, () -> {
@@ -463,7 +471,7 @@ class ServicioProfesorTest {
         });
 
         assertEquals("Ya existe un profesor con el usuario: existente", exception.getMessage());
-        verify(repositorioProfesor).findByUsuario("existente");
+        verify(repositorioProfesor).findByUsername("existente");
         verify(repositorioProfesor, never()).save(any());
     }
 
@@ -473,7 +481,7 @@ class ServicioProfesorTest {
         // Arrange
         DTOPeticionRegistroProfesor peticion = new DTOPeticionRegistroProfesor(
                 "existente", "password123", "Existente", "Profesor", "12345678Z", "existente@ejemplo.com", "555123456");
-        when(repositorioProfesor.findByUsuario("existente")).thenReturn(Optional.empty());
+        when(repositorioProfesor.findByUsername("existente")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByEmail("existente@ejemplo.com")).thenReturn(Optional.of(profesor1));
 
         // Act & Assert
@@ -482,7 +490,7 @@ class ServicioProfesorTest {
         });
 
         assertEquals("Ya existe un profesor con el email: existente@ejemplo.com", exception.getMessage());
-        verify(repositorioProfesor).findByUsuario("existente");
+        verify(repositorioProfesor).findByUsername("existente");
         verify(repositorioProfesor).findByEmail("existente@ejemplo.com");
         verify(repositorioProfesor, never()).save(any());
     }
@@ -493,7 +501,7 @@ class ServicioProfesorTest {
         // Arrange
         DTOPeticionRegistroProfesor peticion = new DTOPeticionRegistroProfesor(
                 "existente", "password123", "Existente", "Profesor", "12345678Z", "existente@ejemplo.com", "555123456");
-        when(repositorioProfesor.findByUsuario("existente")).thenReturn(Optional.empty());
+        when(repositorioProfesor.findByUsername("existente")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByEmail("existente@ejemplo.com")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByDni("12345678Z")).thenReturn(Optional.of(profesor1));
 
@@ -503,7 +511,7 @@ class ServicioProfesorTest {
         });
 
         assertEquals("Ya existe un profesor con el DNI: 12345678Z", exception.getMessage());
-        verify(repositorioProfesor).findByUsuario("existente");
+        verify(repositorioProfesor).findByUsername("existente");
         verify(repositorioProfesor).findByEmail("existente@ejemplo.com");
         verify(repositorioProfesor, never()).save(any());
     }
@@ -516,7 +524,7 @@ class ServicioProfesorTest {
                 Arrays.asList("clase1", "clase2")
         );
         
-        when(repositorioProfesor.findByUsuario("nuevo")).thenReturn(Optional.empty());
+        when(repositorioProfesor.findByUsername("nuevo")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByEmail("nuevo@ejemplo.com")).thenReturn(Optional.empty());
         when(repositorioProfesor.findByDni("99999999A")).thenReturn(Optional.empty());
         when(servicioCachePassword.encodePassword("password123")).thenReturn("encodedPassword");

@@ -37,6 +37,8 @@ import app.entidades.Alumno;
 import app.excepciones.ResourceNotFoundException;
 import app.excepciones.ValidationException;
 import app.repositorios.RepositorioAlumno;
+import app.util.SecurityUtils;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para ServicioAlumno")
@@ -51,6 +53,9 @@ class ServicioAlumnoTest {
     @Mock
     private ServicioCachePassword servicioCachePassword;
 
+    @Mock
+    private SecurityUtils securityUtils;
+
     @InjectMocks
     private ServicioAlumno servicioAlumno;
 
@@ -63,24 +68,34 @@ class ServicioAlumnoTest {
 
     @BeforeEach
     void setUp() {
-        alumno1 = new Alumno("alumno1", "password1", "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", "123456789");
+        // Create test data
+        alumno1 = new Alumno("alumno1", "password123", "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", "123456789");
         alumno1.setId(1L);
-        alumno1.setEnrollDate(LocalDateTime.now().minusDays(30));
+        alumno1.setEnabled(true);
         alumno1.setEnrolled(true);
+        alumno1.setEnrollDate(LocalDateTime.now());
 
-        alumno2 = new Alumno("alumno2", "password2", "María", "García", "87654321Y", "maria@ejemplo.com", "987654321");
+        alumno2 = new Alumno("alumno2", "password456", "María", "García", "87654321Y", "maria@ejemplo.com", "987654321");
         alumno2.setId(2L);
-        alumno2.setEnrollDate(LocalDateTime.now().minusDays(15));
+        alumno2.setEnabled(true);
         alumno2.setEnrolled(false);
+        alumno2.setEnrollDate(LocalDateTime.now());
 
-        alumno3 = new Alumno("alumno3", "password3", "Carlos", "López", "11223344X", "carlos@ejemplo.com", "555666777");
+        alumno3 = new Alumno("alumno3", "password789", "Carlos", "López", "11223344W", "carlos@ejemplo.com", "555666777");
         alumno3.setId(3L);
-        alumno3.setEnrollDate(LocalDateTime.now());
+        alumno3.setEnabled(false);
         alumno3.setEnrolled(true);
+        alumno3.setEnrollDate(LocalDateTime.now());
 
         dtoAlumno1 = new DTOAlumno(alumno1);
         dtoAlumno2 = new DTOAlumno(alumno2);
         dtoAlumno3 = new DTOAlumno(alumno3);
+
+        // Setup SecurityUtils mock behavior with lenient stubbings
+        lenient().when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        lenient().when(securityUtils.hasRole("PROFESOR")).thenReturn(false);
+        lenient().when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
+        lenient().when(securityUtils.getCurrentUserId()).thenReturn(1L);
     }
 
     @Test
@@ -130,12 +145,12 @@ class ServicioAlumnoTest {
     @Test
     @DisplayName("obtenerAlumnoPorUsuario debe retornar DTO cuando existe")
     void testObtenerAlumnoPorUsuarioExiste() {
-        when(repositorioAlumno.findByUsuario("alumno1")).thenReturn(Optional.of(alumno1));
+        when(repositorioAlumno.findByUsername("alumno1")).thenReturn(Optional.of(alumno1));
 
         DTOAlumno resultado = servicioAlumno.obtenerAlumnoPorUsuario("alumno1");
 
         assertEquals(dtoAlumno1, resultado);
-        verify(repositorioAlumno).findByUsuario("alumno1");
+        verify(repositorioAlumno).findByUsername("alumno1");
     }
 
     @Test
@@ -156,7 +171,7 @@ class ServicioAlumnoTest {
             "nuevo", "password123", "Nuevo", "Alumno", "99999999A", "nuevo@ejemplo.com", "111222333"
         );
         
-        when(repositorioAlumno.existsByUsuario("nuevo")).thenReturn(false);
+        when(repositorioAlumno.existsByUsername("nuevo")).thenReturn(false);
         when(repositorioAlumno.existsByEmail("nuevo@ejemplo.com")).thenReturn(false);
         when(repositorioAlumno.existsByDni("99999999A")).thenReturn(false);
         when(servicioCachePassword.encodePassword("password123")).thenReturn("encodedPassword");
@@ -166,7 +181,7 @@ class ServicioAlumnoTest {
 
         assertNotNull(resultado);
         assertEquals(dtoAlumno1, resultado);
-        verify(repositorioAlumno).existsByUsuario("nuevo");
+        verify(repositorioAlumno).existsByUsername("nuevo");
         verify(repositorioAlumno).existsByEmail("nuevo@ejemplo.com");
         verify(repositorioAlumno).existsByDni("99999999A");
         verify(servicioCachePassword).encodePassword("password123");
@@ -180,12 +195,12 @@ class ServicioAlumnoTest {
             "existente", "password123", "Nuevo", "Alumno", "99999999A", "nuevo@ejemplo.com", "111222333"
         );
         
-        when(repositorioAlumno.existsByUsuario("existente")).thenReturn(true);
+        when(repositorioAlumno.existsByUsername("existente")).thenReturn(true);
 
         assertThrows(ValidationException.class, () -> {
             servicioAlumno.crearAlumno(peticion);
         });
-        verify(repositorioAlumno).existsByUsuario("existente");
+        verify(repositorioAlumno).existsByUsername("existente");
         verify(repositorioAlumno, never()).save(any());
     }
 
@@ -196,13 +211,13 @@ class ServicioAlumnoTest {
             "nuevo", "password123", "Nuevo", "Alumno", "99999999A", "existente@ejemplo.com", "111222333"
         );
         
-        when(repositorioAlumno.existsByUsuario("nuevo")).thenReturn(false);
+        when(repositorioAlumno.existsByUsername("nuevo")).thenReturn(false);
         when(repositorioAlumno.existsByEmail("existente@ejemplo.com")).thenReturn(true);
 
         assertThrows(ValidationException.class, () -> {
             servicioAlumno.crearAlumno(peticion);
         });
-        verify(repositorioAlumno).existsByUsuario("nuevo");
+        verify(repositorioAlumno).existsByUsername("nuevo");
         verify(repositorioAlumno).existsByEmail("existente@ejemplo.com");
         verify(repositorioAlumno, never()).save(any());
     }
@@ -210,7 +225,7 @@ class ServicioAlumnoTest {
     @Test
     @DisplayName("actualizarAlumno debe actualizar campos no nulos")
     void testActualizarAlumno() {
-        DTOActualizacionAlumno dtoParcial = new DTOActualizacionAlumno("Nuevo Nombre", null, null, null, null);
+        DTOActualizacionAlumno dtoParcial = new DTOActualizacionAlumno("Nuevo Nombre", null, null, null, null, null, null);
         
         when(repositorioAlumno.findById(1L)).thenReturn(Optional.of(alumno1));
         when(repositorioAlumno.save(any(Alumno.class))).thenAnswer(invocation -> {
@@ -230,7 +245,7 @@ class ServicioAlumnoTest {
     @Test
     @DisplayName("actualizarAlumno debe lanzar excepción si alumno no existe")
     void testActualizarAlumnoNoExiste() {
-        DTOActualizacionAlumno dtoParcial = new DTOActualizacionAlumno("Nuevo Nombre", null, null, null, null);
+        DTOActualizacionAlumno dtoParcial = new DTOActualizacionAlumno("Nuevo Nombre", null, null, null, null, null, null);
         
         when(repositorioAlumno.findById(999L)).thenReturn(Optional.empty());
 

@@ -72,13 +72,12 @@ class ClaseRestIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/clases debe retornar lista de clases existentes")
-    void testObtenerClasesListaVacia() throws Exception {
+    @DisplayName("GET /api/clases debe retornar lista de clases")
+    void testObtenerClases() throws Exception {
         mockMvc.perform(get("/api/clases"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray());
-        // Note: The test data initializer creates classes, so the list won't be empty
     }
 
     @Test
@@ -124,7 +123,11 @@ class ClaseRestIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.titulo").value("Curso de Java Avanzado"));
+                .andExpect(jsonPath("$.titulo").value("Curso de Java Avanzado"))
+                .andExpect(jsonPath("$.descripcion").value("Aprende Java avanzado"))
+                .andExpect(jsonPath("$.precio").value(129.99))
+                .andExpect(jsonPath("$.presencialidad").value("ONLINE"))
+                .andExpect(jsonPath("$.nivel").value("AVANZADO"));
     }
 
     @Test
@@ -184,7 +187,18 @@ class ClaseRestIntegrationTest {
     @WithMockUser(roles = "PROFESOR")
     @DisplayName("DELETE /api/clases/{id} debe denegar acceso con rol PROFESOR")
     void testBorrarClasePorIdConRolProfesor() throws Exception {
-        mockMvc.perform(delete("/api/clases/1"))
+        // Primero crear una clase con rol ADMIN
+        String response = mockMvc.perform(post("/api/clases/cursos")
+                .with(user("admin").roles("ADMIN"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(peticionCrearCurso)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        String id = objectMapper.readTree(response).get("id").asText();
+
+        // Intentar borrar la clase con rol PROFESOR (debe ser denegado)
+        mockMvc.perform(delete("/api/clases/" + id))
                 .andExpect(status().isForbidden());
     }
 
@@ -203,9 +217,9 @@ class ClaseRestIntegrationTest {
                 .content(objectMapper.writeValueAsString(peticionCrearTaller)))
                 .andExpect(status().isCreated());
 
-        // Buscar clases
+        // Buscar clases con parámetros específicos
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-                null, null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
+                "Java", null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
 
         mockMvc.perform(post("/api/clases/buscar")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -213,7 +227,9 @@ class ClaseRestIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.contenido").isArray())
-                .andExpect(jsonPath("$.numeroPagina").exists());
+                .andExpect(jsonPath("$.numeroPagina").exists())
+                .andExpect(jsonPath("$.tamanoPagina").exists())
+                .andExpect(jsonPath("$.totalElementos").exists());
     }
 
     @Test
@@ -265,7 +281,18 @@ class ClaseRestIntegrationTest {
     @WithMockUser(username = "alumno123", roles = "ALUMNO")
     @DisplayName("POST /api/enrollments/{claseId}/self-enroll debe permitir a un alumno inscribirse en una clase")
     void testInscribirseEnClase() throws Exception {
-        mockMvc.perform(post("/api/enrollments/1/self-enroll"))
+        // Primero crear una clase para asegurar que existe
+        String response = mockMvc.perform(post("/api/clases/cursos")
+                .with(user("admin").roles("ADMIN"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(peticionCrearCurso)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        String claseId = objectMapper.readTree(response).get("id").asText();
+
+        // Inscribirse en la clase
+        mockMvc.perform(post("/api/enrollments/" + claseId + "/self-enroll"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").exists());
@@ -275,7 +302,22 @@ class ClaseRestIntegrationTest {
     @WithMockUser(username = "alumno123", roles = "ALUMNO")
     @DisplayName("DELETE /api/enrollments/{claseId}/self-unenroll debe permitir a un alumno darse de baja de una clase")
     void testDarseDeBajaDeClase() throws Exception {
-        mockMvc.perform(delete("/api/enrollments/1/self-unenroll"))
+        // Primero crear una clase y inscribirse
+        String response = mockMvc.perform(post("/api/clases/cursos")
+                .with(user("admin").roles("ADMIN"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(peticionCrearCurso)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        String claseId = objectMapper.readTree(response).get("id").asText();
+
+        // Inscribirse primero
+        mockMvc.perform(post("/api/enrollments/" + claseId + "/self-enroll"))
+                .andExpect(status().isOk());
+
+        // Darse de baja
+        mockMvc.perform(delete("/api/enrollments/" + claseId + "/self-unenroll"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").exists());
@@ -339,11 +381,19 @@ class ClaseRestIntegrationTest {
 
         String id = objectMapper.readTree(response).get("id").asText();
 
-        // Contar alumnos
+        // Contar alumnos (debe ser 0 inicialmente)
         mockMvc.perform(get("/api/clases/" + id + "/alumnos/contar"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isNumber());
+                .andExpect(jsonPath("$").value(0));
+
+        // Agregar un alumno y verificar que el conteo cambia
+        mockMvc.perform(post("/api/clases/" + id + "/alumnos/alumno123"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/clases/" + id + "/alumnos/contar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(1));
     }
 
     @Test
@@ -359,55 +409,71 @@ class ClaseRestIntegrationTest {
 
         String id = objectMapper.readTree(response).get("id").asText();
 
-        // Contar profesores
+        // Contar profesores (debe ser 1 inicialmente por el profesor en la petición)
         mockMvc.perform(get("/api/clases/" + id + "/profesores/contar"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isNumber());
+                .andExpect(jsonPath("$").value(1));
+
+        // Agregar otro profesor y verificar que el conteo cambia
+        mockMvc.perform(post("/api/clases/" + id + "/profesores/profesor456"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/clases/" + id + "/profesores/contar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(2));
     }
 
     @Test
     @DisplayName("GET /api/clases/alumno/{alumnoId} debe obtener clases por alumno")
     void testObtenerClasesPorAlumno() throws Exception {
-        mockMvc.perform(get("/api/clases/alumno/alumno123"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray());
-    }
-
-    @Test
-    @DisplayName("GET /api/clases/profesor/{profesorId} debe obtener clases por profesor")
-    void testObtenerClasesPorProfesor() throws Exception {
-        mockMvc.perform(get("/api/clases/profesor/profesor1"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray());
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("DELETE /api/clases/{id} debe eliminar clase")
-    void testEliminarClase() throws Exception {
-        // Primero crear una clase
+        // Primero crear una clase y agregar un alumno
         String response = mockMvc.perform(post("/api/clases/cursos")
+                .with(user("admin").roles("ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(peticionCrearCurso)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
 
-        String id = objectMapper.readTree(response).get("id").asText();
+        String claseId = objectMapper.readTree(response).get("id").asText();
 
-        // Eliminar clase
-        mockMvc.perform(delete("/api/clases/" + id))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(post("/api/clases/" + claseId + "/alumnos/alumno123")
+                .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk());
+
+        // Obtener clases del alumno
+        mockMvc.perform(get("/api/clases/alumno/alumno123"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].id").value(claseId));
     }
 
     @Test
-    @WithMockUser(roles = "PROFESOR")
-    @DisplayName("DELETE /api/clases/{id} debe denegar acceso con rol PROFESOR")
-    void testEliminarClaseConRolProfesor() throws Exception {
-        mockMvc.perform(delete("/api/clases/1"))
-                .andExpect(status().isForbidden());
+    @DisplayName("GET /api/clases/profesor/{profesorId} debe obtener clases por profesor")
+    void testObtenerClasesPorProfesor() throws Exception {
+        // Primero crear una clase con un profesor específico
+        DTOPeticionCrearCurso cursoConProfesor = new DTOPeticionCrearCurso(
+                "Curso de Python", "Aprende Python", new BigDecimal("99.99"),
+                EPresencialidad.ONLINE, "imagen-python.jpg", EDificultad.PRINCIPIANTE,
+                LocalDate.now().plusDays(10), LocalDate.now().plusDays(40),
+                Arrays.asList("profesorEspecifico"), Arrays.asList());
+
+        String response = mockMvc.perform(post("/api/clases/cursos")
+                .with(user("admin").roles("ADMIN"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(cursoConProfesor)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        String claseId = objectMapper.readTree(response).get("id").asText();
+
+        // Obtener clases del profesor
+        mockMvc.perform(get("/api/clases/profesor/profesorEspecifico"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].id").value(claseId));
     }
 
     @Test

@@ -22,6 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import app.excepciones.ApiException;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para ServicioAutenticacion")
@@ -61,7 +62,7 @@ class ServicioAutenticacionTest {
     void testLoginExitoso() {
         // Arrange
         String jwtToken = "jwt.token.example";
-        when(repositorioUsuario.findByUsuario("testuser")).thenReturn(Optional.of(usuario));
+        when(repositorioUsuario.findByUsername("testuser")).thenReturn(Optional.of(usuario));
         when(servicioJwt.generateToken(usuario)).thenReturn(jwtToken);
 
         // Act
@@ -78,7 +79,7 @@ class ServicioAutenticacionTest {
         assertEquals("juan@ejemplo.com", respuesta.email());
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(repositorioUsuario).findByUsuario("testuser");
+        verify(repositorioUsuario).findByUsername("testuser");
         verify(servicioJwt).generateToken(usuario);
     }
 
@@ -90,12 +91,12 @@ class ServicioAutenticacionTest {
                 .thenThrow(new BadCredentialsException("Credenciales inválidas"));
 
         // Act & Assert
-        assertThrows(BadCredentialsException.class, () -> {
+        assertThrows(ApiException.class, () -> {
             servicioAutenticacion.login(peticionLogin);
         });
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(repositorioUsuario, never()).findByUsuario(anyString());
+        verify(repositorioUsuario, never()).findByUsername(anyString());
         verify(servicioJwt, never()).generateToken(any());
     }
 
@@ -103,7 +104,7 @@ class ServicioAutenticacionTest {
     @DisplayName("login debe lanzar excepción cuando el usuario no existe")
     void testLoginUsuarioNoExiste() {
         // Arrange
-        when(repositorioUsuario.findByUsuario("testuser")).thenReturn(Optional.empty());
+        when(repositorioUsuario.findByUsername("testuser")).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -113,7 +114,7 @@ class ServicioAutenticacionTest {
         assertEquals("Usuario no encontrado", exception.getMessage());
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(repositorioUsuario).findByUsuario("testuser");
+        verify(repositorioUsuario).findByUsername("testuser");
         verify(servicioJwt, never()).generateToken(any());
     }
 
@@ -125,7 +126,7 @@ class ServicioAutenticacionTest {
         Usuario usuarioGuardado = new Usuario("newuser", "encoded_password", "Nuevo", "Usuario", "00000000X", "nuevo@ejemplo.com", null);
         usuarioGuardado.setId(2L);
 
-        when(repositorioUsuario.existsByUsuario("newuser")).thenReturn(false);
+        when(repositorioUsuario.existsByUsername("newuser")).thenReturn(false);
         when(repositorioUsuario.existsByEmail("nuevo@ejemplo.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
         when(repositorioUsuario.save(any(Usuario.class))).thenReturn(usuarioGuardado);
@@ -139,7 +140,7 @@ class ServicioAutenticacionTest {
         assertEquals(jwtToken, respuesta.token());
         assertEquals("newuser", respuesta.username());
 
-        verify(repositorioUsuario).existsByUsuario("newuser");
+        verify(repositorioUsuario).existsByUsername("newuser");
         verify(repositorioUsuario).existsByEmail("nuevo@ejemplo.com");
         verify(passwordEncoder).encode("password123");
         verify(repositorioUsuario).save(any(Usuario.class));
@@ -150,7 +151,7 @@ class ServicioAutenticacionTest {
     @DisplayName("registro debe lanzar excepción cuando el username ya existe")
     void testRegistroUsernameExiste() {
         // Arrange
-        when(repositorioUsuario.existsByUsuario("newuser")).thenReturn(true);
+        when(repositorioUsuario.existsByUsername("newuser")).thenReturn(true);
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -159,7 +160,7 @@ class ServicioAutenticacionTest {
 
         assertEquals("El username ya existe", exception.getMessage());
 
-        verify(repositorioUsuario).existsByUsuario("newuser");
+        verify(repositorioUsuario).existsByUsername("newuser");
         verify(repositorioUsuario, never()).existsByEmail(anyString());
         verify(repositorioUsuario, never()).save(any());
         verify(servicioJwt, never()).generateToken(any());
@@ -169,7 +170,7 @@ class ServicioAutenticacionTest {
     @DisplayName("registro debe lanzar excepción cuando el email ya existe")
     void testRegistroEmailExiste() {
         // Arrange
-        when(repositorioUsuario.existsByUsuario("newuser")).thenReturn(false);
+        when(repositorioUsuario.existsByUsername("newuser")).thenReturn(false);
         when(repositorioUsuario.existsByEmail("nuevo@ejemplo.com")).thenReturn(true);
 
         // Act & Assert
@@ -179,7 +180,7 @@ class ServicioAutenticacionTest {
 
         assertEquals("El email ya existe", exception.getMessage());
 
-        verify(repositorioUsuario).existsByUsuario("newuser");
+        verify(repositorioUsuario).existsByUsername("newuser");
         verify(repositorioUsuario).existsByEmail("nuevo@ejemplo.com");
         verify(repositorioUsuario, never()).save(any());
         verify(servicioJwt, never()).generateToken(any());
@@ -190,7 +191,7 @@ class ServicioAutenticacionTest {
     void testRegistroConDatosPorDefecto() {
         // Arrange
         String jwtToken = "jwt.token.example";
-        when(repositorioUsuario.existsByUsuario("newuser")).thenReturn(false);
+        when(repositorioUsuario.existsByUsername("newuser")).thenReturn(false);
         when(repositorioUsuario.existsByEmail("nuevo@ejemplo.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
         when(servicioJwt.generateToken(any(Usuario.class))).thenReturn(jwtToken);
@@ -215,7 +216,7 @@ class ServicioAutenticacionTest {
     void testLoginGeneracionToken() {
         // Arrange
         String jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
-        when(repositorioUsuario.findByUsuario("testuser")).thenReturn(Optional.of(usuario));
+        when(repositorioUsuario.findByUsername("testuser")).thenReturn(Optional.of(usuario));
         when(servicioJwt.generateToken(usuario)).thenReturn(jwtToken);
 
         // Act
@@ -230,7 +231,7 @@ class ServicioAutenticacionTest {
     @DisplayName("registro debe manejar errores de la base de datos")
     void testRegistroErrorBaseDatos() {
         // Arrange
-        when(repositorioUsuario.existsByUsuario("newuser")).thenReturn(false);
+        when(repositorioUsuario.existsByUsername("newuser")).thenReturn(false);
         when(repositorioUsuario.existsByEmail("nuevo@ejemplo.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
         when(repositorioUsuario.save(any(Usuario.class))).thenThrow(new RuntimeException("Error de base de datos"));
@@ -252,12 +253,12 @@ class ServicioAutenticacionTest {
                 .thenThrow(new BadCredentialsException("Credenciales inválidas"));
 
         // Act & Assert
-        assertThrows(BadCredentialsException.class, () -> {
+        assertThrows(ApiException.class, () -> {
             servicioAutenticacion.login(peticionLogin);
         });
 
         // Verificar que no se busca el usuario si la autenticación falla
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(repositorioUsuario, never()).findByUsuario(anyString());
+        verify(repositorioUsuario, never()).findByUsername(anyString());
     }
 }

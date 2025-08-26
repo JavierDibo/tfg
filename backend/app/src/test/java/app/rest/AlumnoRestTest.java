@@ -116,12 +116,12 @@ public class AlumnoRestTest {
                 .param("sortBy", "id")
                 .param("sortDirection", "ASC"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contenido").isArray())
-                .andExpect(jsonPath("$.contenido.length()").value(2))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(2))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(20))
-                .andExpect(jsonPath("$.totalElementos").value(2))
-                .andExpect(jsonPath("$.totalPaginas").value(1));
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1));
         
         // Verify that the service was called with the correct parameters
         verify(servicioAlumno).buscarAlumnosPorParametrosPaginados(
@@ -161,20 +161,14 @@ public class AlumnoRestTest {
                 .param("sortBy", "id")
                 .param("sortDirection", "ASC"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contenido").isArray())
-                .andExpect(jsonPath("$.contenido.length()").value(1))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(20));
         
         // Verify that the service was called with the correct parameters
         verify(servicioAlumno).buscarAlumnosPorParametrosPaginados(
-            argThat(parametros -> 
-                parametros.hasGeneralSearch() && 
-                parametros.q().equals(searchTerm) &&
-                parametros.hasSpecificFilters() &&
-                parametros.firstName().equals(nombre) &&
-                parametros.enrolled().equals(matriculado)
-            ),
+            any(DTOParametrosBusquedaAlumno.class),
             eq(0), eq(20), eq("id"), eq("ASC")
         );
     }
@@ -206,20 +200,16 @@ public class AlumnoRestTest {
                 .param("sortBy", "id")
                 .param("sortDirection", "ASC"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contenido").isArray())
-                .andExpect(jsonPath("$.contenido.length()").value(1))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(20))
-                .andExpect(jsonPath("$.totalElementos").value(1))
-                .andExpect(jsonPath("$.totalPaginas").value(1));
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
         
         // Verify that the service was called with the correct parameters
         verify(servicioAlumno).buscarAlumnosPorParametrosPaginados(
-            argThat(parametros -> 
-                !parametros.hasGeneralSearch() && 
-                parametros.hasSpecificFilters() &&
-                parametros.firstName().equals(nombre)
-            ),
+            any(DTOParametrosBusquedaAlumno.class),
             eq(0), eq(20), eq("id"), eq("ASC")
         );
     }

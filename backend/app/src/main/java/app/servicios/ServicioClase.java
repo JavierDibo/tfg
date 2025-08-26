@@ -483,6 +483,11 @@ public class ServicioClase {
             }
         }
         
+        // Ensure resultado is not null before converting to DTOs
+        if (resultado == null) {
+            resultado = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+        
         // Convertir a DTOs
         Page<DTOClase> pageDTOs = resultado.map(DTOClase::new);
         

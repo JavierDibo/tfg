@@ -85,26 +85,26 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * Permite combinar filtros de nombre, enunciado, clase, estado y fechas
      */
     @Query(value = "SELECT * FROM ejercicios e WHERE " +
-           "(:nombre IS NULL OR normalize_text(e.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:enunciado IS NULL OR normalize_text(e.enunciado) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
+           "(:nombre IS NULL OR normalize_text(e.name) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:enunciado IS NULL OR normalize_text(e.statement) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
            "(:classId IS NULL OR e.class_id = :classId) AND " +
            "(:status IS NULL OR (" +
-           "  CASE WHEN :status = 'ACTIVE' THEN e.fecha_fin_plazo > :now " +
-           "       WHEN :status = 'EXPIRED' THEN e.fecha_fin_plazo <= :now " +
-           "       WHEN :status = 'FUTURE' THEN e.fecha_inicio_plazo > :now " +
-           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
-           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "  CASE WHEN :status = 'ACTIVE' THEN e.end_date > :now " +
+           "       WHEN :status = 'EXPIRED' THEN e.end_date <= :now " +
+           "       WHEN :status = 'FUTURE' THEN e.start_date > :now " +
+           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
+           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
            "       ELSE TRUE END))",
            countQuery = "SELECT COUNT(*) FROM ejercicios e WHERE " +
-           "(:nombre IS NULL OR normalize_text(e.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:enunciado IS NULL OR normalize_text(e.enunciado) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
+           "(:nombre IS NULL OR normalize_text(e.name) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:enunciado IS NULL OR normalize_text(e.statement) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
            "(:classId IS NULL OR e.class_id = :classId) AND " +
            "(:status IS NULL OR (" +
-           "  CASE WHEN :status = 'ACTIVE' THEN e.fecha_fin_plazo > :now " +
-           "       WHEN :status = 'EXPIRED' THEN e.fecha_fin_plazo <= :now " +
-           "       WHEN :status = 'FUTURE' THEN e.fecha_inicio_plazo > :now " +
-           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
-           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "  CASE WHEN :status = 'ACTIVE' THEN e.end_date > :now " +
+           "       WHEN :status = 'EXPIRED' THEN e.end_date <= :now " +
+           "       WHEN :status = 'FUTURE' THEN e.start_date > :now " +
+           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
+           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
            "       ELSE TRUE END))",
            nativeQuery = true)
     Page<Ejercicio> findByFiltrosFlexibles(
@@ -120,11 +120,11 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * Búsqueda general con término de búsqueda "q" que busca en nombre y enunciado
      */
     @Query(value = "SELECT * FROM ejercicios e WHERE " +
-           "(normalize_text(e.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(e.enunciado) LIKE '%' || normalize_text(:searchTerm) || '%')",
+           "(normalize_text(e.name) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(e.statement) LIKE '%' || normalize_text(:searchTerm) || '%')",
            countQuery = "SELECT COUNT(*) FROM ejercicios e WHERE " +
-           "(normalize_text(e.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(e.enunciado) LIKE '%' || normalize_text(:searchTerm) || '%')",
+           "(normalize_text(e.name) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(e.statement) LIKE '%' || normalize_text(:searchTerm) || '%')",
            nativeQuery = true)
     Page<Ejercicio> findByGeneralSearch(@Param("searchTerm") String searchTerm, Pageable pageable);
     
@@ -133,31 +133,31 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      */
     @Query(value = "SELECT * FROM ejercicios e WHERE " +
            "(:searchTerm IS NULL OR (" +
-           "normalize_text(e.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(e.enunciado) LIKE '%' || normalize_text(:searchTerm) || '%')) AND " +
-           "(:nombre IS NULL OR normalize_text(e.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:enunciado IS NULL OR normalize_text(e.enunciado) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
+           "normalize_text(e.name) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(e.statement) LIKE '%' || normalize_text(:searchTerm) || '%')) AND " +
+           "(:nombre IS NULL OR normalize_text(e.name) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:enunciado IS NULL OR normalize_text(e.statement) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
            "(:classId IS NULL OR e.class_id = :classId) AND " +
            "(:status IS NULL OR (" +
-           "  CASE WHEN :status = 'ACTIVE' THEN e.fecha_fin_plazo > :now " +
-           "       WHEN :status = 'EXPIRED' THEN e.fecha_fin_plazo <= :now " +
-           "       WHEN :status = 'FUTURE' THEN e.fecha_inicio_plazo > :now " +
-           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
-           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "  CASE WHEN :status = 'ACTIVE' THEN e.end_date > :now " +
+           "       WHEN :status = 'EXPIRED' THEN e.end_date <= :now " +
+           "       WHEN :status = 'FUTURE' THEN e.start_date > :now " +
+           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
+           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
            "       ELSE TRUE END))",
            countQuery = "SELECT COUNT(*) FROM ejercicios e WHERE " +
            "(:searchTerm IS NULL OR (" +
-           "normalize_text(e.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(e.enunciado) LIKE '%' || normalize_text(:searchTerm) || '%')) AND " +
-           "(:nombre IS NULL OR normalize_text(e.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:enunciado IS NULL OR normalize_text(e.enunciado) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
+           "normalize_text(e.name) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
+           "normalize_text(e.statement) LIKE '%' || normalize_text(:searchTerm) || '%')) AND " +
+           "(:nombre IS NULL OR normalize_text(e.name) LIKE '%' || normalize_text(:nombre) || '%') AND " +
+           "(:enunciado IS NULL OR normalize_text(e.statement) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
            "(:classId IS NULL OR e.class_id = :classId) AND " +
            "(:status IS NULL OR (" +
-           "  CASE WHEN :status = 'ACTIVE' THEN e.fecha_fin_plazo > :now " +
-           "       WHEN :status = 'EXPIRED' THEN e.fecha_fin_plazo <= :now " +
-           "       WHEN :status = 'FUTURE' THEN e.fecha_inicio_plazo > :now " +
-           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
-           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicios ee WHERE ee.ejercicio_id = e.id) " +
+           "  CASE WHEN :status = 'ACTIVE' THEN e.end_date > :now " +
+           "       WHEN :status = 'EXPIRED' THEN e.end_date <= :now " +
+           "       WHEN :status = 'FUTURE' THEN e.start_date > :now " +
+           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
+           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
            "       ELSE TRUE END))",
            nativeQuery = true)
     Page<Ejercicio> findByGeneralAndSpecificFilters(

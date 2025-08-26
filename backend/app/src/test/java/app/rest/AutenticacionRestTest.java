@@ -68,10 +68,10 @@ class AutenticacionRestTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.token").value("token123"))
                 .andExpect(jsonPath("$.username").value("usuario1"))
-                .andExpect(jsonPath("$.rol").value("ALUMNO"))
-                                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.nombre").value("Juan"))
-                .andExpect(jsonPath("$.apellidos").value("Pérez"))
+                .andExpect(jsonPath("$.role").value("ALUMNO"))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.firstName").value("Juan"))
+                .andExpect(jsonPath("$.lastName").value("Pérez"))
                 .andExpect(jsonPath("$.email").value("juan@ejemplo.com"));
 
         verify(servicioAutenticacion).login(any(DTOPeticionLogin.class));
@@ -95,12 +95,12 @@ class AutenticacionRestTest {
     void testLoginCredencialesIncorrectas() throws Exception {
         DTOPeticionLogin peticionLogin = new DTOPeticionLogin("usuario1", "wrongpassword");
         when(servicioAutenticacion.login(any(DTOPeticionLogin.class)))
-                .thenThrow(new RuntimeException("Credenciales inválidas"));
+                .thenThrow(new app.excepciones.ApiException("Credenciales inválidas", org.springframework.http.HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS"));
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(peticionLogin)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isUnauthorized());
 
         verify(servicioAutenticacion).login(any(DTOPeticionLogin.class));
     }
@@ -109,7 +109,7 @@ class AutenticacionRestTest {
     @DisplayName("POST /api/auth/registro debe registrar usuario correctamente")
     void testRegistro() throws Exception {
         DTOPeticionRegistro peticionRegistro = new DTOPeticionRegistro(
-                "nuevoUsuario", "password123", "Nuevo", "Usuario", "nuevo@ejemplo.com"
+                "nuevoUsuario", "password123", "nuevo@ejemplo.com", "Nuevo", "Usuario"
         );
         when(servicioAutenticacion.registro(any(DTOPeticionRegistro.class))).thenReturn(respuestaLogin);
 
@@ -141,15 +141,15 @@ class AutenticacionRestTest {
     @DisplayName("POST /api/auth/registro con usuario existente debe retornar error")
     void testRegistroUsuarioExistente() throws Exception {
         DTOPeticionRegistro peticionRegistro = new DTOPeticionRegistro(
-                "usuarioExistente", "password123", "Usuario", "Existente", "existente@ejemplo.com"
+                "usuarioExistente", "password123", "existente@ejemplo.com", "Usuario", "Existente"
         );
         when(servicioAutenticacion.registro(any(DTOPeticionRegistro.class)))
-                .thenThrow(new RuntimeException("El username ya existe"));
+                .thenThrow(new app.excepciones.ApiException("El username ya existe", org.springframework.http.HttpStatus.CONFLICT, "USERNAME_EXISTS"));
 
         mockMvc.perform(post("/api/auth/registro")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(peticionRegistro)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isConflict());
 
         verify(servicioAutenticacion).registro(any(DTOPeticionRegistro.class));
     }
@@ -158,15 +158,15 @@ class AutenticacionRestTest {
     @DisplayName("POST /api/auth/registro con email existente debe retornar error")
     void testRegistroEmailExistente() throws Exception {
         DTOPeticionRegistro peticionRegistro = new DTOPeticionRegistro(
-                "nuevoUsuario", "password123", "Nuevo", "Usuario", "existente@ejemplo.com"
+                "nuevoUsuario", "password123", "existente@ejemplo.com", "Nuevo", "Usuario"
         );
         when(servicioAutenticacion.registro(any(DTOPeticionRegistro.class)))
-                .thenThrow(new RuntimeException("El email ya existe"));
+                .thenThrow(new app.excepciones.ApiException("El email ya existe", org.springframework.http.HttpStatus.CONFLICT, "EMAIL_EXISTS"));
 
         mockMvc.perform(post("/api/auth/registro")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(peticionRegistro)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isConflict());
 
         verify(servicioAutenticacion).registro(any(DTOPeticionRegistro.class));
     }
@@ -176,7 +176,7 @@ class AutenticacionRestTest {
     void testTest() throws Exception {
         mockMvc.perform(get("/api/auth/test"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Autenticación funcionando correctamente"));
+                .andExpect(content().string("Authentication working correctly"));
 
         verifyNoInteractions(servicioAutenticacion);
     }
@@ -223,7 +223,7 @@ class AutenticacionRestTest {
     @DisplayName("POST /api/auth/registro sin Content-Type debe retornar 415")
     void testRegistroSinContentType() throws Exception {
         DTOPeticionRegistro peticionRegistro = new DTOPeticionRegistro(
-                "nuevoUsuario", "password123", "Nuevo", "Usuario", "nuevo@ejemplo.com"
+                "nuevoUsuario", "password123", "nuevo@ejemplo.com", "Nuevo", "Usuario"
         );
 
         mockMvc.perform(post("/api/auth/registro")

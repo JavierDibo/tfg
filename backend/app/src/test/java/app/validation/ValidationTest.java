@@ -29,12 +29,12 @@ public class ValidationTest {
     @Test
     void testValidDNI() {
         // DNI válido
-        DTOActualizacionAlumno validDto = new DTOActualizacionAlumno(null, null, "12345678Z", null, null);
+        DTOActualizacionAlumno validDto = new DTOActualizacionAlumno(null, null, "12345678Z", null, null, null, null);
         Set<ConstraintViolation<DTOActualizacionAlumno>> violations = validator.validate(validDto);
         assertTrue(violations.isEmpty());
         
         // DNI inválido
-        DTOActualizacionAlumno invalidDto = new DTOActualizacionAlumno(null, null, "12345678A", null, null);
+        DTOActualizacionAlumno invalidDto = new DTOActualizacionAlumno(null, null, "12345678A", null, null, null, null);
         violations = validator.validate(invalidDto);
         assertFalse(violations.isEmpty());
     }
@@ -42,12 +42,12 @@ public class ValidationTest {
     @Test
     void testValidEmail() {
         // Email válido
-        DTOActualizacionAlumno validDto = new DTOActualizacionAlumno(null, null, null, "test@ejemplo.com", null);
+        DTOActualizacionAlumno validDto = new DTOActualizacionAlumno(null, null, null, "test@ejemplo.com", null, null, null);
         Set<ConstraintViolation<DTOActualizacionAlumno>> violations = validator.validate(validDto);
         assertTrue(violations.isEmpty());
         
         // Email inválido
-        DTOActualizacionAlumno invalidDto = new DTOActualizacionAlumno(null, null, null, "email-invalido", null);
+        DTOActualizacionAlumno invalidDto = new DTOActualizacionAlumno(null, null, null, "email-invalido", null, null, null);
         violations = validator.validate(invalidDto);
         assertFalse(violations.isEmpty());
     }
@@ -55,17 +55,17 @@ public class ValidationTest {
     @Test
     void testValidPhone() {
         // Teléfono válido
-        DTOActualizacionAlumno validDto = new DTOActualizacionAlumno(null, null, null, null, "123456789");
+        DTOActualizacionAlumno validDto = new DTOActualizacionAlumno(null, null, null, null, "123456789", null, null);
         Set<ConstraintViolation<DTOActualizacionAlumno>> violations = validator.validate(validDto);
         assertTrue(violations.isEmpty());
         
         // Teléfono con prefijo válido
-        validDto = new DTOActualizacionAlumno(null, null, null, null, "+34 123 456 789");
+        validDto = new DTOActualizacionAlumno(null, null, null, null, "+34 123 456 789", null, null);
         violations = validator.validate(validDto);
         assertTrue(violations.isEmpty());
         
         // Teléfono inválido (muy corto)
-        DTOActualizacionAlumno invalidDto = new DTOActualizacionAlumno(null, null, null, null, "123");
+        DTOActualizacionAlumno invalidDto = new DTOActualizacionAlumno(null, null, null, null, "123", null, null);
         violations = validator.validate(invalidDto);
         assertFalse(violations.isEmpty());
     }
@@ -73,17 +73,17 @@ public class ValidationTest {
     @Test
     void testNotEmptyIfPresent() {
         // Campo vacío (inválido)
-        DTOActualizacionAlumno invalidDto = new DTOActualizacionAlumno("", null, null, null, null);
+        DTOActualizacionAlumno invalidDto = new DTOActualizacionAlumno("", null, null, null, null, null, null);
         Set<ConstraintViolation<DTOActualizacionAlumno>> violations = validator.validate(invalidDto);
         assertFalse(violations.isEmpty());
         
         // Campo null (válido para actualización parcial)
-        DTOActualizacionAlumno validDto = new DTOActualizacionAlumno(null, null, null, null, null);
+        DTOActualizacionAlumno validDto = new DTOActualizacionAlumno(null, null, null, null, null, null, null);
         violations = validator.validate(validDto);
         assertTrue(violations.isEmpty());
         
         // Campo con contenido (válido)
-        validDto = new DTOActualizacionAlumno("Juan", null, null, null, null);
+        validDto = new DTOActualizacionAlumno("Juan", null, null, null, null, null, null);
         violations = validator.validate(validDto);
         assertTrue(violations.isEmpty());
     }
