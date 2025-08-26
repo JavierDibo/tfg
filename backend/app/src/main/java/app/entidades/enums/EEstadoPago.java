@@ -6,6 +6,8 @@ package app.entidades.enums;
  * Basado en el UML de especificación
  */
 public enum EEstadoPago {
+    PENDIENTE,
+    PROCESANDO,
     EXITO,
     ERROR,
     REEMBOLSADO

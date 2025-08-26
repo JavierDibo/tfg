@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repositorio para la entidad Pago
@@ -142,4 +143,11 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      */
     @Query("SELECT COUNT(p) FROM Pago p WHERE p.alumnoId = :alumnoId AND p.estado = 'EXITO'")
     Long countPagosExitososByAlumno(@Param("alumnoId") String alumnoId);
+    
+    /**
+     * Busca pago por Stripe Payment Intent ID
+     * @param stripePaymentIntentId ID del Payment Intent de Stripe
+     * @return Optional del pago encontrado
+     */
+    Optional<Pago> findByStripePaymentIntentId(String stripePaymentIntentId);
 }

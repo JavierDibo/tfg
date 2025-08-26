@@ -1,4 +1,4 @@
-package app.rest;
+package app.other;
 
 import app.dtos.ErrorResponse;
 import app.excepciones.ResourceNotFoundException;

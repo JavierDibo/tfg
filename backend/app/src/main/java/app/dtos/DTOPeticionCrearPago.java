@@ -1,57 +1,42 @@
 package app.dtos;
 
-import app.entidades.ItemPago;
-import app.entidades.enums.EMetodoPago;
+import app.validation.stripe.ValidCurrency;
+import app.validation.stripe.ValidStripeAmount;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * DTO para la petición de creación de un pago
- * Contiene los datos necesarios para registrar un pago
+ * Contiene los datos necesarios para registrar un pago (EUR only)
  */
 public record DTOPeticionCrearPago(
         @NotNull
-        @DecimalMin(value = "0.0", inclusive = false)
+        @ValidStripeAmount
+        @DecimalMin(value = "0.01")
+        @Digits(integer = 10, fraction = 2)
         BigDecimal importe,
-        
-        @NotNull
-        EMetodoPago metodoPago,
         
         @NotNull
         @Size(max = 255)
         String alumnoId,
         
-        List<ItemPago> items
+        @NotBlank
+        String description,
+        
+        @NotBlank
+        @ValidCurrency
+        String currency
 ) {
     
     /**
-     * Constructor por defecto con lista vacía de items
+     * Constructor por defecto con currency EUR
      */
-    public DTOPeticionCrearPago(BigDecimal importe, EMetodoPago metodoPago, String alumnoId) {
-        this(importe, metodoPago, alumnoId, List.of());
-    }
-    
-    /**
-     * Calcula el total de los items para verificación
-     */
-    public BigDecimal calcularTotalItems() {
-        if (items == null || items.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        
-        return items.stream()
-                .map(ItemPago::getImporteTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-    
-    /**
-     * Verifica si el importe coincide con el total de items
-     */
-    public boolean importeCoincideConItems() {
-        return importe.compareTo(calcularTotalItems()) == 0;
+    public DTOPeticionCrearPago(BigDecimal importe, String alumnoId, String description) {
+        this(importe, alumnoId, description, "EUR");
     }
 }

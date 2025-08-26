@@ -5,27 +5,25 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.http.MediaType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import app.dtos.DTOAlumno;
 import app.dtos.DTOParametrosBusquedaAlumno;
@@ -35,36 +33,36 @@ import app.entidades.Alumno;
 import app.entidades.Usuario;
 import app.repositorios.RepositorioAlumno;
 import app.servicios.ServicioAlumno;
+import app.servicios.ServicioClase;
 import app.servicios.ServicioJwt;
+import app.util.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(AlumnoRest.class)
+@ActiveProfiles("test")
 public class AlumnoRestTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private ServicioAlumno servicioAlumno;
     
-    @Mock
+    @MockBean
+    private ServicioClase servicioClase;
+    
+    @MockBean
     private RepositorioAlumno repositorioAlumno;
     
-    @Mock
+    @MockBean
     private ServicioJwt servicioJwt;
-
-    @InjectMocks
-    private AlumnoRest alumnoRest;
     
+    @MockBean
+    private SecurityUtils securityUtils;
+    
+    @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(alumnoRest)
-                .setControllerAdvice(new app.excepciones.GlobalExceptionHandler())
-                .build();
-        objectMapper = new ObjectMapper();
-    }
-    
     // Utility method to generate valid DNIs using the same algorithm as the system
     private String generateValidDNI(int index) {
         StringBuilder dni = new StringBuilder();
@@ -88,6 +86,7 @@ public class AlumnoRestTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void testObtenerAlumnosPaginadosConParametroQ() throws Exception {
         // Given
         String searchTerm = "john";
@@ -131,6 +130,7 @@ public class AlumnoRestTest {
     }
     
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void testObtenerAlumnosPaginadosConParametroQYFiltrosEspecificos() throws Exception {
         // Given
         String searchTerm = "john";
@@ -174,6 +174,7 @@ public class AlumnoRestTest {
     }
     
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void testObtenerAlumnosPaginadosSinParametroQ() throws Exception {
         // Given
         String nombre = "John";

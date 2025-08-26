@@ -5,18 +5,20 @@ import app.dtos.DTOParametrosBusquedaProfesor;
 import app.dtos.DTORespuestaPaginada;
 import app.dtos.DTOPeticionRegistroProfesor;
 import app.servicios.ServicioProfesor;
+import app.servicios.ServicioClase;
+import app.servicios.ServicioJwt;
 import app.util.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -27,18 +29,23 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(ProfesorRest.class)
+@Import(BaseRestTestConfig.class)
 class ProfesorRestTest {
 
-    @Mock
+    @MockBean
     private ServicioProfesor servicioProfesor;
 
-    @Mock
+    @MockBean
+    private ServicioClase servicioClase;
+
+    @MockBean
+    private ServicioJwt servicioJwt;
+
+    @MockBean
     private SecurityUtils securityUtils;
 
-    @InjectMocks
-    private ProfesorRest profesorRest;
-
+    @Autowired
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
 
@@ -48,10 +55,13 @@ class ProfesorRestTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(profesorRest)
-                .setControllerAdvice(new app.excepciones.GlobalExceptionHandler())
-                .build();
         objectMapper = new ObjectMapper();
+
+        // Configure SecurityUtils mock for ADMIN role
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        when(securityUtils.hasRole("PROFESOR")).thenReturn(false);
+        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
+        when(securityUtils.getCurrentUserId()).thenReturn(1L);
 
         dtoProfesor1 = new DTOProfesor(
             1L, "juan123", "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", 
@@ -68,6 +78,7 @@ class ProfesorRestTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("POST /api/profesores debe crear profesor correctamente")
     void testCrearProfesor() throws Exception {
         DTOPeticionRegistroProfesor peticion = new DTOPeticionRegistroProfesor(
@@ -78,7 +89,7 @@ class ProfesorRestTest {
         mockMvc.perform(post("/api/profesores")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(peticion)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.username").value("juan123"));
 
@@ -86,6 +97,7 @@ class ProfesorRestTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("POST /api/profesores debe validar datos requeridos")
     void testCrearProfesorValidacion() throws Exception {
         DTOPeticionRegistroProfesor peticionInvalida = new DTOPeticionRegistroProfesor("", "", "", "", "", "", "");

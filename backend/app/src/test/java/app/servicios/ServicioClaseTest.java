@@ -98,7 +98,7 @@ class ServicioClaseTest {
         peticionCrearClase = new DTOPeticionCrearClase(
                 "Nuevo Curso", "Descripción del curso", new BigDecimal("89.99"),
                 EPresencialidad.ONLINE, "nueva-imagen.jpg", EDificultad.PRINCIPIANTE,
-                Arrays.asList("profesor1"), Arrays.asList(material)
+                Arrays.asList("3"), Arrays.asList(material)
         );
 
         // Crear profesor de prueba
@@ -273,20 +273,20 @@ class ServicioClaseTest {
     @DisplayName("buscarClases debe retornar resultados paginados")
     void testBuscarClases() {
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-                "Java", null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
+                null, "Java", null, null, null, null, null, null, 0, 10, "titulo", "ASC");
         
         List<Clase> clases = Arrays.asList(curso);
         Pageable pageable = PageRequest.of(0, 10);
         Page<Clase> page = new PageImpl<>(clases, pageable, 1);
         
-        when(repositorioClase.findByGeneralSearch(eq("Java"), any(Pageable.class))).thenReturn(page);
+        lenient().when(repositorioClase.findByGeneralAndSpecificFilters(any(), any(), any(), any(), any(), any(), any(), any(Pageable.class))).thenReturn(page);
 
         DTORespuestaPaginada<DTOClase> resultado = servicioClase.buscarClases(parametros);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.content().size());
         assertEquals("Curso de Java", resultado.content().get(0).titulo());
-        verify(repositorioClase).findByGeneralSearch(eq("Java"), any(Pageable.class));
+        verify(repositorioClase).findByGeneralAndSpecificFilters(any(), any(), any(), any(), any(), any(), any(), any(Pageable.class));
     }
 
     @Test
@@ -712,7 +712,7 @@ class ServicioClaseTest {
     void testBuscarClasesConFiltrosVacios() {
         // Arrange
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            "", "", "", null, null, null, null, null, null, 0, 10, "titulo", "ASC");
+            null, null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
         
         List<Clase> todasLasClases = Arrays.asList(curso, taller);
         Pageable pageable = PageRequest.of(0, 10);
@@ -737,16 +737,15 @@ class ServicioClaseTest {
     void testBuscarClasesSegunRolParaAdmin() {
         // Arrange
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            "Java", null, null, null, null, null, null, null, null, 0, 10, "titulo", "ASC");
+            null, "Java", null, null, null, null, null, null, 0, 10, "titulo", "ASC");
         
         when(securityUtils.isAdmin()).thenReturn(true);
-        when(securityUtils.isProfessor()).thenReturn(false);
         
         List<Clase> clases = Arrays.asList(curso);
         Pageable pageable = PageRequest.of(0, 10);
         Page<Clase> page = new PageImpl<>(clases, pageable, 1);
         
-        when(repositorioClase.findByGeneralSearch(eq("Java"), any(Pageable.class))).thenReturn(page);
+        lenient().when(repositorioClase.findByGeneralAndSpecificFilters(any(), any(), any(), any(), any(), any(), any(), any(Pageable.class))).thenReturn(page);
 
         // Act
         DTORespuestaPaginada<DTOClase> resultado = servicioClase.buscarClasesSegunRol(parametros);
@@ -756,7 +755,7 @@ class ServicioClaseTest {
         assertEquals(1, resultado.content().size());
         
         // Verify that buscarClases was called (for admin)
-        verify(repositorioClase).findByGeneralSearch(eq("Java"), any(Pageable.class));
+        verify(repositorioClase).findByGeneralAndSpecificFilters(any(), any(), any(), any(), any(), any(), any(), any(Pageable.class));
     }
 
     @Test

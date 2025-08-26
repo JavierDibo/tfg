@@ -21,7 +21,11 @@ public record DTOPago(
         EEstadoPago estado,
         String alumnoId,
         Boolean facturaCreada,
-        List<ItemPago> items
+        List<ItemPago> items,
+        String stripePaymentIntentId,
+        String stripeChargeId,
+        String failureReason,
+        String clientSecret // Only present in create response
 ) {
     
     /**
@@ -36,7 +40,11 @@ public record DTOPago(
                 pago.getEstado(),
                 pago.getAlumnoId(),
                 pago.getFacturaCreada(),
-                pago.getItems()
+                pago.getItems(),
+                pago.getStripePaymentIntentId(),
+                pago.getStripeChargeId(),
+                pago.getFailureReason(),
+                null // Never include client_secret when loading from DB
         );
     }
     
@@ -104,6 +112,7 @@ public record DTOPago(
             case DEBITO -> "Tarjeta de débito";
             case CREDITO -> "Tarjeta de crédito";
             case TRANSFERENCIA -> "Transferencia bancaria";
+            case STRIPE -> "Pago con Stripe";
         };
     }
     
@@ -112,6 +121,8 @@ public record DTOPago(
      */
     public String getDescripcionEstado() {
         return switch (this.estado) {
+            case PENDIENTE -> "Pago pendiente";
+            case PROCESANDO -> "Pago en procesamiento";
             case EXITO -> "Pago procesado exitosamente";
             case ERROR -> "Error en el procesamiento";
             case REEMBOLSADO -> "Pago reembolsado";

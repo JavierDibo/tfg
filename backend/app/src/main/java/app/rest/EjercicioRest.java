@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import app.dtos.DTOEjercicio;
 import app.dtos.DTOParametrosBusquedaEjercicio;
@@ -51,6 +52,7 @@ public class EjercicioRest extends BaseRestController {
 
     // Standard GET collection endpoint with comprehensive filtering and pagination
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
     @Operation(
         summary = "Get paginated exercises",
         description = "Gets a paginated list of exercises with optional filters."
@@ -109,6 +111,7 @@ public class EjercicioRest extends BaseRestController {
 
     // Standard GET specific resource endpoint
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
     @Operation(
         summary = "Get exercise by ID",
         description = "Gets a specific exercise by its ID."
@@ -141,6 +144,7 @@ public class EjercicioRest extends BaseRestController {
 
     // Standard POST create endpoint
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Create new exercise",
         description = "Creates a new exercise in the system (requires ADMIN or PROFESOR role)"
@@ -189,6 +193,7 @@ public class EjercicioRest extends BaseRestController {
 
     // Standard PATCH partial update endpoint
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Update exercise partially",
         description = "Partially updates an existing exercise (requires ADMIN or PROFESOR role)"
@@ -239,6 +244,7 @@ public class EjercicioRest extends BaseRestController {
 
     // Standard DELETE endpoint
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Delete exercise",
         description = "Deletes an exercise from the system (requires ADMIN or PROFESOR role)"
@@ -267,6 +273,7 @@ public class EjercicioRest extends BaseRestController {
 
     // Standard PUT replace endpoint
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Replace exercise",
         description = "Replaces an entire exercise record (requires ADMIN or PROFESOR role)"
@@ -318,6 +325,7 @@ public class EjercicioRest extends BaseRestController {
     // Additional endpoints for specific use cases
 
     @GetMapping("/{id}/entregas")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Get exercise deliveries",
         description = "Gets all deliveries for a specific exercise (requires ADMIN or PROFESOR role)"
@@ -350,6 +358,7 @@ public class EjercicioRest extends BaseRestController {
     }
 
     @GetMapping("/{id}/estadisticas")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Get exercise statistics",
         description = "Gets statistics about an exercise (requires ADMIN or PROFESOR role)"
@@ -382,6 +391,7 @@ public class EjercicioRest extends BaseRestController {
     }
 
     @GetMapping("/estadisticas")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
     @Operation(
         summary = "Get all exercises statistics",
         description = "Gets statistics about all exercises (requires ADMIN or PROFESOR role)"

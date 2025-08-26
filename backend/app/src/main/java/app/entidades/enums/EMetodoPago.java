@@ -9,5 +9,6 @@ public enum EMetodoPago {
     EFECTIVO,
     DEBITO,
     CREDITO,
-    TRANSFERENCIA
+    TRANSFERENCIA,
+    STRIPE
 }

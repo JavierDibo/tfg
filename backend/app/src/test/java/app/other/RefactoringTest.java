@@ -1,9 +1,17 @@
-package app.rest;
+package app.other;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+
+import app.rest.ClaseManagementRest;
+import app.rest.ClaseRest;
+import app.rest.EntregaEjercicioRest;
+import app.rest.UserClaseRest;
+import app.servicios.ServicioClase;
+import app.servicios.ServicioEntregaEjercicio;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -25,6 +33,12 @@ public class RefactoringTest {
 
     @Autowired(required = false)
     private UserClaseRest userClaseRest;
+
+    @MockBean
+    private ServicioClase servicioClase;
+    
+    @MockBean
+    private ServicioEntregaEjercicio servicioEntregaEjercicio;
 
     @Test
     public void testClaseRestInstantiation() {

@@ -2,6 +2,7 @@ package app.entidades;
 
 import app.entidades.enums.EMetodoPago;
 import app.entidades.enums.EEstadoPago;
+import app.validation.stripe.ValidStripePaymentIntentId;
 import jakarta.persistence.*;
 import jakarta.persistence.FetchType;
 import jakarta.validation.constraints.DecimalMin;
@@ -57,6 +58,17 @@ public class Pago {
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "pago_items", joinColumns = @JoinColumn(name = "pago_id"))
     private List<ItemPago> items = new ArrayList<>();
+    
+    // Stripe fields (add after existing fields)
+    @ValidStripePaymentIntentId
+    private String stripePaymentIntentId;
+    
+    private String stripeChargeId;
+    
+    @Size(max = 500, message = "La razón del fallo no puede exceder 500 caracteres")
+    private String failureReason;
+    
+    private LocalDateTime fechaExpiracion;
     
     public Pago() {
         this.fechaPago = LocalDateTime.now();

@@ -8,13 +8,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Arrays;
 
@@ -23,17 +23,19 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(ClaseManagementRest.class)
+@Import(BaseRestTestConfig.class)
+@ActiveProfiles("test")
 @DisplayName("Tests para ClaseManagementRest")
 class ClaseManagementRestTest {
 
-    @Mock
+    @MockBean
     private ServicioClase servicioClase;
 
-    @InjectMocks
-    private ClaseManagementRest claseManagementRest;
-
+    @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     private DTOClase dtoClase;
@@ -41,11 +43,6 @@ class ClaseManagementRestTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(claseManagementRest)
-                .setControllerAdvice(new app.excepciones.GlobalExceptionHandler())
-                .build();
-        objectMapper = new ObjectMapper();
-
         // Crear DTOs de prueba
         dtoClase = new DTOClase(
                 1L, "Matemáticas I", "Descripción de la clase",

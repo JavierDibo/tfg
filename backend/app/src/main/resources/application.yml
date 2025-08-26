@@ -61,3 +61,11 @@ app:
       enabled: true          # Enable/disable ANSI color codes in console output
     encapsulation:
       enabled: true          # Enable/disable visual request encapsulation
+
+# Stripe Configuration
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_placeholder}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+  currency: EUR
+  test-mode: true
