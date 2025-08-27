@@ -1,147 +1,43 @@
 <script lang="ts">
-	import type { ErrorInfo } from '$lib/utils/errorHandler';
+	// Props using Svelte 5 syntax
+	const { error = '' } = $props<{
+		error?: string | { type: string; message: string; title: string };
+	}>();
 
-	export let error: ErrorInfo;
-	export let onRetry: (() => void) | undefined = undefined;
-	export let onDismiss: (() => void) | undefined = undefined;
-	export let showTitle = true;
-	export let compact = false;
-
-	function getIconClass(): string {
-		switch (error.type) {
-			case 'error':
-				return 'text-red-400';
-			case 'warning':
-				return 'text-yellow-400';
-			case 'info':
-				return 'text-blue-400';
-			default:
-				return 'text-red-400';
+	// Helper function to get error message
+	function getErrorMessage(): string {
+		if (typeof error === 'string') {
+			return error;
+		} else if (error && typeof error === 'object' && 'message' in error) {
+			return error.message;
 		}
-	}
-
-	function getContainerClass(): string {
-		const baseClass = 'rounded-md border p-4';
-		const typeClass =
-			error.type === 'error'
-				? 'border-red-200 bg-red-50'
-				: error.type === 'warning'
-					? 'border-yellow-200 bg-yellow-50'
-					: 'border-blue-200 bg-blue-50';
-
-		return `${baseClass} ${typeClass}`;
-	}
-
-	function getTitleClass(): string {
-		const baseClass = 'text-sm font-medium';
-		const typeClass =
-			error.type === 'error'
-				? 'text-red-800'
-				: error.type === 'warning'
-					? 'text-yellow-800'
-					: 'text-blue-800';
-
-		return `${baseClass} ${typeClass}`;
-	}
-
-	function getMessageClass(): string {
-		const baseClass = 'text-sm';
-		const typeClass =
-			error.type === 'error'
-				? 'text-red-700'
-				: error.type === 'warning'
-					? 'text-yellow-700'
-					: 'text-blue-700';
-
-		return `${baseClass} ${typeClass}`;
-	}
-
-	function handleRetry() {
-		if (onRetry) {
-			onRetry();
-		}
-	}
-
-	function handleDismiss() {
-		if (onDismiss) {
-			onDismiss();
-		}
+		return 'An unknown error occurred';
 	}
 </script>
 
-<div class={getContainerClass()}>
-	<div class="flex">
-		<div class="flex-shrink-0">
-			{#if error.type === 'error'}
-				<svg class="h-5 w-5 {getIconClass()}" viewBox="0 0 20 20" fill="currentColor">
+{#if error}
+	<div class="rounded-md border border-red-200 bg-red-50 p-4">
+		<div class="flex">
+			<div class="flex-shrink-0">
+				<svg
+					class="h-5 w-5 text-red-400"
+					viewBox="0 0 20 20"
+					fill="currentColor"
+					aria-hidden="true"
+				>
 					<path
 						fill-rule="evenodd"
-						d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+						d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
 						clip-rule="evenodd"
 					/>
 				</svg>
-			{:else if error.type === 'warning'}
-				<svg class="h-5 w-5 {getIconClass()}" viewBox="0 0 20 20" fill="currentColor">
-					<path
-						fill-rule="evenodd"
-						d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-			{:else}
-				<svg class="h-5 w-5 {getIconClass()}" viewBox="0 0 20 20" fill="currentColor">
-					<path
-						fill-rule="evenodd"
-						d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-			{/if}
-		</div>
-		<div class="ml-3 flex-1">
-			{#if showTitle && error.title}
-				<h3 class={getTitleClass()}>{error.title}</h3>
-			{/if}
-			<div class={getMessageClass()}>
-				<p>{error.message}</p>
-
-				{#if error.fieldErrors && Object.keys(error.fieldErrors).length > 0}
-					<div class="mt-2">
-						<p class="font-medium">Errores de validación:</p>
-						<ul class="mt-1 list-inside list-disc space-y-1">
-							{#each Object.entries(error.fieldErrors) as [field, errors] (field)}
-								<li>
-									<span class="font-medium">{field}:</span>
-									{errors.join(', ')}
-								</li>
-							{/each}
-						</ul>
-					</div>
-				{/if}
 			</div>
-
-			{#if !compact && (onRetry || onDismiss)}
-				<div class="mt-4 flex space-x-3">
-					{#if onRetry && error.canRetry}
-						<button
-							type="button"
-							class="inline-flex items-center rounded-md border border-transparent bg-red-600 px-3 py-2 text-sm leading-4 font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
-							on:click={handleRetry}
-						>
-							Reintentar
-						</button>
-					{/if}
-					{#if onDismiss}
-						<button
-							type="button"
-							class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-							on:click={handleDismiss}
-						>
-							Cerrar
-						</button>
-					{/if}
+			<div class="ml-3">
+				<h3 class="text-sm font-medium text-red-800">Error</h3>
+				<div class="mt-2 text-sm text-red-700">
+					<p>{getErrorMessage()}</p>
 				</div>
-			{/if}
+			</div>
 		</div>
 	</div>
-</div>
+{/if}

@@ -36,7 +36,6 @@
 				try {
 					// Check payment status
 					const status = await PagoService.checkPaymentStatus(parseInt(paymentId));
-					console.log(`Payment status check:`, status);
 
 					if (status.isSuccessful) {
 						paymentStatus = 'success';
@@ -44,15 +43,12 @@
 						return true;
 					} else if (status.status === 'PENDIENTE' || status.status === 'PROCESANDO') {
 						// Payment is still processing, retry
-						console.log(`Payment still pending/processing: ${status.status}`);
 						return false;
 					} else {
 						paymentStatus = 'failed';
-						console.log(`Payment failed with status: ${status.status}`);
 						return true;
 					}
-				} catch (err: unknown) {
-					console.warn(`Payment status check attempt ${retryCount + 1} failed:`, err);
+				} catch {
 					return false;
 				}
 			};
@@ -63,7 +59,6 @@
 			// Retry logic for pending payments
 			while (!resolved && retryCount < maxRetries) {
 				retryCount++;
-				console.log(`Retrying payment status check (attempt ${retryCount}/${maxRetries})`);
 
 				// Wait 3 seconds before retry (increased from 2 seconds)
 				await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -83,121 +78,53 @@
 	<title>Payment Result</title>
 </svelte:head>
 
-<div class="payment-result">
+<div class="mx-auto my-12 max-w-2xl p-8 text-center">
 	{#if paymentStatus === 'checking'}
-		<div class="loading">
-			<h2>Processing Payment...</h2>
-			<p>Please wait while we confirm your payment.</p>
+		<div class="rounded-lg border border-blue-200 bg-blue-50 p-8 shadow-sm">
+			<h2 class="mb-4 text-2xl font-semibold text-blue-700">Processing Payment...</h2>
+			<p class="text-blue-600">Please wait while we confirm your payment.</p>
 		</div>
 	{:else if paymentStatus === 'success'}
-		<div class="success">
-			<h2>Payment Successful! 🎉</h2>
+		<div class="rounded-lg border border-green-200 bg-green-50 p-8 shadow-sm">
+			<h2 class="mb-4 text-2xl font-semibold text-green-700">Payment Successful! 🎉</h2>
 			{#if payment}
-				<div class="payment-details">
-					<p><strong>Amount:</strong> €{payment.importe}</p>
-					<p><strong>Date:</strong> {new Date(payment.fechaPago || '').toLocaleDateString()}</p>
-					<p><strong>Status:</strong> {payment.estado}</p>
+				<div class="my-6 rounded-md bg-white p-4 text-left">
+					<p class="mb-2 text-gray-700"><strong>Amount:</strong> €{payment.importe}</p>
+					<p class="mb-2 text-gray-700">
+						<strong>Date:</strong>
+						{new Date(payment.fechaPago || '').toLocaleDateString()}
+					</p>
+					<p class="text-gray-700"><strong>Status:</strong> {payment.estado}</p>
 				</div>
 			{/if}
-			<a href="/dashboard" class="button">Go to Dashboard</a>
+			<a
+				href="/dashboard"
+				class="text-decoration-none mt-4 inline-block rounded-md bg-blue-600 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-blue-700"
+			>
+				Go to Dashboard
+			</a>
 		</div>
 	{:else if paymentStatus === 'failed'}
-		<div class="failed">
-			<h2>Payment Failed</h2>
-			<p>Your payment could not be processed. Please try again.</p>
-			<a href="/payment" class="button">Try Again</a>
+		<div class="rounded-lg border border-red-200 bg-red-50 p-8 shadow-sm">
+			<h2 class="mb-4 text-2xl font-semibold text-red-700">Payment Failed</h2>
+			<p class="mb-4 text-red-600">Your payment could not be processed. Please try again.</p>
+			<a
+				href="/payment"
+				class="text-decoration-none inline-block rounded-md bg-blue-600 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-blue-700"
+			>
+				Try Again
+			</a>
 		</div>
 	{:else if paymentStatus === 'error'}
-		<div class="error">
-			<h2>Error</h2>
-			<p>{error}</p>
-			<a href="/payment" class="button">Back to Payment</a>
+		<div class="rounded-lg border border-red-200 bg-red-50 p-8 shadow-sm">
+			<h2 class="mb-4 text-2xl font-semibold text-red-700">Error</h2>
+			<p class="mb-4 text-red-600">{error}</p>
+			<a
+				href="/payment"
+				class="text-decoration-none inline-block rounded-md bg-blue-600 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-blue-700"
+			>
+				Back to Payment
+			</a>
 		</div>
 	{/if}
 </div>
-
-<style>
-	.payment-result {
-		max-width: 600px;
-		margin: 50px auto;
-		padding: 2rem;
-		text-align: center;
-	}
-
-	.loading,
-	.success,
-	.failed,
-	.error {
-		padding: 2rem;
-		border-radius: 0.5rem;
-		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-	}
-
-	.loading {
-		background-color: #f0f9ff;
-		border: 1px solid #bae6fd;
-	}
-
-	.success {
-		background-color: #f0fdf4;
-		border: 1px solid #bbf7d0;
-	}
-
-	.failed {
-		background-color: #fef2f2;
-		border: 1px solid #fecaca;
-	}
-
-	.error {
-		background-color: #fef2f2;
-		border: 1px solid #fecaca;
-	}
-
-	h2 {
-		margin-bottom: 1rem;
-		font-size: 1.5rem;
-		font-weight: 600;
-	}
-
-	.loading h2 {
-		color: #0369a1;
-	}
-
-	.success h2 {
-		color: #059669;
-	}
-
-	.failed h2,
-	.error h2 {
-		color: #dc2626;
-	}
-
-	.payment-details {
-		margin: 1.5rem 0;
-		padding: 1rem;
-		background-color: white;
-		border-radius: 0.375rem;
-		text-align: left;
-	}
-
-	.payment-details p {
-		margin: 0.5rem 0;
-		color: #374151;
-	}
-
-	.button {
-		display: inline-block;
-		margin-top: 1rem;
-		padding: 0.75rem 1.5rem;
-		background-color: #3b82f6;
-		color: white;
-		text-decoration: none;
-		border-radius: 0.375rem;
-		font-weight: 500;
-		transition: background-color 0.2s;
-	}
-
-	.button:hover {
-		background-color: #2563eb;
-	}
-</style>

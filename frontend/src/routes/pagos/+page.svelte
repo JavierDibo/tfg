@@ -39,16 +39,30 @@
 	<title>Payment Management</title>
 </svelte:head>
 
-<div class="pagos-page">
-	<div class="header">
-		<h1>Payment Management</h1>
-		<div class="header-actions">
-			{#if authStore.user?.roles?.includes('ALUMNO')}
-				<button class="view-history-btn" onclick={() => goto('/pagos/my-payments')}>
+<div class="mx-auto max-w-6xl p-8">
+	<div class="mb-8 flex items-center justify-between">
+		<h1 class="m-0 text-4xl font-semibold text-gray-900">Payment Management</h1>
+		<div class="flex items-center gap-4">
+			{#if authStore.user?.roles?.includes('ROLE_ADMIN')}
+				<button
+					class="cursor-pointer rounded-md border-none bg-green-600 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-green-700"
+					onclick={() => goto('/pagos/admin')}
+				>
+					Admin View
+				</button>
+			{/if}
+			{#if authStore.user?.roles?.includes('ROLE_ALUMNO')}
+				<button
+					class="cursor-pointer rounded-md border-none bg-gray-600 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-gray-700"
+					onclick={() => goto('/pagos/my-payments')}
+				>
 					View My Payments
 				</button>
 			{/if}
-			<button class="new-payment-btn" onclick={() => openPaymentForm(50, 'Course Payment')}>
+			<button
+				class="cursor-pointer rounded-md border-none bg-blue-600 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-blue-700"
+				onclick={() => openPaymentForm(50, 'Course Payment')}
+			>
 				New Payment
 			</button>
 		</div>
@@ -56,7 +70,7 @@
 
 	{#if showPaymentForm}
 		<div
-			class="modal-overlay"
+			class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
 			onclick={closePaymentForm}
 			onkeydown={(e) => e.key === 'Escape' && closePaymentForm()}
 			role="dialog"
@@ -64,15 +78,20 @@
 			tabindex="-1"
 		>
 			<div
-				class="modal-content"
+				class="max-h-screen w-11/12 max-w-lg overflow-y-auto rounded-lg bg-white p-8"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.key === 'Escape' && closePaymentForm()}
 				role="dialog"
 				tabindex="-1"
 			>
-				<div class="modal-header">
-					<h2>Create New Payment</h2>
-					<button class="close-btn" onclick={closePaymentForm}>&times;</button>
+				<div class="mb-6 flex items-center justify-between">
+					<h2 class="m-0 text-2xl font-semibold text-gray-900">Create New Payment</h2>
+					<button
+						class="flex h-8 w-8 cursor-pointer items-center justify-center rounded border-none bg-transparent p-0 text-2xl text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+						onclick={closePaymentForm}
+					>
+						&times;
+					</button>
 				</div>
 				<PaymentForm
 					amount={selectedAmount}
@@ -84,207 +103,37 @@
 		</div>
 	{/if}
 
-	<div class="content">
+	<div class="grid gap-8">
 		<div class="quick-payments">
-			<h2>Quick Payments</h2>
-			<div class="payment-options">
-				<button class="payment-option" onclick={() => openPaymentForm(25, 'Basic Course')}>
-					<h3>Basic Course</h3>
-					<p class="price">€25.00</p>
+			<h2 class="mb-4 text-2xl font-semibold text-gray-900">Quick Payments</h2>
+			<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+				<button
+					class="cursor-pointer rounded-lg border border-gray-200 bg-white p-6 text-center transition-all duration-200 hover:border-blue-600 hover:shadow-md"
+					onclick={() => openPaymentForm(25, 'Basic Course')}
+				>
+					<h3 class="m-0 mb-2 text-lg font-semibold text-gray-900">Basic Course</h3>
+					<p class="m-0 text-xl font-bold text-blue-600">€25.00</p>
 				</button>
-				<button class="payment-option" onclick={() => openPaymentForm(50, 'Advanced Course')}>
-					<h3>Advanced Course</h3>
-					<p class="price">€50.00</p>
+				<button
+					class="cursor-pointer rounded-lg border border-gray-200 bg-white p-6 text-center transition-all duration-200 hover:border-blue-600 hover:shadow-md"
+					onclick={() => openPaymentForm(50, 'Advanced Course')}
+				>
+					<h3 class="m-0 mb-2 text-lg font-semibold text-gray-900">Advanced Course</h3>
+					<p class="m-0 text-xl font-bold text-blue-600">€50.00</p>
 				</button>
-				<button class="payment-option" onclick={() => openPaymentForm(100, 'Premium Course')}>
-					<h3>Premium Course</h3>
-					<p class="price">€100.00</p>
+				<button
+					class="cursor-pointer rounded-lg border border-gray-200 bg-white p-6 text-center transition-all duration-200 hover:border-blue-600 hover:shadow-md"
+					onclick={() => openPaymentForm(100, 'Premium Course')}
+				>
+					<h3 class="m-0 mb-2 text-lg font-semibold text-gray-900">Premium Course</h3>
+					<p class="m-0 text-xl font-bold text-blue-600">€100.00</p>
 				</button>
 			</div>
 		</div>
 
 		<div class="payment-history-section">
-			<h2>Recent Payments</h2>
+			<h2 class="mb-4 text-2xl font-semibold text-gray-900">Recent Payments</h2>
 			<PaymentHistory />
 		</div>
 	</div>
 </div>
-
-<style>
-	.pagos-page {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: 2rem;
-	}
-
-	.header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 2rem;
-	}
-
-	.header-actions {
-		display: flex;
-		gap: 1rem;
-		align-items: center;
-	}
-
-	h1 {
-		color: #1f2937;
-		font-size: 2rem;
-		font-weight: 600;
-		margin: 0;
-	}
-
-	.new-payment-btn {
-		padding: 0.75rem 1.5rem;
-		background-color: #3b82f6;
-		color: white;
-		border: none;
-		border-radius: 0.375rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: background-color 0.2s;
-	}
-
-	.new-payment-btn:hover {
-		background-color: #2563eb;
-	}
-
-	.view-history-btn {
-		padding: 0.75rem 1.5rem;
-		background-color: #6b7280;
-		color: white;
-		border: none;
-		border-radius: 0.375rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: background-color 0.2s;
-	}
-
-	.view-history-btn:hover {
-		background-color: #4b5563;
-	}
-
-	.content {
-		display: grid;
-		gap: 2rem;
-	}
-
-	.quick-payments h2,
-	.payment-history-section h2 {
-		color: #1f2937;
-		font-size: 1.5rem;
-		font-weight: 600;
-		margin-bottom: 1rem;
-	}
-
-	.payment-options {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 1rem;
-	}
-
-	.payment-option {
-		padding: 1.5rem;
-		border: 1px solid #e5e7eb;
-		border-radius: 0.5rem;
-		background-color: white;
-		cursor: pointer;
-		transition: all 0.2s;
-		text-align: center;
-	}
-
-	.payment-option:hover {
-		border-color: #3b82f6;
-		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-	}
-
-	.payment-option h3 {
-		margin: 0 0 0.5rem 0;
-		color: #1f2937;
-		font-size: 1.125rem;
-		font-weight: 600;
-	}
-
-	.price {
-		margin: 0;
-		color: #3b82f6;
-		font-size: 1.25rem;
-		font-weight: 700;
-	}
-
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-	}
-
-	.modal-content {
-		background-color: white;
-		border-radius: 0.5rem;
-		padding: 2rem;
-		max-width: 500px;
-		width: 90%;
-		max-height: 90vh;
-		overflow-y: auto;
-	}
-
-	.modal-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 1.5rem;
-	}
-
-	.modal-header h2 {
-		margin: 0;
-		color: #1f2937;
-		font-size: 1.5rem;
-		font-weight: 600;
-	}
-
-	.close-btn {
-		background: none;
-		border: none;
-		font-size: 1.5rem;
-		cursor: pointer;
-		color: #6b7280;
-		padding: 0;
-		width: 2rem;
-		height: 2rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 0.25rem;
-	}
-
-	.close-btn:hover {
-		background-color: #f3f4f6;
-		color: #374151;
-	}
-
-	@media (max-width: 768px) {
-		.pagos-page {
-			padding: 1rem;
-		}
-
-		.header {
-			flex-direction: column;
-			gap: 1rem;
-			text-align: center;
-		}
-
-		.payment-options {
-			grid-template-columns: 1fr;
-		}
-	}
-</style>

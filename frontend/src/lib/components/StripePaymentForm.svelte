@@ -123,94 +123,30 @@
 </script>
 
 <form onsubmit={handleSubmit} bind:this={paymentForm}>
-	<div class="payment-form">
-		<h2>Payment Details</h2>
+	<div class="mx-auto max-w-2xl rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
+		<h2 class="mb-6 text-center text-2xl font-semibold text-gray-900">Payment Details</h2>
 
-		<div class="payment-summary">
-			<p><strong>Amount:</strong> €{amount.toFixed(2)}</p>
-			<p><strong>Description:</strong> {description}</p>
+		<div class="mb-6 rounded-md bg-gray-50 p-4">
+			<p class="mb-2 text-gray-700"><strong>Amount:</strong> €{amount.toFixed(2)}</p>
+			<p class="text-gray-700"><strong>Description:</strong> {description}</p>
 		</div>
 
-		<div id="payment-element">
+		<div id="payment-element" class="mb-6">
 			<!-- Stripe Elements will be mounted here -->
 		</div>
 
 		{#if error}
-			<div class="error">
+			<div class="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
 				{error}
 			</div>
 		{/if}
 
-		<button type="submit" disabled={isDisabled} class="pay-button">
+		<button
+			type="submit"
+			disabled={isDisabled}
+			class="w-full cursor-pointer rounded-md border-none bg-blue-600 px-6 py-3 text-base font-medium text-white transition-colors duration-200 hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+		>
 			{buttonText}
 		</button>
 	</div>
 </form>
-
-<style>
-	.payment-form {
-		max-width: 600px;
-		margin: 0 auto;
-		padding: 2rem;
-		border: 1px solid #e5e7eb;
-		border-radius: 0.5rem;
-		background-color: white;
-		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-	}
-
-	h2 {
-		text-align: center;
-		margin-bottom: 1.5rem;
-		color: #1f2937;
-		font-size: 1.5rem;
-		font-weight: 600;
-	}
-
-	.payment-summary {
-		margin-bottom: 1.5rem;
-		padding: 1rem;
-		background-color: #f9fafb;
-		border-radius: 0.375rem;
-	}
-
-	.payment-summary p {
-		margin: 0.5rem 0;
-		color: #374151;
-	}
-
-	#payment-element {
-		margin-bottom: 1.5rem;
-	}
-
-	.error {
-		margin-bottom: 1rem;
-		padding: 0.75rem;
-		background-color: #fef2f2;
-		border: 1px solid #fecaca;
-		border-radius: 0.375rem;
-		color: #dc2626;
-		font-size: 0.875rem;
-	}
-
-	.pay-button {
-		width: 100%;
-		padding: 0.75rem 1.5rem;
-		background-color: #3b82f6;
-		color: white;
-		border: none;
-		border-radius: 0.375rem;
-		font-size: 1rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: background-color 0.2s;
-	}
-
-	.pay-button:hover:not(:disabled) {
-		background-color: #2563eb;
-	}
-
-	.pay-button:disabled {
-		background-color: #9ca3af;
-		cursor: not-allowed;
-	}
-</style>

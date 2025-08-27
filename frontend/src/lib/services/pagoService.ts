@@ -68,6 +68,56 @@ export class PagoService {
 		}
 	}
 
+	/**
+	 * Get all payments for admin view with enhanced details
+	 */
+	static async getAllPayments(params?: {
+		page?: number;
+		size?: number;
+		sortBy?: string;
+		sortDirection?: string;
+	}): Promise<{ content: DTOPago[]; totalElements: number; totalPages: number }> {
+		try {
+			const response = await pagoApi.obtenerPagos(params || {});
+			return {
+				content: response.content || [],
+				totalElements: response.totalElements || 0,
+				totalPages: response.totalPages || 0
+			};
+		} catch (error) {
+			ErrorHandler.logError(error, 'getAllPayments');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get payments for a specific student by ID
+	 */
+	static async getPaymentsByStudentId(
+		studentId: string,
+		params?: {
+			page?: number;
+			size?: number;
+			sortBy?: string;
+			sortDirection?: string;
+		}
+	): Promise<{ content: DTOPago[]; totalElements: number; totalPages: number }> {
+		try {
+			const response = await pagoApi.obtenerPagosPorAlumno({
+				alumnoId: studentId,
+				...params
+			});
+			return {
+				content: response.content || [],
+				totalElements: response.totalElements || 0,
+				totalPages: response.totalPages || 0
+			};
+		} catch (error) {
+			ErrorHandler.logError(error, `getPaymentsByStudentId(${studentId})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
 	// ==================== PAYMENT STATUS OPERATIONS ====================
 
 	/**

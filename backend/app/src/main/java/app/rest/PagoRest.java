@@ -94,7 +94,60 @@ public class PagoRest extends BaseRestController {
             @RequestParam(defaultValue = "DESC") @Pattern(regexp = "(?i)^(ASC|DESC)$") String sortDirection) {
         
         Pageable pageable = createPageable(page, size, sortBy, sortDirection);
-        DTORespuestaPaginada<DTOPago> response = servicioPago.obtenerPagos(pageable);
+        DTORespuestaPaginada<DTOPago> response = servicioPago.obtenerTodosLosPagos(pageable);
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Gets paginated payments for a specific student
+     * Only ADMIN and PROFESOR can access student payment data
+     */
+    @GetMapping("/alumno/{alumnoId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESOR')")
+    @Operation(
+        summary = "Get student payments",
+        description = "Gets a paginated list of payments for a specific student. Only ADMIN and PROFESOR can access student payment data."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Paginated list of student payments retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTORespuestaPaginada.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination parameters"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view student payments"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Student not found"
+        )
+    })
+    public ResponseEntity<DTORespuestaPaginada<DTOPago>> obtenerPagosPorAlumno(
+            @Parameter(description = "Student ID", example = "123")
+            @PathVariable @Size(max = 255) String alumnoId,
+            
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            
+            @Parameter(description = "Page size (1-100)", example = "20")
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            
+            @Parameter(description = "Field to sort by", example = "fechaPago")
+            @RequestParam(defaultValue = "fechaPago") @Size(max = 50) String sortBy,
+            
+            @Parameter(description = "Sort direction", example = "DESC")
+            @RequestParam(defaultValue = "DESC") @Pattern(regexp = "(?i)^(ASC|DESC)$") String sortDirection) {
+        
+        Pageable pageable = createPageable(page, size, sortBy, sortDirection);
+        DTORespuestaPaginada<DTOPago> response = servicioPago.obtenerPagosPorAlumno(alumnoId, pageable);
         return ResponseEntity.ok(response);
     }
     
@@ -315,37 +368,16 @@ public class PagoRest extends BaseRestController {
             @RequestHeader(value = "Stripe-Event-Id", required = false) String eventId) {
         
         try {
-            // Debug webhook configuration
-            log.info("Webhook processing - Test mode: {}, Webhook secret: {}", 
-                stripeProperties.isTestMode(), 
-                stripeProperties.getWebhookSecret().substring(0, 10) + "...");
-            
-            // Debug payload and signature
-            log.info("Webhook payload length: {}", payload.length());
-            log.info("Webhook signature: {}", signature.substring(0, 20) + "...");
-            
             // Validate webhook signature
             Event event;
             try {
                 event = Webhook.constructEvent(payload, signature, stripeProperties.getWebhookSecret());
-                log.info("Webhook signature verification successful");
             } catch (SignatureVerificationException e) {
                 log.error("Webhook signature verification failed: {}", e.getMessage());
                 throw e;
             }
             
             log.info("Processing Stripe webhook event: {} with ID: {}", event.getType(), event.getId());
-            log.info("Event data object type: {}", event.getDataObjectDeserializer().getObject().map(Object::getClass).orElse(null));
-            
-            // Debug the raw event data
-            log.info("Event data object present: {}", event.getDataObjectDeserializer().getObject().isPresent());
-            if (event.getDataObjectDeserializer().getObject().isPresent()) {
-                Object obj = event.getDataObjectDeserializer().getObject().get();
-                log.info("Event data object class: {}", obj.getClass().getName());
-                log.info("Event data object toString: {}", obj.toString());
-            } else {
-                log.warn("Event data object is not present - this might indicate a webhook secret mismatch");
-            }
             
             // Check for duplicate event processing (idempotency)
             if (eventId != null && isEventAlreadyProcessed(eventId)) {
@@ -355,50 +387,9 @@ public class PagoRest extends BaseRestController {
             
             // Process the event
             if ("payment_intent.succeeded".equals(event.getType())) {
-                log.info("Processing payment_intent.succeeded event");
-                
-                // Try multiple approaches to extract PaymentIntent
-                PaymentIntent paymentIntent = null;
-                
-                // Method 1: Try direct deserialization
-                var dataObject = event.getDataObjectDeserializer().getObject();
-                if (dataObject.isPresent() && dataObject.get() instanceof PaymentIntent) {
-                    paymentIntent = (PaymentIntent) dataObject.get();
-                    log.info("PaymentIntent extracted via direct deserialization: {}", paymentIntent.getId());
-                } else {
-                    // Method 2: Try manual JSON parsing
-                    try {
-                        String eventJson = event.toJson();
-                        log.info("Event JSON: {}", eventJson);
-                        
-                        // Extract payment_intent ID from the event
-                        if (eventJson.contains("\"id\"")) {
-                            // Use a simple approach to extract the payment intent ID
-                            int idIndex = eventJson.indexOf("\"id\"");
-                            int startQuote = eventJson.indexOf("\"", idIndex + 4);
-                            int endQuote = eventJson.indexOf("\"", startQuote + 1);
-                            if (startQuote > 0 && endQuote > startQuote) {
-                                String paymentIntentId = eventJson.substring(startQuote + 1, endQuote);
-                                if (paymentIntentId.startsWith("pi_")) {
-                                    log.info("Extracted PaymentIntent ID from JSON: {}", paymentIntentId);
-                                    
-                                    // Fetch the PaymentIntent from Stripe API
-                                    try {
-                                        paymentIntent = PaymentIntent.retrieve(paymentIntentId);
-                                        log.info("PaymentIntent retrieved from Stripe API: {}", paymentIntent.getId());
-                                    } catch (Exception e) {
-                                        log.error("Failed to retrieve PaymentIntent from Stripe API: {}", e.getMessage());
-                                    }
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        log.error("Error parsing event JSON: {}", e.getMessage());
-                    }
-                }
+                PaymentIntent paymentIntent = extractPaymentIntentFromEvent(event);
                 
                 if (paymentIntent != null) {
-                    log.info("Calling procesarEventoStripe for PaymentIntent: {}", paymentIntent.getId());
                     try {
                         servicioPago.procesarEventoStripe(
                             event.getType(),
@@ -415,11 +406,7 @@ public class PagoRest extends BaseRestController {
                     log.error("Could not extract PaymentIntent from webhook event");
                 }
             } else if ("payment_intent.payment_failed".equals(event.getType())) {
-                PaymentIntent paymentIntent = null;
-                var dataObject = event.getDataObjectDeserializer().getObject();
-                if (dataObject.isPresent() && dataObject.get() instanceof PaymentIntent) {
-                    paymentIntent = (PaymentIntent) dataObject.get();
-                }
+                PaymentIntent paymentIntent = extractPaymentIntentFromEvent(event);
                 
                 if (paymentIntent != null) {
                     String failureReason = paymentIntent.getLastPaymentError() != null ? 
@@ -433,11 +420,7 @@ public class PagoRest extends BaseRestController {
                     log.warn("Payment failed for PaymentIntent: {} - Reason: {}", paymentIntent.getId(), failureReason);
                 }
             } else if ("payment_intent.processing".equals(event.getType())) {
-                PaymentIntent paymentIntent = null;
-                var dataObject = event.getDataObjectDeserializer().getObject();
-                if (dataObject.isPresent() && dataObject.get() instanceof PaymentIntent) {
-                    paymentIntent = (PaymentIntent) dataObject.get();
-                }
+                PaymentIntent paymentIntent = extractPaymentIntentFromEvent(event);
                 
                 if (paymentIntent != null) {
                     servicioPago.procesarEventoStripe(
@@ -470,5 +453,39 @@ public class PagoRest extends BaseRestController {
         // For now, return false to process all events
         // In production, you should store processed event IDs and check against them
         return false;
+    }
+    
+    /**
+     * Extract PaymentIntent from Stripe webhook event using multiple fallback methods
+     */
+    private PaymentIntent extractPaymentIntentFromEvent(Event event) {
+        // Method 1: Try direct deserialization
+        var dataObject = event.getDataObjectDeserializer().getObject();
+        if (dataObject.isPresent() && dataObject.get() instanceof PaymentIntent) {
+            return (PaymentIntent) dataObject.get();
+        }
+        
+        // Method 2: Try manual JSON parsing
+        try {
+            String eventJson = event.toJson();
+            
+            // Extract payment_intent ID from the event
+            if (eventJson.contains("\"id\"")) {
+                int idIndex = eventJson.indexOf("\"id\"");
+                int startQuote = eventJson.indexOf("\"", idIndex + 4);
+                int endQuote = eventJson.indexOf("\"", startQuote + 1);
+                if (startQuote > 0 && endQuote > startQuote) {
+                    String paymentIntentId = eventJson.substring(startQuote + 1, endQuote);
+                    if (paymentIntentId.startsWith("pi_")) {
+                        // Fetch the PaymentIntent from Stripe API
+                        return PaymentIntent.retrieve(paymentIntentId);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error extracting PaymentIntent from event: {}", e.getMessage());
+        }
+        
+        return null;
     }
 }

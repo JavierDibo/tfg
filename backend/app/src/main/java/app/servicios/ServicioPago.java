@@ -54,15 +54,6 @@ public class ServicioPago {
             
             PaymentIntent paymentIntent = PaymentIntent.create(params);
             
-            // Debug: Log the payment intent details
-            System.out.println("=== STRIPE PAYMENT INTENT CREATED ===");
-            System.out.println("PaymentIntent ID: " + paymentIntent.getId());
-            System.out.println("PaymentIntent Status: " + paymentIntent.getStatus());
-            System.out.println("Client Secret: " + paymentIntent.getClientSecret());
-            System.out.println("Amount: " + paymentIntent.getAmount());
-            System.out.println("Currency: " + paymentIntent.getCurrency());
-            System.out.println("=====================================");
-            
             // Create Pago entity
             Pago pago = new Pago();
             pago.setImporte(peticion.importe());
@@ -90,12 +81,6 @@ public class ServicioPago {
                 paymentIntent.getClientSecret() // Only in response, never stored
             );
             
-            // Debug: Log what's being returned
-            System.out.println("=== RESPONSE DTO ===");
-            System.out.println("DTO Client Secret: " + dtoPago.clientSecret());
-            System.out.println("DTO Payment Intent ID: " + dtoPago.stripePaymentIntentId());
-            System.out.println("===================");
-            
             return dtoPago;
             
         } catch (StripeException e) {
@@ -120,38 +105,24 @@ public class ServicioPago {
     }
     
     public void procesarEventoStripe(String eventType, String paymentIntentId, String chargeId, String failureReason) {
-        System.out.println("=== PROCESSING STRIPE EVENT ===");
-        System.out.println("Event Type: " + eventType);
-        System.out.println("Payment Intent ID: " + paymentIntentId);
-        System.out.println("Charge ID: " + chargeId);
-        System.out.println("Failure Reason: " + failureReason);
-        
         Pago pago = repositorioPago.findByStripePaymentIntentId(paymentIntentId)
             .orElseThrow(() -> new PaymentNotFoundException("stripePaymentIntentId", paymentIntentId));
-        
-        System.out.println("Found payment with ID: " + pago.getId());
-        System.out.println("Current status: " + pago.getEstado());
         
         switch (eventType) {
             case "payment_intent.succeeded":
                 pago.setEstado(EEstadoPago.EXITO);
                 pago.setStripeChargeId(chargeId);
-                System.out.println("Updated status to: EXITO");
                 break;
             case "payment_intent.payment_failed":
                 pago.setEstado(EEstadoPago.ERROR);
                 pago.setFailureReason(failureReason);
-                System.out.println("Updated status to: ERROR");
                 break;
             case "payment_intent.processing":
                 pago.setEstado(EEstadoPago.PROCESANDO);
-                System.out.println("Updated status to: PROCESANDO");
                 break;
         }
         
-        Pago savedPago = repositorioPago.save(pago);
-        System.out.println("Payment saved with new status: " + savedPago.getEstado());
-        System.out.println("=================================");
+        repositorioPago.save(pago);
     }
     
     private Long convertToCents(BigDecimal amount) {
@@ -212,5 +183,34 @@ public class ServicioPago {
         } catch (PaymentNotFoundException e) {
             return false;
         }
+    }
+    
+    /**
+     * Get paginated payments for a specific student
+     * @param alumnoId ID of the student
+     * @param pageable pagination parameters
+     * @return Paginated response with student's payments
+     */
+    public DTORespuestaPaginada<DTOPago> obtenerPagosPorAlumno(String alumnoId, Pageable pageable) {
+        Page<Pago> pagoPage = repositorioPago.findByAlumnoIdOrderByFechaPagoDesc(alumnoId, pageable);
+        return DTORespuestaPaginada.fromPage(
+            pagoPage.map(DTOPago::new),
+            pageable.getSort().toString(),
+            "DESC"
+        );
+    }
+    
+    /**
+     * Get all payments with enhanced details for admin view
+     * @param pageable pagination parameters
+     * @return Paginated response with all payments
+     */
+    public DTORespuestaPaginada<DTOPago> obtenerTodosLosPagos(Pageable pageable) {
+        Page<Pago> pagoPage = repositorioPago.findAll(pageable);
+        return DTORespuestaPaginada.fromPage(
+            pagoPage.map(DTOPago::new),
+            pageable.getSort().toString(),
+            "DESC"
+        );
     }
 }

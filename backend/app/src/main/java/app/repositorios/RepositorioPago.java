@@ -154,4 +154,14 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
     @EntityGraph(value = "Pago.withItems")
     @Query("SELECT p FROM Pago p WHERE p.alumnoId = :alumnoId ORDER BY p.fechaPago DESC")
     List<Pago> findByAlumnoIdOrderByFechaPagoDesc(@Param("alumnoId") String alumnoId);
+    
+    /**
+     * Busca pagos de un alumno ordenados por fecha de pago descendente con paginación
+     * @param alumnoId ID del alumno
+     * @param pageable Parámetros de paginación
+     * @return Página de pagos del alumno ordenada por fecha descendente
+     */
+    @EntityGraph(value = "Pago.withItems")
+    @Query("SELECT p FROM Pago p WHERE p.alumnoId = :alumnoId ORDER BY p.fechaPago DESC")
+    Page<Pago> findByAlumnoIdOrderByFechaPagoDesc(@Param("alumnoId") String alumnoId, Pageable pageable);
 }
