@@ -305,7 +305,7 @@
 			{:else if authStore.isProfesor}
 				Mis Clases
 			{:else if authStore.isAlumno}
-				Clases Disponibles
+				Explorar Clases
 			{:else}
 				Clases
 			{/if}

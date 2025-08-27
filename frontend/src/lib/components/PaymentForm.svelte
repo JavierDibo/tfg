@@ -12,12 +12,14 @@
 		amount = 0,
 		description = '',
 		studentId = '',
-		onError = () => {}
+		onError = () => {},
+		onSuccess = () => {}
 	} = $props<{
 		amount?: number;
 		description?: string;
 		studentId?: string;
 		onError?: (error: Error) => void;
+		onSuccess?: () => void;
 	}>();
 
 	// State using Svelte 5 syntax

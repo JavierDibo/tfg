@@ -11,6 +11,7 @@
 	import { ClaseService } from '$lib/services/claseService';
 	import { EnrollmentService } from '$lib/services/enrollmentService';
 	import { ejercicioService } from '$lib/services/ejercicioService';
+	import { PagoService } from '$lib/services/pagoService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 
 	// State
@@ -221,14 +222,18 @@
 		enrollmentError = null;
 
 		try {
-			if (enrollmentStatus?.isEnrolled) {
-				// Unenroll
-				await EnrollmentService.unenrollFromClass(claseId);
-				enrollmentStatus = { isEnrolled: false, claseId, alumnoId: authStore.user?.id };
+			const currentClase = clase || claseDetalles;
+			if (!currentClase) {
+				throw new Error('No se pudo obtener la información de la clase');
+			}
+
+			const result = await EnrollmentService.handleEnrollmentAction(claseId, currentClase);
+
+			if (result.action === 'redirect') {
+				goto(result.redirectUrl!);
+				return;
 			} else {
-				// Enroll
-				await EnrollmentService.enrollInClass(claseId);
-				enrollmentStatus = { isEnrolled: true, claseId, alumnoId: authStore.user?.id };
+				enrollmentStatus = result.updatedStatus;
 			}
 
 			// Refresh student count - use the class details from the response

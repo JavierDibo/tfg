@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { PagoService } from '$lib/services/pagoService.js';
+	import { EnrollmentService } from '$lib/services/enrollmentService.js';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import type { DTOPago } from '$lib/generated/api';
 
@@ -9,6 +10,8 @@
 	let paymentStatus = $state('checking');
 	let payment = $state<DTOPago | null>(null);
 	let error = $state('');
+	let enrollmentStatus = $state<string>('');
+	let classId = $state<string | null>(null);
 
 	// Authentication check
 	$effect(() => {
@@ -20,6 +23,7 @@
 	// Payment processing with retry logic
 	$effect(() => {
 		const paymentId = $page.url.searchParams.get('payment_id');
+		classId = $page.url.searchParams.get('classId');
 
 		if (!paymentId) {
 			paymentStatus = 'error';
@@ -40,6 +44,18 @@
 					if (status.isSuccessful) {
 						paymentStatus = 'success';
 						payment = await PagoService.getPayment(parseInt(paymentId));
+						
+						// If this was a class enrollment payment, enroll the student
+						if (classId && authStore.isAlumno) {
+							try {
+								await EnrollmentService.enrollInClass(parseInt(classId));
+								enrollmentStatus = 'success';
+							} catch (enrollmentError) {
+								console.error('Error enrolling in class:', enrollmentError);
+								enrollmentStatus = 'error';
+							}
+						}
+						
 						return true;
 					} else if (status.status === 'PENDIENTE' || status.status === 'PROCESANDO') {
 						// Payment is still processing, retry
@@ -97,12 +113,35 @@
 					<p class="text-gray-700"><strong>Status:</strong> {payment.estado}</p>
 				</div>
 			{/if}
-			<a
-				href="/dashboard"
-				class="text-decoration-none mt-4 inline-block rounded-md bg-blue-600 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-blue-700"
-			>
-				Go to Dashboard
-			</a>
+			
+			{#if classId && enrollmentStatus === 'success'}
+				<div class="my-4 rounded-md bg-green-100 p-4 text-green-800">
+					<p class="font-semibold">✅ Enrollment Successful!</p>
+					<p>You have been successfully enrolled in the class.</p>
+				</div>
+			{:else if classId && enrollmentStatus === 'error'}
+				<div class="my-4 rounded-md bg-yellow-100 p-4 text-yellow-800">
+					<p class="font-semibold">⚠️ Payment Successful, Enrollment Issue</p>
+					<p>Your payment was successful, but there was an issue with your enrollment. Please contact support.</p>
+				</div>
+			{/if}
+			
+			<div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+				{#if classId}
+					<a
+						href="/clases/{classId}"
+						class="inline-block rounded-md bg-green-600 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-green-700"
+					>
+						View Class
+					</a>
+				{/if}
+				<a
+					href="/clases"
+					class="inline-block rounded-md bg-blue-600 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-blue-700"
+				>
+					Browse More Classes
+				</a>
+			</div>
 		</div>
 	{:else if paymentStatus === 'failed'}
 		<div class="rounded-lg border border-red-200 bg-red-50 p-8 shadow-sm">

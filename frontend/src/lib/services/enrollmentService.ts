@@ -238,4 +238,45 @@ export class EnrollmentService {
 			throw await ErrorHandler.parseError(error);
 		}
 	}
+
+	/**
+	 * Handle enrollment action - either enroll (redirect to payment) or unenroll
+	 */
+	static async handleEnrollmentAction(
+		claseId: number,
+		currentClase: { titulo?: string; precio?: number }
+	): Promise<{
+		action: 'redirect' | 'unenrolled';
+		redirectUrl?: string;
+		updatedStatus?: DTOEstadoInscripcion;
+	}> {
+		try {
+			const userId = authStore.user?.id;
+			if (!userId) {
+				throw new Error('User ID not available from authentication');
+			}
+
+			// Check current enrollment status
+			const enrollmentStatus = await this.checkMyEnrollmentStatus(claseId);
+
+			if (enrollmentStatus.isEnrolled) {
+				// Handle unenrollment
+				await this.unenrollFromClass(claseId);
+				return {
+					action: 'unenrolled',
+					updatedStatus: { isEnrolled: false, claseId, alumnoId: userId }
+				};
+			} else {
+				// Handle enrollment - redirect to payment
+				const redirectUrl = `/payment?classId=${claseId}&amount=${currentClase.precio || 0}&description=${encodeURIComponent(currentClase.titulo || 'Clase')}`;
+				return {
+					action: 'redirect',
+					redirectUrl
+				};
+			}
+		} catch (error) {
+			ErrorHandler.logError(error, 'handleEnrollmentAction');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
 }
