@@ -5,6 +5,7 @@
 	import type { DTOPago } from '$lib/generated/api';
 	import ErrorDisplay from '$lib/components/common/ErrorDisplay.svelte';
 	import Pagination from '$lib/components/common/Pagination.svelte';
+	import { FormatterUtils } from '$lib/utils/formatters.js';
 
 	// State management
 	let payments = $state<DTOPago[]>([]);
@@ -82,60 +83,6 @@
 	function clearStudentFilter() {
 		selectedStudentId = '';
 		currentPage = 0;
-	}
-
-	function formatDate(date: Date | undefined): string {
-		if (!date) return 'N/A';
-		return new Date(date).toLocaleDateString('es-ES', {
-			year: 'numeric',
-			month: '2-digit',
-			day: '2-digit',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	}
-
-	function formatAmount(amount: number | undefined): string {
-		if (amount === undefined || amount === null) return '€0.00';
-		return new Intl.NumberFormat('es-ES', {
-			style: 'currency',
-			currency: 'EUR'
-		}).format(amount);
-	}
-
-	function getStatusColor(status: string): string {
-		switch (status) {
-			case 'EXITO':
-				return 'bg-green-100 text-green-800';
-			case 'PENDIENTE':
-				return 'bg-yellow-100 text-yellow-800';
-			case 'PROCESANDO':
-				return 'bg-blue-100 text-blue-800';
-			case 'ERROR':
-				return 'bg-red-100 text-red-800';
-			case 'REEMBOLSADO':
-				return 'bg-purple-100 text-purple-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
-	function getStatusText(status: string | undefined): string {
-		if (!status) return 'Unknown';
-		switch (status) {
-			case 'EXITO':
-				return 'Success';
-			case 'PENDIENTE':
-				return 'Pending';
-			case 'PROCESANDO':
-				return 'Processing';
-			case 'ERROR':
-				return 'Failed';
-			case 'REEMBOLSADO':
-				return 'Refunded';
-			default:
-				return status;
-		}
 	}
 
 	function getPaymentMethodText(method: string | undefined): string {
@@ -309,21 +256,22 @@
 									{payment.id}
 								</td>
 								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-									{formatDate(payment.fechaPago)}
+									{FormatterUtils.formatDate(payment.fechaPago, { includeTime: true })}
 								</td>
 								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-									{formatAmount(payment.importe)}
+									{FormatterUtils.formatAmount(payment.importe)}
 								</td>
 								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
 									{getPaymentMethodText(payment.metodoPago)}
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap">
 									<span
-										class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {getStatusColor(
-											payment.estado || 'UNKNOWN'
+										class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {FormatterUtils.getStatusColor(
+											payment.estado || 'UNKNOWN',
+											'payment'
 										)}"
 									>
-										{getStatusText(payment.estado)}
+										{FormatterUtils.formatStatus(payment.estado, 'payment')}
 									</span>
 								</td>
 								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900">

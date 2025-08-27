@@ -58,6 +58,14 @@ export interface ObtenerPagosRequest {
     sortDirection?: string;
 }
 
+export interface ObtenerPagosPorAlumnoRequest {
+    alumnoId: string;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
+}
+
 export interface ProcesarWebhookStripeRequest {
     stripeSignature: string;
     body: string;
@@ -302,6 +310,61 @@ export class PaymentsApi extends runtime.BaseAPI {
      */
     async obtenerPagos(requestParameters: ObtenerPagosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
         const response = await this.obtenerPagosRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets a paginated list of payments for a specific student. Only ADMIN and PROFESOR can access student payment data.
+     * Get student payments
+     */
+    async obtenerPagosPorAlumnoRaw(requestParameters: ObtenerPagosPorAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginada>> {
+        if (requestParameters['alumnoId'] == null) {
+            throw new runtime.RequiredError(
+                'alumnoId',
+                'Required parameter "alumnoId" was null or undefined when calling obtenerPagosPorAlumno().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/pagos/alumno/{alumnoId}`;
+        urlPath = urlPath.replace(`{${"alumnoId"}}`, encodeURIComponent(String(requestParameters['alumnoId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a paginated list of payments for a specific student. Only ADMIN and PROFESOR can access student payment data.
+     * Get student payments
+     */
+    async obtenerPagosPorAlumno(requestParameters: ObtenerPagosPorAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
+        const response = await this.obtenerPagosPorAlumnoRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -397,6 +397,14 @@ public class ServicioProfesor {
             profesor.setPhoneNumber(dtoParcial.phoneNumber());
         }
 
+        // Handle enabled status update (only ADMIN can change enabled status)
+        if (dtoParcial.enabled() != null) {
+            if (!securityUtils.hasRole("ADMIN")) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para cambiar el estado de habilitación de profesores");
+            }
+            profesor.setEnabled(dtoParcial.enabled());
+        }
+
         Profesor profesorActualizado = repositorioProfesor.save(profesor);
         return new DTOProfesor(profesorActualizado);
     }

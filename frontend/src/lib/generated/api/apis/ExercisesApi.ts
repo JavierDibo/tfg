@@ -319,7 +319,7 @@ export class ExercisesApi extends runtime.BaseAPI {
      * Gets all deliveries for a specific exercise (requires ADMIN or PROFESOR role)
      * Get exercise deliveries
      */
-    async obtenerEntregasEjercicioRaw(requestParameters: ObtenerEntregasEjercicioRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntregaEjercicio<any>>> {
+    async obtenerEntregasEjercicioRaw(requestParameters: ObtenerEntregasEjercicioRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntregaEjercicio>> {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError(
                 'id',
@@ -342,14 +342,14 @@ export class ExercisesApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntregaEjercicioFromJSON(jsonValue));
     }
 
     /**
      * Gets all deliveries for a specific exercise (requires ADMIN or PROFESOR role)
      * Get exercise deliveries
      */
-    async obtenerEntregasEjercicio(requestParameters: ObtenerEntregasEjercicioRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntregaEjercicio<any>> {
+    async obtenerEntregasEjercicio(requestParameters: ObtenerEntregasEjercicioRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntregaEjercicio> {
         const response = await this.obtenerEntregasEjercicioRaw(requestParameters, initOverrides);
         return await response.value();
     }

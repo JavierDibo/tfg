@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { DTOEjercicio, DTORespuestaPaginada } from '$lib/generated/api';
-	import { ejercicioService } from '$lib/services/ejercicioService';
+	import { EjercicioService } from '$lib/services/ejercicioService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 
 	// State
@@ -53,7 +53,7 @@
 				params.status = selectedStatus;
 			}
 
-			const response = await ejercicioService.getEjercicios(params);
+			const response = await EjercicioService.getEjercicios(params);
 			ejercicios = response.content || [];
 			pagination = response;
 		} catch (err) {

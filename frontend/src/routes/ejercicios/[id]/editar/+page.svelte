@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import type { DTOEjercicio } from '$lib/generated/api';
-	import { ejercicioService } from '$lib/services/ejercicioService';
+	import { EjercicioService } from '$lib/services/ejercicioService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 
 	// State
@@ -49,7 +49,7 @@
 		error = null;
 
 		try {
-			ejercicio = await ejercicioService.getEjercicioById(ejercicioId);
+			ejercicio = await EjercicioService.getEjercicioById(ejercicioId);
 
 			// Populate form with current values
 			form = {
@@ -89,7 +89,7 @@
 				classId: form.classId.trim()
 			};
 
-			await ejercicioService.updateEjercicio(ejercicioId, updateData);
+			await EjercicioService.updateEjercicio(ejercicioId, updateData);
 
 			successMessage = 'Ejercicio actualizado exitosamente';
 			setTimeout(() => {

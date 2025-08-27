@@ -4,6 +4,7 @@
 	import type { DTOEntregaEjercicio } from '$lib/generated/api';
 	import { EntregaService } from '$lib/services/entregaService';
 	import { authStore } from '$lib/stores/authStore.svelte';
+	import { FormatterUtils } from '$lib/utils/formatters.js';
 
 	// State
 	let loading = $state(false);
@@ -136,51 +137,6 @@
 			goto('/entregas');
 		}
 	}
-
-	// Format functions
-	function formatDate(date: Date | string | undefined): string {
-		if (!date) return 'N/A';
-		return new Date(date).toLocaleDateString('es-ES', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	}
-
-	function formatStatus(status: string | undefined): string {
-		if (!status) return 'N/A';
-		const statusMap: Record<string, string> = {
-			PENDIENTE: 'Pendiente',
-			ENTREGADO: 'Entregado',
-			CALIFICADO: 'Calificado'
-		};
-		return statusMap[status] || status;
-	}
-
-	function getStatusColor(status: string | undefined): string {
-		if (!status) return 'bg-gray-100 text-gray-800';
-		const colorMap: Record<string, string> = {
-			PENDIENTE: 'bg-yellow-100 text-yellow-800',
-			ENTREGADO: 'bg-blue-100 text-blue-800',
-			CALIFICADO: 'bg-green-100 text-green-800'
-		};
-		return colorMap[status] || 'bg-gray-100 text-gray-800';
-	}
-
-	function formatGrade(nota: number | undefined): string {
-		if (nota === undefined || nota === null) return 'N/A';
-		return nota.toFixed(1);
-	}
-
-	function getGradeColor(nota: number | undefined): string {
-		if (nota === undefined || nota === null) return 'text-gray-500';
-		if (nota >= 9) return 'text-green-600 font-bold';
-		if (nota >= 7) return 'text-blue-600 font-semibold';
-		if (nota >= 5) return 'text-yellow-600 font-semibold';
-		return 'text-red-600 font-semibold';
-	}
 </script>
 
 <svelte:head>
@@ -260,18 +216,21 @@
 
 					<div>
 						<span class="text-sm font-medium text-gray-500">Fecha de Entrega</span>
-						<p class="text-gray-900">{formatDate(entrega.fechaEntrega)}</p>
+						<p class="text-gray-900">
+							{FormatterUtils.formatDate(entrega.fechaEntrega, { includeTime: true })}
+						</p>
 					</div>
 
 					<div>
 						<span class="text-sm font-medium text-gray-500">Estado</span>
 						<div class="mt-1">
 							<span
-								class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {getStatusColor(
-									entrega.estado
+								class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {FormatterUtils.getStatusColor(
+									entrega.estado,
+									'delivery'
 								)}"
 							>
-								{formatStatus(entrega.estado)}
+								{FormatterUtils.formatStatus(entrega.estado, 'delivery')}
 							</span>
 						</div>
 					</div>
@@ -290,8 +249,8 @@
 				<div class="space-y-4">
 					<div>
 						<span class="text-sm font-medium text-gray-500">Nota</span>
-						<p class="text-2xl font-bold {getGradeColor(entrega.nota)}">
-							{formatGrade(entrega.nota)}
+						<p class="text-2xl font-bold {FormatterUtils.getGradeColor(entrega.nota)}">
+							{FormatterUtils.formatGrade(entrega.nota)}
 						</p>
 					</div>
 

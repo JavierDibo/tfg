@@ -10,9 +10,9 @@
 	} from '$lib/generated/api';
 	import { ClaseService } from '$lib/services/claseService';
 	import { EnrollmentService } from '$lib/services/enrollmentService';
-	import { ejercicioService } from '$lib/services/ejercicioService';
-	import { PagoService } from '$lib/services/pagoService';
+	import { EjercicioService } from '$lib/services/ejercicioService';
 	import { authStore } from '$lib/stores/authStore.svelte';
+	import { FormatterUtils } from '$lib/utils/formatters.js';
 
 	// State
 	let loading = $state(false);
@@ -182,7 +182,7 @@
 		ejerciciosError = null;
 
 		try {
-			const response = await ejercicioService.getEjercicios({ classId: claseId.toString() });
+			const response = await EjercicioService.getEjercicios({ classId: claseId.toString() });
 			ejercicios = response.content || [];
 		} catch (err) {
 			ejerciciosError = `Error al cargar los ejercicios: ${err}`;
@@ -255,102 +255,12 @@
 		}
 	}
 
-	// Utility functions
-	function formatPrice(precio: number | undefined): string {
-		if (precio === undefined || precio === null) return 'N/A';
-		return `€${precio.toFixed(2)}`;
-	}
-
-	function getNivelColor(nivel: string | undefined): string {
-		switch (nivel) {
-			case 'PRINCIPIANTE':
-				return 'bg-green-100 text-green-800';
-			case 'INTERMEDIO':
-				return 'bg-yellow-100 text-yellow-800';
-			case 'AVANZADO':
-				return 'bg-red-100 text-red-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
-	function getPresencialidadColor(presencialidad: string | undefined): string {
-		switch (presencialidad) {
-			case 'ONLINE':
-				return 'bg-blue-100 text-blue-800';
-			case 'PRESENCIAL':
-				return 'bg-purple-100 text-purple-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
-	function getNivelText(nivel: string | undefined): string {
-		switch (nivel) {
-			case 'PRINCIPIANTE':
-				return 'Principiante';
-			case 'INTERMEDIO':
-				return 'Intermedio';
-			case 'AVANZADO':
-				return 'Avanzado';
-			default:
-				return 'N/A';
-		}
-	}
-
-	function getPresencialidadText(presencialidad: string | undefined): string {
-		switch (presencialidad) {
-			case 'ONLINE':
-				return 'Online';
-			case 'PRESENCIAL':
-				return 'Presencial';
-			default:
-				return 'N/A';
-		}
-	}
-
-	function formatDate(date: Date | undefined): string {
-		if (!date) return 'N/A';
-		return new Date(date).toLocaleDateString('es-ES', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
-	}
-
-	function getExerciseStatusColor(estado: string | undefined): string {
-		switch (estado) {
-			case 'ACTIVO':
-				return 'bg-green-100 text-green-800';
-			case 'VENCIDO':
-				return 'bg-red-100 text-red-800';
-			case 'FUTURO':
-				return 'bg-blue-100 text-blue-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
 	// Get the current class data (either from clase or claseDetalles)
 	let currentClase = $derived(clase || claseDetalles);
 </script>
 
 <svelte:head>
 	<title>{currentClase?.titulo || 'Clase'} - Academia</title>
-	<style>
-		.line-clamp-2 {
-			display: -webkit-box;
-			-webkit-line-clamp: 2;
-			-webkit-box-orient: vertical;
-			overflow: hidden;
-		}
-		.line-clamp-3 {
-			display: -webkit-box;
-			-webkit-line-clamp: 3;
-			-webkit-box-orient: vertical;
-			overflow: hidden;
-		}
-	</style>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8">
@@ -393,18 +303,21 @@
 				<div class="absolute right-0 bottom-0 left-0 p-6 text-white">
 					<h1 class="mb-2 text-4xl font-bold">{currentClase.titulo || 'Sin título'}</h1>
 					<div class="flex items-center space-x-4">
-						<span class="text-2xl font-bold">{formatPrice(currentClase.precio)}</span>
-						<span
-							class="rounded-full px-3 py-1 text-sm font-medium {getNivelColor(currentClase.nivel)}"
+						<span class="text-2xl font-bold">{FormatterUtils.formatPrice(currentClase.precio)}</span
 						>
-							{getNivelText(currentClase.nivel)}
+						<span
+							class="rounded-full px-3 py-1 text-sm font-medium {FormatterUtils.getNivelColor(
+								currentClase.nivel
+							)}"
+						>
+							{FormatterUtils.formatNivel(currentClase.nivel)}
 						</span>
 						<span
-							class="rounded-full px-3 py-1 text-sm font-medium {getPresencialidadColor(
+							class="rounded-full px-3 py-1 text-sm font-medium {FormatterUtils.getPresencialidadColor(
 								currentClase.presencialidad
 							)}"
 						>
-							{getPresencialidadText(currentClase.presencialidad)}
+							{FormatterUtils.getPresencialidadText(currentClase.presencialidad)}
 						</span>
 					</div>
 				</div>
@@ -594,7 +507,7 @@
 											{ejercicio.name || 'Sin nombre'}
 										</h3>
 										<span
-											class="ml-2 flex-shrink-0 rounded-full px-2 py-1 text-xs font-medium {getExerciseStatusColor(
+											class="ml-2 flex-shrink-0 rounded-full px-2 py-1 text-xs font-medium {FormatterUtils.getExerciseStatusColor(
 												ejercicio.estado
 											)}"
 										>
@@ -624,7 +537,7 @@
 														d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
 													/>
 												</svg>
-												Inicio: {formatDate(ejercicio.startDate)}
+												Inicio: {FormatterUtils.formatDate(ejercicio.startDate)}
 											</div>
 										{/if}
 										{#if ejercicio.endDate}
@@ -642,7 +555,7 @@
 														d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
 													/>
 												</svg>
-												Fin: {formatDate(ejercicio.endDate)}
+												Fin: {FormatterUtils.formatDate(ejercicio.endDate)}
 											</div>
 										{/if}
 										{#if ejercicio.numeroEntregas !== undefined}

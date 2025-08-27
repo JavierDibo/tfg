@@ -44,7 +44,7 @@
 					if (status.isSuccessful) {
 						paymentStatus = 'success';
 						payment = await PagoService.getPayment(parseInt(paymentId));
-						
+
 						// If this was a class enrollment payment, enroll the student
 						if (classId && authStore.isAlumno) {
 							try {
@@ -55,7 +55,7 @@
 								enrollmentStatus = 'error';
 							}
 						}
-						
+
 						return true;
 					} else if (status.status === 'PENDIENTE' || status.status === 'PROCESANDO') {
 						// Payment is still processing, retry
@@ -113,7 +113,7 @@
 					<p class="text-gray-700"><strong>Status:</strong> {payment.estado}</p>
 				</div>
 			{/if}
-			
+
 			{#if classId && enrollmentStatus === 'success'}
 				<div class="my-4 rounded-md bg-green-100 p-4 text-green-800">
 					<p class="font-semibold">✅ Enrollment Successful!</p>
@@ -122,10 +122,13 @@
 			{:else if classId && enrollmentStatus === 'error'}
 				<div class="my-4 rounded-md bg-yellow-100 p-4 text-yellow-800">
 					<p class="font-semibold">⚠️ Payment Successful, Enrollment Issue</p>
-					<p>Your payment was successful, but there was an issue with your enrollment. Please contact support.</p>
+					<p>
+						Your payment was successful, but there was an issue with your enrollment. Please contact
+						support.
+					</p>
 				</div>
 			{/if}
-			
+
 			<div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
 				{#if classId}
 					<a

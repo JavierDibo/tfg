@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getStripe } from '$lib/stripe.js';
-	import type { Stripe } from '@stripe/stripe-js';
+	import type { Stripe, StripeElements, StripePaymentElement } from '@stripe/stripe-js';
 	import { PagoService } from '$lib/services/pagoService.js';
 
 	// Generate unique component ID for debugging
@@ -12,14 +12,12 @@
 		amount = 0,
 		description = '',
 		studentId = '',
-		onError = () => {},
-		onSuccess = () => {}
+		onError = () => {}
 	} = $props<{
 		amount?: number;
 		description?: string;
 		studentId?: string;
 		onError?: (error: Error) => void;
-		onSuccess?: () => void;
 	}>();
 
 	// State using Svelte 5 syntax
@@ -27,10 +25,8 @@
 	let error = $state('');
 	let stripeInstance = $state<Stripe | null>(null);
 	let stripeLoaded = $state(false);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let elements = $state<any>(null);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let paymentElement = $state<any>(null);
+	let elements = $state<StripeElements | null>(null);
+	let paymentElement = $state<StripePaymentElement | null>(null);
 	let paymentForm = $state<HTMLFormElement | null>(null);
 	let paymentElementReady = $state(false);
 	let currentPaymentId = $state<string | null>(null);
@@ -278,21 +274,24 @@
 	</div>
 </form>
 
-<style>
-	/* Stripe Elements styling */
-	:global(.StripeElement) {
-		padding: 0.75rem;
-		border: 1px solid #d1d5db;
-		border-radius: 0.375rem;
-		background-color: white;
-	}
+<!-- Stripe Elements styling with Tailwind classes -->
+<div class="stripe-elements-styles">
+	<style>
+		/* Stripe Elements styling */
+		:global(.StripeElement) {
+			padding: 0.75rem;
+			border: 1px solid #d1d5db;
+			border-radius: 0.375rem;
+			background-color: white;
+		}
 
-	:global(.StripeElement--focus) {
-		border-color: #3b82f6;
-		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-	}
+		:global(.StripeElement--focus) {
+			border-color: #3b82f6;
+			box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+		}
 
-	:global(.StripeElement--invalid) {
-		border-color: #dc2626;
-	}
-</style>
+		:global(.StripeElement--invalid) {
+			border-color: #dc2626;
+		}
+	</style>
+</div>

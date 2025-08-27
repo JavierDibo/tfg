@@ -33,7 +33,9 @@ public record DTOActualizacionProfesor(
     @NotEmptyIfPresent
     String phoneNumber,
 
-    Set<String> classIds
+    Set<String> classIds,
+
+    Boolean enabled
 ) {
     /**
      * Checks if all fields are empty/null
@@ -45,6 +47,7 @@ public record DTOActualizacionProfesor(
                dni == null && 
                email == null && 
                phoneNumber == null && 
-               (classIds == null || classIds.isEmpty());
+               (classIds == null || classIds.isEmpty()) &&
+               enabled == null;
     }
 }

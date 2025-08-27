@@ -6,6 +6,7 @@ import {
 } from '$lib/generated/api';
 import { profesorApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
+import { ValidationUtils } from '$lib/utils/validators';
 
 // Define the ProfesorStatistics type used in the estadisticas page
 export interface ProfesorStatistics {
@@ -21,8 +22,8 @@ export interface ProfesorStatistics {
 // Import pagination types
 import type { SortDirection } from '$lib/types/pagination';
 
-export const ProfesorService = {
-	async getAllProfesores(filters: {
+export class ProfesorService {
+	static async getAllProfesores(filters: {
 		firstName?: string;
 		lastName?: string;
 		email?: string;
@@ -35,9 +36,9 @@ export const ProfesorService = {
 			ErrorHandler.logError(error, 'getAllProfesores');
 			throw await ErrorHandler.parseError(error);
 		}
-	},
+	}
 
-	async getProfesoresPaginados(
+	static async getProfesoresPaginados(
 		filters: {
 			q?: string; // General search parameter
 			firstName?: string;
@@ -71,9 +72,9 @@ export const ProfesorService = {
 			ErrorHandler.logError(error, 'getProfesoresPaginados');
 			throw await ErrorHandler.parseError(error);
 		}
-	},
+	}
 
-	async getProfesorById(id: number): Promise<DTOProfesor> {
+	static async getProfesorById(id: number): Promise<DTOProfesor> {
 		try {
 			const response = await profesorApi.obtenerProfesorPorId({ id });
 			return response;
@@ -81,9 +82,9 @@ export const ProfesorService = {
 			ErrorHandler.logError(error, `getProfesorById(${id})`);
 			throw await ErrorHandler.parseError(error);
 		}
-	},
+	}
 
-	async createProfesor(profesorData: DTOPeticionRegistroProfesor): Promise<DTOProfesor> {
+	static async createProfesor(profesorData: DTOPeticionRegistroProfesor): Promise<DTOProfesor> {
 		try {
 			const response = await profesorApi.crearProfesor({
 				dTOPeticionRegistroProfesor: profesorData
@@ -93,9 +94,12 @@ export const ProfesorService = {
 			ErrorHandler.logError(error, 'createProfesor');
 			throw await ErrorHandler.parseError(error);
 		}
-	},
+	}
 
-	async updateProfesor(id: number, updateData: DTOActualizacionProfesor): Promise<DTOProfesor> {
+	static async updateProfesor(
+		id: number,
+		updateData: DTOActualizacionProfesor
+	): Promise<DTOProfesor> {
 		try {
 			const response = await profesorApi.actualizarProfesorParcial({
 				id,
@@ -106,18 +110,18 @@ export const ProfesorService = {
 			ErrorHandler.logError(error, `updateProfesor(${id})`);
 			throw await ErrorHandler.parseError(error);
 		}
-	},
+	}
 
-	async deleteProfesor(id: number): Promise<void> {
+	static async deleteProfesor(id: number): Promise<void> {
 		try {
 			await profesorApi.eliminarProfesor({ id });
 		} catch (error) {
 			ErrorHandler.logError(error, `deleteProfesor(${id})`);
 			throw await ErrorHandler.parseError(error);
 		}
-	},
+	}
 
-	async toggleAccountStatus(id: number, habilitado: boolean): Promise<DTOProfesor> {
+	static async toggleAccountStatus(id: number, habilitado: boolean): Promise<DTOProfesor> {
 		try {
 			const response = await profesorApi.actualizarProfesorParcial({
 				id,
@@ -128,9 +132,9 @@ export const ProfesorService = {
 			ErrorHandler.logError(error, `toggleAccountStatus(${id}, ${habilitado})`);
 			throw await ErrorHandler.parseError(error);
 		}
-	},
+	}
 
-	async getStatistics(): Promise<ProfesorStatistics> {
+	static async getStatistics(): Promise<ProfesorStatistics> {
 		try {
 			let totalCount = 0;
 			let activeCount = 0;
@@ -160,38 +164,155 @@ export const ProfesorService = {
 			console.error('Error fetching professor statistics:', error);
 			throw error;
 		}
-	},
+	}
 
-	validateRegistrationData(data: DTOPeticionRegistroProfesor): string[] {
+	static validateRegistrationData(data: DTOPeticionRegistroProfesor): string[] {
 		const errors: string[] = [];
 
-		// Basic validation rules
-		if (!data.username || data.username.length < 3) {
-			errors.push('El nombre de usuario debe tener al menos 3 caracteres');
+		// Basic validation rules using utility functions
+		const usernameValidation = ValidationUtils.validateUsername(data.username);
+		if (!usernameValidation.isValid) {
+			errors.push(usernameValidation.message);
 		}
 
-		if (!data.password || data.password.length < 6) {
-			errors.push('La contraseña debe tener al menos 6 caracteres');
+		const passwordValidation = ValidationUtils.validatePassword(data.password);
+		if (!passwordValidation.isValid) {
+			errors.push(passwordValidation.message);
 		}
 
-		if (!data.firstName) {
-			errors.push('El nombre es obligatorio');
+		const firstNameValidation = ValidationUtils.validateName(data.firstName);
+		if (!firstNameValidation.isValid) {
+			errors.push(firstNameValidation.message);
 		}
 
-		if (!data.lastName) {
-			errors.push('Los apellidos son obligatorios');
+		const lastNameValidation = ValidationUtils.validateName(data.lastName);
+		if (!lastNameValidation.isValid) {
+			errors.push(lastNameValidation.message);
 		}
 
-		if (!data.dni) {
-			errors.push('El DNI es obligatorio');
+		const dniValidation = ValidationUtils.validateDNI(data.dni);
+		if (!dniValidation.isValid) {
+			errors.push(dniValidation.message);
 		}
 
-		if (!data.email) {
-			errors.push('El email es obligatorio');
-		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-			errors.push('El formato del email no es válido');
+		const emailValidation = ValidationUtils.validateEmail(data.email);
+		if (!emailValidation.isValid) {
+			errors.push(emailValidation.message);
+		}
+
+		// Phone validation using utility function
+		if (data.phoneNumber) {
+			const phoneValidation = ValidationUtils.validatePhoneNumber(data.phoneNumber);
+			if (!phoneValidation.isValid) {
+				errors.push(phoneValidation.message);
+			}
 		}
 
 		return errors;
 	}
-};
+
+	// ==================== BUSINESS LOGIC METHODS ====================
+
+	/**
+	 * Handle account status change with validation and business logic
+	 */
+	static async handleAccountStatusChange(
+		profesorId: number,
+		newStatus: boolean
+	): Promise<{ success: boolean; message: string; updatedProfesor?: DTOProfesor }> {
+		try {
+			// Validate input
+			if (!profesorId || profesorId <= 0) {
+				return {
+					success: false,
+					message: 'ID de profesor inválido'
+				};
+			}
+
+			// Check if professor exists
+			const existingProfesor = await this.getProfesorById(profesorId);
+			if (!existingProfesor) {
+				return {
+					success: false,
+					message: 'Profesor no encontrado'
+				};
+			}
+
+			// Check if status is actually changing
+			if (existingProfesor.enabled === newStatus) {
+				return {
+					success: false,
+					message: `La cuenta ya está ${newStatus ? 'habilitada' : 'deshabilitada'}`
+				};
+			}
+
+			// Perform the status change
+			const updatedProfesor = await this.toggleAccountStatus(profesorId, newStatus);
+
+			return {
+				success: true,
+				message: `Cuenta ${newStatus ? 'habilitada' : 'deshabilitada'} correctamente`,
+				updatedProfesor
+			};
+		} catch (error) {
+			return {
+				success: false,
+				message: error instanceof Error ? error.message : 'Error al cambiar estado de cuenta'
+			};
+		}
+	}
+
+	/**
+	 * Validate professor registration data with business rules
+	 */
+	static validateRegistrationDataWithBusinessRules(data: DTOPeticionRegistroProfesor): {
+		isValid: boolean;
+		errors: string[];
+	} {
+		const errors: string[] = [];
+
+		// Basic validation rules using utility functions
+		const usernameValidation = ValidationUtils.validateUsername(data.username);
+		if (!usernameValidation.isValid) {
+			errors.push(usernameValidation.message);
+		}
+
+		const passwordValidation = ValidationUtils.validatePassword(data.password);
+		if (!passwordValidation.isValid) {
+			errors.push(passwordValidation.message);
+		}
+
+		const firstNameValidation = ValidationUtils.validateName(data.firstName);
+		if (!firstNameValidation.isValid) {
+			errors.push(firstNameValidation.message);
+		}
+
+		const lastNameValidation = ValidationUtils.validateName(data.lastName);
+		if (!lastNameValidation.isValid) {
+			errors.push(lastNameValidation.message);
+		}
+
+		const dniValidation = ValidationUtils.validateDNI(data.dni);
+		if (!dniValidation.isValid) {
+			errors.push(dniValidation.message);
+		}
+
+		const emailValidation = ValidationUtils.validateEmail(data.email);
+		if (!emailValidation.isValid) {
+			errors.push(emailValidation.message);
+		}
+
+		// Phone validation using utility function
+		if (data.phoneNumber) {
+			const phoneValidation = ValidationUtils.validatePhoneNumber(data.phoneNumber);
+			if (!phoneValidation.isValid) {
+				errors.push(phoneValidation.message);
+			}
+		}
+
+		return {
+			isValid: errors.length === 0,
+			errors
+		};
+	}
+}

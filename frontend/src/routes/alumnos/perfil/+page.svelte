@@ -5,6 +5,7 @@
 	import { AlumnoService } from '$lib/services/alumnoService';
 	import { EnrollmentService } from '$lib/services/enrollmentService';
 	import { authStore } from '$lib/stores/authStore.svelte';
+	import { FormatterUtils } from '$lib/utils/formatters.js';
 
 	// State
 	let loading = $state(false);
@@ -60,68 +61,6 @@
 			enrolledClassesLoading = false;
 		}
 	}
-
-	function formatDate(date: Date | undefined): string {
-		if (!date) return 'N/A';
-		return new Date(date).toLocaleDateString('es-ES', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
-	}
-
-	function formatPrice(precio: number | undefined): string {
-		if (precio === undefined || precio === null) return 'N/A';
-		return `€${precio.toFixed(2)}`;
-	}
-
-	function getNivelColor(nivel: string | undefined): string {
-		switch (nivel) {
-			case 'PRINCIPIANTE':
-				return 'bg-green-100 text-green-800';
-			case 'INTERMEDIO':
-				return 'bg-yellow-100 text-yellow-800';
-			case 'AVANZADO':
-				return 'bg-red-100 text-red-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
-	function getPresencialidadColor(presencialidad: string | undefined): string {
-		switch (presencialidad) {
-			case 'ONLINE':
-				return 'bg-blue-100 text-blue-800';
-			case 'PRESENCIAL':
-				return 'bg-purple-100 text-purple-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
-	function getNivelText(nivel: string | undefined): string {
-		switch (nivel) {
-			case 'PRINCIPIANTE':
-				return 'Principiante';
-			case 'INTERMEDIO':
-				return 'Intermedio';
-			case 'AVANZADO':
-				return 'Avanzado';
-			default:
-				return 'N/A';
-		}
-	}
-
-	function getPresencialidadText(presencialidad: string | undefined): string {
-		switch (presencialidad) {
-			case 'ONLINE':
-				return 'Online';
-			case 'PRESENCIAL':
-				return 'Presencial';
-			default:
-				return 'N/A';
-		}
-	}
 </script>
 
 <svelte:head>
@@ -155,10 +94,7 @@
 					<h1 class="text-3xl font-bold text-gray-900">Mi Perfil</h1>
 					<p class="mt-2 text-gray-600">Gestiona tu información personal y clases inscritas</p>
 				</div>
-				<a
-					href="/clases"
-					class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-				>
+				<a href="/clases" class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
 					Explorar Clases
 				</a>
 			</div>
@@ -168,27 +104,27 @@
 				<h2 class="mb-4 text-xl font-semibold text-gray-900">Información Personal</h2>
 				<div class="grid gap-4 md:grid-cols-2">
 					<div>
-						<label class="text-sm font-medium text-gray-500">Nombre</label>
+						<div class="text-sm font-medium text-gray-500">Nombre</div>
 						<p class="text-gray-900">{alumno.firstName} {alumno.lastName}</p>
 					</div>
 					<div>
-						<label class="text-sm font-medium text-gray-500">Usuario</label>
+						<div class="text-sm font-medium text-gray-500">Usuario</div>
 						<p class="text-gray-900">@{alumno.username}</p>
 					</div>
 					<div>
-						<label class="text-sm font-medium text-gray-500">Email</label>
+						<div class="text-sm font-medium text-gray-500">Email</div>
 						<p class="text-gray-900">{alumno.email}</p>
 					</div>
 					<div>
-						<label class="text-sm font-medium text-gray-500">DNI</label>
+						<div class="text-sm font-medium text-gray-500">DNI</div>
 						<p class="text-gray-900">{alumno.dni}</p>
 					</div>
 					<div>
-						<label class="text-sm font-medium text-gray-500">Teléfono</label>
+						<div class="text-sm font-medium text-gray-500">Teléfono</div>
 						<p class="text-gray-900">{alumno.phoneNumber || 'No especificado'}</p>
 					</div>
 					<div>
-						<label class="text-sm font-medium text-gray-500">Estado</label>
+						<div class="text-sm font-medium text-gray-500">Estado</div>
 						<span
 							class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {alumno.enabled
 								? 'bg-green-100 text-green-800'
@@ -198,11 +134,11 @@
 						</span>
 					</div>
 					<div>
-						<label class="text-sm font-medium text-gray-500">Fecha de Matrícula</label>
-						<p class="text-gray-900">{formatDate(alumno.enrollmentDate)}</p>
+						<div class="text-sm font-medium text-gray-500">Fecha de Matrícula</div>
+						<p class="text-gray-900">{FormatterUtils.formatDate(alumno.enrollmentDate)}</p>
 					</div>
 					<div>
-						<label class="text-sm font-medium text-gray-500">Matriculado</label>
+						<div class="text-sm font-medium text-gray-500">Matriculado</div>
 						<span
 							class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {alumno.enrolled
 								? 'bg-green-100 text-green-800'
@@ -246,31 +182,39 @@
 				{:else}
 					<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 						{#each enrolledClasses as clase (clase.id)}
-							<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+							<div
+								class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+							>
 								<div class="mb-3">
 									<h3 class="font-semibold text-gray-900">{clase.titulo}</h3>
-									<p class="text-sm text-gray-600 line-clamp-2">{clase.descripcion}</p>
+									<p class="line-clamp-2 text-sm text-gray-600">{clase.descripcion}</p>
 								</div>
-								
+
 								<div class="mb-3 space-y-2">
 									<div class="flex items-center justify-between">
 										<span class="text-sm text-gray-500">Precio:</span>
-										<span class="font-semibold text-green-600">{formatPrice(clase.precio)}</span>
+										<span class="font-semibold text-green-600"
+											>{FormatterUtils.formatPrice(clase.precio)}</span
+										>
 									</div>
 									<div class="flex items-center justify-between">
 										<span class="text-sm text-gray-500">Nivel:</span>
 										<span
-											class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {getNivelColor(clase.nivel)}"
+											class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {FormatterUtils.getNivelColor(
+												clase.nivel
+											)}"
 										>
-											{getNivelText(clase.nivel)}
+											{FormatterUtils.formatNivel(clase.nivel)}
 										</span>
 									</div>
 									<div class="flex items-center justify-between">
 										<span class="text-sm text-gray-500">Modalidad:</span>
 										<span
-											class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {getPresencialidadColor(clase.presencialidad)}"
+											class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {FormatterUtils.getPresencialidadColor(
+												clase.presencialidad
+											)}"
 										>
-											{getPresencialidadText(clase.presencialidad)}
+											{FormatterUtils.getPresencialidadText(clase.presencialidad)}
 										</span>
 									</div>
 								</div>

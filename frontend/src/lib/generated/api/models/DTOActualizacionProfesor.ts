@@ -60,6 +60,12 @@ export interface DTOActualizacionProfesor {
      * @type {boolean}
      * @memberof DTOActualizacionProfesor
      */
+    enabled?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOActualizacionProfesor
+     */
     empty?: boolean;
 }
 
@@ -86,6 +92,7 @@ export function DTOActualizacionProfesorFromJSONTyped(json: any, ignoreDiscrimin
         'email': json['email'] == null ? undefined : json['email'],
         'phoneNumber': json['phoneNumber'] == null ? undefined : json['phoneNumber'],
         'classIds': json['classIds'] == null ? undefined : new Set(json['classIds']),
+        'enabled': json['enabled'] == null ? undefined : json['enabled'],
         'empty': json['empty'] == null ? undefined : json['empty'],
     };
 }
@@ -107,6 +114,7 @@ export function DTOActualizacionProfesorToJSONTyped(value?: DTOActualizacionProf
         'email': value['email'],
         'phoneNumber': value['phoneNumber'],
         'classIds': value['classIds'] == null ? undefined : Array.from(value['classIds'] as Set<any>),
+        'enabled': value['enabled'],
         'empty': value['empty'],
     };
 }

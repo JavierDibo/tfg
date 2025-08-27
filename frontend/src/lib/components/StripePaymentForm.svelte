@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getStripe } from '$lib/stripe.js';
-	import type { Stripe } from '@stripe/stripe-js';
+	import type { Stripe, StripeElements, StripePaymentElement } from '@stripe/stripe-js';
 	import { PagoService } from '$lib/services/pagoService.js';
 
 	// Props using Svelte 5 syntax
@@ -19,10 +19,8 @@
 	let error = $state('');
 	let stripeInstance = $state<Stripe | null>(null);
 	let stripeLoaded = $state(false);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let elements: any; // Stripe Elements type
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let paymentElement: any; // Stripe PaymentElement type
+	let elements = $state<StripeElements | null>(null);
+	let paymentElement = $state<StripePaymentElement | null>(null);
 	let paymentForm: HTMLFormElement;
 
 	// Load Stripe on component mount
@@ -102,7 +100,7 @@
 		const { error: submitError } = await elements.submit();
 
 		if (submitError) {
-			error = submitError.message;
+			error = submitError.message || 'Payment submission failed';
 			loading = false;
 			return;
 		}

@@ -26,6 +26,7 @@ import app.dtos.DTOPeticionCrearEjercicio;
 import app.dtos.DTOEntregaEjercicio;
 import app.dtos.DTORespuestaPaginada;
 import app.servicios.ServicioEjercicio;
+import app.servicios.ServicioEntregaEjercicio;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -49,6 +50,7 @@ import lombok.RequiredArgsConstructor;
 public class EjercicioRest extends BaseRestController {
 
     private final ServicioEjercicio servicioEjercicio;
+    private final ServicioEntregaEjercicio servicioEntregaEjercicio;
 
     // Standard GET collection endpoint with comprehensive filtering and pagination
     @GetMapping
@@ -336,7 +338,7 @@ public class EjercicioRest extends BaseRestController {
             description = "Exercise deliveries retrieved successfully",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = DTOEntregaEjercicio.class, type = "array")
+                schema = @Schema(implementation = DTOEntregaEjercicio.class)
             )
         ),
         @ApiResponse(
@@ -352,9 +354,8 @@ public class EjercicioRest extends BaseRestController {
             @Parameter(description = "ID of the exercise", required = true)
             @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
-        // This method doesn't exist in ServicioEjercicio, so we'll return empty list for now
-        // In a real implementation, this would call the appropriate service method
-        return new ResponseEntity<>(List.of(), HttpStatus.OK);
+        List<DTOEntregaEjercicio> entregas = servicioEntregaEjercicio.obtenerEntregasPorEjercicio(id.toString());
+        return new ResponseEntity<>(entregas, HttpStatus.OK);
     }
 
     @GetMapping("/{id}/estadisticas")

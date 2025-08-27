@@ -4,6 +4,7 @@
 	import { PagoService } from '$lib/services/pagoService';
 	import type { DTOPago } from '$lib/generated/api';
 	import ErrorDisplay from '$lib/components/common/ErrorDisplay.svelte';
+	import { FormatterUtils } from '$lib/utils/formatters.js';
 
 	let payments: DTOPago[] = [];
 	let loading = true;
@@ -18,56 +19,6 @@
 			error = err instanceof Error ? err.message : 'Error loading payment history';
 		} finally {
 			loading = false;
-		}
-	}
-
-	function formatDate(date: Date | undefined): string {
-		if (!date) return 'Unknown date';
-		return date.toLocaleDateString('es-ES', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	}
-
-	function formatAmount(amount: number | undefined): string {
-		if (amount === undefined || amount === null) return '€0.00';
-		return new Intl.NumberFormat('es-ES', {
-			style: 'currency',
-			currency: 'EUR'
-		}).format(amount);
-	}
-
-	function getStatusColor(status: string): string {
-		switch (status) {
-			case 'EXITO':
-				return 'bg-green-100 text-green-800';
-			case 'PENDIENTE':
-				return 'bg-yellow-100 text-yellow-800';
-			case 'PROCESANDO':
-				return 'bg-blue-100 text-blue-800';
-			case 'ERROR':
-				return 'bg-red-100 text-red-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
-	function getStatusText(status: string | undefined): string {
-		if (!status) return 'Unknown';
-		switch (status) {
-			case 'EXITO':
-				return 'Success';
-			case 'PENDIENTE':
-				return 'Pending';
-			case 'PROCESANDO':
-				return 'Processing';
-			case 'ERROR':
-				return 'Failed';
-			default:
-				return status;
 		}
 	}
 
@@ -173,17 +124,19 @@
 												Payment #{payment.id}
 											</p>
 											<span
-												class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {getStatusColor(
-													payment.estado || ''
+												class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {FormatterUtils.getStatusColor(
+													payment.estado || '',
+													'payment'
 												)}"
 											>
-												{getStatusText(payment.estado)}
+												{FormatterUtils.formatStatus(payment.estado, 'payment')}
 											</span>
 										</div>
 										<div class="mt-1 flex items-center text-sm text-gray-500">
 											<p>
-												{getPaymentMethodText(payment.metodoPago || '')} • {formatDate(
-													payment.fechaPago
+												{getPaymentMethodText(payment.metodoPago || '')} • {FormatterUtils.formatDate(
+													payment.fechaPago,
+													{ includeTime: true }
 												)}
 											</p>
 										</div>
@@ -194,7 +147,7 @@
 								</div>
 								<div class="flex flex-col items-end">
 									<p class="text-lg font-semibold text-gray-900">
-										{formatAmount(payment.importe)}
+										{FormatterUtils.formatAmount(payment.importe)}
 									</p>
 									{#if payment.numeroItems && payment.numeroItems > 0}
 										<p class="text-sm text-gray-500">{payment.numeroItems} item(s)</p>
@@ -210,7 +163,7 @@
 											<div class="flex justify-between text-sm">
 												<span class="text-gray-600">{item.concepto}</span>
 												<span class="text-gray-900">
-													{formatAmount(item.importeTotal)}
+													{FormatterUtils.formatAmount(item.importeTotal)}
 												</span>
 											</div>
 										{/each}

@@ -2,9 +2,11 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import type { DTOEjercicio, DTOEntregaEjercicio } from '$lib/generated/api';
-	import { ejercicioService } from '$lib/services/ejercicioService';
+	import { EjercicioService } from '$lib/services/ejercicioService';
 	import { EntregaService } from '$lib/services/entregaService';
 	import { authStore } from '$lib/stores/authStore.svelte';
+	import { FormatterUtils } from '$lib/utils/formatters.js';
+	import { NavigationUtils } from '$lib/utils/navigation.js';
 
 	// State
 	let loading = $state(false);
@@ -39,7 +41,7 @@
 		error = null;
 
 		try {
-			ejercicio = await ejercicioService.getEjercicioById(ejercicioId);
+			ejercicio = await EjercicioService.getEjercicioById(ejercicioId);
 		} catch (err) {
 			console.error('Error loading exercise:', err);
 			error = 'Error al cargar el ejercicio. Por favor, inténtalo de nuevo.';
@@ -53,7 +55,7 @@
 		entregasError = null;
 
 		try {
-			const response = await EntregaService.getEntregasByEjercicio(ejercicioId.toString());
+			const response = await EntregaService.getEntregasByEjercicio(ejercicioId);
 			entregas = response.content || [];
 		} catch (err) {
 			console.error('Error loading deliveries:', err);
@@ -64,7 +66,7 @@
 	}
 
 	function handleEdit() {
-		goto(`/ejercicios/${ejercicioId}/editar`);
+		NavigationUtils.navigateToEditExercise(ejercicioId);
 	}
 
 	function handleDelete() {
@@ -73,80 +75,15 @@
 	}
 
 	function handleCreateEntrega() {
-		goto(`/ejercicios/${ejercicioId}/entregar`);
+		NavigationUtils.navigateToSubmitExercise(ejercicioId);
 	}
 
 	function handleViewEntrega(id: number) {
-		goto(`/entregas/${id}`);
+		NavigationUtils.navigateToDelivery(id);
 	}
 
 	function handleGradeEntrega(id: number) {
-		goto(`/entregas/${id}/calificar`);
-	}
-
-	// Format functions
-	function formatDate(date: Date | string | undefined): string {
-		if (!date) return 'N/A';
-		return new Date(date).toLocaleDateString('es-ES', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	}
-
-	function formatStatus(status: string | undefined): string {
-		if (!status) return 'N/A';
-		const statusMap: Record<string, string> = {
-			PENDIENTE: 'Pendiente',
-			ENTREGADO: 'Entregado',
-			CALIFICADO: 'Calificado'
-		};
-		return statusMap[status] || status;
-	}
-
-	function getStatusColor(status: string | undefined): string {
-		if (!status) return 'bg-gray-100 text-gray-800';
-		const colorMap: Record<string, string> = {
-			PENDIENTE: 'bg-yellow-100 text-yellow-800',
-			ENTREGADO: 'bg-blue-100 text-blue-800',
-			CALIFICADO: 'bg-green-100 text-green-800'
-		};
-		return colorMap[status] || 'bg-gray-100 text-gray-800';
-	}
-
-	function formatGrade(nota: number | undefined): string {
-		if (nota === undefined || nota === null) return 'N/A';
-		return nota.toFixed(1);
-	}
-
-	function getGradeColor(nota: number | undefined): string {
-		if (nota === undefined || nota === null) return 'text-gray-500';
-		if (nota >= 9) return 'text-green-600 font-bold';
-		if (nota >= 7) return 'text-blue-600 font-semibold';
-		if (nota >= 5) return 'text-yellow-600 font-semibold';
-		return 'text-red-600 font-semibold';
-	}
-
-	function getExerciseStatusColor(status: string | undefined): string {
-		if (!status) return 'bg-gray-100 text-gray-800';
-		const colorMap: Record<string, string> = {
-			ACTIVE: 'bg-green-100 text-green-800',
-			EXPIRED: 'bg-red-100 text-red-800',
-			FUTURE: 'bg-blue-100 text-blue-800'
-		};
-		return colorMap[status] || 'bg-gray-100 text-gray-800';
-	}
-
-	function getExerciseStatusText(status: string | undefined): string {
-		if (!status) return 'N/A';
-		const statusMap: Record<string, string> = {
-			ACTIVE: 'Activo',
-			EXPIRED: 'Vencido',
-			FUTURE: 'Futuro'
-		};
-		return statusMap[status] || status;
+		NavigationUtils.navigateToGradeDelivery(id);
 	}
 </script>
 
@@ -220,11 +157,15 @@
 					<div class="grid grid-cols-2 gap-4">
 						<div>
 							<span class="text-sm font-medium text-gray-500">Fecha de Inicio</span>
-							<p class="text-gray-900">{formatDate(ejercicio.startDate)}</p>
+							<p class="text-gray-900">
+								{FormatterUtils.formatDate(ejercicio.startDate, { includeTime: true })}
+							</p>
 						</div>
 						<div>
 							<span class="text-sm font-medium text-gray-500">Fecha de Fin</span>
-							<p class="text-gray-900">{formatDate(ejercicio.endDate)}</p>
+							<p class="text-gray-900">
+								{FormatterUtils.formatDate(ejercicio.endDate, { includeTime: true })}
+							</p>
 						</div>
 					</div>
 
@@ -232,11 +173,11 @@
 						<span class="text-sm font-medium text-gray-500">Estado</span>
 						<div class="mt-1">
 							<span
-								class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {getExerciseStatusColor(
+								class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {FormatterUtils.getExerciseStatusColor(
 									ejercicio.estado
 								)}"
 							>
-								{getExerciseStatusText(ejercicio.estado)}
+								{FormatterUtils.getExerciseStatusText(ejercicio.estado)}
 							</span>
 						</div>
 					</div>
@@ -351,20 +292,21 @@
 										</div>
 									</td>
 									<td class="px-6 py-4 text-sm text-gray-900">
-										{formatDate(entrega.fechaEntrega)}
+										{FormatterUtils.formatDate(entrega.fechaEntrega, { includeTime: true })}
 									</td>
 									<td class="px-6 py-4">
 										<span
-											class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {getStatusColor(
-												entrega.estado
+											class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {FormatterUtils.getStatusColor(
+												entrega.estado,
+												'delivery'
 											)}"
 										>
-											{formatStatus(entrega.estado)}
+											{FormatterUtils.formatStatus(entrega.estado, 'delivery')}
 										</span>
 									</td>
 									<td class="px-6 py-4">
-										<span class="text-sm font-medium {getGradeColor(entrega.nota)}">
-											{formatGrade(entrega.nota)}
+										<span class="text-sm font-medium {FormatterUtils.getGradeColor(entrega.nota)}">
+											{FormatterUtils.formatGrade(entrega.nota)}
 										</span>
 									</td>
 									<td class="px-6 py-4 text-sm text-gray-900">

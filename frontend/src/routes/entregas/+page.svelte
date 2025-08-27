@@ -3,6 +3,8 @@
 	import type { DTOEntregaEjercicio, DTORespuestaPaginada } from '$lib/generated/api';
 	import { EntregaService } from '$lib/services/entregaService';
 	import { authStore } from '$lib/stores/authStore.svelte';
+	import { FormatterUtils } from '$lib/utils/formatters.js';
+	import { NavigationUtils } from '$lib/utils/navigation.js';
 
 	// State
 	let loading = $state(false);
@@ -81,56 +83,11 @@
 	}
 
 	function handleView(id: number) {
-		goto(`/entregas/${id}`);
+		NavigationUtils.goToDeliveryView(id);
 	}
 
 	function handleGrade(id: number) {
-		goto(`/entregas/${id}/calificar`);
-	}
-
-	// Format functions
-	function formatDate(date: Date | string | undefined): string {
-		if (!date) return 'N/A';
-		return new Date(date).toLocaleDateString('es-ES', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	}
-
-	function formatStatus(status: string | undefined): string {
-		if (!status) return 'N/A';
-		const statusMap: Record<string, string> = {
-			PENDIENTE: 'Pendiente',
-			ENTREGADO: 'Entregado',
-			CALIFICADO: 'Calificado'
-		};
-		return statusMap[status] || status;
-	}
-
-	function getStatusColor(status: string | undefined): string {
-		if (!status) return 'bg-gray-100 text-gray-800';
-		const colorMap: Record<string, string> = {
-			PENDIENTE: 'bg-yellow-100 text-yellow-800',
-			ENTREGADO: 'bg-blue-100 text-blue-800',
-			CALIFICADO: 'bg-green-100 text-green-800'
-		};
-		return colorMap[status] || 'bg-gray-100 text-gray-800';
-	}
-
-	function formatGrade(nota: number | undefined): string {
-		if (nota === undefined || nota === null) return 'N/A';
-		return nota.toFixed(1);
-	}
-
-	function getGradeColor(nota: number | undefined): string {
-		if (nota === undefined || nota === null) return 'text-gray-500';
-		if (nota >= 9) return 'text-green-600 font-bold';
-		if (nota >= 7) return 'text-blue-600 font-semibold';
-		if (nota >= 5) return 'text-yellow-600 font-semibold';
-		return 'text-red-600 font-semibold';
+		NavigationUtils.goToDeliveryGrade(id);
 	}
 </script>
 
@@ -254,20 +211,21 @@
 								</div>
 							</td>
 							<td class="px-6 py-4 text-sm text-gray-900">
-								{formatDate(entrega.fechaEntrega)}
+								{FormatterUtils.formatDate(entrega.fechaEntrega, { includeTime: true })}
 							</td>
 							<td class="px-6 py-4">
 								<span
-									class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {getStatusColor(
-										entrega.estado
+									class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {FormatterUtils.getStatusColor(
+										entrega.estado,
+										'delivery'
 									)}"
 								>
-									{formatStatus(entrega.estado)}
+									{FormatterUtils.formatStatus(entrega.estado, 'delivery')}
 								</span>
 							</td>
 							<td class="px-6 py-4">
-								<span class="text-sm font-medium {getGradeColor(entrega.nota)}">
-									{formatGrade(entrega.nota)}
+								<span class="text-sm font-medium {FormatterUtils.getGradeColor(entrega.nota)}">
+									{FormatterUtils.formatGrade(entrega.nota)}
 								</span>
 							</td>
 							<td class="px-6 py-4 text-sm text-gray-900">
