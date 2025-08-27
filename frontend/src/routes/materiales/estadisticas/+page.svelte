@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { MaterialService } from '$lib/services/materialService';
 	import ErrorDisplay from '$lib/components/common/ErrorDisplay.svelte';
-	import type { MaterialStats } from '$lib/generated/api';
+	import type { MaterialStats } from '$lib/generated/api/models/MaterialStats';
 
 	let stats: MaterialStats | null = null;
 	let loading = true;

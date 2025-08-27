@@ -64,8 +64,8 @@ app:
 
 # Stripe Configuration
 stripe:
-  secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
-  publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_placeholder}
-  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+  secret-key: ${STRIPE_SECRET_KEY:sk_test_51S0UCkFCuMbaQ3eo6kNTJRmtRS2SEQMwIvxE70yTe27li29gLcGSmHSeaNb89xyqMXuJf6NvGk25cDaKmpKnu5sc00bavTaseg}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_51S0UCkFCuMbaQ3eotp2Da6H8FP4dOgtEERfVZOkF5WqS7JvjWyu4FHrvFrhncOnLm40z0a2oVPKvizWOXQ31FaW100gZtDyUbf}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_e516daa6d93f91b2653ca6a5988d632c6fc98eb1fc9aad917ec76ee8c9e2ec71}
   currency: EUR
   test-mode: true

@@ -21,6 +21,6 @@ static/
 *.log
 *.tmp
 *.cache
-.env*
-!.env.example
 .cursor/rules/
+!.env.local
+!.env

@@ -103,7 +103,7 @@ public class PagoRest extends BaseRestController {
      * Security: ADMIN/PROFESOR can see any payment, students can only see their own
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESOR') or (hasRole('ALUMNO') and #id == authentication.principal.id)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESOR') or (hasRole('ALUMNO') and @servicioPago.isPaymentOwnedByUser(#id, authentication.principal.id))")
     @Operation(
         summary = "Get specific payment",
         description = "Gets a specific payment by ID. Students can only access their own payments."
@@ -137,13 +137,14 @@ public class PagoRest extends BaseRestController {
     
     /**
      * Creates a new payment with Stripe integration
-     * Only ADMIN and PROFESOR can create payments
+     * ADMIN and PROFESOR can create payments for any student
+     * ALUMNO can only create payments for themselves
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESOR', 'ALUMNO')")
     @Operation(
         summary = "Create payment",
-        description = "Creates a new payment with Stripe integration. Returns client_secret for frontend confirmation."
+        description = "Creates a new payment with Stripe integration. Returns client_secret for frontend confirmation. Students can only create payments for themselves."
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -160,7 +161,7 @@ public class PagoRest extends BaseRestController {
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Access denied - Not authorized to create payments"
+            description = "Access denied - Not authorized to create payments or trying to create payment for another student"
         ),
         @ApiResponse(
             responseCode = "500",
@@ -181,7 +182,7 @@ public class PagoRest extends BaseRestController {
      * Students can only check their own payments
      */
     @GetMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESOR') or (hasRole('ALUMNO') and #id == authentication.principal.id)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESOR') or (hasRole('ALUMNO') and @servicioPago.isPaymentOwnedByUser(#id, authentication.principal.id))")
     @Operation(
         summary = "Check payment status",
         description = "Checks if a payment was successful (demo utility). Students can only check their own payments."
@@ -203,11 +204,15 @@ public class PagoRest extends BaseRestController {
     public ResponseEntity<Map<String, Object>> checkPaymentStatus(
             @Parameter(description = "Payment ID", example = "1")
             @PathVariable Long id) {
+        DTOPago pago = servicioPago.obtenerPagoPorId(id);
         boolean isSuccessful = servicioPago.isPaymentSuccessful(id);
+        
         Map<String, Object> response = Map.of(
             "paymentId", id,
             "isSuccessful", isSuccessful,
-            "status", isSuccessful ? "SUCCESS" : "FAILED"
+            "status", pago.estado().toString(),
+            "paymentStatus", pago.estado().toString(),
+            "description", pago.getDescripcionEstado()
         );
         return ResponseEntity.ok(response);
     }
@@ -241,6 +246,37 @@ public class PagoRest extends BaseRestController {
             @RequestParam(defaultValue = "10") @Min(1) @Max(50) int limit) {
         List<DTOPago> recentPayments = servicioPago.getRecentPayments(limit);
         return ResponseEntity.ok(recentPayments);
+    }
+    
+    /**
+     * Gets recent payments for the authenticated student
+     * Students can only see their own payments
+     */
+    @GetMapping("/my-recent")
+    @PreAuthorize("hasRole('ALUMNO')")
+    @Operation(
+        summary = "Get my recent payments",
+        description = "Gets recent payments for the authenticated student. Students can only see their own payments."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Recent payments retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOPago.class, type = "array")
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view payments"
+        )
+    })
+    public ResponseEntity<List<DTOPago>> getMyRecentPayments(
+            @Parameter(description = "Maximum number of payments to return", example = "10")
+            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int limit) {
+        List<DTOPago> myRecentPayments = servicioPago.getMyRecentPayments(limit);
+        return ResponseEntity.ok(myRecentPayments);
     }
     
     // ===== STRIPE WEBHOOK =====
@@ -279,18 +315,37 @@ public class PagoRest extends BaseRestController {
             @RequestHeader(value = "Stripe-Event-Id", required = false) String eventId) {
         
         try {
-            // Validate webhook signature (skip in test mode for easier testing)
+            // Debug webhook configuration
+            log.info("Webhook processing - Test mode: {}, Webhook secret: {}", 
+                stripeProperties.isTestMode(), 
+                stripeProperties.getWebhookSecret().substring(0, 10) + "...");
+            
+            // Debug payload and signature
+            log.info("Webhook payload length: {}", payload.length());
+            log.info("Webhook signature: {}", signature.substring(0, 20) + "...");
+            
+            // Validate webhook signature
             Event event;
-            if (stripeProperties.isTestMode() && "whsec_placeholder".equals(stripeProperties.getWebhookSecret())) {
-                // In test mode with placeholder secret, construct event without signature verification
-                log.warn("Running in test mode without signature verification - NOT FOR PRODUCTION");
+            try {
                 event = Webhook.constructEvent(payload, signature, stripeProperties.getWebhookSecret());
-            } else {
-                // Normal signature verification for production
-                event = Webhook.constructEvent(payload, signature, stripeProperties.getWebhookSecret());
+                log.info("Webhook signature verification successful");
+            } catch (SignatureVerificationException e) {
+                log.error("Webhook signature verification failed: {}", e.getMessage());
+                throw e;
             }
             
             log.info("Processing Stripe webhook event: {} with ID: {}", event.getType(), event.getId());
+            log.info("Event data object type: {}", event.getDataObjectDeserializer().getObject().map(Object::getClass).orElse(null));
+            
+            // Debug the raw event data
+            log.info("Event data object present: {}", event.getDataObjectDeserializer().getObject().isPresent());
+            if (event.getDataObjectDeserializer().getObject().isPresent()) {
+                Object obj = event.getDataObjectDeserializer().getObject().get();
+                log.info("Event data object class: {}", obj.getClass().getName());
+                log.info("Event data object toString: {}", obj.toString());
+            } else {
+                log.warn("Event data object is not present - this might indicate a webhook secret mismatch");
+            }
             
             // Check for duplicate event processing (idempotency)
             if (eventId != null && isEventAlreadyProcessed(eventId)) {
@@ -300,18 +355,72 @@ public class PagoRest extends BaseRestController {
             
             // Process the event
             if ("payment_intent.succeeded".equals(event.getType())) {
-                PaymentIntent paymentIntent = (PaymentIntent) event.getDataObjectDeserializer().getObject().orElse(null);
+                log.info("Processing payment_intent.succeeded event");
+                
+                // Try multiple approaches to extract PaymentIntent
+                PaymentIntent paymentIntent = null;
+                
+                // Method 1: Try direct deserialization
+                var dataObject = event.getDataObjectDeserializer().getObject();
+                if (dataObject.isPresent() && dataObject.get() instanceof PaymentIntent) {
+                    paymentIntent = (PaymentIntent) dataObject.get();
+                    log.info("PaymentIntent extracted via direct deserialization: {}", paymentIntent.getId());
+                } else {
+                    // Method 2: Try manual JSON parsing
+                    try {
+                        String eventJson = event.toJson();
+                        log.info("Event JSON: {}", eventJson);
+                        
+                        // Extract payment_intent ID from the event
+                        if (eventJson.contains("\"id\"")) {
+                            // Use a simple approach to extract the payment intent ID
+                            int idIndex = eventJson.indexOf("\"id\"");
+                            int startQuote = eventJson.indexOf("\"", idIndex + 4);
+                            int endQuote = eventJson.indexOf("\"", startQuote + 1);
+                            if (startQuote > 0 && endQuote > startQuote) {
+                                String paymentIntentId = eventJson.substring(startQuote + 1, endQuote);
+                                if (paymentIntentId.startsWith("pi_")) {
+                                    log.info("Extracted PaymentIntent ID from JSON: {}", paymentIntentId);
+                                    
+                                    // Fetch the PaymentIntent from Stripe API
+                                    try {
+                                        paymentIntent = PaymentIntent.retrieve(paymentIntentId);
+                                        log.info("PaymentIntent retrieved from Stripe API: {}", paymentIntent.getId());
+                                    } catch (Exception e) {
+                                        log.error("Failed to retrieve PaymentIntent from Stripe API: {}", e.getMessage());
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.error("Error parsing event JSON: {}", e.getMessage());
+                    }
+                }
+                
                 if (paymentIntent != null) {
-                    servicioPago.procesarEventoStripe(
-                        event.getType(),
-                        paymentIntent.getId(),
-                        paymentIntent.getLatestCharge(),
-                        null
-                    );
-                    log.info("Payment succeeded for PaymentIntent: {}", paymentIntent.getId());
+                    log.info("Calling procesarEventoStripe for PaymentIntent: {}", paymentIntent.getId());
+                    try {
+                        servicioPago.procesarEventoStripe(
+                            event.getType(),
+                            paymentIntent.getId(),
+                            paymentIntent.getLatestCharge(),
+                            null
+                        );
+                        log.info("Payment succeeded for PaymentIntent: {}", paymentIntent.getId());
+                    } catch (Exception e) {
+                        log.error("Error processing payment event: {}", e.getMessage(), e);
+                        throw e;
+                    }
+                } else {
+                    log.error("Could not extract PaymentIntent from webhook event");
                 }
             } else if ("payment_intent.payment_failed".equals(event.getType())) {
-                PaymentIntent paymentIntent = (PaymentIntent) event.getDataObjectDeserializer().getObject().orElse(null);
+                PaymentIntent paymentIntent = null;
+                var dataObject = event.getDataObjectDeserializer().getObject();
+                if (dataObject.isPresent() && dataObject.get() instanceof PaymentIntent) {
+                    paymentIntent = (PaymentIntent) dataObject.get();
+                }
+                
                 if (paymentIntent != null) {
                     String failureReason = paymentIntent.getLastPaymentError() != null ? 
                         paymentIntent.getLastPaymentError().getMessage() : "Payment failed";
@@ -324,7 +433,12 @@ public class PagoRest extends BaseRestController {
                     log.warn("Payment failed for PaymentIntent: {} - Reason: {}", paymentIntent.getId(), failureReason);
                 }
             } else if ("payment_intent.processing".equals(event.getType())) {
-                PaymentIntent paymentIntent = (PaymentIntent) event.getDataObjectDeserializer().getObject().orElse(null);
+                PaymentIntent paymentIntent = null;
+                var dataObject = event.getDataObjectDeserializer().getObject();
+                if (dataObject.isPresent() && dataObject.get() instanceof PaymentIntent) {
+                    paymentIntent = (PaymentIntent) dataObject.get();
+                }
+                
                 if (paymentIntent != null) {
                     servicioPago.procesarEventoStripe(
                         event.getType(),

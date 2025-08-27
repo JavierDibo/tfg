@@ -35,6 +35,9 @@ public class DataInitializationCoordinator {
     @Autowired
     private EntregaEjercicioDataInitializer entregaEjercicioDataInitializer;
     
+    @Autowired
+    private PagoDataInitializer pagoDataInitializer;
+    
     @EventListener(ApplicationReadyEvent.class)
     public void initializeData() {
         System.out.println("=== Starting Data Initialization ===");
@@ -61,6 +64,9 @@ public class DataInitializationCoordinator {
             
             entregaEjercicioDataInitializer.initialize();
             System.out.println("Exercise deliveries created");
+            
+            pagoDataInitializer.initialize();
+            System.out.println("Payments created");
             
             System.out.println("=== Data Initialization Completed ===");
             

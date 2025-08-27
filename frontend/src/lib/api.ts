@@ -10,7 +10,8 @@ import {
 	MaterialsApi,
 	PruebasApi,
 	ExerciseDeliveriesApi,
-	ExercisesApi
+	ExercisesApi,
+	PaymentsApi
 } from './generated/api';
 import { authStore } from './stores/authStore.svelte';
 import { getApiBasePath } from './config';
@@ -50,3 +51,4 @@ export const materialApi = new MaterialsApi(config);
 export const pruebasApi = new PruebasApi(config);
 export const entregaApi = new ExerciseDeliveriesApi(config);
 export const ejercicioApi = new ExercisesApi(config);
+export const pagoApi = new PaymentsApi(config);

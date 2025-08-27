@@ -128,13 +128,13 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
-    numeroProfesores?: number;
+    numeroAlumnos?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOCurso
      */
-    numeroAlumnos?: number;
+    numeroProfesores?: number;
 }
 
 
@@ -191,8 +191,8 @@ export function DTOCursoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'duracionEnDias': json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
         'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
         'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
-        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
         'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
+        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
     };
 }
 
@@ -223,8 +223,8 @@ export function DTOCursoToJSONTyped(value?: DTOCurso | null, ignoreDiscriminator
         'duracionEnDias': value['duracionEnDias'],
         'porcentajeProgreso': value['porcentajeProgreso'],
         'duracionEnSemanas': value['duracionEnSemanas'],
-        'numeroProfesores': value['numeroProfesores'],
         'numeroAlumnos': value['numeroAlumnos'],
+        'numeroProfesores': value['numeroProfesores'],
     };
 }
 

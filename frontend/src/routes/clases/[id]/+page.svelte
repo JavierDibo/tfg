@@ -20,7 +20,11 @@
 	let claseDetalles = $state<DTOClase | null>(null);
 	let numeroAlumnos = $state(0);
 	let numeroProfesores = $state(0);
-	let enrollmentStatus = $state<{ isEnrolled: boolean; claseId?: number; alumnoId?: number } | null>(null);
+	let enrollmentStatus = $state<{
+		isEnrolled: boolean;
+		claseId?: number;
+		alumnoId?: number;
+	} | null>(null);
 	let enrollmentLoading = $state(false);
 	let enrollmentError = $state<string | null>(null);
 
@@ -577,9 +581,11 @@
 					{:else}
 						<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 							{#each ejercicios as ejercicio (ejercicio.id)}
-								<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
-									<div class="flex items-start justify-between mb-3">
-										<h3 class="font-semibold text-gray-900 line-clamp-2">
+								<div
+									class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+								>
+									<div class="mb-3 flex items-start justify-between">
+										<h3 class="line-clamp-2 font-semibold text-gray-900">
 											{ejercicio.name || 'Sin nombre'}
 										</h3>
 										<span
@@ -590,40 +596,70 @@
 											{ejercicio.estado || 'N/A'}
 										</span>
 									</div>
-									
+
 									{#if ejercicio.statement}
-										<p class="mb-3 text-sm text-gray-600 line-clamp-3">
+										<p class="mb-3 line-clamp-3 text-sm text-gray-600">
 											{ejercicio.statement}
 										</p>
 									{/if}
-									
+
 									<div class="space-y-2 text-xs text-gray-500">
 										{#if ejercicio.startDate}
 											<div class="flex items-center">
-												<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+												<svg
+													class="mr-1 h-3 w-3"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+													/>
 												</svg>
 												Inicio: {formatDate(ejercicio.startDate)}
 											</div>
 										{/if}
 										{#if ejercicio.endDate}
 											<div class="flex items-center">
-												<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+												<svg
+													class="mr-1 h-3 w-3"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+													/>
 												</svg>
 												Fin: {formatDate(ejercicio.endDate)}
 											</div>
 										{/if}
 										{#if ejercicio.numeroEntregas !== undefined}
 											<div class="flex items-center">
-												<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+												<svg
+													class="mr-1 h-3 w-3"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+													/>
 												</svg>
 												Entregas: {ejercicio.numeroEntregas}
 											</div>
 										{/if}
 									</div>
-									
+
 									<div class="mt-4 flex justify-end">
 										<a
 											href="/ejercicios/{ejercicio.id}"

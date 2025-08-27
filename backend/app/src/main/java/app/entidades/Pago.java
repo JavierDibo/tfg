@@ -25,6 +25,10 @@ import java.util.List;
 @EqualsAndHashCode
 @Entity
 @Table(name = "pagos")
+@NamedEntityGraph(
+    name = "Pago.withItems",
+    attributeNodes = @NamedAttributeNode("items")
+)
 public class Pago {
     
     @Id
@@ -72,7 +76,7 @@ public class Pago {
     
     public Pago() {
         this.fechaPago = LocalDateTime.now();
-        this.estado = EEstadoPago.EXITO; // Por defecto, según UML solo se crea si hay confirmación
+        this.estado = EEstadoPago.PENDIENTE; // Default to pending for new payments
     }
     
     public Pago(BigDecimal importe, EMetodoPago metodoPago, String alumnoId) {
@@ -143,5 +147,35 @@ public class Pago {
             throw new IllegalStateException("Solo se pueden reembolsar pagos exitosos");
         }
         this.estado = EEstadoPago.REEMBOLSADO;
+    }
+    
+    /**
+     * Verifica si el pago está expirado
+     * @return true si está expirado, false en caso contrario
+     */
+    public boolean estaExpirado() {
+        return this.fechaExpiracion != null && LocalDateTime.now().isAfter(this.fechaExpiracion);
+    }
+    
+    /**
+     * Obtiene el número de items en el pago
+     * @return número de items
+     */
+    public int getNumeroItems() {
+        return this.items != null ? this.items.size() : 0;
+    }
+    
+    /**
+     * Calcula el importe total de los items (para verificación)
+     * @return importe total calculado
+     */
+    public BigDecimal calcularImporteTotalItems() {
+        if (this.items == null) {
+            return BigDecimal.ZERO;
+        }
+        
+        return this.items.stream()
+                .map(ItemPago::getImporteTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

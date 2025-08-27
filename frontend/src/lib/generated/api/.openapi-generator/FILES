@@ -4,6 +4,7 @@ apis/ClassesApi.ts
 apis/ExerciseDeliveriesApi.ts
 apis/ExercisesApi.ts
 apis/MaterialsApi.ts
+apis/PaymentsApi.ts
 apis/ProfessorsApi.ts
 apis/PruebasApi.ts
 apis/StudentsApi.ts
@@ -21,11 +22,13 @@ models/DTOEjercicio.ts
 models/DTOEntregaEjercicio.ts
 models/DTOMaterial.ts
 models/DTOMetadatosPaginacion.ts
+models/DTOPago.ts
 models/DTOPerfilAlumno.ts
 models/DTOPeticionActualizarEntregaEjercicio.ts
 models/DTOPeticionCrearCurso.ts
 models/DTOPeticionCrearEjercicio.ts
 models/DTOPeticionCrearEntregaEjercicio.ts
+models/DTOPeticionCrearPago.ts
 models/DTOPeticionCrearTaller.ts
 models/DTOPeticionLogin.ts
 models/DTOPeticionRegistro.ts
@@ -42,8 +45,10 @@ models/DTORespuestaPaginadaDTOClase.ts
 models/DTORespuestaPaginadaDTOEjercicio.ts
 models/DTORespuestaPaginadaDTOEntregaEjercicio.ts
 models/DTORespuestaPaginadaDTOMaterial.ts
+models/DTORespuestaPaginadaDTOPago.ts
 models/DTORespuestaPaginadaDTOProfesor.ts
 models/DTOTaller.ts
+models/ItemPago.ts
 models/Material.ts
 models/index.ts
 runtime.ts

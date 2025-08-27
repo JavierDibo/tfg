@@ -3,6 +3,9 @@ package app.repositorios;
 import app.entidades.Pago;
 import app.entidades.enums.EMetodoPago;
 import app.entidades.enums.EEstadoPago;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,13 +22,6 @@ import java.util.Optional;
  */
 @Repository
 public interface RepositorioPago extends JpaRepository<Pago, Long> {
-    
-    /**
-     * Busca pagos por ID de alumno
-     * @param alumnoId ID del alumno
-     * @return Lista de pagos del alumno
-     */
-    List<Pago> findByAlumnoId(String alumnoId);
     
     /**
      * Busca pagos por metodo de pago
@@ -65,18 +61,18 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
     List<Pago> findByFacturaCreada(Boolean facturaCreada);
     
     /**
+     * Busca un pago por su Stripe Payment Intent ID
+     * @param stripePaymentIntentId ID del payment intent de Stripe
+     * @return Optional del pago encontrado
+     */
+    Optional<Pago> findByStripePaymentIntentId(String stripePaymentIntentId);
+    
+    /**
      * Obtiene todos los pagos ordenados por ID
      * @return Lista de pagos ordenada
      */
     @Query("SELECT p FROM Pago p ORDER BY p.id")
     List<Pago> findAllOrderedById();
-    
-    /**
-     * Obtiene todos los pagos ordenados por fecha de pago descendente
-     * @return Lista de pagos ordenada por fecha
-     */
-    @Query("SELECT p FROM Pago p ORDER BY p.fechaPago DESC")
-    List<Pago> findAllOrderedByFechaDesc();
     
     /**
      * Obtiene todos los pagos ordenados por importe descendente
@@ -116,38 +112,46 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @return Suma total de pagos exitosos
      */
     @Query("SELECT COALESCE(SUM(p.importe), 0) FROM Pago p WHERE p.alumnoId = :alumnoId AND p.estado = 'EXITO'")
-    BigDecimal calcularTotalIngresosByAlumno(@Param("alumnoId") String alumnoId);
+    BigDecimal calcularTotalIngresosAlumno(@Param("alumnoId") String alumnoId);
     
     /**
-     * Calcula el total de ingresos en un período
-     * @param fechaInicio Fecha de inicio
-     * @param fechaFin Fecha de fin
-     * @return Suma total de pagos exitosos en el período
+     * Obtiene pagos paginados con items cargados usando EntityGraph
+     * @param pageable configuración de paginación
+     * @return Página de pagos con items cargados
      */
-    @Query("SELECT COALESCE(SUM(p.importe), 0) FROM Pago p WHERE p.estado = 'EXITO' AND p.fechaPago BETWEEN :fechaInicio AND :fechaFin")
-    BigDecimal calcularTotalIngresosByPeriodo(@Param("fechaInicio") LocalDateTime fechaInicio, 
-                                            @Param("fechaFin") LocalDateTime fechaFin);
+    @EntityGraph(value = "Pago.withItems")
+    Page<Pago> findAll(Pageable pageable);
     
     /**
-     * Cuenta pagos por metodo de pago
-     * @param metodoPago metodo de pago
-     * @return Número de pagos
+     * Busca un pago por ID con items cargados usando EntityGraph
+     * @param id ID del pago
+     * @return Optional del pago con items cargados
      */
-    @Query("SELECT COUNT(p) FROM Pago p WHERE p.metodoPago = :metodoPago")
-    Long countByMetodoPago(@Param("metodoPago") EMetodoPago metodoPago);
+    @EntityGraph(value = "Pago.withItems")
+    Optional<Pago> findById(Long id);
     
     /**
-     * Cuenta pagos exitosos de un alumno
+     * Busca pagos por alumno con items cargados usando EntityGraph
      * @param alumnoId ID del alumno
-     * @return Número de pagos exitosos
+     * @return Lista de pagos con items cargados
      */
-    @Query("SELECT COUNT(p) FROM Pago p WHERE p.alumnoId = :alumnoId AND p.estado = 'EXITO'")
-    Long countPagosExitososByAlumno(@Param("alumnoId") String alumnoId);
+    @EntityGraph(value = "Pago.withItems")
+    List<Pago> findByAlumnoId(String alumnoId);
     
     /**
-     * Busca pago por Stripe Payment Intent ID
-     * @param stripePaymentIntentId ID del Payment Intent de Stripe
-     * @return Optional del pago encontrado
+     * Obtiene todos los pagos ordenados por fecha descendente con items cargados
+     * @return Lista de pagos ordenada por fecha con items cargados
      */
-    Optional<Pago> findByStripePaymentIntentId(String stripePaymentIntentId);
+    @EntityGraph(value = "Pago.withItems")
+    @Query("SELECT p FROM Pago p ORDER BY p.fechaPago DESC")
+    List<Pago> findAllOrderedByFechaDesc();
+    
+    /**
+     * Busca pagos de un alumno ordenados por fecha de pago descendente
+     * @param alumnoId ID del alumno
+     * @return Lista de pagos del alumno ordenada por fecha descendente
+     */
+    @EntityGraph(value = "Pago.withItems")
+    @Query("SELECT p FROM Pago p WHERE p.alumnoId = :alumnoId ORDER BY p.fechaPago DESC")
+    List<Pago> findByAlumnoIdOrderByFechaPagoDesc(@Param("alumnoId") String alumnoId);
 }

@@ -78,19 +78,7 @@ export interface DTOEntregaEjercicio {
      * @type {string}
      * @memberof DTOEntregaEjercicio
      */
-    comentariosFormateados?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOEntregaEjercicio
-     */
-    resumenComentarios?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOEntregaEjercicio
-     */
-    calificacionCualitativa?: string;
+    notaFormateada?: string;
     /**
      * 
      * @type {string}
@@ -102,7 +90,19 @@ export interface DTOEntregaEjercicio {
      * @type {string}
      * @memberof DTOEntregaEjercicio
      */
-    notaFormateada?: string;
+    comentariosFormateados?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOEntregaEjercicio
+     */
+    calificacionCualitativa?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOEntregaEjercicio
+     */
+    resumenComentarios?: string;
 }
 
 
@@ -143,11 +143,11 @@ export function DTOEntregaEjercicioFromJSONTyped(json: any, ignoreDiscriminator:
         'ejercicioId': json['ejercicioId'] == null ? undefined : json['ejercicioId'],
         'numeroArchivos': json['numeroArchivos'] == null ? undefined : json['numeroArchivos'],
         'comentarios': json['comentarios'] == null ? undefined : json['comentarios'],
-        'comentariosFormateados': json['comentariosFormateados'] == null ? undefined : json['comentariosFormateados'],
-        'resumenComentarios': json['resumenComentarios'] == null ? undefined : json['resumenComentarios'],
-        'calificacionCualitativa': json['calificacionCualitativa'] == null ? undefined : json['calificacionCualitativa'],
-        'estadoDescriptivo': json['estadoDescriptivo'] == null ? undefined : json['estadoDescriptivo'],
         'notaFormateada': json['notaFormateada'] == null ? undefined : json['notaFormateada'],
+        'estadoDescriptivo': json['estadoDescriptivo'] == null ? undefined : json['estadoDescriptivo'],
+        'comentariosFormateados': json['comentariosFormateados'] == null ? undefined : json['comentariosFormateados'],
+        'calificacionCualitativa': json['calificacionCualitativa'] == null ? undefined : json['calificacionCualitativa'],
+        'resumenComentarios': json['resumenComentarios'] == null ? undefined : json['resumenComentarios'],
     };
 }
 
@@ -171,11 +171,11 @@ export function DTOEntregaEjercicioToJSONTyped(value?: DTOEntregaEjercicio | nul
         'ejercicioId': value['ejercicioId'],
         'numeroArchivos': value['numeroArchivos'],
         'comentarios': value['comentarios'],
-        'comentariosFormateados': value['comentariosFormateados'],
-        'resumenComentarios': value['resumenComentarios'],
-        'calificacionCualitativa': value['calificacionCualitativa'],
-        'estadoDescriptivo': value['estadoDescriptivo'],
         'notaFormateada': value['notaFormateada'],
+        'estadoDescriptivo': value['estadoDescriptivo'],
+        'comentariosFormateados': value['comentariosFormateados'],
+        'calificacionCualitativa': value['calificacionCualitativa'],
+        'resumenComentarios': value['resumenComentarios'],
     };
 }
 
