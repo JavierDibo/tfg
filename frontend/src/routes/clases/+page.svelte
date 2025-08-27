@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import type { DTOClase } from '$lib/generated/api';
 	import { ClaseService } from '$lib/services/claseService';
+	import { EnrollmentService } from '$lib/services/enrollmentService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import {
 		EntitySearchSection,
@@ -31,6 +32,10 @@
 	let pageSize = $state(20);
 	let sortBy = $state('id');
 	let sortDirection = $state<'ASC' | 'DESC'>('ASC');
+
+	// Enrollment state
+	let enrollmentStatuses = $state<Map<number, boolean>>(new Map());
+	let enrollmentLoading = $state<Map<number, boolean>>(new Map());
 
 	// Search configuration
 	const searchConfig = getSearchConfig('clases');
@@ -65,6 +70,57 @@
 			loadClases();
 		}
 	});
+
+	// Load enrollment statuses when classes change
+	$effect(() => {
+		if (clases.length > 0 && authStore.isAlumno) {
+			loadEnrollmentStatuses();
+		}
+	});
+
+	// Load enrollment statuses for all classes
+	async function loadEnrollmentStatuses() {
+		if (!authStore.isAlumno) return;
+
+		for (const clase of clases) {
+			if (clase.id) {
+				try {
+					const status = await EnrollmentService.checkMyEnrollmentStatus(clase.id);
+					enrollmentStatuses.set(clase.id, status.isEnrolled || false);
+				} catch (err) {
+					console.warn(`Error checking enrollment status for class ${clase.id}:`, err);
+					enrollmentStatuses.set(clase.id, false);
+				}
+			}
+		}
+	}
+
+	// Handle enrollment action
+	async function handleEnrollmentAction(clase: DTOClase) {
+		if (!clase.id) return;
+
+		enrollmentLoading.set(clase.id, true);
+		try {
+			const result = await EnrollmentService.handleEnrollmentAction(clase.id, {
+				titulo: clase.titulo,
+				precio: clase.precio
+			});
+
+			if (result.action === 'redirect' && result.redirectUrl) {
+				// Redirect to payment page
+				goto(result.redirectUrl);
+			} else if (result.action === 'unenrolled') {
+				// Update enrollment status
+				enrollmentStatuses.set(clase.id, false);
+				successMessage = 'Te has desinscrito de la clase correctamente';
+			}
+		} catch (err) {
+			error = `Error al procesar la inscripción: ${err}`;
+			console.error('Error handling enrollment action:', err);
+		} finally {
+			enrollmentLoading.set(clase.id, false);
+		}
+	}
 
 	// Data loading with new search parameters
 	async function loadClases() {
@@ -228,6 +284,28 @@
 			hoverColor: 'blue',
 			action: (clase: DTOClase) => goto(`/clases/${clase.id}`),
 			condition: () => true
+		},
+		{
+			label: 'Inscribirse',
+			dynamicLabel: (clase: DTOClase) => {
+				if (!clase.id) return 'Inscribirse';
+				const isEnrolled = enrollmentStatuses.get(clase.id);
+				const isLoading = enrollmentLoading.get(clase.id);
+				if (isLoading) return 'Cargando...';
+				return isEnrolled ? 'Ya inscrito' : 'Inscribirse';
+			},
+			color: (clase: DTOClase) => {
+				if (!clase.id) return 'green';
+				const isEnrolled = enrollmentStatuses.get(clase.id);
+				return isEnrolled ? 'gray' : 'green';
+			},
+			hoverColor: (clase: DTOClase) => {
+				if (!clase.id) return 'green';
+				const isEnrolled = enrollmentStatuses.get(clase.id);
+				return isEnrolled ? 'gray' : 'green';
+			},
+			action: (clase: DTOClase) => handleEnrollmentAction(clase),
+			condition: () => authStore.isAlumno
 		},
 		{
 			label: 'Eliminar',

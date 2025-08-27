@@ -14,6 +14,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,10 +28,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ServicioPago {
     
     private final RepositorioPago repositorioPago;
     private final SecurityUtils securityUtils;
+    private final ServicioClase servicioClase; // Add enrollment service dependency
     
     public DTOPago crearPago(DTOPeticionCrearPago peticion) {
         // Security check: Students can only create payments for themselves
@@ -63,6 +66,11 @@ public class ServicioPago {
             pago.setStripePaymentIntentId(paymentIntent.getId());
             pago.setFechaExpiracion(LocalDateTime.now().plusHours(24));
             
+            // Set classId if provided for enrollment payments
+            if (peticion.classId() != null) {
+                pago.setClassId(peticion.classId());
+            }
+            
             Pago savedPago = repositorioPago.save(pago);
             
             // Create DTO with client_secret
@@ -78,7 +86,8 @@ public class ServicioPago {
                 savedPago.getStripePaymentIntentId(),
                 savedPago.getStripeChargeId(),
                 savedPago.getFailureReason(),
-                paymentIntent.getClientSecret() // Only in response, never stored
+                paymentIntent.getClientSecret(), // Only in response, never stored
+                savedPago.getClassId() // Include classId in response
             );
             
             return dtoPago;
@@ -112,6 +121,9 @@ public class ServicioPago {
             case "payment_intent.succeeded":
                 pago.setEstado(EEstadoPago.EXITO);
                 pago.setStripeChargeId(chargeId);
+                
+                // Handle class enrollment if this was a class payment
+                handleClassEnrollmentIfApplicable(pago);
                 break;
             case "payment_intent.payment_failed":
                 pago.setEstado(EEstadoPago.ERROR);
@@ -123,6 +135,26 @@ public class ServicioPago {
         }
         
         repositorioPago.save(pago);
+    }
+    
+    /**
+     * Handle class enrollment if the payment was for a class enrollment
+     */
+    private void handleClassEnrollmentIfApplicable(Pago pago) {
+        try {
+            // Check if this payment was for a class enrollment
+            if (pago.getClassId() != null) {
+                // Enroll the student in the class
+                Long studentId = Long.parseLong(pago.getAlumnoId());
+                servicioClase.inscribirAlumnoEnClase(new app.dtos.DTOPeticionEnrollment(studentId, pago.getClassId()));
+                
+                log.info("Student {} enrolled in class {} after successful payment {}", 
+                    studentId, pago.getClassId(), pago.getId());
+            }
+        } catch (Exception e) {
+            log.error("Error handling class enrollment for payment {}: {}", pago.getId(), e.getMessage());
+            // Don't fail the payment processing if enrollment fails
+        }
     }
     
     private Long convertToCents(BigDecimal amount) {

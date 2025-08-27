@@ -12,11 +12,13 @@
 		amount = 0,
 		description = '',
 		studentId = '',
+		classId = null,
 		onError = () => {}
 	} = $props<{
 		amount?: number;
 		description?: string;
 		studentId?: string;
+		classId?: number | null;
 		onError?: (error: Error) => void;
 	}>();
 
@@ -74,7 +76,8 @@
 				importe: amount,
 				alumnoId: studentId,
 				description,
-				currency: 'EUR'
+				currency: 'EUR',
+				classId: classId // Include classId for enrollment payments
 			};
 
 			const payment = await PagoService.createPayment(paymentData);
@@ -128,7 +131,7 @@
 			}
 
 			// 2. Confirm the payment
-			const returnUrl = `${window.location.origin}/payment-success?payment_id=${currentPaymentId}`;
+			const returnUrl = `${window.location.origin}/payment-success?payment_id=${currentPaymentId}${classId ? `&classId=${classId}` : ''}`;
 
 			const { error: confirmError } = await stripeInstance.confirmPayment({
 				elements,

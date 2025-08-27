@@ -273,7 +273,14 @@
 															e.currentTarget.blur();
 															triggerAction(action, entity);
 														}}
-														class={tableClasses.actionButton(action.color, action.hoverColor)}
+														class={tableClasses.actionButton(
+															typeof action.color === 'function'
+																? action.color(entity)
+																: action.color,
+															typeof action.hoverColor === 'function'
+																? action.hoverColor(entity)
+																: action.hoverColor
+														)}
 														title={action.dynamicLabel ? action.dynamicLabel(entity) : action.label}
 													>
 														{action.dynamicLabel ? action.dynamicLabel(entity) : action.label}

@@ -607,7 +607,8 @@ public class ServicioClase {
     }
 
     /**
-     * Método específico para que los profesores den de baja alumnos de sus clases
+     * Método específico para que los administradores den de baja alumnos de las clases
+     * Los profesores y estudiantes no pueden dar de baja debido a los requisitos de pago
      * @param peticion DTO con los datos de la baja
      * @return DTORespuestaEnrollment con el resultado de la operación
      */
@@ -617,9 +618,9 @@ public class ServicioClase {
             Clase clase = repositorioClase.findById(peticion.classId()).orElse(null);
             ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", peticion.classId());
             
-            // Verify that the current professor can modify this class
-            if (!puedeAccederAClase(clase)) {
-                ExceptionUtils.throwAccessDenied("You don't have permission to modify this class");
+            // Only admins can unenroll students due to payment requirements
+            if (!securityUtils.hasRole("ADMIN")) {
+                ExceptionUtils.throwAccessDenied("Only administrators can unenroll students from classes due to payment requirements");
             }
             
             // Check if the student is in the class
@@ -907,45 +908,19 @@ public class ServicioClase {
 
     /**
      * Permite a un alumno darse de baja de una clase.
+     * DISABLED: Students cannot unenroll due to payment requirements
      * @param claseId ID de la clase a darse de baja.
      * @return DTORespuestaEnrollment con el resultado de la operación.
      */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public DTORespuestaEnrollment darseDeBajaDeClase(Long claseId) {
-        String alumnoId = securityUtils.getCurrentUserId().toString(); // Obtiene el ID del alumno autenticado
-        Long alumnoIdLong = Long.parseLong(alumnoId);
-
-        Clase clase = repositorioClase.findById(claseId).orElse(null);
-        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
-
-        // Verificar si el alumno está inscrito en la clase
-        if (!clase.getStudentIds().contains(alumnoId)) {
-            return DTORespuestaEnrollment.failure(alumnoIdLong, claseId, 
-                "El alumno no está inscrito en esta clase", "UNENROLLMENT");
-        }
-
-        // Remover el alumno de la clase
-        clase.removerAlumno(alumnoId);
-        
-        // También remover la clase del alumno (actualizar la relación bidireccional)
-        try {
-            Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
-            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
-            
-            alumno.removerClase(claseId.toString());
-            repositorioAlumno.save(alumno);
-        } catch (Exception e) {
-            // Log the error but continue with the class update
-        }
-        
-        Clase claseActualizada = repositorioClase.save(clase);
-        
-        // Obtener información del alumno para la respuesta
-        Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
-        String nombreAlumno = alumno != null ? alumno.getFirstName() : "Alumno";
-        
-        return DTORespuestaEnrollment.success(alumnoIdLong, claseId, 
-            nombreAlumno, claseActualizada.getTitle(), "UNENROLLMENT");
+        // Students cannot unenroll from classes due to payment requirements
+        return DTORespuestaEnrollment.failure(
+            securityUtils.getCurrentUserId(), 
+            claseId, 
+            "Students cannot unenroll from classes due to payment requirements. Please contact an administrator if you need to be removed from a class.", 
+            "UNENROLLMENT"
+        );
     }
 
     // ===== NUEVOS MÉTODOS PARA ESTUDIANTES =====

@@ -74,6 +74,9 @@ public class Pago {
     
     private LocalDateTime fechaExpiracion;
     
+    // Class enrollment field
+    private Long classId; // Optional class ID for enrollment payments
+    
     public Pago() {
         this.fechaPago = LocalDateTime.now();
         this.estado = EEstadoPago.PENDIENTE; // Default to pending for new payments

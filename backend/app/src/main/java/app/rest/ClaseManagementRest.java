@@ -64,14 +64,15 @@ public class ClaseManagementRest {
     }
 
     /**
-     * Unenrolls a student from a class (for professors and administrators)
+     * Unenrolls a student from a class (ADMIN ONLY)
+     * Students and teachers cannot unenroll due to payment requirements
      */
     @DeleteMapping("/students/{studentId}")
-    @Operation(summary = "Unenroll student from class", description = "Unenrolls a student from a specific class")
+    @Operation(summary = "Unenroll student from class (Admin only)", description = "Unenrolls a student from a specific class. Only administrators can perform this operation.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Student unenrolled successfully"),
             @ApiResponse(responseCode = "400", description = "Unenrollment error - Invalid data or business rule violation"),
-            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN or PROFESOR permissions"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires ADMIN permissions"),
             @ApiResponse(responseCode = "404", description = "Class or student not found")
     })
     public ResponseEntity<DTORespuestaEnrollment> darDeBajaAlumnoDeClase(

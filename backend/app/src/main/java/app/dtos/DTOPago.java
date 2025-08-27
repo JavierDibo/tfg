@@ -25,7 +25,8 @@ public record DTOPago(
         String stripePaymentIntentId,
         String stripeChargeId,
         String failureReason,
-        String clientSecret // Only present in create response
+        String clientSecret, // Only present in create response
+        Long classId // Optional class ID for enrollment payments
 ) {
     
     /**
@@ -44,7 +45,8 @@ public record DTOPago(
                 pago.getStripePaymentIntentId(),
                 pago.getStripeChargeId(),
                 pago.getFailureReason(),
-                null // Never include client_secret when loading from DB
+                null, // Never include client_secret when loading from DB
+                pago.getClassId() // Include classId when loading from DB
         );
     }
     

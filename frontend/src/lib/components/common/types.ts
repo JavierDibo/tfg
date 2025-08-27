@@ -53,8 +53,8 @@ export interface EntityAction<T = Record<string, unknown>> {
 	label: string;
 	dynamicLabel?: (entity: T) => string;
 	icon?: string;
-	color: string;
-	hoverColor: string;
+	color: string | ((entity: T) => string);
+	hoverColor: string | ((entity: T) => string);
 	condition?: (entity: T) => boolean;
 	action: (entity: T) => void;
 }

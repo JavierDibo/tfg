@@ -8,12 +8,14 @@
 	const urlParams = $derived(new URLSearchParams($page.url.search));
 	const amountParam = $derived(urlParams.get('amount'));
 	const descriptionParam = $derived(urlParams.get('description'));
+	const classIdParam = $derived(urlParams.get('classId'));
 
 	// Payment configuration
 	const amount = $derived(amountParam ? parseFloat(amountParam) : 99.99);
 	const description = $derived(
 		descriptionParam ? decodeURIComponent(descriptionParam) : 'Advanced Mathematics Course'
 	);
+	const classId = $derived(classIdParam ? parseInt(classIdParam) : null);
 
 	// Authentication check
 	$effect(() => {
@@ -29,7 +31,7 @@
 </script>
 
 <svelte:head>
-	<title>Payment</title>
+	<title>Payment - {description}</title>
 </svelte:head>
 
 <div class="mx-auto my-12 max-w-2xl px-5">
@@ -38,6 +40,7 @@
 	<PaymentForm
 		{amount}
 		{description}
+		{classId}
 		studentId={authStore.user?.id?.toString() || ''}
 		onError={handleError}
 	/>

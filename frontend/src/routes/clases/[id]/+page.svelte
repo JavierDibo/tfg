@@ -149,7 +149,12 @@
 		if (!claseId) return;
 
 		try {
-			enrollmentStatus = await EnrollmentService.checkMyEnrollmentStatus(claseId);
+			const status = await EnrollmentService.checkMyEnrollmentStatus(claseId);
+			enrollmentStatus = {
+				isEnrolled: status.isEnrolled || false,
+				claseId: status.claseId,
+				alumnoId: status.alumnoId
+			};
 		} catch (err) {
 			console.warn('Error checking enrollment status:', err);
 			// Don't show error to user, just assume not enrolled
@@ -232,8 +237,6 @@
 			if (result.action === 'redirect') {
 				goto(result.redirectUrl!);
 				return;
-			} else {
-				enrollmentStatus = result.updatedStatus;
 			}
 
 			// Refresh student count - use the class details from the response
@@ -247,9 +250,7 @@
 				numeroAlumnos = updatedClase.numeroAlumnos || 0;
 			}
 		} catch (err) {
-			enrollmentError = enrollmentStatus?.isEnrolled
-				? `Error al darse de baja: ${err}`
-				: `Error al inscribirse: ${err}`;
+			enrollmentError = `Error al inscribirse: ${err}`;
 		} finally {
 			enrollmentLoading = false;
 		}
@@ -706,13 +707,15 @@
 													</span>
 												</td>
 												<td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-													<button
-														onclick={() => handleUnenrollStudent(student.id)}
-														disabled={unenrollLoading === student.id}
-														class="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
-													>
-														{unenrollLoading === student.id ? 'Cargando...' : 'Dar de baja'}
-													</button>
+													{#if authStore.isAdmin}
+														<button
+															onclick={() => handleUnenrollStudent(student.id)}
+															disabled={unenrollLoading === student.id}
+															class="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+														>
+															{unenrollLoading === student.id ? 'Cargando...' : 'Dar de baja'}
+														</button>
+													{/if}
 												</td>
 											</tr>
 										{/each}
@@ -729,12 +732,12 @@
 						<button
 							onclick={handleEnrollment}
 							class="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50"
-							disabled={enrollmentLoading}
+							disabled={enrollmentLoading || enrollmentStatus?.isEnrolled}
 						>
 							{enrollmentLoading
 								? 'Cargando...'
 								: enrollmentStatus?.isEnrolled
-									? 'Desinscribirse'
+									? 'Ya inscrito'
 									: 'Inscribirse en la clase'}
 						</button>
 					{/if}

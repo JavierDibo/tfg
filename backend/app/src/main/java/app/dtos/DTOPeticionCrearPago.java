@@ -30,13 +30,22 @@ public record DTOPeticionCrearPago(
         
         @NotBlank
         @ValidCurrency
-        String currency
+        String currency,
+        
+        Long classId // Optional class ID for enrollment payments
 ) {
     
     /**
      * Constructor por defecto con currency EUR
      */
     public DTOPeticionCrearPago(BigDecimal importe, String alumnoId, String description) {
-        this(importe, alumnoId, description, "EUR");
+        this(importe, alumnoId, description, "EUR", null);
+    }
+    
+    /**
+     * Constructor para pagos de inscripción a clases
+     */
+    public DTOPeticionCrearPago(BigDecimal importe, String alumnoId, String description, Long classId) {
+        this(importe, alumnoId, description, "EUR", classId);
     }
 }

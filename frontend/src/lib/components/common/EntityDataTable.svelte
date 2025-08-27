@@ -229,7 +229,14 @@
 															e.currentTarget.blur();
 															triggerAction(action, entity);
 														}}
-														class={tableClasses.actionButton(action.color, action.hoverColor)}
+														class={tableClasses.actionButton(
+															typeof action.color === 'function'
+																? action.color(entity)
+																: action.color,
+															typeof action.hoverColor === 'function'
+																? action.hoverColor(entity)
+																: action.hoverColor
+														)}
 														title={action.dynamicLabel ? action.dynamicLabel(entity) : action.label}
 													>
 														{action.dynamicLabel ? action.dynamicLabel(entity) : action.label}
@@ -316,7 +323,20 @@
 													e.currentTarget.blur();
 													triggerAction(action, entity);
 												}}
-												class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 text-{action.color}-700 bg-{action.color}-50 hover:bg-{action.hoverColor}-100 hover:text-{action.hoverColor}-800 focus:ring-2 focus:outline-none focus:ring-{action.color}-500 shadow-sm hover:shadow-md focus:ring-offset-2"
+												class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 text-{typeof action.color ===
+												'function'
+													? action.color(entity)
+													: action.color}-700 bg-{typeof action.color === 'function'
+													? action.color(entity)
+													: action.color}-50 hover:bg-{typeof action.hoverColor === 'function'
+													? action.hoverColor(entity)
+													: action.hoverColor}-100 hover:text-{typeof action.hoverColor ===
+												'function'
+													? action.hoverColor(entity)
+													: action.hoverColor}-800 focus:ring-2 focus:outline-none focus:ring-{typeof action.color ===
+												'function'
+													? action.color(entity)
+													: action.color}-500 shadow-sm hover:shadow-md focus:ring-offset-2"
 											>
 												{action.dynamicLabel ? action.dynamicLabel(entity) : action.label}
 											</button>

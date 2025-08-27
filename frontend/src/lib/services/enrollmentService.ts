@@ -19,10 +19,13 @@ export class EnrollmentService {
 				throw new Error('User ID not available from authentication');
 			}
 
-			// Use the general class API to get enrollment status
-			// Since /me/ endpoints are removed, we need to check enrollment differently
-			// For now, we'll assume the user is enrolled if they can access the class
-			return { isEnrolled: true, claseId, alumnoId: userId };
+			// Get the class details to check if the student is in the alumnosId array
+			const clase = await claseApi.obtenerClasePorId({ id: claseId });
+
+			// Check if the student is enrolled by looking at the alumnosId array
+			const isEnrolled = clase.alumnosId?.includes(userId.toString()) || false;
+
+			return { isEnrolled, claseId, alumnoId: userId };
 		} catch (error) {
 			ErrorHandler.logError(error, 'checkMyEnrollmentStatus');
 			throw await ErrorHandler.parseError(error);
@@ -240,7 +243,7 @@ export class EnrollmentService {
 	}
 
 	/**
-	 * Handle enrollment action - either enroll (redirect to payment) or unenroll
+	 * Handle enrollment action - only enroll (redirect to payment), unenrollment is disabled
 	 */
 	static async handleEnrollmentAction(
 		claseId: number,
@@ -260,12 +263,10 @@ export class EnrollmentService {
 			const enrollmentStatus = await this.checkMyEnrollmentStatus(claseId);
 
 			if (enrollmentStatus.isEnrolled) {
-				// Handle unenrollment
-				await this.unenrollFromClass(claseId);
-				return {
-					action: 'unenrolled',
-					updatedStatus: { isEnrolled: false, claseId, alumnoId: userId }
-				};
+				// Students cannot unenroll due to payment requirements
+				throw new Error(
+					'Students cannot unenroll from classes due to payment requirements. Please contact an administrator if you need to be removed from a class.'
+				);
 			} else {
 				// Handle enrollment - redirect to payment
 				const redirectUrl = `/payment?classId=${claseId}&amount=${currentClase.precio || 0}&description=${encodeURIComponent(currentClase.titulo || 'Clase')}`;
