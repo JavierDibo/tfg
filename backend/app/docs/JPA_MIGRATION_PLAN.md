@@ -1,101 +1,29 @@
-# JPA Migration Plan - Complete Backend Migration
+# JPA Migration Plan - Simplified Approach
 
 ## Overview
 
-This document outlines the comprehensive plan to migrate the entire backend from the current mixed approach (ID-based + JPA relationships) to pure JPA relationships.
+This document outlines a **simplified and practical approach** to migrate from ID-based relationships to pure JPA relationships, taking advantage of Spring Boot's automatic schema generation.
 
-## Current State Analysis
+## Current Situation Analysis
 
-### ID-based Relationships (To Migrate)
-- **Clase**: `studentIds`, `teacherIds`, `exerciseIds`
-- **Alumno**: `classIds`, `paymentIds`, `submissionIds`
-- **Profesor**: `classIds`
-- **Pago**: `alumnoId`, `classId`
-- **EntregaEjercicio**: `alumnoEntreganteId`, `ejercicioId`
-- **Ejercicio**: `classId`
+### ✅ **Advantages**
+- **Empty Database**: No existing data to migrate
+- **Automatic Schema Generation**: `drop-and-create` configuration handles schema changes
+- **Development Environment**: No production data at risk
+- **Clean Slate**: Perfect opportunity for a complete refactor
 
-### Existing JPA Relationships (Keep)
-- **Clase**: `material` (ManyToMany with Material)
-- **Ejercicio**: `entregas` (OneToMany with EntregaEjercicio)
-- **EntregaEjercicio**: `ejercicio` (ManyToOne with Ejercicio)
-- **Pago**: `items` (ElementCollection with ItemPago)
+### 🔄 **Current Mixed Approach**
+- **ID-based**: `studentIds`, `teacherIds`, `classIds`, etc.
+- **JPA-based**: `material` (ManyToMany), `entregas` (OneToMany), `ejercicio` (ManyToOne)
 
-## Migration Strategy
+## Migration Strategy - Simplified Approach
 
-### Phase 1: Database Schema Preparation
+### **Phase 1: Entity Updates (Core Relationships)**
 
-#### 1.1 Create Migration Scripts
-```sql
--- Create new junction tables for Many-to-Many relationships
-CREATE TABLE IF NOT EXISTS clase_alumno (
-    clase_id BIGINT NOT NULL,
-    alumno_id BIGINT NOT NULL,
-    PRIMARY KEY (clase_id, alumno_id),
-    FOREIGN KEY (clase_id) REFERENCES clases(id) ON DELETE CASCADE,
-    FOREIGN KEY (alumno_id) REFERENCES usuarios(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS clase_profesor (
-    clase_id BIGINT NOT NULL,
-    profesor_id BIGINT NOT NULL,
-    PRIMARY KEY (clase_id, profesor_id),
-    FOREIGN KEY (clase_id) REFERENCES clases(id) ON DELETE CASCADE,
-    FOREIGN KEY (profesor_id) REFERENCES usuarios(id) ON DELETE CASCADE
-);
-
--- Add foreign key columns for One-to-Many relationships
-ALTER TABLE ejercicios ADD COLUMN IF NOT EXISTS clase_entity_id BIGINT;
-ALTER TABLE ejercicios ADD CONSTRAINT fk_ejercicio_clase 
-    FOREIGN KEY (clase_entity_id) REFERENCES clases(id);
-
-ALTER TABLE pagos ADD COLUMN IF NOT EXISTS alumno_entity_id BIGINT;
-ALTER TABLE pagos ADD CONSTRAINT fk_pago_alumno 
-    FOREIGN KEY (alumno_entity_id) REFERENCES usuarios(id);
-
-ALTER TABLE pagos ADD COLUMN IF NOT EXISTS clase_entity_id BIGINT;
-ALTER TABLE pagos ADD CONSTRAINT fk_pago_clase 
-    FOREIGN KEY (clase_entity_id) REFERENCES clases(id);
-
-ALTER TABLE entregas_ejercicio ADD COLUMN IF NOT EXISTS alumno_entity_id BIGINT;
-ALTER TABLE entregas_ejercicio ADD CONSTRAINT fk_entrega_alumno 
-    FOREIGN KEY (alumno_entity_id) REFERENCES usuarios(id);
-```
-
-#### 1.2 Data Migration Scripts
-```sql
--- Migrate existing ID-based relationships to new JPA relationships
-INSERT INTO clase_alumno (clase_id, alumno_id)
-SELECT DISTINCT c.id, CAST(ca.alumno_id AS BIGINT)
-FROM clases c
-JOIN clase_alumnos ca ON c.id = ca.clase_id
-WHERE ca.alumno_id ~ '^[0-9]+$';
-
-INSERT INTO clase_profesor (clase_id, profesor_id)
-SELECT DISTINCT c.id, CAST(cp.profesor_id AS BIGINT)
-FROM clases c
-JOIN clase_profesores cp ON c.id = cp.clase_id
-WHERE cp.profesor_id ~ '^[0-9]+$';
-
--- Update foreign key columns
-UPDATE ejercicios SET clase_entity_id = CAST(class_id AS BIGINT) 
-WHERE class_id ~ '^[0-9]+$';
-
-UPDATE pagos SET alumno_entity_id = CAST(alumno_id AS BIGINT) 
-WHERE alumno_id ~ '^[0-9]+$';
-
-UPDATE pagos SET clase_entity_id = CAST(class_id AS BIGINT) 
-WHERE class_id ~ '^[0-9]+$';
-
-UPDATE entregas_ejercicio SET alumno_entity_id = CAST(alumno_entregante_id AS BIGINT) 
-WHERE alumno_entregante_id ~ '^[0-9]+$';
-```
-
-### Phase 2: Entity Updates
-
-#### 2.1 Update Clase.java
+#### 1.1 Update Clase.java - ManyToMany Relationships
 ```java
-// Replace ID-based relationships with JPA relationships
-@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+// Replace ID-based collections with JPA relationships
+@ManyToMany(fetch = FetchType.LAZY)
 @JoinTable(
     name = "clase_alumno",
     joinColumns = @JoinColumn(name = "clase_id"),
@@ -103,7 +31,7 @@ WHERE alumno_entregante_id ~ '^[0-9]+$';
 )
 private List<Alumno> students = new ArrayList<>();
 
-@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+@ManyToMany(fetch = FetchType.LAZY)
 @JoinTable(
     name = "clase_profesor",
     joinColumns = @JoinColumn(name = "clase_id"),
@@ -120,7 +48,7 @@ private List<Ejercicio> exercises = new ArrayList<>();
 // private List<String> exerciseIds = new ArrayList<>();
 ```
 
-#### 2.2 Update Alumno.java
+#### 1.2 Update Alumno.java - Bidirectional Relationships
 ```java
 @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)
 private List<Clase> classes = new ArrayList<>();
@@ -137,7 +65,7 @@ private List<EntregaEjercicio> submissions = new ArrayList<>();
 // private List<String> submissionIds = new ArrayList<>();
 ```
 
-#### 2.3 Update Profesor.java
+#### 1.3 Update Profesor.java - Bidirectional Relationships
 ```java
 @ManyToMany(mappedBy = "teachers", fetch = FetchType.LAZY)
 private List<Clase> classes = new ArrayList<>();
@@ -146,24 +74,24 @@ private List<Clase> classes = new ArrayList<>();
 // private List<String> classIds = new ArrayList<>();
 ```
 
-#### 2.4 Update Ejercicio.java
+#### 1.4 Update Ejercicio.java - ManyToOne Relationship
 ```java
 @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "clase_entity_id")
+@JoinColumn(name = "clase_id")
 private Clase clase;
 
 // Remove old ID-based field
 // private String classId;
 ```
 
-#### 2.5 Update Pago.java
+#### 1.5 Update Pago.java - ManyToOne Relationships
 ```java
 @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "alumno_entity_id")
+@JoinColumn(name = "alumno_id")
 private Alumno alumno;
 
 @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "clase_entity_id")
+@JoinColumn(name = "clase_id")
 private Clase clase;
 
 // Remove old ID-based fields
@@ -171,10 +99,10 @@ private Clase clase;
 // private Long classId;
 ```
 
-#### 2.6 Update EntregaEjercicio.java
+#### 1.6 Update EntregaEjercicio.java - ManyToOne Relationships
 ```java
 @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "alumno_entity_id")
+@JoinColumn(name = "alumno_id")
 private Alumno alumno;
 
 // Remove old ID-based fields
@@ -182,11 +110,86 @@ private Alumno alumno;
 // private String ejercicioId;
 ```
 
-### Phase 3: Repository Updates
+### **Phase 2: Update Entity Helper Methods**
 
-#### 3.1 Update RepositorioClase.java
+#### 2.1 Clase.java - Relationship Management
 ```java
-// Replace ID-based queries with JPA queries
+// Replace ID-based methods with entity-based methods
+public void agregarAlumno(Alumno alumno) {
+    if (!this.students.contains(alumno)) {
+        this.students.add(alumno);
+        alumno.getClasses().add(this); // Maintain bidirectional relationship
+    }
+}
+
+public void removerAlumno(Alumno alumno) {
+    this.students.remove(alumno);
+    alumno.getClasses().remove(this);
+}
+
+public void agregarProfesor(Profesor profesor) {
+    if (!this.teachers.contains(profesor)) {
+        this.teachers.add(profesor);
+        profesor.getClasses().add(this);
+    }
+}
+
+public void removerProfesor(Profesor profesor) {
+    this.teachers.remove(profesor);
+    profesor.getClasses().remove(this);
+}
+
+public void agregarEjercicio(Ejercicio ejercicio) {
+    if (!this.exercises.contains(ejercicio)) {
+        this.exercises.add(ejercicio);
+        ejercicio.setClase(this);
+    }
+}
+
+public void removerEjercicio(Ejercicio ejercicio) {
+    this.exercises.remove(ejercicio);
+    ejercicio.setClase(null);
+}
+
+// Convenience methods for backward compatibility
+public void agregarAlumnoPorId(Long alumnoId) {
+    // This will be removed after migration is complete
+    throw new UnsupportedOperationException("Use agregarAlumno(Alumno) instead");
+}
+
+public void agregarProfesorPorId(Long profesorId) {
+    throw new UnsupportedOperationException("Use agregarProfesor(Profesor) instead");
+}
+```
+
+#### 2.2 Alumno.java - Relationship Management
+```java
+public void agregarClase(Clase clase) {
+    if (!this.classes.contains(clase)) {
+        this.classes.add(clase);
+        clase.getStudents().add(this);
+    }
+}
+
+public void removerClase(Clase clase) {
+    this.classes.remove(clase);
+    clase.getStudents().remove(this);
+}
+
+public boolean estaInscritoEnClase(Clase clase) {
+    return this.classes.contains(clase);
+}
+
+public boolean estaInscritoEnClasePorId(Long claseId) {
+    return this.classes.stream().anyMatch(c -> c.getId().equals(claseId));
+}
+```
+
+### **Phase 3: Update Repository Queries**
+
+#### 3.1 RepositorioClase.java - JPA-based Queries
+```java
+// Replace ID-based queries with JPA relationship queries
 @Query("SELECT c FROM Clase c JOIN c.students s WHERE s.id = :alumnoId")
 List<Clase> findByAlumnoId(@Param("alumnoId") Long alumnoId);
 
@@ -194,12 +197,12 @@ List<Clase> findByAlumnoId(@Param("alumnoId") Long alumnoId);
 List<Clase> findByProfesorId(@Param("profesorId") Long profesorId);
 
 @Query("SELECT c FROM Clase c JOIN c.exercises e WHERE e.id = :ejercicioId")
-List<Clase> findByEjercicioId(@Param("ejercicioId") Long ejercicioId);
+Clase findByEjercicioId(@Param("ejercicioId") Long ejercicioId);
 
-@Query("SELECT COUNT(c.students) FROM Clase c WHERE c.id = :claseId")
+@Query("SELECT COUNT(s) FROM Clase c JOIN c.students s WHERE c.id = :claseId")
 Integer countAlumnosByClaseId(@Param("claseId") Long claseId);
 
-@Query("SELECT COUNT(c.teachers) FROM Clase c WHERE c.id = :claseId")
+@Query("SELECT COUNT(t) FROM Clase c JOIN c.teachers t WHERE c.id = :claseId")
 Integer countProfesoresByClaseId(@Param("claseId") Long claseId);
 
 @Query("SELECT c FROM Clase c WHERE SIZE(c.students) = 0")
@@ -207,18 +210,31 @@ List<Clase> findClasesSinAlumnos();
 
 @Query("SELECT c FROM Clase c WHERE SIZE(c.teachers) = 0")
 List<Clase> findClasesSinProfesores();
+
+// Performance optimization queries
+@Query("SELECT DISTINCT c FROM Clase c " +
+       "LEFT JOIN FETCH c.students " +
+       "LEFT JOIN FETCH c.teachers " +
+       "WHERE c.id = :claseId")
+Optional<Clase> findByIdWithRelationships(@Param("claseId") Long claseId);
 ```
 
-#### 3.2 Update RepositorioAlumno.java
+#### 3.2 RepositorioAlumno.java - JPA-based Queries
 ```java
 @Query("SELECT a FROM Alumno a JOIN a.classes c WHERE c.id = :claseId")
 List<Alumno> findByClaseId(@Param("claseId") Long claseId);
 
 @Query("SELECT a FROM Alumno a WHERE SIZE(a.classes) = 0")
 List<Alumno> findAlumnosSinClases();
+
+@Query("SELECT a FROM Alumno a " +
+       "LEFT JOIN FETCH a.classes " +
+       "LEFT JOIN FETCH a.payments " +
+       "WHERE a.id = :alumnoId")
+Optional<Alumno> findByIdWithRelationships(@Param("alumnoId") Long alumnoId);
 ```
 
-#### 3.3 Update RepositorioProfesor.java
+#### 3.3 RepositorioProfesor.java - JPA-based Queries
 ```java
 @Query("SELECT p FROM Profesor p JOIN p.classes c WHERE c.id = :claseId")
 List<Profesor> findByClaseId(@Param("claseId") Long claseId);
@@ -227,80 +243,53 @@ List<Profesor> findByClaseId(@Param("claseId") Long claseId);
 List<Profesor> findProfesoresSinClases();
 ```
 
-### Phase 4: Service Layer Updates
+### **Phase 4: Update Service Layer**
 
-#### 4.1 Update Entity Methods
+#### 4.1 ServicioClase.java - Entity-based Operations
 ```java
-// Clase.java - Update relationship methods
-public void addStudent(Alumno student) {
-    if (!this.students.contains(student)) {
-        this.students.add(student);
-        student.getClasses().add(this);
-    }
-}
-
-public void removeStudent(Alumno student) {
-    this.students.remove(student);
-    student.getClasses().remove(this);
-}
-
-public void addTeacher(Profesor teacher) {
-    if (!this.teachers.contains(teacher)) {
-        this.teachers.add(teacher);
-        teacher.getClasses().add(this);
-    }
-}
-
-public void removeTeacher(Profesor teacher) {
-    this.teachers.remove(teacher);
-    teacher.getClasses().remove(this);
-}
-
-public void addExercise(Ejercicio exercise) {
-    if (!this.exercises.contains(exercise)) {
-        this.exercises.add(exercise);
-        exercise.setClase(this);
-    }
-}
-
-public void removeExercise(Ejercicio exercise) {
-    this.exercises.remove(exercise);
-    exercise.setClase(null);
-}
-```
-
-#### 4.2 Update Service Methods
-```java
-// ServicioClase.java - Update enrollment methods
-@Transactional(isolation = Isolation.SERIALIZABLE)
+@Transactional
 public DTORespuestaEnrollment inscribirseEnClase(Long claseId) {
     Long alumnoId = securityUtils.getCurrentUserId();
     
-    Clase clase = repositorioClase.findById(claseId).orElse(null);
-    ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
+    Clase clase = repositorioClase.findById(claseId)
+        .orElseThrow(() -> new ResourceNotFoundException("Clase no encontrada"));
     
-    Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
-    ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
+    Alumno alumno = repositorioAlumno.findById(alumnoId)
+        .orElseThrow(() -> new ResourceNotFoundException("Alumno no encontrado"));
     
-    // Check if already enrolled
+    // Check if already enrolled using entity relationship
     if (clase.getStudents().contains(alumno)) {
         return DTORespuestaEnrollment.failure(alumnoId, claseId, 
             "El alumno ya está inscrito en esta clase", "ENROLLMENT");
     }
     
-    clase.addStudent(alumno);
+    // Use entity relationship method
+    clase.agregarAlumno(alumno);
     repositorioClase.save(clase);
     
     return DTORespuestaEnrollment.success(alumnoId, claseId, 
         alumno.getFirstName(), clase.getTitle(), "ENROLLMENT");
 }
+
+@Transactional
+public void desinscribirseDeClase(Long claseId) {
+    Long alumnoId = securityUtils.getCurrentUserId();
+    
+    Clase clase = repositorioClase.findById(claseId)
+        .orElseThrow(() -> new ResourceNotFoundException("Clase no encontrada"));
+    
+    Alumno alumno = repositorioAlumno.findById(alumnoId)
+        .orElseThrow(() -> new ResourceNotFoundException("Alumno no encontrado"));
+    
+    clase.removerAlumno(alumno);
+    repositorioClase.save(clase);
+}
 ```
 
-### Phase 5: API Layer Updates
+### **Phase 5: Update DTOs for API Compatibility**
 
-#### 5.1 Update DTOs
+#### 5.1 DTOClase.java - Convert Entities to IDs
 ```java
-// DTOClase.java - Update to use entity relationships
 public DTOClase(Clase clase) {
     this.id = clase.getId();
     this.title = clase.getTitle();
@@ -310,7 +299,7 @@ public DTOClase(Clase clase) {
     this.image = clase.getImage();
     this.difficulty = clase.getDifficulty();
     
-    // Convert entity relationships to IDs
+    // Convert entity relationships to IDs for API compatibility
     this.studentIds = clase.getStudents().stream()
         .map(Alumno::getId)
         .map(String::valueOf)
@@ -328,77 +317,175 @@ public DTOClase(Clase clase) {
 }
 ```
 
-### Phase 6: Testing Strategy
-
-#### 6.1 Unit Tests
-- Update all entity tests to use JPA relationships
-- Test bidirectional relationship management
-- Test cascade operations
-
-#### 6.2 Integration Tests
-- Test complete enrollment flow
-- Test relationship queries
-- Test performance with large datasets
-
-#### 6.3 Database Tests
-- Verify foreign key constraints
-- Test cascade delete operations
-- Verify data integrity
-
-### Phase 7: Performance Optimization
-
-#### 7.1 Lazy Loading Strategy
+#### 5.2 DTOAlumno.java - Convert Entities to IDs
 ```java
-// Use LAZY loading for most relationships
-@ManyToMany(fetch = FetchType.LAZY)
-@OneToMany(fetch = FetchType.LAZY)
-@ManyToOne(fetch = FetchType.LAZY)
-
-// Use EAGER only when necessary
-@ManyToMany(fetch = FetchType.EAGER) // For Material relationship
+public DTOAlumno(Alumno alumno) {
+    this.id = alumno.getId();
+    this.username = alumno.getUsername();
+    this.firstName = alumno.getFirstName();
+    this.lastName = alumno.getLastName();
+    this.email = alumno.getEmail();
+    this.enrolled = alumno.isEnrolled();
+    this.enrollDate = alumno.getEnrollDate();
+    
+    // Convert entity relationships to IDs
+    this.classIds = alumno.getClasses().stream()
+        .map(Clase::getId)
+        .map(String::valueOf)
+        .collect(Collectors.toList());
+}
 ```
 
-#### 7.2 Query Optimization
+### **Phase 6: Update Data Initializers**
+
+#### 6.1 CourseDataInitializer.java - Entity-based Initialization
 ```java
-// Use JOIN FETCH for specific queries
-@Query("SELECT DISTINCT c FROM Clase c " +
-       "LEFT JOIN FETCH c.students " +
-       "LEFT JOIN FETCH c.teachers " +
-       "WHERE c.id = :claseId")
-Clase findByIdWithRelationships(@Param("claseId") Long claseId);
+@Component
+@Profile("!test")
+public class CourseDataInitializer {
+    
+    @Autowired
+    private RepositorioClase repositorioClase;
+    
+    @Autowired
+    private RepositorioProfesor repositorioProfesor;
+    
+    @Transactional
+    public void initializeCourses() {
+        // Create courses
+        Curso curso1 = new Curso("Java Básico", "Curso introductorio a Java", 
+            new BigDecimal("299.99"), EPresencialidad.ONLINE, "java.jpg", EDificultad.BASICO,
+            LocalDate.now().plusDays(7), LocalDate.now().plusDays(30));
+        
+        Taller taller1 = new Taller("Taller de Spring Boot", "Taller práctico de Spring Boot",
+            new BigDecimal("99.99"), EPresencialidad.PRESENCIAL, "spring.jpg", EDificultad.INTERMEDIO,
+            4, LocalDate.now().plusDays(14), LocalTime.of(10, 0));
+        
+        // Save courses
+        repositorioClase.save(curso1);
+        repositorioClase.save(taller1);
+        
+        // Assign teachers using entity relationships
+        Profesor profesor1 = repositorioProfesor.findById(1L).orElse(null);
+        if (profesor1 != null) {
+            curso1.agregarProfesor(profesor1);
+            taller1.agregarProfesor(profesor1);
+            repositorioClase.save(curso1);
+            repositorioClase.save(taller1);
+        }
+    }
+}
 ```
 
-## Migration Risks and Mitigation
+### **Phase 7: Testing Strategy**
 
-### High Risk Areas
-1. **Data Loss**: Complex migration scripts
-2. **Performance**: N+1 query problems
-3. **Breaking Changes**: API contract changes
-4. **Transaction Management**: Complex relationship updates
+#### 7.1 Unit Tests - Entity Relationships
+```java
+@Test
+void testClaseAlumnoRelationship() {
+    Clase clase = new Curso("Test Course", "Description", 
+        new BigDecimal("100"), EPresencialidad.ONLINE, "test.jpg", EDificultad.BASICO,
+        LocalDate.now(), LocalDate.now().plusDays(30));
+    
+    Alumno alumno = new Alumno("testuser", "password", "Test", "User", 
+        "12345678A", "test@test.com", "123456789");
+    
+    // Test bidirectional relationship
+    clase.agregarAlumno(alumno);
+    
+    assertThat(clase.getStudents()).contains(alumno);
+    assertThat(alumno.getClasses()).contains(clase);
+}
 
-### Mitigation Strategies
-1. **Backup Strategy**: Complete database backup before migration
-2. **Rollback Plan**: Keep old code as fallback
-3. **Gradual Migration**: Migrate one entity at a time
-4. **Extensive Testing**: Test all scenarios before production
+@Test
+void testCascadeOperations() {
+    Clase clase = new Curso("Test Course", "Description", 
+        new BigDecimal("100"), EPresencialidad.ONLINE, "test.jpg", EDificultad.BASICO,
+        LocalDate.now(), LocalDate.now().plusDays(30));
+    
+    Ejercicio ejercicio = new Ejercicio("Test Exercise", "Statement", 
+        LocalDateTime.now(), LocalDateTime.now().plusDays(7), "1");
+    
+    clase.agregarEjercicio(ejercicio);
+    
+    // Test that exercise is properly linked
+    assertThat(ejercicio.getClase()).isEqualTo(clase);
+}
+```
 
-## Timeline Estimate
+#### 7.2 Integration Tests - Complete Flows
+```java
+@Test
+void testEnrollmentFlow() {
+    // Create test data
+    Clase clase = createTestClase();
+    Alumno alumno = createTestAlumno();
+    
+    // Test enrollment
+    servicioClase.inscribirseEnClase(clase.getId());
+    
+    // Verify relationship
+    Clase savedClase = repositorioClase.findById(clase.getId()).orElse(null);
+    assertThat(savedClase.getStudents()).contains(alumno);
+}
+```
 
-- **Phase 1-2**: 2-3 weeks (Database + Entities)
-- **Phase 3-4**: 2-3 weeks (Repositories + Services)
-- **Phase 5**: 1 week (DTOs + APIs)
-- **Phase 6**: 2 weeks (Testing)
-- **Phase 7**: 1 week (Optimization)
+## Implementation Timeline
 
-**Total Estimated Time**: 8-10 weeks
+### **Week 1: Core Entities**
+- Update `Clase.java`, `Alumno.java`, `Profesor.java`
+- Update helper methods
+- Basic unit tests
+
+### **Week 2: Related Entities**
+- Update `Ejercicio.java`, `Pago.java`, `EntregaEjercicio.java`
+- Update repositories with JPA queries
+- Integration tests
+
+### **Week 3: Service Layer**
+- Update service methods to use entity relationships
+- Update DTOs for API compatibility
+- End-to-end testing
+
+### **Week 4: Data Initialization & Polish**
+- Update data initializers
+- Performance optimization
+- Final testing and documentation
+
+## Benefits of This Approach
+
+### ✅ **Immediate Benefits**
+- **Type Safety**: No more string-based ID lookups
+- **Performance**: Optimized queries with proper joins
+- **Data Integrity**: Foreign key constraints
+- **Maintainability**: Clear relationship definitions
+
+### ✅ **Long-term Benefits**
+- **Scalability**: Better performance with large datasets
+- **Consistency**: Standard JPA patterns
+- **Debugging**: Easier to trace relationship issues
+- **Future-proof**: Ready for advanced JPA features
+
+## Risk Mitigation
+
+### **Low Risk Factors**
+- ✅ Empty database (no data migration needed)
+- ✅ Automatic schema generation
+- ✅ Development environment
+- ✅ Comprehensive test coverage
+
+### **Minimal Risks**
+- ⚠️ Breaking changes in API contracts (mitigated by DTO conversion)
+- ⚠️ Performance regression (mitigated by lazy loading and query optimization)
+- ⚠️ Transaction complexity (mitigated by proper @Transactional usage)
 
 ## Conclusion
 
-The migration to pure JPA relationships is **technically feasible** but **highly complex**. It requires:
+This simplified migration approach is **highly recommended** because:
 
-1. **Significant development time** (8-10 weeks)
-2. **Extensive testing** to ensure data integrity
-3. **Careful planning** to avoid breaking changes
-4. **Performance optimization** to maintain current response times
+1. **Low Risk**: No existing data to migrate
+2. **High Reward**: Significant improvements in code quality and performance
+3. **Manageable Scope**: 4-week timeline with clear milestones
+4. **Future-proof**: Standard JPA patterns for long-term maintainability
 
-**Recommendation**: Consider if the benefits outweigh the risks and development time investment.
+**Recommendation**: Proceed with this migration plan. The benefits far outweigh the minimal risks, and the timing is perfect with an empty database.
