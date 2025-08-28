@@ -83,7 +83,8 @@ class PagoRestTest {
             "pi_test_123",
             null,
             null,
-            "pi_test_123_secret_abc"
+            "pi_test_123_secret_abc",
+            null // classId - optional for enrollment payments
         );
 
         // Create test payment creation request
@@ -91,7 +92,8 @@ class PagoRestTest {
             new BigDecimal("50.00"),
             "123",
             "Test payment",
-            "EUR"
+            "EUR",
+            null // TODO: classId - optional for enrollment payments
         );
 
         // Create test paginated response

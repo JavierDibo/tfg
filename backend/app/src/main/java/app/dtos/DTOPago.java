@@ -39,14 +39,14 @@ public record DTOPago(
                 pago.getImporte(),
                 pago.getMetodoPago(),
                 pago.getEstado(),
-                pago.getAlumnoId(),
+                pago.getAlumno() != null ? pago.getAlumno().getId().toString() : null,
                 pago.getFacturaCreada(),
                 pago.getItems(),
                 pago.getStripePaymentIntentId(),
                 pago.getStripeChargeId(),
                 pago.getFailureReason(),
                 null, // Never include client_secret when loading from DB
-                pago.getClassId() // Include classId when loading from DB
+                pago.getClase() != null ? pago.getClase().getId() : null
         );
     }
     

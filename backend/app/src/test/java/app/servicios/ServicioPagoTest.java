@@ -4,11 +4,13 @@ import app.dtos.DTOPago;
 import app.dtos.DTOPeticionCrearPago;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Pago;
+import app.entidades.Alumno;
 import app.entidades.enums.EEstadoPago;
 import app.entidades.enums.EMetodoPago;
 import app.excepciones.PaymentNotFoundException;
 import app.excepciones.PaymentProcessingException;
 import app.repositorios.RepositorioPago;
+import app.repositorios.RepositorioAlumno;
 import app.util.SecurityUtils;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -43,6 +45,9 @@ class ServicioPagoTest {
     private RepositorioPago repositorioPago;
     
     @Mock
+    private RepositorioAlumno repositorioAlumno;
+    
+    @Mock
     private SecurityUtils securityUtils;
     
     @InjectMocks
@@ -50,14 +55,23 @@ class ServicioPagoTest {
     
     private DTOPeticionCrearPago peticionValida;
     private Pago pagoGuardado;
+    private Alumno alumno;
     
     @BeforeEach
     void setUp() {
+        // Create a mock Alumno
+        alumno = new Alumno();
+        alumno.setId(123L);
+        alumno.setUsername("teststudent");
+        alumno.setFirstName("Test");
+        alumno.setLastName("Student");
+        
         peticionValida = new DTOPeticionCrearPago(
             new BigDecimal("50.00"),
             "123",
             "Test payment",
-            "EUR"
+            "EUR",
+            null // TODO: classId - optional for enrollment payments
         );
         
         pagoGuardado = new Pago();
@@ -65,7 +79,7 @@ class ServicioPagoTest {
         pagoGuardado.setImporte(new BigDecimal("50.00"));
         pagoGuardado.setMetodoPago(EMetodoPago.STRIPE);
         pagoGuardado.setEstado(EEstadoPago.PENDIENTE);
-        pagoGuardado.setAlumnoId("123");
+        pagoGuardado.setAlumno(alumno);
         pagoGuardado.setStripePaymentIntentId("pi_test_123");
         pagoGuardado.setFechaPago(LocalDateTime.now());
     }
@@ -76,6 +90,7 @@ class ServicioPagoTest {
         PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
         when(mockPaymentIntent.getId()).thenReturn("pi_test_123");
         when(mockPaymentIntent.getClientSecret()).thenReturn("pi_test_123_secret_abc");
+        when(repositorioAlumno.findById(123L)).thenReturn(Optional.of(alumno));
         when(repositorioPago.save(any(Pago.class))).thenReturn(pagoGuardado);
         
         // Use MockedStatic to mock the static PaymentIntent.create method
@@ -98,7 +113,7 @@ class ServicioPagoTest {
                 pago.getImporte().equals(new BigDecimal("50.00")) &&
                 pago.getMetodoPago() == EMetodoPago.STRIPE &&
                 pago.getEstado() == EEstadoPago.PENDIENTE &&
-                pago.getAlumnoId().equals("123") &&
+                pago.getAlumno().getId().equals(123L) &&
                 pago.getStripePaymentIntentId().equals("pi_test_123")
             ));
         }
@@ -125,12 +140,14 @@ class ServicioPagoTest {
             new BigDecimal("99.99"),
             "123",
             "Test payment with decimals",
-            "EUR"
+            "EUR",
+            null // TODO: classId - optional for enrollment payments
         );
         
         PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
         when(mockPaymentIntent.getId()).thenReturn("pi_test_123");
         when(mockPaymentIntent.getClientSecret()).thenReturn("pi_test_123_secret_abc");
+        when(repositorioAlumno.findById(123L)).thenReturn(Optional.of(alumno));
         when(repositorioPago.save(any(Pago.class))).thenReturn(pagoGuardado);
         
         try (MockedStatic<PaymentIntent> mockedPaymentIntent = mockStatic(PaymentIntent.class)) {
@@ -156,12 +173,14 @@ class ServicioPagoTest {
             new BigDecimal("50.00"),
             "123",
             "Test payment",
-            "EUR"
+            "EUR",
+            null // TODO: classId - optional for enrollment payments
         );
         
         PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
         when(mockPaymentIntent.getId()).thenReturn("pi_test_123");
         when(mockPaymentIntent.getClientSecret()).thenReturn("pi_test_123_secret_abc");
+        when(repositorioAlumno.findById(123L)).thenReturn(Optional.of(alumno));
         when(repositorioPago.save(any(Pago.class))).thenReturn(pagoGuardado);
         
         try (MockedStatic<PaymentIntent> mockedPaymentIntent = mockStatic(PaymentIntent.class)) {

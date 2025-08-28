@@ -105,8 +105,8 @@ public class EntregaEjercicioDataInitializer extends BaseDataInitializer {
                         List<String> files = generateRandomFiles();
                         
                         DTOEntregaEjercicio dtoEntrega = servicioEntregaEjercicio.crearEntrega(
-                            studentId,
-                            exerciseId,
+                            Long.parseLong(studentId),
+                            Long.parseLong(exerciseId),
                             files
                         );
                         

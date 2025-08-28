@@ -1,31 +1,25 @@
 package app.dtos;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
 /**
- * DTO para la petición de creación de una entrega de ejercicio
- * Contiene los datos necesarios para que un alumno entregue un ejercicio
+ * DTO para la petición de crear una entrega de ejercicio
  */
 public record DTOPeticionCrearEntregaEjercicio(
-        @NotNull
-        @Size(max = 255)
-        String alumnoEntreganteId,
-        
-        @NotNull
-        @Size(max = 255)
-        String ejercicioId,
-        
+        @NotNull(message = "El ID del alumno es obligatorio")
+        Long alumnoId,
+        @NotNull(message = "El ID del ejercicio es obligatorio")
+        Long ejercicioId,
         List<String> archivosEntregados
 ) {
     
     /**
-     * Constructor por defecto con lista vacía de archivos
+     * Constructor simplificado para crear entrega sin archivos
      */
-    public DTOPeticionCrearEntregaEjercicio(String alumnoEntreganteId, String ejercicioId) {
-        this(alumnoEntreganteId, ejercicioId, List.of());
+    public DTOPeticionCrearEntregaEjercicio(Long alumnoId, Long ejercicioId) {
+        this(alumnoId, ejercicioId, List.of());
     }
     
     /**

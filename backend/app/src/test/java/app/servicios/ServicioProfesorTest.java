@@ -72,8 +72,9 @@ class ServicioProfesorTest {
         profesor1 = new Profesor("profesor1", "password1", "María", "García", "12345678Z", "maria@ejemplo.com", "123456789");
         profesor1.setId(1L);
         profesor1.setEnabled(true);
-        profesor1.agregarClase("1");
-        profesor1.agregarClase("2");
+        // Legacy string-based IDs are still exposed via getClassIds() for DTO compatibility
+        profesor1.getClassIds().add("1");
+        profesor1.getClassIds().add("2");
 
         profesor2 = new Profesor("profesor2", "password2", "Juan", "Pérez", "87654321Y", "juan@ejemplo.com", "987654321");
         profesor2.setId(2L);
@@ -82,7 +83,7 @@ class ServicioProfesorTest {
         profesor3 = new Profesor("profesor3", "password3", "Ana", "López", "11223344X", "ana@ejemplo.com", "555666777");
         profesor3.setId(3L);
         profesor3.setEnabled(false);
-        profesor3.agregarClase("3");
+        profesor3.getClassIds().add("3");
 
         // Create DTOs with fixed timestamp to avoid comparison issues
         dtoProfesor1 = new DTOProfesor(profesor1.getId(), profesor1.getUsername(), profesor1.getFirstName(),
@@ -381,7 +382,7 @@ class ServicioProfesorTest {
     @DisplayName("obtenerProfesoresPorClase debe retornar profesores de la clase")
     void testObtenerProfesoresPorClase() {
         List<Profesor> profesoresDeClase = Arrays.asList(profesor1);
-        when(repositorioProfesor.findByClaseId("1")).thenReturn(profesoresDeClase);
+        when(repositorioProfesor.findByClaseId(1L)).thenReturn(profesoresDeClase);
 
         List<DTOProfesor> resultado = servicioProfesor.obtenerProfesoresPorClase("1");
 
@@ -398,7 +399,7 @@ class ServicioProfesorTest {
         assertEquals(dtoProfesor1.role(), resultadoProfesor.role());
         assertEquals(dtoProfesor1.enabled(), resultadoProfesor.enabled());
         assertEquals(dtoProfesor1.classIds(), resultadoProfesor.classIds());
-        verify(repositorioProfesor).findByClaseId("1");
+        verify(repositorioProfesor).findByClaseId(1L);
     }
 
     @Test

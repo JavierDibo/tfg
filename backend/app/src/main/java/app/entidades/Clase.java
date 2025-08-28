@@ -54,8 +54,35 @@ public abstract class Clase {
     @Enumerated(EnumType.STRING)
     private EDificultad difficulty;
     
-    // Relaciones como listas de IDs (según UML)
-    // TODO: Estas se refactorizarán a relaciones JPA cuando sea necesario
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "clase_alumno",
+        joinColumns = @JoinColumn(name = "clase_id"),
+        inverseJoinColumns = @JoinColumn(name = "alumno_id")
+    )
+    private List<Alumno> students = new ArrayList<>();
+    
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "clase_profesor",
+        joinColumns = @JoinColumn(name = "clase_id"),
+        inverseJoinColumns = @JoinColumn(name = "profesor_id")
+    )
+    private List<Profesor> teachers = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "clase", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Ejercicio> exercises = new ArrayList<>();
+    
+    // Relación Many-to-Many con Material (already JPA-based)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
+    @JoinTable(
+        name = "clase_materiales",
+        joinColumns = @JoinColumn(name = "clase_id"),
+        inverseJoinColumns = @JoinColumn(name = "material_id")
+    )
+    private List<Material> material = new ArrayList<>();
+    
+    // TODO: Legacy ID-based fields for backward compatibility (to be removed after migration)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "clase_alumnos", joinColumns = @JoinColumn(name = "clase_id"))
     @Column(name = "alumno_id")
@@ -71,15 +98,6 @@ public abstract class Clase {
     @Column(name = "ejercicio_id")
     private List<String> exerciseIds = new ArrayList<>();
     
-    // Relación Many-to-Many con Material
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
-    @JoinTable(
-        name = "clase_materiales",
-        joinColumns = @JoinColumn(name = "clase_id"),
-        inverseJoinColumns = @JoinColumn(name = "material_id")
-    )
-    private List<Material> material = new ArrayList<>();
-    
     public Clase() {}
     
     public Clase(String title, String description, BigDecimal price,
@@ -93,58 +111,66 @@ public abstract class Clase {
     }
     
     /**
-     * Agrega un alumno a la clase
-     * @param alumnoId ID del alumno
+     * Agrega un alumno a la clase usando relación JPA
+     * @param alumno Entidad Alumno
      */
-    public void agregarAlumno(String alumnoId) {
-        if (!this.studentIds.contains(alumnoId)) {
-            this.studentIds.add(alumnoId);
+    public void agregarAlumno(Alumno alumno) {
+        if (!this.students.contains(alumno)) {
+            this.students.add(alumno);
+            alumno.getClasses().add(this); 
         }
     }
     
     /**
-     * Remueve un alumno de la clase
-     * @param alumnoId ID del alumno
+     * Remueve un alumno de la clase usando relación JPA
+     * @param alumno Entidad Alumno
      */
-    public void removerAlumno(String alumnoId) {
-        this.studentIds.remove(alumnoId);
+    public void removerAlumno(Alumno alumno) {
+        this.students.remove(alumno);
+        alumno.getClasses().remove(this);
     }
     
     /**
-     * Agrega un profesor a la clase
-     * @param profesorId ID del profesor
+     * Agrega un profesor a la clase usando relación JPA
+     * @param profesor Entidad Profesor
      */
-    public void agregarProfesor(String profesorId) {
-        if (!this.teacherIds.contains(profesorId)) {
-            this.teacherIds.add(profesorId);
+    public void agregarProfesor(Profesor profesor) {
+        if (!this.teachers.contains(profesor)) {
+            this.teachers.add(profesor);
+            profesor.getClasses().add(this); 
         }
     }
     
     /**
-     * Remueve un profesor de la clase
-     * @param profesorId ID del profesor
+     * Remueve un profesor de la clase usando relación JPA
+     * @param profesor Entidad Profesor
      */
-    public void removerProfesor(String profesorId) {
-        this.teacherIds.remove(profesorId);
+    public void removerProfesor(Profesor profesor) {
+        this.teachers.remove(profesor);
+        profesor.getClasses().remove(this);
     }
     
     /**
-     * Agrega un ejercicio a la clase
-     * @param ejercicioId ID del ejercicio
+     * Agrega un ejercicio a la clase usando relación JPA
+     * @param ejercicio Entidad Ejercicio
      */
-    public void agregarEjercicio(String ejercicioId) {
-        if (!this.exerciseIds.contains(ejercicioId)) {
-            this.exerciseIds.add(ejercicioId);
+    public void agregarEjercicio(Ejercicio ejercicio) {
+        if (!this.exercises.contains(ejercicio)) {
+            this.exercises.add(ejercicio);
+            ejercicio.setClase(this);
         }
     }
     
     /**
-     * Remueve un ejercicio de la clase
-     * @param ejercicioId ID del ejercicio
+     * Remueve un ejercicio de la clase usando relación JPA
+     * @param ejercicio Entidad Ejercicio
      */
-    public void removerEjercicio(String ejercicioId) {
-        this.exerciseIds.remove(ejercicioId);
+    public void removerEjercicio(Ejercicio ejercicio) {
+        this.exercises.remove(ejercicio);
+        ejercicio.setClase(null);
     }
+    
+
     
     /**
      * Agrega material a la clase

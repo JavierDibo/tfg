@@ -182,22 +182,22 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @param claseId ID de la clase
      * @return Lista de profesores
      */
-    @Query("SELECT p FROM Profesor p WHERE :claseId MEMBER OF p.clasesId")
-    List<Profesor> findByClaseId(@Param("claseId") String claseId);
+    @Query("SELECT p FROM Profesor p JOIN p.classes c WHERE c.id = :claseId")
+    List<Profesor> findByClaseId(@Param("claseId") Long claseId);
     
     /**
      * Cuenta el número de clases asignadas a un profesor
      * @param profesorId ID del profesor
      * @return Número de clases
      */
-    @Query("SELECT SIZE(p.clasesId) FROM Profesor p WHERE p.id = :profesorId")
+    @Query("SELECT COUNT(c) FROM Profesor p JOIN p.classes c WHERE p.id = :profesorId")
     Integer countClasesByProfesorId(@Param("profesorId") Long profesorId);
     
     /**
      * Busca profesores que no tienen clases asignadas
      * @return Lista de profesores sin clases
      */
-    @Query("SELECT p FROM Profesor p WHERE SIZE(p.clasesId) = 0")
+    @Query("SELECT p FROM Profesor p WHERE SIZE(p.classes) = 0")
     List<Profesor> findProfesoresSinClases();
     
     /**
@@ -220,8 +220,8 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
            "(:usuario IS NULL OR UPPER(p.username) LIKE UPPER(CONCAT('%', :usuario, '%'))) AND " +
            "(:dni IS NULL OR UPPER(p.dni) LIKE UPPER(CONCAT('%', :dni, '%'))) AND " +
            "(:habilitado IS NULL OR p.enabled = :habilitado) AND " +
-           "(:claseId IS NULL OR :claseId MEMBER OF p.clasesId) AND " +
-           "(:sinClases IS NULL OR (:sinClases = true AND SIZE(p.clasesId) = 0) OR (:sinClases = false)) " +
+           "(:claseId IS NULL OR EXISTS (SELECT 1 FROM p.classes c WHERE c.id = :claseId)) AND " +
+           "(:sinClases IS NULL OR (:sinClases = true AND SIZE(p.classes) = 0) OR (:sinClases = false)) " +
            "ORDER BY p.id")
     List<Profesor> findByFiltros(
         @Param("nombre") String nombre,
@@ -230,7 +230,7 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
         @Param("usuario") String usuario,
         @Param("dni") String dni,
         @Param("habilitado") Boolean habilitado,
-        @Param("claseId") String claseId,
+        @Param("claseId") Long claseId,
         @Param("sinClases") Boolean sinClases
     );
     
@@ -255,8 +255,8 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
            "(:usuario IS NULL OR UPPER(p.username) LIKE UPPER(CONCAT('%', :usuario, '%'))) AND " +
            "(:dni IS NULL OR UPPER(p.dni) LIKE UPPER(CONCAT('%', :dni, '%'))) AND " +
            "(:habilitado IS NULL OR p.enabled = :habilitado) AND " +
-           "(:claseId IS NULL OR :claseId MEMBER OF p.clasesId) AND " +
-           "(:sinClases IS NULL OR (:sinClases = true AND SIZE(p.clasesId) = 0) OR (:sinClases = false))")
+           "(:claseId IS NULL OR EXISTS (SELECT 1 FROM p.classes c WHERE c.id = :claseId)) AND " +
+           "(:sinClases IS NULL OR (:sinClases = true AND SIZE(p.classes) = 0) OR (:sinClases = false))")
     Page<Profesor> findByFiltrosPaginados(
         @Param("nombre") String nombre,
         @Param("apellidos") String apellidos,
@@ -264,8 +264,26 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
         @Param("usuario") String usuario,
         @Param("dni") String dni,
         @Param("habilitado") Boolean habilitado,
-        @Param("claseId") String claseId,
+        @Param("claseId") Long claseId,
         @Param("sinClases") Boolean sinClases,
         Pageable pageable
     );
+
+    /**
+     * Busca un profesor por ID con todas sus relaciones cargadas
+     * @param profesorId ID del profesor
+     * @return Optional<Profesor> con relaciones cargadas
+     */
+    @Query("SELECT DISTINCT p FROM Profesor p " +
+           "LEFT JOIN FETCH p.classes " +
+           "WHERE p.id = :profesorId")
+    Optional<Profesor> findByIdWithRelationships(@Param("profesorId") Long profesorId);
+
+    /**
+     * Busca profesores que tienen múltiples clases asignadas
+     * @param minClases Número mínimo de clases
+     * @return Lista de profesores con múltiples clases
+     */
+    @Query("SELECT p FROM Profesor p WHERE SIZE(p.classes) >= :minClases")
+    List<Profesor> findProfesoresConMultipleClases(@Param("minClases") Integer minClases);
 }

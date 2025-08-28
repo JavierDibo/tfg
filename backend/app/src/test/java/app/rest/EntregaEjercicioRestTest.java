@@ -4,27 +4,19 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.http.MediaType;
 
@@ -38,7 +30,8 @@ import app.util.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(EntregaEjercicioRest.class)
-@ContextConfiguration(classes = {BaseRestTestConfig.class, app.excepciones.GlobalExceptionHandler.class})
+@ActiveProfiles("test")
+@Import(BaseRestTestConfig.class)
 public class EntregaEjercicioRestTest {
 
     @Autowired
@@ -56,11 +49,14 @@ public class EntregaEjercicioRestTest {
     void setUp() {
         objectMapper = new ObjectMapper();
         
-        // Set up lenient mocks for common scenarios
-        lenient().when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
-        lenient().when(securityUtils.hasRole("ADMIN")).thenReturn(true);
-        lenient().when(securityUtils.hasRole("PROFESOR")).thenReturn(false);
-        lenient().when(securityUtils.getCurrentUserId()).thenReturn(1L);
+        // Reset all mocks before each test
+        reset(servicioEntregaEjercicio, securityUtils);
+        
+        // Set up default mocks
+        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        when(securityUtils.hasRole("PROFESOR")).thenReturn(false);
+        when(securityUtils.getCurrentUserId()).thenReturn(1L);
     }
 
     // ===== GET /api/entregas - Get paginated deliveries =====
@@ -71,16 +67,17 @@ public class EntregaEjercicioRestTest {
         // Given
         List<DTOEntregaEjercicio> mockEntregas = Arrays.asList(
             new DTOEntregaEjercicio(1L, BigDecimal.valueOf(8.5), LocalDateTime.now(), 
-                EEstadoEjercicio.CALIFICADO, Arrays.asList("file1.pdf"), "1", "1", 1, "Excelente trabajo"),
+                EEstadoEjercicio.CALIFICADO, Arrays.asList("file1.pdf"), 1L, 1L, 1, "Excelente trabajo"),
             new DTOEntregaEjercicio(2L, null, LocalDateTime.now(), 
-                EEstadoEjercicio.ENTREGADO, Arrays.asList("file2.pdf"), "2", "1", 1, null)
+                EEstadoEjercicio.ENTREGADO, Arrays.asList("file2.pdf"), 2L, 1L, 1, null)
         );
         
         DTORespuestaPaginada<DTOEntregaEjercicio> mockResponse = DTORespuestaPaginada.of(
             mockEntregas, 0, 20, 2, "id", "ASC"
         );
         
-        lenient().when(servicioEntregaEjercicio.obtenerEntregasPaginadas(
+        // Override the default mock for this specific test
+        when(servicioEntregaEjercicio.obtenerEntregasPaginadas(
             anyString(), anyString(), anyString(), any(), any(), anyInt(), anyInt(), anyString(), anyString()
         )).thenReturn(mockResponse);
 
@@ -91,43 +88,44 @@ public class EntregaEjercicioRestTest {
                 .param("sortBy", "id")
                 .param("sortDirection", "ASC"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contenido").exists())
-                .andExpect(jsonPath("$.contenido.length()").value(2))
-                .andExpect(jsonPath("$.contenido[0].id").value(1))
-                .andExpect(jsonPath("$.contenido[0].nota").value(8.5))
-                .andExpect(jsonPath("$.contenido[0].estado").value("CALIFICADO"))
-                .andExpect(jsonPath("$.contenido[1].id").value(2))
-                .andExpect(jsonPath("$.contenido[1].nota").isEmpty())
-                .andExpect(jsonPath("$.contenido[1].estado").value("ENTREGADO"));
+                .andExpect(jsonPath("$.content").exists())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].id").value(1))
+                .andExpect(jsonPath("$.content[0].nota").value(8.5))
+                .andExpect(jsonPath("$.content[0].estado").value("CALIFICADO"))
+                .andExpect(jsonPath("$.content[1].id").value(2))
+                .andExpect(jsonPath("$.content[1].nota").isEmpty())
+                .andExpect(jsonPath("$.content[1].estado").value("ENTREGADO"));
     }
 
     @Test
     @WithMockUser(roles = "ALUMNO")
     public void testObtenerEntregasPaginadas_StudentSeesOnlyOwnDeliveries() throws Exception {
         // Given
-        lenient().when(securityUtils.hasRole("ALUMNO")).thenReturn(true);
-        lenient().when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        lenient().when(securityUtils.hasRole("PROFESOR")).thenReturn(false);
-        lenient().when(securityUtils.getCurrentUserId()).thenReturn(1L);
+        when(securityUtils.hasRole("ALUMNO")).thenReturn(true);
+        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
+        when(securityUtils.hasRole("PROFESOR")).thenReturn(false);
+        when(securityUtils.getCurrentUserId()).thenReturn(1L);
         
         List<DTOEntregaEjercicio> mockEntregas = Arrays.asList(
             new DTOEntregaEjercicio(1L, BigDecimal.valueOf(8.5), LocalDateTime.now(), 
-                EEstadoEjercicio.CALIFICADO, Arrays.asList("file1.pdf"), "1", "1", 1, "Excelente trabajo")
+                EEstadoEjercicio.CALIFICADO, Arrays.asList("file1.pdf"), 1L, 1L, 1, "Excelente trabajo")
         );
         
         DTORespuestaPaginada<DTOEntregaEjercicio> mockResponse = DTORespuestaPaginada.of(
             mockEntregas, 0, 20, 1, "id", "ASC"
         );
         
-        lenient().when(servicioEntregaEjercicio.obtenerEntregasPaginadas(
+        // Override the default mock for this specific test
+        when(servicioEntregaEjercicio.obtenerEntregasPaginadas(
             eq("1"), anyString(), anyString(), any(), any(), anyInt(), anyInt(), anyString(), anyString()
         )).thenReturn(mockResponse);
 
         // When & Then
         mockMvc.perform(get("/api/entregas"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contenido.length()").value(1))
-                .andExpect(jsonPath("$.contenido[0].alumnoEntreganteId").value("1"));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].alumnoId").value(1));
         
         // Verify that the service was called with the student's ID as alumnoId filter
         verify(servicioEntregaEjercicio).obtenerEntregasPaginadas(
@@ -141,14 +139,14 @@ public class EntregaEjercicioRestTest {
         // Given
         List<DTOEntregaEjercicio> mockEntregas = Arrays.asList(
             new DTOEntregaEjercicio(1L, BigDecimal.valueOf(8.5), LocalDateTime.now(), 
-                EEstadoEjercicio.CALIFICADO, Arrays.asList("file1.pdf"), "1", "1", 1, "Excelente trabajo")
+                EEstadoEjercicio.CALIFICADO, Arrays.asList("file1.pdf"), 1L, 1L, 1, "Excelente trabajo")
         );
         
         DTORespuestaPaginada<DTOEntregaEjercicio> mockResponse = DTORespuestaPaginada.of(
             mockEntregas, 0, 20, 1, "id", "ASC"
         );
         
-        lenient().when(servicioEntregaEjercicio.obtenerEntregasPaginadas(
+        when(servicioEntregaEjercicio.obtenerEntregasPaginadas(
             eq("1"), eq("1"), eq("CALIFICADO"), eq(BigDecimal.valueOf(7.0)), eq(BigDecimal.valueOf(10.0)), 
             eq(0), eq(20), eq("id"), eq("ASC")
         )).thenReturn(mockResponse);
@@ -161,7 +159,7 @@ public class EntregaEjercicioRestTest {
                 .param("notaMin", "7.0")
                 .param("notaMax", "10.0"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contenido.length()").value(1));
+                .andExpect(jsonPath("$.content.length()").value(1));
         
         // Verify that the service was called with the exact filter parameters
         verify(servicioEntregaEjercicio).obtenerEntregasPaginadas(
@@ -173,25 +171,11 @@ public class EntregaEjercicioRestTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     public void testObtenerEntregasPaginadas_InvalidPaginationParameters() throws Exception {
-        // Given - The validation methods return default values, so we expect success
-        List<DTOEntregaEjercicio> mockEntregas = Arrays.asList(
-            new DTOEntregaEjercicio(1L, BigDecimal.valueOf(8.5), LocalDateTime.now(), 
-                EEstadoEjercicio.CALIFICADO, Arrays.asList("file1.pdf"), "1", "1", 1, "Excelente trabajo")
-        );
-        
-        DTORespuestaPaginada<DTOEntregaEjercicio> mockResponse = DTORespuestaPaginada.of(
-            mockEntregas, 0, 20, 1, "id", "ASC"
-        );
-        
-        lenient().when(servicioEntregaEjercicio.obtenerEntregasPaginadas(
-            anyString(), anyString(), anyString(), any(), any(), anyInt(), anyInt(), anyString(), anyString()
-        )).thenReturn(mockResponse);
-
-        // When & Then - Invalid parameters are converted to defaults, so we expect 200
+        // When & Then - Invalid parameters trigger validation errors
         mockMvc.perform(get("/api/entregas")
                 .param("page", "-1")
                 .param("size", "0"))
-                .andExpect(status().isOk());
+                .andExpect(status().isBadRequest());
     }
 
     // ===== GET /api/entregas/{id} - Get delivery by ID =====
@@ -202,7 +186,7 @@ public class EntregaEjercicioRestTest {
         // Given
         DTOEntregaEjercicio mockEntrega = new DTOEntregaEjercicio(
             1L, BigDecimal.valueOf(8.5), LocalDateTime.now(), 
-            EEstadoEjercicio.CALIFICADO, Arrays.asList("file1.pdf"), "1", "1", 1, "Excelente trabajo"
+            EEstadoEjercicio.CALIFICADO, Arrays.asList("file1.pdf"), 1L, 1L, 1, "Excelente trabajo"
         );
         
         when(servicioEntregaEjercicio.obtenerEntregaPorId(1L)).thenReturn(mockEntrega);
@@ -231,8 +215,7 @@ public class EntregaEjercicioRestTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     public void testObtenerEntregaPorId_InvalidId() throws Exception {
-        // Given - The @Min validation should trigger for ID 0
-        // When & Then
+        // When & Then - The @Min validation should trigger for ID 0
         mockMvc.perform(get("/api/entregas/0"))
                 .andExpect(status().isBadRequest());
     }
@@ -244,15 +227,15 @@ public class EntregaEjercicioRestTest {
     public void testCrearEntrega_Success() throws Exception {
         // Given
         DTOPeticionCrearEntregaEjercicio peticion = new DTOPeticionCrearEntregaEjercicio(
-            "1", "1", Arrays.asList("file1.pdf", "file2.pdf")
+            1L, 1L, Arrays.asList("file1.pdf", "file2.pdf")
         );
         
         DTOEntregaEjercicio mockEntrega = new DTOEntregaEjercicio(
             1L, null, LocalDateTime.now(), 
-            EEstadoEjercicio.PENDIENTE, Arrays.asList("file1.pdf", "file2.pdf"), "1", "1", 2, null
+            EEstadoEjercicio.PENDIENTE, Arrays.asList("file1.pdf", "file2.pdf"), 1L, 1L, 2, null
         );
         
-        when(servicioEntregaEjercicio.crearEntrega("1", "1", Arrays.asList("file1.pdf", "file2.pdf")))
+        when(servicioEntregaEjercicio.crearEntrega(1L, 1L, Arrays.asList("file1.pdf", "file2.pdf")))
             .thenReturn(mockEntrega);
 
         // When & Then
@@ -270,10 +253,10 @@ public class EntregaEjercicioRestTest {
     public void testCrearEntrega_InvalidInput() throws Exception {
         // Given - The DTO validation should trigger for empty fields
         DTOPeticionCrearEntregaEjercicio peticion = new DTOPeticionCrearEntregaEjercicio(
-            "", "", null
+            null, null, null
         );
 
-        // When & Then
+        // When & Then - The validation should trigger for null fields
         mockMvc.perform(post("/api/entregas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(peticion)))
@@ -283,17 +266,17 @@ public class EntregaEjercicioRestTest {
     @Test
     @WithMockUser(roles = "PROFESOR")
     public void testCrearEntrega_ProfessorCreatesDeliveryForStudent() throws Exception {
-        // Given - The controller ignores the alumnoEntreganteId from request and uses current user
+        // Given - The controller ignores the alumnoId from request and uses current user
         DTOPeticionCrearEntregaEjercicio peticion = new DTOPeticionCrearEntregaEjercicio(
-            "2", "1", Arrays.asList("file1.pdf") // Request says student "2", but controller uses current user "1"
+            2L, 1L, Arrays.asList("file1.pdf") // Request says student "2", but controller uses current user "1"
         );
         
         DTOEntregaEjercicio mockEntrega = new DTOEntregaEjercicio(
             1L, null, LocalDateTime.now(), 
-            EEstadoEjercicio.PENDIENTE, Arrays.asList("file1.pdf"), "1", "1", 1, null
+            EEstadoEjercicio.PENDIENTE, Arrays.asList("file1.pdf"), 1L, 1L, 1, null
         );
         
-        when(servicioEntregaEjercicio.crearEntrega("1", "1", Arrays.asList("file1.pdf")))
+        when(servicioEntregaEjercicio.crearEntrega(1L, 1L, Arrays.asList("file1.pdf")))
             .thenReturn(mockEntrega);
 
         // When & Then - The controller uses current user ID regardless of request
@@ -301,10 +284,10 @@ public class EntregaEjercicioRestTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(peticion)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.alumnoEntreganteId").value("1"));
+                .andExpect(jsonPath("$.alumnoId").value(1));
         
         // Verify that the service was called with current user ID, not the requested student ID
-        verify(servicioEntregaEjercicio).crearEntrega("1", "1", Arrays.asList("file1.pdf"));
+        verify(servicioEntregaEjercicio).crearEntrega(1L, 1L, Arrays.asList("file1.pdf"));
     }
 
     // ===== PUT /api/entregas/{id} - Replace delivery =====
@@ -314,12 +297,12 @@ public class EntregaEjercicioRestTest {
     public void testReemplazarEntrega_Success() throws Exception {
         // Given
         DTOPeticionActualizarEntregaEjercicio peticion = new DTOPeticionActualizarEntregaEjercicio(
-            "1", "1", Arrays.asList("updated_file.pdf"), BigDecimal.valueOf(9.0), "Muy buen trabajo"
+            1L, 1L, Arrays.asList("updated_file.pdf"), BigDecimal.valueOf(9.0), "Muy buen trabajo"
         );
         
         DTOEntregaEjercicio mockEntrega = new DTOEntregaEjercicio(
             1L, BigDecimal.valueOf(9.0), LocalDateTime.now(), 
-            EEstadoEjercicio.CALIFICADO, Arrays.asList("updated_file.pdf"), "1", "1", 1, "Muy buen trabajo"
+            EEstadoEjercicio.CALIFICADO, Arrays.asList("updated_file.pdf"), 1L, 1L, 1, "Muy buen trabajo"
         );
         
         when(servicioEntregaEjercicio.actualizarEntrega(
@@ -342,12 +325,12 @@ public class EntregaEjercicioRestTest {
     public void testReemplazarEntrega_StudentUpdatesOwnDelivery() throws Exception {
         // Given
         DTOPeticionActualizarEntregaEjercicio peticion = new DTOPeticionActualizarEntregaEjercicio(
-            "1", "1", Arrays.asList("new_file.pdf"), null, null
+            1L, 1L, Arrays.asList("new_file.pdf"), null, null
         );
         
         DTOEntregaEjercicio mockEntrega = new DTOEntregaEjercicio(
             1L, null, LocalDateTime.now(), 
-            EEstadoEjercicio.PENDIENTE, Arrays.asList("new_file.pdf"), "1", "1", 1, null
+            EEstadoEjercicio.PENDIENTE, Arrays.asList("new_file.pdf"), 1L, 1L, 1, null
         );
         
         when(servicioEntregaEjercicio.actualizarEntrega(
@@ -367,7 +350,7 @@ public class EntregaEjercicioRestTest {
     public void testReemplazarEntrega_StudentCannotGrade() throws Exception {
         // Given
         DTOPeticionActualizarEntregaEjercicio peticion = new DTOPeticionActualizarEntregaEjercicio(
-            "1", "1", Arrays.asList("file.pdf"), BigDecimal.valueOf(8.0), "Good work"
+            1L, 1L, Arrays.asList("file.pdf"), BigDecimal.valueOf(8.0), "Good work"
         );
 
         when(servicioEntregaEjercicio.actualizarEntrega(
@@ -386,7 +369,7 @@ public class EntregaEjercicioRestTest {
     public void testReemplazarEntrega_StudentCannotUpdateOthersDelivery() throws Exception {
         // Given - Student tries to update delivery ID 1, but it belongs to student "2"
         DTOPeticionActualizarEntregaEjercicio peticion = new DTOPeticionActualizarEntregaEjercicio(
-            "2", "1", Arrays.asList("file.pdf"), null, null
+            2L, 1L, Arrays.asList("file.pdf"), null, null
         );
 
         // Mock the service to throw AccessDeniedException when student tries to update another's delivery
@@ -418,7 +401,7 @@ public class EntregaEjercicioRestTest {
         
         DTOEntregaEjercicio mockEntrega = new DTOEntregaEjercicio(
             1L, BigDecimal.valueOf(7.5), LocalDateTime.now(), 
-            EEstadoEjercicio.CALIFICADO, Arrays.asList("file.pdf"), "1", "1", 1, "Buen trabajo, pero puede mejorar"
+            EEstadoEjercicio.CALIFICADO, Arrays.asList("file.pdf"), 1L, 1L, 1, "Buen trabajo, pero puede mejorar"
         );
         
         when(servicioEntregaEjercicio.actualizarEntrega(
@@ -444,7 +427,7 @@ public class EntregaEjercicioRestTest {
         
         DTOEntregaEjercicio mockEntrega = new DTOEntregaEjercicio(
             1L, BigDecimal.valueOf(8.0), LocalDateTime.now(), 
-            EEstadoEjercicio.CALIFICADO, Arrays.asList("file.pdf"), "1", "1", 1, "Comentario adicional sobre la entrega"
+            EEstadoEjercicio.CALIFICADO, Arrays.asList("file.pdf"), 1L, 1L, 1, "Comentario adicional sobre la entrega"
         );
         
         when(servicioEntregaEjercicio.actualizarEntrega(
@@ -483,9 +466,6 @@ public class EntregaEjercicioRestTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     public void testEliminarEntrega_Success() throws Exception {
-        // Given
-        // No need to mock anything for successful deletion
-
         // When & Then
         mockMvc.perform(delete("/api/entregas/1"))
                 .andExpect(status().isNoContent());
@@ -560,16 +540,17 @@ public class EntregaEjercicioRestTest {
             List.of(), 0, 20, 0, "id", "ASC"
         );
         
-        lenient().when(servicioEntregaEjercicio.obtenerEntregasPaginadas(
+        // Override the default mock for this specific test
+        when(servicioEntregaEjercicio.obtenerEntregasPaginadas(
             anyString(), anyString(), anyString(), any(), any(), anyInt(), anyInt(), anyString(), anyString()
         )).thenReturn(mockResponse);
 
         // When & Then
         mockMvc.perform(get("/api/entregas"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contenido").isArray())
-                .andExpect(jsonPath("$.contenido.length()").value(0))
-                .andExpect(jsonPath("$.totalElementos").value(0));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(0))
+                .andExpect(jsonPath("$.totalElements").value(0));
     }
 
     @Test
@@ -580,7 +561,7 @@ public class EntregaEjercicioRestTest {
             null, null, null, BigDecimal.valueOf(-1.0), "Invalid negative grade"
         );
 
-        lenient().when(servicioEntregaEjercicio.actualizarEntrega(
+        when(servicioEntregaEjercicio.actualizarEntrega(
             1L, null, BigDecimal.valueOf(-1.0), "Invalid negative grade"
         )).thenThrow(new app.excepciones.ValidationException("La nota debe estar entre 0 y 10"));
 
@@ -596,15 +577,15 @@ public class EntregaEjercicioRestTest {
     public void testCrearEntrega_WithEmptyFiles() throws Exception {
         // Given
         DTOPeticionCrearEntregaEjercicio peticion = new DTOPeticionCrearEntregaEjercicio(
-            "1", "1", List.of()
+            1L, 1L, List.of()
         );
         
         DTOEntregaEjercicio mockEntrega = new DTOEntregaEjercicio(
             1L, null, LocalDateTime.now(), 
-            EEstadoEjercicio.PENDIENTE, List.of(), "1", "1", 0, null
+            EEstadoEjercicio.PENDIENTE, List.of(), 1L, 1L, 0, null
         );
         
-        when(servicioEntregaEjercicio.crearEntrega("1", "1", List.of()))
+        when(servicioEntregaEjercicio.crearEntrega(1L, 1L, List.of()))
             .thenReturn(mockEntrega);
 
         // When & Then
@@ -620,15 +601,15 @@ public class EntregaEjercicioRestTest {
     public void testCrearEntrega_SecurityIssue_ControllerIgnoresRequestedStudentId() throws Exception {
         // Given - This test reveals a security issue: the controller ignores the requested student ID
         DTOPeticionCrearEntregaEjercicio peticion = new DTOPeticionCrearEntregaEjercicio(
-            "999", "1", Arrays.asList("file1.pdf") // Request says student "999", but controller uses current user "1"
+            999L, 1L, Arrays.asList("file1.pdf") // Request says student "999", but controller uses current user "1"
         );
         
         DTOEntregaEjercicio mockEntrega = new DTOEntregaEjercicio(
             1L, null, LocalDateTime.now(), 
-            EEstadoEjercicio.PENDIENTE, Arrays.asList("file1.pdf"), "1", "1", 1, null
+            EEstadoEjercicio.PENDIENTE, Arrays.asList("file1.pdf"), 1L, 1L, 1, null
         );
         
-        when(servicioEntregaEjercicio.crearEntrega("1", "1", Arrays.asList("file1.pdf")))
+        when(servicioEntregaEjercicio.crearEntrega(1L, 1L, Arrays.asList("file1.pdf")))
             .thenReturn(mockEntrega);
 
         // When & Then - The controller should validate that requested student ID matches current user
@@ -637,10 +618,10 @@ public class EntregaEjercicioRestTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(peticion)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.alumnoEntreganteId").value("1")); // Always uses current user ID
+                .andExpect(jsonPath("$.alumnoId").value(1)); // Always uses current user ID
         
         // Verify that the service was called with current user ID, not the requested student ID
-        verify(servicioEntregaEjercicio).crearEntrega("1", "1", Arrays.asList("file1.pdf"));
+        verify(servicioEntregaEjercicio).crearEntrega(1L, 1L, Arrays.asList("file1.pdf"));
     }
 
     @Test
@@ -667,11 +648,11 @@ public class EntregaEjercicioRestTest {
         // Given - This test verifies that the service layer properly enforces security
         // even if the controller passes the wrong student ID
         DTOPeticionCrearEntregaEjercicio peticion = new DTOPeticionCrearEntregaEjercicio(
-            "999", "1", Arrays.asList("file1.pdf")
+            999L, 1L, Arrays.asList("file1.pdf")
         );
         
         // Mock the service to throw AccessDeniedException when student tries to create delivery for another student
-        when(servicioEntregaEjercicio.crearEntrega("1", "1", Arrays.asList("file1.pdf")))
+        when(servicioEntregaEjercicio.crearEntrega(1L, 1L, Arrays.asList("file1.pdf")))
             .thenThrow(new app.excepciones.AccessDeniedException("No puedes crear entregas para otros alumnos"));
 
         // When & Then - The service layer should enforce security even if controller passes wrong ID
@@ -681,6 +662,6 @@ public class EntregaEjercicioRestTest {
                 .andExpect(status().isForbidden());
         
         // Verify that the service was called with current user ID
-        verify(servicioEntregaEjercicio).crearEntrega("1", "1", Arrays.asList("file1.pdf"));
+        verify(servicioEntregaEjercicio).crearEntrega(1L, 1L, Arrays.asList("file1.pdf"));
     }
 }

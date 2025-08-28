@@ -51,9 +51,13 @@ public class Pago {
     @Enumerated(EnumType.STRING)
     private EEstadoPago estado;
     
-    @NotNull
-    @Size(max = 255)
-    private String alumnoId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "alumno_id")
+    private Alumno alumno;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "clase_id")
+    private Clase clase;
     
     @NotNull
     private Boolean facturaCreada = false;
@@ -82,11 +86,18 @@ public class Pago {
         this.estado = EEstadoPago.PENDIENTE; // Default to pending for new payments
     }
     
-    public Pago(BigDecimal importe, EMetodoPago metodoPago, String alumnoId) {
+    // New constructor with JPA relationships
+    public Pago(BigDecimal importe, EMetodoPago metodoPago, Alumno alumno) {
         this();
         this.importe = importe;
         this.metodoPago = metodoPago;
-        this.alumnoId = alumnoId;
+        this.alumno = alumno;
+    }
+    
+    public Pago(BigDecimal importe, EMetodoPago metodoPago, Alumno alumno, Clase clase) {
+        this(importe, metodoPago, alumno);
+        this.clase = clase;
+        this.classId = clase != null ? clase.getId() : null;
     }
     
     /**

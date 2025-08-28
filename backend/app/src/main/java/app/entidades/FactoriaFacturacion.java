@@ -31,7 +31,7 @@ public class FactoriaFacturacion {
         factura.append("=== FACTURA ===\n");
         factura.append("Fecha: ").append(pago.getFechaPago()).append("\n");
         factura.append("Pago ID: ").append(pago.getId()).append("\n");
-        factura.append("Alumno ID: ").append(pago.getAlumnoId()).append("\n");
+        //factura.append("Alumno ID: ").append(pago.g()).append("\n");
         factura.append("metodo de pago: ").append(pago.getMetodoPago()).append("\n");
         factura.append("Estado: ").append(pago.getEstado()).append("\n");
         factura.append("\n--- DETALLE ---\n");

@@ -274,8 +274,8 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param claseId ID de la clase
      * @return Número de ejercicios
      */
-    @Query("SELECT COUNT(e) FROM Ejercicio e WHERE e.classId = :claseId")
-    Long countByClaseId(@Param("claseId") String claseId);
+    @Query("SELECT COUNT(e) FROM Ejercicio e WHERE e.clase.id = :claseId")
+    Long countByClaseId(@Param("claseId") Long claseId);
     
     /**
      * Busca ejercicios con entregas (que tienen al menos una entrega)
@@ -314,4 +314,32 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      */
     @Query("SELECT SIZE(e.entregas) FROM Ejercicio e WHERE e.id = :ejercicioId")
     Integer countEntregasByEjercicioId(@Param("ejercicioId") Long ejercicioId);
+
+    /**
+     * Busca ejercicios por clase
+     * @param claseId ID de la clase
+     * @return Lista de ejercicios de la clase
+     */
+    @Query("SELECT e FROM Ejercicio e WHERE e.clase.id = :claseId")
+    List<Ejercicio> findByClaseId(@Param("claseId") Long claseId);
+
+    /**
+     * Busca ejercicios por clase con paginación
+     * @param claseId ID de la clase
+     * @param pageable Parámetros de paginación
+     * @return Página de ejercicios de la clase
+     */
+    @Query("SELECT e FROM Ejercicio e WHERE e.clase.id = :claseId")
+    Page<Ejercicio> findByClaseId(@Param("claseId") Long claseId, Pageable pageable);
+
+    /**
+     * Busca un ejercicio por ID con todas sus relaciones cargadas
+     * @param ejercicioId ID del ejercicio
+     * @return Optional<Ejercicio> con relaciones cargadas
+     */
+    @Query("SELECT DISTINCT e FROM Ejercicio e " +
+           "LEFT JOIN FETCH e.clase " +
+           "LEFT JOIN FETCH e.entregas " +
+           "WHERE e.id = :ejercicioId")
+    Optional<Ejercicio> findByIdWithRelationships(@Param("ejercicioId") Long ejercicioId);
 }

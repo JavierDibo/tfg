@@ -178,4 +178,47 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
         @Param("matriculado") Boolean matriculado,
         Pageable pageable
     );
+
+    /**
+     * Busca alumnos que están inscritos en una clase específica
+     * @param claseId ID de la clase
+     * @return Lista de alumnos inscritos en la clase
+     */
+    @Query("SELECT a FROM Alumno a JOIN a.classes c WHERE c.id = :claseId")
+    List<Alumno> findByClaseId(@Param("claseId") Long claseId);
+
+    /**
+     * Busca alumnos que no están inscritos en ninguna clase
+     * @return Lista de alumnos sin clases
+     */
+    @Query("SELECT a FROM Alumno a WHERE SIZE(a.classes) = 0")
+    List<Alumno> findAlumnosSinClases();
+
+    /**
+     * Busca un alumno por ID con todas sus relaciones cargadas
+     * @param alumnoId ID del alumno
+     * @return Optional<Alumno> con relaciones cargadas
+     */
+    @Query("SELECT DISTINCT a FROM Alumno a " +
+           "LEFT JOIN FETCH a.classes " +
+           "LEFT JOIN FETCH a.payments " +
+           "LEFT JOIN FETCH a.submissions " +
+           "WHERE a.id = :alumnoId")
+    Optional<Alumno> findByIdWithRelationships(@Param("alumnoId") Long alumnoId);
+
+    /**
+     * Cuenta el número de clases en las que está inscrito un alumno
+     * @param alumnoId ID del alumno
+     * @return Número de clases
+     */
+    @Query("SELECT COUNT(c) FROM Alumno a JOIN a.classes c WHERE a.id = :alumnoId")
+    Integer countClasesByAlumnoId(@Param("alumnoId") Long alumnoId);
+
+    /**
+     * Busca alumnos que están inscritos en múltiples clases
+     * @param minClases Número mínimo de clases
+     * @return Lista de alumnos con múltiples clases
+     */
+    @Query("SELECT a FROM Alumno a WHERE SIZE(a.classes) >= :minClases")
+    List<Alumno> findAlumnosConMultipleClases(@Param("minClases") Integer minClases);
 }

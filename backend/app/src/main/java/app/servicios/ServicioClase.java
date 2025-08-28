@@ -36,12 +36,14 @@ import app.dtos.DTOTaller;
 import app.entidades.Alumno;
 import app.entidades.Clase;
 import app.entidades.Curso;
+import app.entidades.Ejercicio;
 import app.entidades.Material;
 import app.entidades.Profesor;
 import app.entidades.Taller;
 import app.excepciones.EntidadNoEncontradaException;
 import app.repositorios.RepositorioAlumno;
 import app.repositorios.RepositorioClase;
+import app.repositorios.RepositorioEjercicio;
 import app.repositorios.RepositorioProfesor;
 import app.util.ExceptionUtils;
 import app.util.SecurityUtils;
@@ -58,6 +60,7 @@ public class ServicioClase {
 
     private final RepositorioAlumno repositorioAlumno;
     private final RepositorioClase repositorioClase;
+    private final RepositorioEjercicio repositorioEjercicio;
     private final RepositorioProfesor repositorioProfesor;
     private final SecurityUtils securityUtils;
 
@@ -91,7 +94,7 @@ public class ServicioClase {
             return obtenerClases();
         } else if (securityUtils.isProfessor()) {
             // Los profesores solo pueden ver las clases que imparten
-            String profesorId = securityUtils.getCurrentUserId().toString();
+            Long profesorId = securityUtils.getCurrentUserId();
             return obtenerClasesPorProfesor(profesorId);
         } else {
             // Los alumnos pueden ver todas las clases (catálogo)
@@ -110,7 +113,7 @@ public class ServicioClase {
             return buscarClasesPorTitulo(titulo);
         } else if (securityUtils.isProfessor()) {
             // Los profesores solo pueden buscar en las clases que imparten
-            String profesorId = securityUtils.getCurrentUserId().toString();
+            Long profesorId = securityUtils.getCurrentUserId();
             List<DTOClase> clasesDelProfesor = obtenerClasesPorProfesor(profesorId);
             return clasesDelProfesor.stream()
                     .filter(clase -> clase.titulo().toLowerCase().contains(titulo.toLowerCase()))
@@ -133,7 +136,7 @@ public class ServicioClase {
             return buscarClases(parametros);
         } else if (securityUtils.isProfessor()) {
             // Los profesores solo pueden buscar en las clases que imparten
-            String profesorId = securityUtils.getCurrentUserId().toString();
+            Long profesorId = securityUtils.getCurrentUserId();
             List<DTOClase> clasesDelProfesor = obtenerClasesPorProfesor(profesorId);
             
             // Filtrar por los parámetros de búsqueda
@@ -218,8 +221,8 @@ public class ServicioClase {
             return true; // Los administradores pueden acceder a todas las clases
         } else if (securityUtils.isProfessor()) {
             // Los profesores solo pueden acceder a las clases que imparten
-            String profesorId = securityUtils.getCurrentUserId().toString();
-            return clase.getTeacherIds().contains(profesorId);
+            Long profesorId = securityUtils.getCurrentUserId();
+            return clase.getTeachers().stream().anyMatch(p -> p.getId().equals(profesorId));
         } else {
             // Los alumnos pueden acceder a todas las clases (para ver el catálogo)
             return true;
@@ -272,7 +275,15 @@ public class ServicioClase {
         // Agregar profesores si se proporcionaron
         if (peticion.profesoresId() != null) {
             for (String profesorId : peticion.profesoresId()) {
-                curso.agregarProfesor(profesorId);
+                try {
+                    Long profesorIdLong = Long.parseLong(profesorId);
+                    Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
+                    if (profesor != null) {
+                        curso.agregarProfesor(profesor);
+                    }
+                } catch (NumberFormatException e) {
+                    // Si no se puede parsear el ID, continuar con el siguiente profesor
+                }
             }
         }
         
@@ -292,7 +303,7 @@ public class ServicioClase {
                     Long profesorIdLong = Long.parseLong(profesorId);
                     Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
                     if (profesor != null) {
-                        profesor.agregarClase(cursoGuardado.getId().toString());
+                        profesor.agregarClase(cursoGuardado);
                         repositorioProfesor.save(profesor);
                     }
                 } catch (NumberFormatException e) {
@@ -334,7 +345,15 @@ public class ServicioClase {
         // Agregar profesores si se proporcionaron
         if (peticion.profesoresId() != null) {
             for (String profesorId : peticion.profesoresId()) {
-                taller.agregarProfesor(profesorId);
+                try {
+                    Long profesorIdLong = Long.parseLong(profesorId);
+                    Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
+                    if (profesor != null) {
+                        taller.agregarProfesor(profesor);
+                    }
+                } catch (NumberFormatException e) {
+                    // Si no se puede parsear el ID, continuar con el siguiente profesor
+                }
             }
         }
         
@@ -354,7 +373,7 @@ public class ServicioClase {
                     Long profesorIdLong = Long.parseLong(profesorId);
                     Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
                     if (profesor != null) {
-                        profesor.agregarClase(tallerGuardado.getId().toString());
+                        profesor.agregarClase(tallerGuardado);
                         repositorioProfesor.save(profesor);
                     }
                 } catch (NumberFormatException e) {
@@ -527,13 +546,18 @@ public class ServicioClase {
             ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
-        // Verificar si el alumno ya está en la clase para evitar duplicados
-        if (clase.getStudentIds().contains(alumnoId)) {
+        // Buscar el alumno por ID
+        Alumno alumno = repositorioAlumno.findById(Long.parseLong(alumnoId)).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
+        
+         // Verificar si el alumno ya está en la clase para evitar duplicados
+        if (clase.getStudents().stream().anyMatch(s -> s.getId().equals(Long.parseLong(alumnoId)))) {
             // El alumno ya está en la clase, devolver la clase sin cambios
             return new DTOClase(clase);
         }
         
-        clase.agregarAlumno(alumnoId);
+        // Usar la relación JPA
+        clase.agregarAlumno(alumno);
         Clase claseActualizada = repositorioClase.save(clase);
         return new DTOClase(claseActualizada);
     }
@@ -554,8 +578,12 @@ public class ServicioClase {
                 ExceptionUtils.throwAccessDenied("You don't have permission to modify this class");
             }
             
+            // Buscar el alumno por ID
+            Alumno alumno = repositorioAlumno.findById(peticion.studentId()).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", peticion.studentId());
+            
             // Check if the student is already in the class
-            if (clase.getStudentIds().contains(peticion.studentId().toString())) {
+            if (clase.getStudents().stream().anyMatch(s -> s.getId().equals(peticion.studentId()))) {
                 return DTORespuestaEnrollment.failure(
                     peticion.studentId(), 
                     peticion.classId(), 
@@ -564,8 +592,8 @@ public class ServicioClase {
                 );
             }
             
-            // Add the student to the class
-            clase.agregarAlumno(peticion.studentId().toString());
+            // Add the student to the class using JPA relationship
+            clase.agregarAlumno(alumno);
             Clase claseActualizada = repositorioClase.save(clase);
             
             return DTORespuestaEnrollment.success(
@@ -601,7 +629,12 @@ public class ServicioClase {
             ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
-        clase.removerAlumno(alumnoId);
+        // Buscar el alumno por ID
+        Alumno alumno = repositorioAlumno.findById(Long.parseLong(alumnoId)).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
+        
+        // Usar la relación JPA
+        clase.removerAlumno(alumno);
         Clase claseActualizada = repositorioClase.save(clase);
         return new DTOClase(claseActualizada);
     }
@@ -623,8 +656,10 @@ public class ServicioClase {
                 ExceptionUtils.throwAccessDenied("Only administrators can unenroll students from classes due to payment requirements");
             }
             
-            // Check if the student is in the class
-            if (!clase.getStudentIds().contains(peticion.studentId().toString())) {
+            // Check if the student is in the class using JPA relationship
+            boolean isEnrolled = clase.getStudents().stream()
+                .anyMatch(s -> s.getId().equals(peticion.studentId()));
+            if (!isEnrolled) {
                 return DTORespuestaEnrollment.failure(
                     peticion.studentId(), 
                     peticion.classId(), 
@@ -634,7 +669,9 @@ public class ServicioClase {
             }
             
             // Remove the student from the class
-            clase.removerAlumno(peticion.studentId().toString());
+            Alumno alumno = repositorioAlumno.findById(peticion.studentId()).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", peticion.studentId());
+            clase.removerAlumno(alumno);
             Clase claseActualizada = repositorioClase.save(clase);
             
             return DTORespuestaEnrollment.success(
@@ -672,24 +709,23 @@ public class ServicioClase {
         }
         
         // Verificar si el profesor ya está en la clase para evitar duplicados
-        if (clase.getTeacherIds().contains(profesorId)) {
+        boolean profesorYaAsignado = clase.getTeachers().stream()
+            .anyMatch(p -> p.getId().equals(Long.parseLong(profesorId)));
+        if (profesorYaAsignado) {
             // El profesor ya está en la clase, devolver la clase sin cambios
             return new DTOClase(clase);
         }
         
-        clase.agregarProfesor(profesorId);
+        // Buscar el profesor por ID
+        Profesor profesor = repositorioProfesor.findById(Long.parseLong(profesorId)).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
+        clase.agregarProfesor(profesor);
         Clase claseActualizada = repositorioClase.save(clase);
         
         // Actualizar la lista de clases del profesor para mantener consistencia bidireccional
-        try {
-            Long profesorIdLong = Long.parseLong(profesorId);
-            Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
-            if (profesor != null) {
-                profesor.agregarClase(claseId.toString());
-                repositorioProfesor.save(profesor);
-            }
-        } catch (NumberFormatException e) {
-            // Si no se puede parsear el ID, continuar sin actualizar el profesor
+        if (profesor != null) {
+            profesor.agregarClase(claseActualizada);
+            repositorioProfesor.save(profesor);
         }
         
         return new DTOClase(claseActualizada);
@@ -710,20 +746,19 @@ public class ServicioClase {
             ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
-        clase.removerProfesor(profesorId);
-        Clase claseActualizada = repositorioClase.save(clase);
+        // Buscar el profesor por ID
+        Profesor profesor = repositorioProfesor.findById(Long.parseLong(profesorId)).orElse(null);
+        ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
         
-        // Actualizar la lista de clases del profesor para mantener consistencia bidireccional
-        try {
-            Long profesorIdLong = Long.parseLong(profesorId);
-            Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
-            if (profesor != null) {
-                profesor.removerClase(claseId.toString());
-                repositorioProfesor.save(profesor);
-            }
-        } catch (NumberFormatException e) {
-            // Si no se puede parsear el ID, continuar sin actualizar el profesor
+        // Verificar si el profesor está en la clase usando JPA relationship
+        if (!clase.getTeachers().contains(profesor)) {
+            // El profesor no está en la clase, devolver la clase sin cambios
+            return new DTOClase(clase);
         }
+        
+        // Usar la relación JPA
+        clase.removerProfesor(profesor);
+        Clase claseActualizada = repositorioClase.save(clase);
         
         return new DTOClase(claseActualizada);
     }
@@ -743,7 +778,12 @@ public class ServicioClase {
             ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
-        clase.agregarEjercicio(ejercicioId);
+        // Buscar el ejercicio por ID
+        Ejercicio ejercicio = repositorioEjercicio.findById(Long.parseLong(ejercicioId)).orElse(null);
+        ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", ejercicioId);
+        
+        // Usar la relación JPA
+        clase.agregarEjercicio(ejercicio);
         Clase claseActualizada = repositorioClase.save(clase);
         return new DTOClase(claseActualizada);
     }
@@ -763,7 +803,18 @@ public class ServicioClase {
             ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta clase");
         }
         
-        clase.removerEjercicio(ejercicioId);
+        // Buscar el ejercicio por ID
+        Ejercicio ejercicio = repositorioEjercicio.findById(Long.parseLong(ejercicioId)).orElse(null);
+        ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", ejercicioId);
+        
+        // Verificar si el ejercicio está en la clase usando JPA relationship
+        if (!clase.getExercises().contains(ejercicio)) {
+            // El ejercicio no está en la clase, devolver la clase sin cambios
+            return new DTOClase(clase);
+        }
+        
+        // Usar la relación JPA
+        clase.removerEjercicio(ejercicio);
         Clase claseActualizada = repositorioClase.save(clase);
         return new DTOClase(claseActualizada);
     }
@@ -813,7 +864,7 @@ public class ServicioClase {
      * @param alumnoId ID del alumno
      * @return Lista de DTOClase
      */
-    public List<DTOClase> obtenerClasesPorAlumno(String alumnoId) {
+    public List<DTOClase> obtenerClasesPorAlumno(Long alumnoId) {
         return repositorioClase.findByAlumnoId(alumnoId).stream()
                 .map(DTOClase::new)
                 .collect(Collectors.toList());
@@ -824,7 +875,7 @@ public class ServicioClase {
      * @param profesorId ID del profesor
      * @return Lista de DTOClase
      */
-    public List<DTOClase> obtenerClasesPorProfesor(String profesorId) {
+    public List<DTOClase> obtenerClasesPorProfesor(Long profesorId) {
         return repositorioClase.findByProfesorId(profesorId).stream()
                 .map(DTOClase::new)
                 .collect(Collectors.toList());
@@ -877,29 +928,22 @@ public class ServicioClase {
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
+        // Buscar el alumno por ID
+        Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
+        
         // Verificar si el alumno ya está inscrito
-        if (clase.getStudentIds().contains(alumnoId)) {
+        if (clase.getStudents().stream().anyMatch(s -> s.getId().equals(alumnoIdLong))) {
             return DTORespuestaEnrollment.failure(alumnoIdLong, claseId, 
                 "El alumno ya está inscrito en esta clase", "ENROLLMENT");
         }
 
-        clase.agregarAlumno(alumnoId);
-        
-        // También agregar la clase al alumno (actualizar la relación bidireccional)
-        try {
-            Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
-            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
-            
-            alumno.addClass(claseId.toString());
-            repositorioAlumno.save(alumno);
-        } catch (Exception e) {
-            // Log the error but continue with the class update
-        }
+        // Usar la relación JPA bidireccional
+        clase.agregarAlumno(alumno);
         
         Clase claseActualizada = repositorioClase.save(clase);
         
         // Obtener información del alumno para la respuesta
-        Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
         String nombreAlumno = alumno != null ? alumno.getFirstName() : "Alumno";
         
         return DTORespuestaEnrollment.success(alumnoIdLong, claseId, 
@@ -931,22 +975,16 @@ public class ServicioClase {
      * @return Lista de DTOClaseInscrita con información del profesor
      */
     public List<DTOClaseInscrita> obtenerClasesInscritasConDetalles(Long alumnoId) {
-        List<Clase> clases = repositorioClase.findByAlumnoId(alumnoId.toString());
+        List<Clase> clases = repositorioClase.findByAlumnoId(alumnoId);
         
         return clases.stream()
                 .map(clase -> {
                     // Obtener el primer profesor de la clase (profesor principal)
                     DTOProfesor profesor = null;
-                    if (!clase.getTeacherIds().isEmpty()) {
-                        try {
-                            Long profesorId = Long.parseLong(clase.getTeacherIds().get(0));
-                            Profesor profesorEntity = repositorioProfesor.findById(profesorId)
-                                    .orElse(null);
-                            if (profesorEntity != null) {
-                                profesor = new DTOProfesor(profesorEntity);
-                            }
-                        } catch (NumberFormatException e) {
-                            // Si no se puede parsear el ID, continuar sin profesor
+                    if (!clase.getTeachers().isEmpty()) {
+                        Profesor profesorEntity = clase.getTeachers().get(0);
+                        if (profesorEntity != null) {
+                            profesor = new DTOProfesor(profesorEntity);
                         }
                     }
                     
@@ -969,7 +1007,7 @@ public class ServicioClase {
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
-        boolean isEnrolled = clase.getStudentIds().contains(alumnoId.toString());
+        boolean isEnrolled = clase.getStudents().stream().anyMatch(s -> s.getId().equals(alumnoId));
         
         if (isEnrolled) {
             // Por ahora, usamos la fecha actual como fecha de inscripción
@@ -993,26 +1031,21 @@ public class ServicioClase {
         
         // Obtener el primer profesor de la clase (profesor principal)
         DTOProfesor profesor = null;
-        if (!clase.getTeacherIds().isEmpty()) {
-            try {
-                Long profesorId = Long.parseLong(clase.getTeacherIds().get(0));
-                Profesor profesorEntity = repositorioProfesor.findById(profesorId)
-                        .orElse(null);
-                if (profesorEntity != null) {
-                    profesor = new DTOProfesor(profesorEntity);
-                }
-            } catch (NumberFormatException e) {
-                // Si no se puede parsear el ID, continuar sin profesor
+        if (!clase.getTeachers().isEmpty()) {
+            Profesor profesorEntity = clase.getTeachers().get(0);
+            if (profesorEntity != null) {
+                profesor = new DTOProfesor(profesorEntity);
             }
         }
         
         // Verificar si el estudiante está inscrito
-        boolean isEnrolled = clase.getStudentIds().contains(alumnoId.toString());
+        boolean isEnrolled = clase.getStudents().stream()
+            .anyMatch(s -> s.getId().equals(alumnoId));
         LocalDateTime fechaInscripcion = isEnrolled ? LocalDateTime.now() : null;
         
         // Contar alumnos y profesores
-        int alumnosCount = clase.getStudentIds().size();
-        int profesoresCount = clase.getTeacherIds().size();
+        int alumnosCount = clase.getStudents().size();
+        int profesoresCount = clase.getTeachers().size();
         
         return new DTOClaseConDetalles(clase, profesor, isEnrolled, fechaInscripcion, alumnosCount, profesoresCount);
     }
@@ -1029,26 +1062,21 @@ public class ServicioClase {
         
         // Obtener el primer profesor de la clase (profesor principal) con información pública
         DTOProfesorPublico profesor = null;
-        if (!clase.getTeacherIds().isEmpty()) {
-            try {
-                Long profesorId = Long.parseLong(clase.getTeacherIds().get(0));
-                Profesor profesorEntity = repositorioProfesor.findById(profesorId)
-                        .orElse(null);
-                if (profesorEntity != null) {
-                    profesor = new DTOProfesorPublico(profesorEntity);
-                }
-            } catch (NumberFormatException e) {
-                // Si no se puede parsear el ID, continuar sin profesor
+        if (!clase.getTeachers().isEmpty()) {
+            Profesor profesorEntity = clase.getTeachers().get(0);
+            if (profesorEntity != null) {
+                profesor = new DTOProfesorPublico(profesorEntity);
             }
         }
         
         // Verificar si el estudiante está inscrito
-        boolean isEnrolled = clase.getStudentIds().contains(alumnoId.toString());
+        boolean isEnrolled = clase.getStudents().stream()
+            .anyMatch(s -> s.getId().equals(alumnoId));
         LocalDateTime fechaInscripcion = isEnrolled ? LocalDateTime.now() : null;
         
         // Contar alumnos y profesores
-        int alumnosCount = clase.getStudentIds().size();
-        int profesoresCount = clase.getTeacherIds().size();
+        int alumnosCount = clase.getStudents().size();
+        int profesoresCount = clase.getTeachers().size();
         
         return new DTOClaseConDetallesPublico(clase, profesor, isEnrolled, fechaInscripcion, alumnosCount, profesoresCount);
     }
@@ -1062,17 +1090,8 @@ public class ServicioClase {
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
-        return clase.getStudentIds().stream()
-                .map(alumnoId -> {
-                    try {
-                        Long id = Long.parseLong(alumnoId);
-                        Alumno alumno = repositorioAlumno.findById(id).orElse(null);
-                        return alumno != null ? new DTOAlumnoPublico(alumno) : null;
-                    } catch (NumberFormatException e) {
-                        return null;
-                    }
-                })
-                .filter(dto -> dto != null)
+        return clase.getStudents().stream()
+                .map(alumno -> new DTOAlumnoPublico(alumno))
                 .collect(Collectors.toList());
     }
 }

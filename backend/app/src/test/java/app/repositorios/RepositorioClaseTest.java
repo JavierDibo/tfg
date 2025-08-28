@@ -2,8 +2,11 @@ package app.repositorios;
 
 import app.entidades.Clase;
 import app.entidades.Curso;
-import app.entidades.Material;
 import app.entidades.Taller;
+import app.entidades.Alumno;
+import app.entidades.Profesor;
+import app.entidades.Ejercicio;
+import app.entidades.Material;
 import app.entidades.enums.EPresencialidad;
 import app.entidades.enums.EDificultad;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,36 +37,111 @@ class RepositorioClaseTest {
     @Autowired
     private RepositorioClase repositorioClase;
 
+    @Autowired
+    private RepositorioAlumno repositorioAlumno;
+
+    @Autowired
+    private RepositorioProfesor repositorioProfesor;
+
+    @Autowired
+    private RepositorioEjercicio repositorioEjercicio;
+
     private Curso curso;
     private Taller taller;
     private Material material;
+    private Alumno alumno1;
+    private Alumno alumno2;
+    private Alumno alumno3;
+    private Profesor profesor1;
+    private Profesor profesor2;
+    private Ejercicio ejercicio1;
+    private Ejercicio ejercicio2;
+    
+    // Utility method to generate valid DNIs using the same algorithm as the system
+    private String generateValidDNI(int index) {
+        StringBuilder dni = new StringBuilder();
+        String indexStr = String.valueOf(index);
+        
+        // Fill with random digits to make it 8 digits  
+        while (dni.length() + indexStr.length() < 8) {
+            dni.append((int)(Math.random() * 10));
+        }
+        dni.append(indexStr);
+        
+        // Ensure it's exactly 8 digits
+        if (dni.length() > 8) {
+            dni.setLength(8);
+        }
+        
+        char[] letras = "TRWAGMYFPDXBNJZSQVHLCKE".toCharArray();
+        int numero = Integer.parseInt(dni.toString());
+        dni.append(letras[numero % 23]);
+        return dni.toString();
+    }
 
     @BeforeEach
     void setUp() {
+        // Limpiar la base de datos antes de cada test
+        repositorioClase.deleteAll();
+        repositorioAlumno.deleteAll();
+        repositorioProfesor.deleteAll();
+        repositorioEjercicio.deleteAll();
+
+        // Crear material
         material = new Material("mat1", "Apuntes de Java", "https://ejemplo.com/apuntes.pdf");
-        // Save the material first to avoid TransientObjectException
         material = entityManager.persistAndFlush(material);
         
+        // Crear alumnos con DNIs válidos
+        alumno1 = new Alumno("alumno1", "password1", "Juan", "Pérez", generateValidDNI(1), "juan@ejemplo.com", "123456789");
+        alumno2 = new Alumno("alumno2", "password2", "María", "García", generateValidDNI(2), "maria@ejemplo.com", "987654321");
+        alumno3 = new Alumno("alumno3", "password3", "Carlos", "López", generateValidDNI(3), "carlos@ejemplo.com", "555666777");
+        
+        // Crear profesores con DNIs válidos
+        profesor1 = new Profesor("profesor1", "password1", "Ana", "Martínez", generateValidDNI(4), "ana@ejemplo.com", "111111111");
+        profesor2 = new Profesor("profesor2", "password2", "Pedro", "Sánchez", generateValidDNI(5), "pedro@ejemplo.com", "222222222");
+        
+        // Guardar entidades relacionadas primero
+        alumno1 = repositorioAlumno.save(alumno1);
+        alumno2 = repositorioAlumno.save(alumno2);
+        alumno3 = repositorioAlumno.save(alumno3);
+        profesor1 = repositorioProfesor.save(profesor1);
+        profesor2 = repositorioProfesor.save(profesor2);
+        
+        // Crear cursos primero sin relaciones
         curso = new Curso(
                 "Curso de Java", "Aprende Java desde cero", new BigDecimal("99.99"),
                 EPresencialidad.ONLINE, "imagen1.jpg", EDificultad.PRINCIPIANTE,
                 LocalDate.now().plusDays(7), LocalDate.now().plusDays(30)
         );
-        curso.agregarAlumno("alumno1");
-        curso.agregarAlumno("alumno2");
-        curso.agregarProfesor("profesor1");
-        curso.agregarEjercicio("ejercicio1");
-        curso.agregarMaterial(material);
+        curso = repositorioClase.save(curso);
 
         taller = new Taller(
                 "Taller de Spring", "Taller intensivo de Spring Boot", new BigDecimal("49.99"),
                 EPresencialidad.PRESENCIAL, "imagen2.jpg", EDificultad.INTERMEDIO,
                 4, LocalDate.now().plusDays(3), LocalTime.of(10, 0)
         );
-        taller.agregarAlumno("alumno3");
-        taller.agregarProfesor("profesor2");
-        taller.agregarEjercicio("ejercicio2");
-        taller.agregarEjercicio("ejercicio3");
+        taller = repositorioClase.save(taller);
+        
+        // Crear ejercicios después de guardar las clases para referenciarlas
+        ejercicio1 = new Ejercicio("Ejercicio 1", "Enunciado del ejercicio 1", 
+                                  LocalDate.now().atStartOfDay(), LocalDate.now().plusDays(7).atStartOfDay(), curso.getId().toString());
+        ejercicio2 = new Ejercicio("Ejercicio 2", "Enunciado del ejercicio 2", 
+                                  LocalDate.now().atStartOfDay(), LocalDate.now().plusDays(7).atStartOfDay(), taller.getId().toString());
+        ejercicio1 = repositorioEjercicio.save(ejercicio1);
+        ejercicio2 = repositorioEjercicio.save(ejercicio2);
+        
+        // Ahora establecer las relaciones usando los métodos helper para mantener consistencia
+        curso.agregarAlumno(alumno1);
+        curso.agregarAlumno(alumno2);
+        curso.agregarProfesor(profesor1);
+        curso.agregarEjercicio(ejercicio1); // This properly sets up the bidirectional relationship
+        curso.agregarMaterial(material);
+        curso = repositorioClase.save(curso);
+
+        taller.agregarAlumno(alumno3);
+        taller.agregarProfesor(profesor2);
+        taller.agregarEjercicio(ejercicio2); // This properly sets up the bidirectional relationship
+        taller = repositorioClase.save(taller);
     }
 
     @Test
@@ -74,9 +152,9 @@ class RepositorioClaseTest {
         assertNotNull(cursoGuardado);
         assertNotNull(cursoGuardado.getId());
         assertEquals("Curso de Java", cursoGuardado.getTitle());
-        assertEquals(2, cursoGuardado.getStudentIds().size());
-        assertEquals(1, cursoGuardado.getTeacherIds().size());
-        assertEquals(1, cursoGuardado.getExerciseIds().size());
+        assertEquals(2, cursoGuardado.getStudents().size());
+        assertEquals(1, cursoGuardado.getTeachers().size());
+        assertEquals(1, cursoGuardado.getExercises().size());
         assertEquals(1, cursoGuardado.getMaterial().size());
     }
 
@@ -246,7 +324,7 @@ class RepositorioClaseTest {
         repositorioClase.save(curso);
         repositorioClase.save(taller);
 
-        List<Clase> resultado = repositorioClase.findByAlumnoId("alumno1");
+        List<Clase> resultado = repositorioClase.findByAlumnoId(alumno1.getId());
 
         assertEquals(1, resultado.size());
         assertEquals("Curso de Java", resultado.get(0).getTitle());
@@ -258,7 +336,7 @@ class RepositorioClaseTest {
         repositorioClase.save(curso);
         repositorioClase.save(taller);
 
-        List<Clase> resultado = repositorioClase.findByProfesorId("profesor1");
+        List<Clase> resultado = repositorioClase.findByProfesorId(profesor1.getId());
 
         assertEquals(1, resultado.size());
         assertEquals("Curso de Java", resultado.get(0).getTitle());
@@ -270,7 +348,7 @@ class RepositorioClaseTest {
         repositorioClase.save(curso);
         repositorioClase.save(taller);
 
-        List<Clase> resultado = repositorioClase.findByEjercicioId("ejercicio1");
+        List<Clase> resultado = repositorioClase.findByEjercicioId(ejercicio1.getId());
 
         assertEquals(1, resultado.size());
         assertEquals("Curso de Java", resultado.get(0).getTitle());

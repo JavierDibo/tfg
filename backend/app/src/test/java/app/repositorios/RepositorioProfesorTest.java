@@ -1,15 +1,23 @@
 package app.repositorios;
 
 import app.entidades.Profesor;
+import app.entidades.Clase;
+import app.entidades.Curso;
+import app.entidades.enums.EPresencialidad;
+import app.entidades.enums.EDificultad;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,14 +29,23 @@ class RepositorioProfesorTest {
     @Autowired
     private RepositorioProfesor repositorioProfesor;
 
+    @Autowired
+    private RepositorioClase repositorioClase;
+
+    @Autowired
+    private TestEntityManager entityManager;
+
     private Profesor profesor1;
     private Profesor profesor2;
     private Profesor profesor3;
+    private Clase clase1;
+    private Clase clase2;
 
     @BeforeEach
     void setUp() {
         // Limpiar la base de datos antes de cada test
         repositorioProfesor.deleteAll();
+        repositorioClase.deleteAll();
 
         // Crear profesores de prueba con DNIs válidos
         // 12345678 % 23 = 14, DNI_LETTERS[14] = 'Z' ✓
@@ -36,20 +53,43 @@ class RepositorioProfesorTest {
         // 11223344 % 23 = 11, DNI_LETTERS[11] = 'B'
         profesor1 = new Profesor("profesor1", "password1", "María", "García", "12345678Z", "maria@ejemplo.com", "123456789");
         profesor1.setEnabled(true);
-        profesor1.agregarClase("clase1");
-        profesor1.agregarClase("clase2");
 
         profesor2 = new Profesor("profesor2", "password2", "Juan", "Pérez", "87654321X", "juan@ejemplo.com", "987654321");
         profesor2.setEnabled(true);
 
         profesor3 = new Profesor("profesor3", "password3", "Ana", "López", "11223344B", "ana@ejemplo.com", "555666777");
         profesor3.setEnabled(false);
-        profesor3.agregarClase("clase3");
+
+        // Crear clases de prueba
+        clase1 = new Curso(
+                "Clase 1", "Descripción de la clase 1", new BigDecimal("99.99"),
+                EPresencialidad.ONLINE, "imagen1.jpg", EDificultad.PRINCIPIANTE,
+                LocalDate.now().plusDays(7), LocalDate.now().plusDays(30)
+        );
+
+        clase2 = new Curso(
+                "Clase 2", "Descripción de la clase 2", new BigDecimal("149.99"),
+                EPresencialidad.PRESENCIAL, "imagen2.jpg", EDificultad.INTERMEDIO,
+                LocalDate.now().plusDays(14), LocalDate.now().plusDays(45)
+        );
+
+        // Guardar clases primero
+        clase1 = repositorioClase.save(clase1);
+        clase2 = repositorioClase.save(clase2);
+
+        // Asignar clases a profesores usando JPA relationships
+        profesor1.agregarClase(clase1);
+        profesor1.agregarClase(clase2);
+        profesor3.agregarClase(clase1);
 
         // Guardar profesores
         repositorioProfesor.save(profesor1);
         repositorioProfesor.save(profesor2);
         repositorioProfesor.save(profesor3);
+
+        // Flush para asegurar que las relaciones se persistan
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Test
@@ -174,16 +214,17 @@ class RepositorioProfesorTest {
     @Test
     @DisplayName("findByClaseId debe encontrar profesores por clase")
     void testFindByClaseId() {
-        List<Profesor> resultado = repositorioProfesor.findByClaseId("clase1");
+        List<Profesor> resultado = repositorioProfesor.findByClaseId(clase1.getId());
 
-        assertEquals(1, resultado.size());
-        assertTrue(resultado.get(0).getClassIds().contains("clase1"));
+        assertEquals(2, resultado.size()); // profesor1 y profesor3 tienen clase1
+        assertTrue(resultado.stream().anyMatch(p -> p.getUsername().equals("profesor1")));
+        assertTrue(resultado.stream().anyMatch(p -> p.getUsername().equals("profesor3")));
     }
 
     @Test
     @DisplayName("findByClaseId debe retornar lista vacía cuando no encuentra")
     void testFindByClaseIdNoEncuentra() {
-        List<Profesor> resultado = repositorioProfesor.findByClaseId("claseInexistente");
+        List<Profesor> resultado = repositorioProfesor.findByClaseId(999L);
 
         assertTrue(resultado.isEmpty());
     }
@@ -210,7 +251,7 @@ class RepositorioProfesorTest {
         List<Profesor> resultado = repositorioProfesor.findProfesoresSinClases();
 
         assertEquals(1, resultado.size());
-        assertTrue(resultado.get(0).getClassIds().isEmpty());
+        assertEquals("profesor2", resultado.get(0).getUsername());
     }
 
     @Test
@@ -277,10 +318,11 @@ class RepositorioProfesorTest {
     @DisplayName("findByFiltros debe filtrar por clase")
     void testFindByFiltrosPorClase() {
         List<Profesor> resultado = repositorioProfesor.findByFiltros(
-                null, null, null, null, null, null, "clase1", null);
+                null, null, null, null, null, null, clase1.getId(), null);
 
-        assertEquals(1, resultado.size());
-        assertTrue(resultado.get(0).getClassIds().contains("clase1"));
+        assertEquals(2, resultado.size());
+        assertTrue(resultado.stream().anyMatch(p -> p.getUsername().equals("profesor1")));
+        assertTrue(resultado.stream().anyMatch(p -> p.getUsername().equals("profesor3")));
     }
 
     @Test
@@ -290,7 +332,7 @@ class RepositorioProfesorTest {
                 null, null, null, null, null, null, null, true);
 
         assertEquals(1, resultado.size());
-        assertTrue(resultado.get(0).getClassIds().isEmpty());
+        assertEquals("profesor2", resultado.get(0).getUsername());
     }
 
     @Test
@@ -318,14 +360,14 @@ class RepositorioProfesorTest {
     @DisplayName("save debe guardar profesor correctamente")
     void testSave() {
         Profesor nuevoProfesor = new Profesor("nuevo", "password", "Nuevo", "Profesor", "99999999A", "nuevo@ejemplo.com", "111222333");
-        nuevoProfesor.agregarClase("claseNueva");
+        nuevoProfesor.agregarClase(clase1);
 
         Profesor resultado = repositorioProfesor.save(nuevoProfesor);
 
         assertNotNull(resultado.getId());
         assertEquals("nuevo", resultado.getUsername());
         assertEquals("Nuevo", resultado.getFirstName());
-        assertTrue(resultado.getClassIds().contains("claseNueva"));
+        assertTrue(resultado.getClasses().contains(clase1));
     }
 
     @Test
@@ -367,6 +409,17 @@ class RepositorioProfesorTest {
     void testDeleteById() {
         Long idAEliminar = profesor1.getId();
         
+        // Remove relationships first to avoid foreign key constraint violations
+        // Clear the bidirectional relationship properly
+        List<Clase> clasesToRemove = new ArrayList<>(profesor1.getClasses());
+        for (Clase clase : clasesToRemove) {
+            clase.getTeachers().remove(profesor1);
+            entityManager.merge(clase);
+        }
+        profesor1.getClasses().clear();
+        entityManager.merge(profesor1);
+        entityManager.flush();
+        
         repositorioProfesor.deleteById(idAEliminar);
         
         assertFalse(repositorioProfesor.existsById(idAEliminar));
@@ -384,6 +437,19 @@ class RepositorioProfesorTest {
     @Test
     @DisplayName("deleteAll debe eliminar todos los profesores")
     void testDeleteAll() {
+        // Remove all relationships first to avoid foreign key constraint violations
+        repositorioProfesor.findAll().forEach(profesor -> {
+            // Clear the bidirectional relationship properly
+            List<Clase> clasesToRemove = new ArrayList<>(profesor.getClasses());
+            for (Clase clase : clasesToRemove) {
+                clase.getTeachers().remove(profesor);
+                entityManager.merge(clase);
+            }
+            profesor.getClasses().clear();
+            entityManager.merge(profesor);
+        });
+        entityManager.flush();
+        
         repositorioProfesor.deleteAll();
 
         assertEquals(0, repositorioProfesor.count());

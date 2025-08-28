@@ -488,10 +488,10 @@ public class ServicioProfesor {
             }
             
             // Asignar la clase al profesor
-            profesor.agregarClase(claseId);
+            profesor.agregarClase(clase);
             
             // Asignar el profesor a la clase
-            clase.agregarProfesor(profesorId.toString());
+            clase.agregarProfesor(profesor);
             
             // Guardar los cambios
             repositorioClase.save(clase);
@@ -529,10 +529,10 @@ public class ServicioProfesor {
             }
             
             // Remover la clase del profesor
-            profesor.removerClase(claseId);
+            profesor.removerClase(clase);
             
             // Remover el profesor de la clase
-            clase.removerProfesor(profesorId.toString());
+            clase.removerProfesor(profesor);
             
             // Guardar los cambios
             repositorioClase.save(clase);
@@ -562,7 +562,7 @@ public class ServicioProfesor {
      * @return Lista de profesores que imparten la clase
      */
     public List<DTOProfesor> obtenerProfesoresPorClase(String claseId) {
-        List<Profesor> profesoresDeClase = repositorioProfesor.findByClaseId(claseId);
+        List<Profesor> profesoresDeClase = repositorioProfesor.findByClaseId(Long.parseLong(claseId));
         return profesoresDeClase.stream()
                 .map(DTOProfesor::new)
                 .collect(Collectors.toList());
@@ -590,7 +590,7 @@ public class ServicioProfesor {
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
                 
         // Obtener las clases del profesor
-        return repositorioClase.findByProfesorId(profesorId.toString())
+        return repositorioClase.findByProfesorId(profesorId)
                 .stream()
                 .map(DTOClase::new)
                 .collect(Collectors.toList());
@@ -606,7 +606,7 @@ public class ServicioProfesor {
         Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
                 
-        return profesor.imparteClase(claseId);
+        return profesor.imparteClasePorId(Long.parseLong(claseId));
     }
 
     // ===== MÉTODOS CON PAGINACIÓN =====

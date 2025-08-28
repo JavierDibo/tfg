@@ -250,7 +250,7 @@ public class ServicioEjercicio {
         Clase clase = repositorioClase.findById(claseIdLong).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
-        clase.agregarEjercicio(ejercicioGuardado.getId().toString());
+        clase.agregarEjercicio(ejercicioGuardado);
         repositorioClase.save(clase);
         
         return new DTOEjercicio(ejercicioGuardado);
@@ -320,7 +320,7 @@ public class ServicioEjercicio {
         Clase clase = repositorioClase.findById(claseIdLong).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId + " for exercise " + ejercicio.getId());
         
-        clase.removerEjercicio(ejercicio.getId().toString());
+        clase.removerEjercicio(ejercicio);
         repositorioClase.save(clase);
 
         repositorioEjercicio.delete(ejercicio);
@@ -421,7 +421,7 @@ public class ServicioEjercicio {
         if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
         }
-        return repositorioEjercicio.countByClaseId(claseId);
+        return repositorioEjercicio.countByClaseId(Long.parseLong(claseId));
     }
 
     @Transactional(readOnly = true)

@@ -19,7 +19,10 @@ import java.util.List;
 @DiscriminatorValue("PROFESOR")
 public class Profesor extends Usuario {
     
-    // Lista de clases que imparte el profesor
+    @ManyToMany(mappedBy = "teachers", fetch = FetchType.LAZY)
+    private List<Clase> classes = new ArrayList<>();
+    
+    // TODO: Legacy ID-based fields for backward compatibility (to be removed after migration)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "profesor_clases", joinColumns = @JoinColumn(name = "profesor_id"))
     @Column(name = "clase_id")
@@ -57,42 +60,50 @@ public class Profesor extends Usuario {
     }
     
     /**
-     * Agrega una clase al profesor
-     * @param classId ID de la clase
+     * Agrega una clase al profesor usando relación JPA
+     * @param clase Entidad Clase
      */
-    public void agregarClase(String classId) {
-        if (this.classIds == null) {
-            this.classIds = new ArrayList<>();
-        }
-        if (!this.classIds.contains(classId)) {
-            this.classIds.add(classId);
+    public void agregarClase(Clase clase) {
+        if (!this.classes.contains(clase)) {
+            this.classes.add(clase);
+            clase.getTeachers().add(this); // Maintain bidirectional relationship
         }
     }
     
     /**
-     * Remueve una clase del profesor
-     * @param classId ID de la clase
+     * Remueve una clase del profesor usando relación JPA
+     * @param clase Entidad Clase
      */
-    public void removerClase(String classId) {
-        if (this.classIds != null) {
-            this.classIds.remove(classId);
-        }
+    public void removerClase(Clase clase) {
+        this.classes.remove(clase);
+        clase.getTeachers().remove(this);
     }
     
     /**
-     * Verifica si el profesor imparte una clase específica
-     * @param classId ID de la clase
+     * Verifica si el profesor imparte una clase específica usando relación JPA
+     * @param clase Entidad Clase
      * @return true si imparte la clase, false en caso contrario
      */
-    public boolean imparteClase(String classId) {
-        return this.classIds != null && this.classIds.contains(classId);
+    public boolean imparteClase(Clase clase) {
+        return this.classes.contains(clase);
     }
     
     /**
-     * Obtiene el número de clases que imparte el profesor
+     * Verifica si el profesor imparte una clase específica por ID
+     * @param claseId ID de la clase
+     * @return true si imparte la clase, false en caso contrario
+     */
+    public boolean imparteClasePorId(Long claseId) {
+        return this.classes.stream().anyMatch(c -> c.getId().equals(claseId));
+    }
+    
+    /**
+     * Obtiene el número de clases que imparte el profesor usando relación JPA
      * @return Número de clases
      */
     public int getNumeroClases() {
-        return this.classIds != null ? this.classIds.size() : 0;
+        return this.classes.size();
     }
+    
+
 }

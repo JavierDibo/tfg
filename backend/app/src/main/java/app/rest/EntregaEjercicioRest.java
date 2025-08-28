@@ -181,10 +181,9 @@ public class EntregaEjercicioRest extends BaseRestController {
         
         // Students can only create deliveries for themselves
         Long userId = securityUtils.getCurrentUserId();
-        String alumnoId = userId.toString();
         
         DTOEntregaEjercicio dtoEntrega = servicioEntregaEjercicio.crearEntrega(
-            alumnoId,
+            userId,
             peticion.ejercicioId(),
             peticion.archivosEntregados()
         );

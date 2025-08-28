@@ -43,38 +43,32 @@ public class EntregaEjercicio {
     private EEstadoEjercicio estado;
     
     // Representación simplificada de archivos como strings
-    // TODO: En una implementación real se podría usar un sistema de archivos o URLs
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "entrega_archivos", joinColumns = @JoinColumn(name = "entrega_id"))
     @Column(name = "archivo_path")
     private List<String> archivosEntregados = new ArrayList<>();
     
-    @NotNull
-    @Size(max = 255)
-    private String alumnoEntreganteId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "alumno_id")
+    private Alumno alumno;
     
-    @NotNull
-    @Size(max = 255)
-    private String ejercicioId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ejercicio_id")
+    private Ejercicio ejercicio;
     
     @Size(max = 1000)
     @Column(columnDefinition = "TEXT")
     private String comentarios;
-    
-    // Relación bidireccional con Ejercicio
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ejercicio_entity_id")
-    private Ejercicio ejercicio;
     
     public EntregaEjercicio() {
         this.fechaEntrega = LocalDateTime.now();
         this.estado = EEstadoEjercicio.ENTREGADO;
     }
     
-    public EntregaEjercicio(String alumnoEntreganteId, String ejercicioId) {
+    public EntregaEjercicio(Alumno alumno, Ejercicio ejercicio) {
         this();
-        this.alumnoEntreganteId = alumnoEntreganteId;
-        this.ejercicioId = ejercicioId;
+        this.alumno = alumno;
+        this.ejercicio = ejercicio;
     }
     
     /**

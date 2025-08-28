@@ -1,4 +1,3 @@
-// LLM_EDIT_TIMESTAMP: 25 ago. 14:10
 package app.servicios;
 
 import java.math.BigDecimal;
@@ -23,6 +22,8 @@ import app.repositorios.RepositorioEjercicio;
 import app.util.ExceptionUtils;
 import app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import app.entidades.Alumno;
+import app.repositorios.RepositorioAlumno;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +32,7 @@ public class ServicioEntregaEjercicio {
 
     private final RepositorioEntregaEjercicio repositorioEntregaEjercicio;
     private final RepositorioEjercicio repositorioEjercicio;
+    private final RepositorioAlumno repositorioAlumno;
     private final SecurityUtils securityUtils;
 
     @Transactional(readOnly = true)
@@ -45,7 +47,7 @@ public class ServicioEntregaEjercicio {
         } else if (securityUtils.hasRole("ALUMNO")) {
             // Students can only see their own deliveries
             Long currentUserId = securityUtils.getCurrentUserId();
-            if (!entrega.getAlumnoEntreganteId().equals(currentUserId.toString())) {
+            if (!entrega.getAlumno().getId().equals(currentUserId)) {
                 ExceptionUtils.throwAccessDenied("No tienes permisos para ver esta entrega");
             }
             return new DTOEntregaEjercicio(entrega);
@@ -73,7 +75,7 @@ public class ServicioEntregaEjercicio {
         // Security check: Only ADMIN, PROFESOR, or the student themselves can see student's deliveries
         if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
             // Admins and professors can see any student's deliveries
-            return repositorioEntregaEjercicio.findByAlumnoEntreganteId(alumnoId).stream()
+            return repositorioEntregaEjercicio.findByAlumnoEntreganteId(Long.parseLong(alumnoId)).stream()
                     .map(DTOEntregaEjercicio::new)
                     .collect(Collectors.toList());
         } else if (securityUtils.hasRole("ALUMNO")) {
@@ -82,7 +84,7 @@ public class ServicioEntregaEjercicio {
             if (!alumnoId.equals(currentUserId.toString())) {
                 ExceptionUtils.throwAccessDenied("No tienes permisos para ver las entregas de otros alumnos");
             }
-            return repositorioEntregaEjercicio.findByAlumnoEntreganteId(alumnoId).stream()
+            return repositorioEntregaEjercicio.findByAlumnoEntreganteId(Long.parseLong(alumnoId)).stream()
                     .map(DTOEntregaEjercicio::new)
                     .collect(Collectors.toList());
         } else {
@@ -99,7 +101,7 @@ public class ServicioEntregaEjercicio {
             ExceptionUtils.throwAccessDenied("No tienes permisos para ver todas las entregas de un ejercicio");
         }
         
-        return repositorioEntregaEjercicio.findByEjercicioId(ejercicioId).stream()
+        return repositorioEntregaEjercicio.findByEjercicioId(Long.parseLong(ejercicioId)).stream()
                 .map(DTOEntregaEjercicio::new)
                 .collect(Collectors.toList());
     }
@@ -107,7 +109,7 @@ public class ServicioEntregaEjercicio {
     @Transactional(readOnly = true)
     public DTOEntregaEjercicio obtenerEntregaPorAlumnoYEjercicio(String alumnoId, String ejercicioId) {
         EntregaEjercicio entrega = repositorioEntregaEjercicio
-                .findByAlumnoEntreganteIdAndEjercicioId(alumnoId, ejercicioId).orElse(null);
+                .findByAlumnoEntreganteIdAndEjercicioId(Long.parseLong(alumnoId), Long.parseLong(ejercicioId)).orElse(null);
         ExceptionUtils.throwIfNotFound(entrega, "Entrega", "alumno y ejercicio", alumnoId + " - " + ejercicioId);
         
         // Security check: Only ADMIN, PROFESOR, or the student themselves can see the delivery
@@ -194,14 +196,14 @@ public class ServicioEntregaEjercicio {
         return obtenerEntregasPorEstado(EEstadoEjercicio.ENTREGADO);
     }
 
-    public DTOEntregaEjercicio crearEntrega(String alumnoId, String ejercicioId, List<String> archivos) {
+    public DTOEntregaEjercicio crearEntrega(Long alumnoId, Long ejercicioId, List<String> archivos) {
         // Security check: Only ADMIN, PROFESOR, or the student themselves can create deliveries
         if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
             // Admins and professors can create deliveries for any student
         } else if (securityUtils.hasRole("ALUMNO")) {
             // Students can only create deliveries for themselves
             Long currentUserId = securityUtils.getCurrentUserId();
-            if (!alumnoId.equals(currentUserId.toString())) {
+            if (!alumnoId.equals(currentUserId)) {
                 ExceptionUtils.throwAccessDenied("No puedes crear entregas para otros alumnos");
             }
         } else {
@@ -210,17 +212,21 @@ public class ServicioEntregaEjercicio {
         }
         
         // Validate input
-        if (alumnoId == null || alumnoId.trim().isEmpty()) {
+        if (alumnoId == null) {
             ExceptionUtils.throwValidationError("El ID del alumno no puede estar vacío");
         }
         
-        if (ejercicioId == null || ejercicioId.trim().isEmpty()) {
+        if (ejercicioId == null) {
             ExceptionUtils.throwValidationError("El ID del ejercicio no puede estar vacío");
         }
 
         // Check if exercise exists
-        Ejercicio ejercicio = repositorioEjercicio.findById(Long.valueOf(ejercicioId)).orElse(null);
+        Ejercicio ejercicio = repositorioEjercicio.findById(ejercicioId).orElse(null);
         ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", ejercicioId);
+
+        // Check if student exists
+        Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
+        ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
 
         // Check if exercise is still active
         if (ejercicio.haVencido()) {
@@ -233,16 +239,13 @@ public class ServicioEntregaEjercicio {
                     ExceptionUtils.throwValidationError("El alumno ya tiene una entrega para este ejercicio");
                 });
 
-        // Create delivery
-        EntregaEjercicio entrega = new EntregaEjercicio(alumnoId, ejercicioId);
+        // Create delivery with JPA relationships
+        EntregaEjercicio entrega = new EntregaEjercicio(alumno, ejercicio);
         
         // Add files if provided
         if (archivos != null && !archivos.isEmpty()) {
             archivos.forEach(entrega::agregarArchivo);
         }
-
-        // Set the exercise relationship
-        entrega.setEjercicio(ejercicio);
 
         EntregaEjercicio entregaGuardada = repositorioEntregaEjercicio.save(entrega);
         return new DTOEntregaEjercicio(entregaGuardada);
@@ -308,7 +311,7 @@ public class ServicioEntregaEjercicio {
         } else if (securityUtils.hasRole("ALUMNO")) {
             // Students can only update their own deliveries
             Long currentUserId = securityUtils.getCurrentUserId();
-            if (!entrega.getAlumnoEntreganteId().equals(currentUserId.toString())) {
+            if (!entrega.getAlumno().getId().equals(currentUserId)) {
                 ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta entrega");
             }
         } else {
@@ -356,7 +359,7 @@ public class ServicioEntregaEjercicio {
         } else if (securityUtils.hasRole("ALUMNO")) {
             // Students can only update their own deliveries
             Long currentUserId = securityUtils.getCurrentUserId();
-            if (!entrega.getAlumnoEntreganteId().equals(currentUserId.toString())) {
+            if (!entrega.getAlumno().getId().equals(currentUserId)) {
                 ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta entrega");
             }
         } else {
@@ -458,8 +461,8 @@ public class ServicioEntregaEjercicio {
         Page<EntregaEjercicio> entregaPage;
         
         // Prepare filter parameters
-        String alumnoIdFilter = (alumnoId != null && !alumnoId.trim().isEmpty()) ? alumnoId.trim() : null;
-        String ejercicioIdFilter = (ejercicioId != null && !ejercicioId.trim().isEmpty()) ? ejercicioId.trim() : null;
+        Long alumnoIdFilter = (alumnoId != null && !alumnoId.trim().isEmpty()) ? Long.parseLong(alumnoId.trim()) : null;
+        Long ejercicioIdFilter = (ejercicioId != null && !ejercicioId.trim().isEmpty()) ? Long.parseLong(ejercicioId.trim()) : null;
         String estadoFilter = (estado != null && !estado.trim().isEmpty()) ? estado.toUpperCase() : null;
         BigDecimal notaMinFilter = notaMin;
         BigDecimal notaMaxFilter = notaMax;
@@ -502,14 +505,14 @@ public class ServicioEntregaEjercicio {
         // Security check: Only ADMIN, PROFESOR, or the student themselves can count student's deliveries
         if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
             // Admins and professors can count any student's deliveries
-            return repositorioEntregaEjercicio.countByAlumnoEntreganteId(alumnoId);
+            return repositorioEntregaEjercicio.countByAlumnoEntreganteId(Long.parseLong(alumnoId));
         } else if (securityUtils.hasRole("ALUMNO")) {
             // Students can only count their own deliveries
             Long currentUserId = securityUtils.getCurrentUserId();
             if (!alumnoId.equals(currentUserId.toString())) {
                 ExceptionUtils.throwAccessDenied("No tienes permisos para contar las entregas de otros alumnos");
             }
-            return repositorioEntregaEjercicio.countByAlumnoEntreganteId(alumnoId);
+            return repositorioEntregaEjercicio.countByAlumnoEntreganteId(Long.parseLong(alumnoId));
         } else {
             // Any other role is not authorized
             ExceptionUtils.throwAccessDenied("No tienes permisos para contar entregas");
@@ -523,7 +526,7 @@ public class ServicioEntregaEjercicio {
         if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR")) {
             ExceptionUtils.throwAccessDenied("No tienes permisos para contar entregas por ejercicio");
         }
-        return repositorioEntregaEjercicio.countByEjercicioId(ejercicioId);
+        return repositorioEntregaEjercicio.countByEjercicioId(Long.parseLong(ejercicioId));
     }
 
     @Transactional(readOnly = true)
@@ -541,7 +544,7 @@ public class ServicioEntregaEjercicio {
         if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR")) {
             ExceptionUtils.throwAccessDenied("No tienes permisos para ver promedios por ejercicio");
         }
-        return repositorioEntregaEjercicio.findAverageGradeByEjercicioId(ejercicioId);
+        return repositorioEntregaEjercicio.findAverageGradeByEjercicioId(Long.parseLong(ejercicioId));
     }
 
     @Transactional(readOnly = true)
@@ -549,14 +552,14 @@ public class ServicioEntregaEjercicio {
         // Security check: Only ADMIN, PROFESOR, or the student themselves can see student's average grade
         if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
             // Admins and professors can see any student's average grade
-            return repositorioEntregaEjercicio.findAverageGradeByAlumnoId(alumnoId);
+            return repositorioEntregaEjercicio.findAverageGradeByAlumnoId(Long.parseLong(alumnoId));
         } else if (securityUtils.hasRole("ALUMNO")) {
             // Students can only see their own average grade
             Long currentUserId = securityUtils.getCurrentUserId();
             if (!alumnoId.equals(currentUserId.toString())) {
                 ExceptionUtils.throwAccessDenied("No tienes permisos para ver el promedio de otros alumnos");
             }
-            return repositorioEntregaEjercicio.findAverageGradeByAlumnoId(alumnoId);
+            return repositorioEntregaEjercicio.findAverageGradeByAlumnoId(Long.parseLong(alumnoId));
         } else {
             // Any other role is not authorized
             ExceptionUtils.throwAccessDenied("No tienes permisos para ver promedios");

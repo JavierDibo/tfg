@@ -92,8 +92,8 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @param alumnoId ID del alumno
      * @return Lista de pagos exitosos
      */
-    @Query("SELECT p FROM Pago p WHERE p.alumnoId = :alumnoId AND p.estado = 'EXITO'")
-    List<Pago> findPagosExitososByAlumnoId(@Param("alumnoId") String alumnoId);
+    @Query("SELECT p FROM Pago p WHERE p.alumno.id = :alumnoId AND p.estado = 'EXITO'")
+    List<Pago> findPagosExitososByAlumnoId(@Param("alumnoId") Long alumnoId);
     
     /**
      * Busca pagos que pueden ser facturados (exitosos y sin factura)
@@ -117,8 +117,8 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @param alumnoId ID del alumno
      * @return Suma total de pagos exitosos
      */
-    @Query("SELECT COALESCE(SUM(p.importe), 0) FROM Pago p WHERE p.alumnoId = :alumnoId AND p.estado = 'EXITO'")
-    BigDecimal calcularTotalIngresosAlumno(@Param("alumnoId") String alumnoId);
+    @Query("SELECT COALESCE(SUM(p.importe), 0) FROM Pago p WHERE p.alumno.id = :alumnoId AND p.estado = 'EXITO'")
+    BigDecimal calcularTotalIngresosAlumno(@Param("alumnoId") Long alumnoId);
     
     /**
      * Obtiene pagos paginados con items cargados usando EntityGraph
@@ -142,8 +142,8 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @return Lista de pagos con items cargados
      */
     @EntityGraph(value = "Pago.withItems")
-    @Query("SELECT p FROM Pago p WHERE p.alumnoId = :alumnoId")
-    List<Pago> findByAlumnoId(@Param("alumnoId") String alumnoId);
+    @Query("SELECT p FROM Pago p WHERE p.alumno.id = :alumnoId")
+    List<Pago> findByAlumnoId(@Param("alumnoId") Long alumnoId);
     
     /**
      * Obtiene todos los pagos ordenados por fecha descendente con items cargados
@@ -159,8 +159,8 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @return Lista de pagos del alumno ordenada por fecha descendente
      */
     @EntityGraph(value = "Pago.withItems")
-    @Query("SELECT p FROM Pago p WHERE p.alumnoId = :alumnoId ORDER BY p.fechaPago DESC")
-    List<Pago> findByAlumnoIdOrderByFechaPagoDesc(@Param("alumnoId") String alumnoId);
+    @Query("SELECT p FROM Pago p WHERE p.alumno.id = :alumnoId ORDER BY p.fechaPago DESC")
+    List<Pago> findByAlumnoIdOrderByFechaPagoDesc(@Param("alumnoId") Long alumnoId);
     
     /**
      * Busca pagos de un alumno ordenados por fecha de pago descendente con paginación
@@ -169,6 +169,70 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @return Página de pagos del alumno ordenada por fecha descendente
      */
     @EntityGraph(value = "Pago.withItems")
-    @Query("SELECT p FROM Pago p WHERE p.alumnoId = :alumnoId ORDER BY p.fechaPago DESC")
-    Page<Pago> findByAlumnoIdOrderByFechaPagoDesc(@Param("alumnoId") String alumnoId, Pageable pageable);
+    @Query("SELECT p FROM Pago p WHERE p.alumno.id = :alumnoId ORDER BY p.fechaPago DESC")
+    Page<Pago> findByAlumnoIdOrderByFechaPagoDesc(@Param("alumnoId") Long alumnoId, Pageable pageable);
+
+    /**
+     * Busca pagos por clase con items cargados usando EntityGraph
+     * @param claseId ID de la clase
+     * @return Lista de pagos con items cargados
+     */
+    @EntityGraph(value = "Pago.withItems")
+    @Query("SELECT p FROM Pago p WHERE p.clase.id = :claseId")
+    List<Pago> findByClaseId(@Param("claseId") Long claseId);
+
+    /**
+     * Busca pagos por clase ordenados por fecha de pago descendente
+     * @param claseId ID de la clase
+     * @return Lista de pagos de la clase ordenada por fecha descendente
+     */
+    @EntityGraph(value = "Pago.withItems")
+    @Query("SELECT p FROM Pago p WHERE p.clase.id = :claseId ORDER BY p.fechaPago DESC")
+    List<Pago> findByClaseIdOrderByFechaPagoDesc(@Param("claseId") Long claseId);
+
+    /**
+     * Busca pagos por clase ordenados por fecha de pago descendente con paginación
+     * @param claseId ID de la clase
+     * @param pageable Parámetros de paginación
+     * @return Página de pagos de la clase ordenada por fecha descendente
+     */
+    @EntityGraph(value = "Pago.withItems")
+    @Query("SELECT p FROM Pago p WHERE p.clase.id = :claseId ORDER BY p.fechaPago DESC")
+    Page<Pago> findByClaseIdOrderByFechaPagoDesc(@Param("claseId") Long claseId, Pageable pageable);
+
+    /**
+     * Busca un pago por ID con todas sus relaciones cargadas
+     * @param pagoId ID del pago
+     * @return Optional<Pago> con relaciones cargadas
+     */
+    @EntityGraph(value = "Pago.withItems")
+    @Query("SELECT p FROM Pago p " +
+           "LEFT JOIN FETCH p.alumno " +
+           "LEFT JOIN FETCH p.clase " +
+           "WHERE p.id = :pagoId")
+    Optional<Pago> findByIdWithRelationships(@Param("pagoId") Long pagoId);
+
+    /**
+     * Calcula el total de ingresos de una clase
+     * @param claseId ID de la clase
+     * @return Suma total de pagos exitosos
+     */
+    @Query("SELECT COALESCE(SUM(p.importe), 0) FROM Pago p WHERE p.clase.id = :claseId AND p.estado = 'EXITO'")
+    BigDecimal calcularTotalIngresosClase(@Param("claseId") Long claseId);
+
+    /**
+     * Cuenta pagos por alumno
+     * @param alumnoId ID del alumno
+     * @return Número de pagos
+     */
+    @Query("SELECT COUNT(p) FROM Pago p WHERE p.alumno.id = :alumnoId")
+    Long countByAlumnoId(@Param("alumnoId") Long alumnoId);
+
+    /**
+     * Cuenta pagos por clase
+     * @param claseId ID de la clase
+     * @return Número de pagos
+     */
+    @Query("SELECT COUNT(p) FROM Pago p WHERE p.clase.id = :claseId")
+    Long countByClaseId(@Param("claseId") Long claseId);
 }

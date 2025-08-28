@@ -43,6 +43,11 @@ public class Ejercicio {
     @Column(name = "end_date", nullable = false)
     private LocalDateTime endDate;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "clase_id")
+    private Clase clase;
+    
+    // TODO: Legacy ID-based field for backward compatibility (to be removed after migration)
     @NotNull
     @Size(max = 255)
     @Column(name = "class_id", length = 255, nullable = false)
@@ -62,6 +67,21 @@ public class Ejercicio {
         this.startDate = startDate;
         this.endDate = endDate;
         this.classId = classId;
+        
+        // Validación: la fecha final debe ser posterior a la inicial
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("La fecha final del plazo no puede ser anterior a la fecha inicial");
+        }
+    }
+    
+    public Ejercicio(String name, String statement, LocalDateTime startDate, 
+                    LocalDateTime endDate, Clase clase) {
+        this.name = name;
+        this.statement = statement;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.clase = clase;
+        this.classId = clase != null ? clase.getId().toString() : null;
         
         // Validación: la fecha final debe ser posterior a la inicial
         if (endDate.isBefore(startDate)) {
@@ -95,13 +115,13 @@ public class Ejercicio {
     }
     
     /**
-     * Obtiene la entrega de un alumno específico
-     * @param alumnoId ID del alumno
+     * Obtiene la entrega de un alumno específico usando JPA relationship
+     * @param alumno Entidad Alumno
      * @return EntregaEjercicio si existe, null en caso contrario
      */
-    public EntregaEjercicio obtenerEntregaDeAlumno(String alumnoId) {
+    public EntregaEjercicio obtenerEntregaDeAlumno(Alumno alumno) {
         return this.entregas.stream()
-                .filter(entrega -> entrega.getAlumnoEntreganteId().equals(alumnoId))
+                .filter(entrega -> entrega.getAlumno().equals(alumno))
                 .findFirst()
                 .orElse(null);
     }

@@ -11,9 +11,12 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import jakarta.persistence.CascadeType;
 
 /**
  * Student Entity
@@ -33,19 +36,27 @@ public class Alumno extends Usuario {
     @NotNull
     private boolean enrolled = false;
     
-    // List of classes the student is enrolled in
+    // JPA Relationships - replacing ID-based collections
+    @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)
+    private List<Clase> classes = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Pago> payments = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<EntregaEjercicio> submissions = new ArrayList<>();
+    
+    // Legacy ID-based fields for backward compatibility (to be removed after migration)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "student_classes", joinColumns = @JoinColumn(name = "student_id"))
     @Column(name = "class_id")
     private List<String> classIds = new ArrayList<>();
     
-    // List of payments made by the student
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "student_payments", joinColumns = @JoinColumn(name = "student_id"))
     @Column(name = "payment_id")
     private List<String> paymentIds = new ArrayList<>();
     
-    // List of exercise submissions by the student
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "student_submissions", joinColumns = @JoinColumn(name = "student_id"))
     @Column(name = "submission_id")
@@ -72,75 +83,43 @@ public class Alumno extends Usuario {
     }
     
     /**
-     * Adds a class to the student
-     * @param classId ID of the class
+     * Adds a class to the student using JPA relationship
+     * @param clase Clase entity
      */
-    public void addClass(String classId) {
-        if (!this.classIds.contains(classId)) {
-            this.classIds.add(classId);
+    public void agregarClase(Clase clase) {
+        if (!this.classes.contains(clase)) {
+            this.classes.add(clase);
+            clase.getStudents().add(this); // Maintain bidirectional relationship
         }
     }
     
     /**
-     * Removes a class from the student
-     * @param classId ID of the class
+     * Removes a class from the student using JPA relationship
+     * @param clase Clase entity
      */
-    public void removeClass(String classId) {
-        this.classIds.remove(classId);
+    public void removerClase(Clase clase) {
+        this.classes.remove(clase);
+        clase.getStudents().remove(this);
     }
     
     /**
-     * Adds a payment to the student
-     * @param paymentId ID of the payment
-     */
-    public void addPayment(String paymentId) {
-        if (!this.paymentIds.contains(paymentId)) {
-            this.paymentIds.add(paymentId);
-        }
-    }
-    
-    /**
-     * Removes a payment from the student
-     * @param paymentId ID of the payment
-     */
-    public void removePayment(String paymentId) {
-        this.paymentIds.remove(paymentId);
-    }
-    
-    /**
-     * Adds an exercise submission to the student
-     * @param submissionId ID of the submission
-     */
-    public void addSubmission(String submissionId) {
-        if (!this.submissionIds.contains(submissionId)) {
-            this.submissionIds.add(submissionId);
-        }
-    }
-    
-    /**
-     * Removes an exercise submission from the student
-     * @param submissionId ID of the submission
-     */
-    public void removeSubmission(String submissionId) {
-        this.submissionIds.remove(submissionId);
-    }
-    
-    /**
-     * Checks if the student is enrolled in a specific class
-     * @param classId ID of the class
+     * Checks if the student is enrolled in a specific class using JPA relationship
+     * @param clase Clase entity
      * @return true if enrolled, false otherwise
      */
-    public boolean isEnrolledInClass(String classId) {
-        return this.classIds.contains(classId);
+    public boolean estaInscritoEnClase(Clase clase) {
+        return this.classes.contains(clase);
     }
     
     /**
-     * Checks if the student has a specific submission
-     * @param submissionId ID of the submission
-     * @return true if has the submission, false otherwise
+     * Checks if the student is enrolled in a specific class by ID
+     * @param claseId ID of the class
+     * @return true if enrolled, false otherwise
      */
-    public boolean hasSubmission(String submissionId) {
-        return this.submissionIds.contains(submissionId);
+    public boolean estaInscritoEnClasePorId(Long claseId) {
+        return this.classes.stream().anyMatch(c -> c.getId().equals(claseId));
     }
+    
+
     
 }

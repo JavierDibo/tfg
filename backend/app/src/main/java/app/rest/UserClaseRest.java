@@ -63,7 +63,7 @@ public class UserClaseRest extends BaseRestController {
         @ApiResponse(responseCode = "403", description = "Access denied - Requires PROFESOR permissions")
     })
     public ResponseEntity<List<DTOClase>> obtenerMisClases() {
-        String profesorId = securityUtils.getCurrentUserId().toString();
+        Long profesorId = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(servicioClase.obtenerClasesPorProfesor(profesorId));
     }
 

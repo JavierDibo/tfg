@@ -8,31 +8,21 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * DTO para la petición de actualización de una entrega de ejercicio
- * Contiene los datos necesarios para actualizar una entrega, incluyendo calificación
+ * DTO para la petición de actualizar una entrega de ejercicio
  */
 public record DTOPeticionActualizarEntregaEjercicio(
-        @Size(max = 255)
-        String alumnoEntreganteId,
-        
-        @Size(max = 255)
-        String ejercicioId,
-        
+        Long alumnoId,
+        Long ejercicioId,
         List<String> archivosEntregados,
-        
-        @DecimalMin("0.0")
-        @DecimalMax("10.0")
         BigDecimal nota,
-        
-        @Size(max = 1000)
         String comentarios
 ) {
     
     /**
-     * Constructor para actualización sin calificación
+     * Constructor simplificado para actualizar solo archivos
      */
-    public DTOPeticionActualizarEntregaEjercicio(String alumnoEntreganteId, String ejercicioId, List<String> archivosEntregados) {
-        this(alumnoEntreganteId, ejercicioId, archivosEntregados, null, null);
+    public DTOPeticionActualizarEntregaEjercicio(Long alumnoId, Long ejercicioId, List<String> archivosEntregados) {
+        this(alumnoId, ejercicioId, archivosEntregados, null, null);
     }
     
     /**

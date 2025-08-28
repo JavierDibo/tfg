@@ -26,8 +26,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param alumnoId ID del alumno
      * @return Lista de entregas del alumno
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId")
-    List<EntregaEjercicio> findByAlumnoEntreganteId(@Param("alumnoId") String alumnoId);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId")
+    List<EntregaEjercicio> findByAlumnoEntreganteId(@Param("alumnoId") Long alumnoId);
     
     /**
      * Busca entregas por ID de alumno con paginación
@@ -35,16 +35,16 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param pageable Parámetros de paginación
      * @return Página de entregas del alumno
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId")
-    Page<EntregaEjercicio> findByAlumnoEntreganteId(@Param("alumnoId") String alumnoId, Pageable pageable);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId")
+    Page<EntregaEjercicio> findByAlumnoEntreganteId(@Param("alumnoId") Long alumnoId, Pageable pageable);
     
     /**
      * Busca entregas por ID de ejercicio
      * @param ejercicioId ID del ejercicio
      * @return Lista de entregas del ejercicio
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicioId = :ejercicioId")
-    List<EntregaEjercicio> findByEjercicioId(@Param("ejercicioId") String ejercicioId);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId")
+    List<EntregaEjercicio> findByEjercicioId(@Param("ejercicioId") Long ejercicioId);
     
     /**
      * Busca entregas por ID de ejercicio con paginación
@@ -52,8 +52,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param pageable Parámetros de paginación
      * @return Página de entregas del ejercicio
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicioId = :ejercicioId")
-    Page<EntregaEjercicio> findByEjercicioId(@Param("ejercicioId") String ejercicioId, Pageable pageable);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId")
+    Page<EntregaEjercicio> findByEjercicioId(@Param("ejercicioId") Long ejercicioId, Pageable pageable);
     
     /**
      * Busca una entrega específica por alumno y ejercicio
@@ -61,8 +61,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param ejercicioId ID del ejercicio
      * @return Optional<EntregaEjercicio>
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId AND e.ejercicioId = :ejercicioId")
-    Optional<EntregaEjercicio> findByAlumnoEntreganteIdAndEjercicioId(@Param("alumnoId") String alumnoId, @Param("ejercicioId") String ejercicioId);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.ejercicio.id = :ejercicioId")
+    Optional<EntregaEjercicio> findByAlumnoEntreganteIdAndEjercicioId(@Param("alumnoId") Long alumnoId, @Param("ejercicioId") Long ejercicioId);
     
     /**
      * Busca entregas por estado
@@ -116,8 +116,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param pageable Parámetros de paginación
      * @return Página de entregas
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId AND e.ejercicioId = :ejercicioId")
-    Page<EntregaEjercicio> findByAlumnoEntreganteIdAndEjercicioId(@Param("alumnoId") String alumnoId, @Param("ejercicioId") String ejercicioId, Pageable pageable);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.ejercicio.id = :ejercicioId")
+    Page<EntregaEjercicio> findByAlumnoEntreganteIdAndEjercicioId(@Param("alumnoId") Long alumnoId, @Param("ejercicioId") Long ejercicioId, Pageable pageable);
     
     /**
      * Busca entregas por alumno y estado con paginación
@@ -126,8 +126,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param pageable Parámetros de paginación
      * @return Página de entregas
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId AND e.estado = :estado")
-    Page<EntregaEjercicio> findByAlumnoEntreganteIdAndEstado(@Param("alumnoId") String alumnoId, @Param("estado") EEstadoEjercicio estado, Pageable pageable);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.estado = :estado")
+    Page<EntregaEjercicio> findByAlumnoEntreganteIdAndEstado(@Param("alumnoId") Long alumnoId, @Param("estado") EEstadoEjercicio estado, Pageable pageable);
     
     /**
      * Busca entregas por ejercicio y estado con paginación
@@ -136,8 +136,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param pageable Parámetros de paginación
      * @return Página de entregas
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicioId = :ejercicioId AND e.estado = :estado")
-    Page<EntregaEjercicio> findByEjercicioIdAndEstado(@Param("ejercicioId") String ejercicioId, @Param("estado") EEstadoEjercicio estado, Pageable pageable);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId AND e.estado = :estado")
+    Page<EntregaEjercicio> findByEjercicioIdAndEstado(@Param("ejercicioId") Long ejercicioId, @Param("estado") EEstadoEjercicio estado, Pageable pageable);
     
     /**
      * Busca entregas por alumno, ejercicio y estado con paginación
@@ -147,8 +147,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param pageable Parámetros de paginación
      * @return Página de entregas
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId AND e.ejercicioId = :ejercicioId AND e.estado = :estado")
-    Page<EntregaEjercicio> findByAlumnoEntreganteIdAndEjercicioIdAndEstado(@Param("alumnoId") String alumnoId, @Param("ejercicioId") String ejercicioId, @Param("estado") EEstadoEjercicio estado, Pageable pageable);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.ejercicio.id = :ejercicioId AND e.estado = :estado")
+    Page<EntregaEjercicio> findByAlumnoEntreganteIdAndEjercicioIdAndEstado(@Param("alumnoId") Long alumnoId, @Param("ejercicioId") Long ejercicioId, @Param("estado") EEstadoEjercicio estado, Pageable pageable);
     
     /**
      * Busca entregas por alumno y rango de notas con paginación
@@ -158,8 +158,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param pageable Parámetros de paginación
      * @return Página de entregas
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId AND e.nota BETWEEN :notaMin AND :notaMax")
-    Page<EntregaEjercicio> findByAlumnoEntreganteIdAndNotaBetween(@Param("alumnoId") String alumnoId, @Param("notaMin") BigDecimal notaMin, @Param("notaMax") BigDecimal notaMax, Pageable pageable);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.nota BETWEEN :notaMin AND :notaMax")
+    Page<EntregaEjercicio> findByAlumnoEntreganteIdAndNotaBetween(@Param("alumnoId") Long alumnoId, @Param("notaMin") BigDecimal notaMin, @Param("notaMax") BigDecimal notaMax, Pageable pageable);
     
     /**
      * Busca entregas por ejercicio y rango de notas con paginación
@@ -169,8 +169,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param pageable Parámetros de paginación
      * @return Página de entregas
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicioId = :ejercicioId AND e.nota BETWEEN :notaMin AND :notaMax")
-    Page<EntregaEjercicio> findByEjercicioIdAndNotaBetween(@Param("ejercicioId") String ejercicioId, @Param("notaMin") BigDecimal notaMin, @Param("notaMax") BigDecimal notaMax, Pageable pageable);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId AND e.nota BETWEEN :notaMin AND :notaMax")
+    Page<EntregaEjercicio> findByEjercicioIdAndNotaBetween(@Param("ejercicioId") Long ejercicioId, @Param("notaMin") BigDecimal notaMin, @Param("notaMax") BigDecimal notaMax, Pageable pageable);
     
     /**
      * Búsqueda flexible de entregas con múltiples filtros opcionales
@@ -184,14 +184,14 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @return Página de entregas
      */
     @Query("SELECT e FROM EntregaEjercicio e WHERE " +
-           "(:alumnoId IS NULL OR e.alumnoEntreganteId = :alumnoId) AND " +
-           "(:ejercicioId IS NULL OR e.ejercicioId = :ejercicioId) AND " +
+           "(:alumnoId IS NULL OR e.alumno.id = :alumnoId) AND " +
+           "(:ejercicioId IS NULL OR e.ejercicio.id = :ejercicioId) AND " +
            "(:estado IS NULL OR e.estado = :estado) AND " +
            "(:notaMin IS NULL OR e.nota >= :notaMin) AND " +
            "(:notaMax IS NULL OR e.nota <= :notaMax)")
     Page<EntregaEjercicio> findByFiltrosFlexibles(
-        @Param("alumnoId") String alumnoId,
-        @Param("ejercicioId") String ejercicioId,
+        @Param("alumnoId") Long alumnoId,
+        @Param("ejercicioId") Long ejercicioId,
         @Param("estado") String estado,
         @Param("notaMin") BigDecimal notaMin,
         @Param("notaMax") BigDecimal notaMax,
@@ -238,8 +238,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param alumnoId ID del alumno
      * @return Lista de entregas calificadas
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId AND e.estado = 'CALIFICADO'")
-    List<EntregaEjercicio> findEntregasCalificadasByAlumno(@Param("alumnoId") String alumnoId);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.estado = 'CALIFICADO'")
+    List<EntregaEjercicio> findEntregasCalificadasByAlumno(@Param("alumnoId") Long alumnoId);
     
     /**
      * Busca entregas pendientes de calificación
@@ -253,40 +253,40 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param ejercicioId ID del ejercicio
      * @return Lista de entregas calificadas
      */
-    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicioId = :ejercicioId AND e.estado = 'CALIFICADO'")
-    List<EntregaEjercicio> findEntregasCalificadasByEjercicio(@Param("ejercicioId") String ejercicioId);
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId AND e.estado = 'CALIFICADO'")
+    List<EntregaEjercicio> findEntregasCalificadasByEjercicio(@Param("ejercicioId") Long ejercicioId);
     
     /**
      * Calcula la nota promedio de un alumno
      * @param alumnoId ID del alumno
      * @return Nota promedio
      */
-    @Query("SELECT AVG(e.nota) FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId AND e.nota IS NOT NULL")
-    BigDecimal calcularNotaPromedioByAlumno(@Param("alumnoId") String alumnoId);
+    @Query("SELECT AVG(e.nota) FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.nota IS NOT NULL")
+    BigDecimal calcularNotaPromedioByAlumno(@Param("alumnoId") Long alumnoId);
     
     /**
      * Calcula la nota promedio de un ejercicio
      * @param ejercicioId ID del ejercicio
      * @return Nota promedio
      */
-    @Query("SELECT AVG(e.nota) FROM EntregaEjercicio e WHERE e.ejercicioId = :ejercicioId AND e.nota IS NOT NULL")
-    BigDecimal calcularNotaPromedioByEjercicio(@Param("ejercicioId") String ejercicioId);
+    @Query("SELECT AVG(e.nota) FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId AND e.nota IS NOT NULL")
+    BigDecimal calcularNotaPromedioByEjercicio(@Param("ejercicioId") Long ejercicioId);
     
     /**
      * Obtiene la nota promedio de un ejercicio (alias para compatibilidad)
      * @param ejercicioId ID del ejercicio
      * @return Nota promedio
      */
-    @Query("SELECT AVG(e.nota) FROM EntregaEjercicio e WHERE e.ejercicioId = :ejercicioId AND e.nota IS NOT NULL")
-    BigDecimal findAverageGradeByEjercicioId(@Param("ejercicioId") String ejercicioId);
+    @Query("SELECT AVG(e.nota) FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId AND e.nota IS NOT NULL")
+    BigDecimal findAverageGradeByEjercicioId(@Param("ejercicioId") Long ejercicioId);
     
     /**
      * Obtiene la nota promedio de un alumno (alias para compatibilidad)
      * @param alumnoId ID del alumno
      * @return Nota promedio
      */
-    @Query("SELECT AVG(e.nota) FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId AND e.nota IS NOT NULL")
-    BigDecimal findAverageGradeByAlumnoId(@Param("alumnoId") String alumnoId);
+    @Query("SELECT AVG(e.nota) FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.nota IS NOT NULL")
+    BigDecimal findAverageGradeByAlumnoId(@Param("alumnoId") Long alumnoId);
     
     /**
      * Cuenta entregas por estado
@@ -301,24 +301,24 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param alumnoId ID del alumno
      * @return Número de entregas
      */
-    @Query("SELECT COUNT(e) FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId")
-    Long countByAlumnoEntreganteId(@Param("alumnoId") String alumnoId);
+    @Query("SELECT COUNT(e) FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId")
+    Long countByAlumnoEntreganteId(@Param("alumnoId") Long alumnoId);
     
     /**
      * Cuenta entregas de un ejercicio
      * @param ejercicioId ID del ejercicio
      * @return Número de entregas
      */
-    @Query("SELECT COUNT(e) FROM EntregaEjercicio e WHERE e.ejercicioId = :ejercicioId")
-    Long countByEjercicioId(@Param("ejercicioId") String ejercicioId);
+    @Query("SELECT COUNT(e) FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId")
+    Long countByEjercicioId(@Param("ejercicioId") Long ejercicioId);
     
     /**
      * Cuenta entregas calificadas de un alumno
      * @param alumnoId ID del alumno
      * @return Número de entregas calificadas
      */
-    @Query("SELECT COUNT(e) FROM EntregaEjercicio e WHERE e.alumnoEntreganteId = :alumnoId AND e.estado = 'CALIFICADO'")
-    Long countEntregasCalificadasByAlumno(@Param("alumnoId") String alumnoId);
+    @Query("SELECT COUNT(e) FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.estado = 'CALIFICADO'")
+    Long countEntregasCalificadasByAlumno(@Param("alumnoId") Long alumnoId);
     
     /**
      * Busca entregas que tienen más de X archivos

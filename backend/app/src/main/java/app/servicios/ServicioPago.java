@@ -1,14 +1,16 @@
 package app.servicios;
 
-import app.dtos.DTOPago;
 import app.dtos.DTOPeticionCrearPago;
+import app.dtos.DTOPago;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Pago;
+import app.entidades.Alumno;
 import app.entidades.enums.EEstadoPago;
 import app.entidades.enums.EMetodoPago;
 import app.excepciones.PaymentNotFoundException;
 import app.excepciones.PaymentProcessingException;
 import app.repositorios.RepositorioPago;
+import app.repositorios.RepositorioAlumno;
 import app.util.SecurityUtils;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
 public class ServicioPago {
     
     private final RepositorioPago repositorioPago;
+    private final RepositorioAlumno repositorioAlumno;
     private final SecurityUtils securityUtils;
     private final ServicioClase servicioClase; // Add enrollment service dependency
     
@@ -57,12 +60,12 @@ public class ServicioPago {
             
             PaymentIntent paymentIntent = PaymentIntent.create(params);
             
-            // Create Pago entity
-            Pago pago = new Pago();
-            pago.setImporte(peticion.importe());
-            pago.setMetodoPago(EMetodoPago.STRIPE);
-            pago.setEstado(EEstadoPago.PENDIENTE);
-            pago.setAlumnoId(peticion.alumnoId());
+            // Get the student entity
+            Alumno alumno = repositorioAlumno.findById(Long.valueOf(peticion.alumnoId()))
+                .orElseThrow(() -> new RuntimeException("Alumno no encontrado con ID: " + peticion.alumnoId()));
+            
+            // Create Pago entity with JPA relationships
+            Pago pago = new Pago(peticion.importe(), EMetodoPago.STRIPE, alumno);
             pago.setStripePaymentIntentId(paymentIntent.getId());
             pago.setFechaExpiracion(LocalDateTime.now().plusHours(24));
             
@@ -80,7 +83,7 @@ public class ServicioPago {
                 savedPago.getImporte(),
                 savedPago.getMetodoPago(),
                 savedPago.getEstado(),
-                savedPago.getAlumnoId(),
+                savedPago.getAlumno() != null ? savedPago.getAlumno().getId().toString() : null,
                 savedPago.getFacturaCreada(),
                 savedPago.getItems(),
                 savedPago.getStripePaymentIntentId(),
@@ -145,7 +148,7 @@ public class ServicioPago {
             // Check if this payment was for a class enrollment
             if (pago.getClassId() != null) {
                 // Enroll the student in the class
-                Long studentId = Long.parseLong(pago.getAlumnoId());
+                Long studentId = pago.getAlumno().getId();
                 servicioClase.inscribirAlumnoEnClase(new app.dtos.DTOPeticionEnrollment(studentId, pago.getClassId()));
                 
                 log.info("Student {} enrolled in class {} after successful payment {}", 
@@ -193,7 +196,7 @@ public class ServicioPago {
      */
     public List<DTOPago> getMyRecentPayments(int limit) {
         Long currentUserId = securityUtils.getCurrentUserId();
-        return repositorioPago.findByAlumnoIdOrderByFechaPagoDesc(currentUserId.toString())
+        return repositorioPago.findByAlumnoIdOrderByFechaPagoDesc(currentUserId)
             .stream()
             .limit(limit)
             .map(DTOPago::new)
@@ -211,7 +214,7 @@ public class ServicioPago {
         try {
             Pago pago = repositorioPago.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException("id", paymentId));
-            return pago.getAlumnoId().equals(userId.toString());
+            return pago.getAlumno() != null && pago.getAlumno().getId().equals(userId);
         } catch (PaymentNotFoundException e) {
             return false;
         }
@@ -224,7 +227,7 @@ public class ServicioPago {
      * @return Paginated response with student's payments
      */
     public DTORespuestaPaginada<DTOPago> obtenerPagosPorAlumno(String alumnoId, Pageable pageable) {
-        Page<Pago> pagoPage = repositorioPago.findByAlumnoIdOrderByFechaPagoDesc(alumnoId, pageable);
+        Page<Pago> pagoPage = repositorioPago.findByAlumnoIdOrderByFechaPagoDesc(Long.parseLong(alumnoId), pageable);
         return DTORespuestaPaginada.fromPage(
             pagoPage.map(DTOPago::new),
             pageable.getSort().toString(),

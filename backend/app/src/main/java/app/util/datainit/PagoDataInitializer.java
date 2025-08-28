@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import app.entidades.Alumno;
 
 @Component
 @Profile("!test")
@@ -43,15 +44,15 @@ public class PagoDataInitializer extends BaseDataInitializer {
         }
 
         // Create various types of payments
-        createSuccessfulPayments(repositorioPago, studentIds);
-        createFailedPayments(repositorioPago, studentIds);
-        createRefundedPayments(repositorioPago, studentIds);
-        createManualPayments(repositorioPago, studentIds);
+        createSuccessfulPayments(repositorioPago, studentIds, repositorioAlumno);
+        createFailedPayments(repositorioPago, studentIds, repositorioAlumno);
+        createRefundedPayments(repositorioPago, studentIds, repositorioAlumno);
+        createManualPayments(repositorioPago, studentIds, repositorioAlumno);
 
         System.out.println("Payments created: " + createdPayments.size());
     }
 
-    private void createSuccessfulPayments(RepositorioPago repositorioPago, List<String> studentIds) {
+    private void createSuccessfulPayments(RepositorioPago repositorioPago, List<String> studentIds, RepositorioAlumno repositorioAlumno) {
         // Create successful payments with different payment methods
         EMetodoPago[] successfulMethods = {EMetodoPago.STRIPE, EMetodoPago.DEBITO, EMetodoPago.CREDITO, EMetodoPago.TRANSFERENCIA};
         
@@ -65,7 +66,8 @@ public class PagoDataInitializer extends BaseDataInitializer {
                     method,
                     EEstadoPago.EXITO,
                     studentId,
-                    generateRandomDate(-30, 0) // Last 30 days
+                    generateRandomDate(-30, 0), // Last 30 days
+                    repositorioAlumno
                 );
                 
                 // Add items to the payment
@@ -79,7 +81,7 @@ public class PagoDataInitializer extends BaseDataInitializer {
         }
     }
 
-    private void createFailedPayments(RepositorioPago repositorioPago, List<String> studentIds) {
+    private void createFailedPayments(RepositorioPago repositorioPago, List<String> studentIds, RepositorioAlumno repositorioAlumno) {
         // Create failed payments
         for (int i = 0; i < 5; i++) {
             try {
@@ -90,7 +92,8 @@ public class PagoDataInitializer extends BaseDataInitializer {
                     EMetodoPago.STRIPE,
                     EEstadoPago.ERROR,
                     studentId,
-                    generateRandomDate(-15, 0) // Last 15 days
+                    generateRandomDate(-15, 0), // Last 15 days
+                    repositorioAlumno
                 );
                 
                 // Add failure reason
@@ -104,7 +107,7 @@ public class PagoDataInitializer extends BaseDataInitializer {
         }
     }
 
-    private void createRefundedPayments(RepositorioPago repositorioPago, List<String> studentIds) {
+    private void createRefundedPayments(RepositorioPago repositorioPago, List<String> studentIds, RepositorioAlumno repositorioAlumno) {
         // Create refunded payments
         for (int i = 0; i < 3; i++) {
             try {
@@ -115,7 +118,8 @@ public class PagoDataInitializer extends BaseDataInitializer {
                     EMetodoPago.STRIPE,
                     EEstadoPago.REEMBOLSADO,
                     studentId,
-                    generateRandomDate(-60, -30) // 30-60 days ago
+                    generateRandomDate(-60, -30), // 30-60 days ago
+                    repositorioAlumno
                 );
                 
                 // Add items to the payment
@@ -129,7 +133,7 @@ public class PagoDataInitializer extends BaseDataInitializer {
         }
     }
 
-    private void createManualPayments(RepositorioPago repositorioPago, List<String> studentIds) {
+    private void createManualPayments(RepositorioPago repositorioPago, List<String> studentIds, RepositorioAlumno repositorioAlumno) {
         // Create manual cash payments
         for (int i = 0; i < 7; i++) {
             try {
@@ -140,7 +144,8 @@ public class PagoDataInitializer extends BaseDataInitializer {
                     EMetodoPago.EFECTIVO,
                     EEstadoPago.EXITO,
                     studentId,
-                    generateRandomDate(-45, 0) // Last 45 days
+                    generateRandomDate(-45, 0), // Last 45 days
+                    repositorioAlumno
                 );
                 
                 // Add items to the payment
@@ -160,12 +165,14 @@ public class PagoDataInitializer extends BaseDataInitializer {
     }
 
     private Pago createPayment(BigDecimal amount, EMetodoPago method, EEstadoPago status, 
-                              String studentId, LocalDateTime date) {
-        Pago pago = new Pago();
-        pago.setImporte(amount);
-        pago.setMetodoPago(method);
+                              String studentId, LocalDateTime date, RepositorioAlumno repositorioAlumno) {
+        // Get the student entity
+        Alumno alumno = repositorioAlumno.findById(Long.valueOf(studentId))
+            .orElseThrow(() -> new RuntimeException("Alumno no encontrado con ID: " + studentId));
+        
+        // Create payment with JPA relationship
+        Pago pago = new Pago(amount, method, alumno);
         pago.setEstado(status);
-        pago.setAlumnoId(studentId);
         pago.setFechaPago(date);
         pago.setFacturaCreada(false);
         

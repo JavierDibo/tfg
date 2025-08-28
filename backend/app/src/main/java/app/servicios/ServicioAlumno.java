@@ -358,15 +358,15 @@ public class ServicioAlumno {
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar que el alumno no esté ya inscrito en la clase
-        if (alumno.getClassIds().contains(claseId.toString())) {
+        if (alumno.getClasses().stream().anyMatch(c -> c.getId().equals(claseId))) {
             throw new IllegalArgumentException("El alumno ya está inscrito en esta clase.");
         }
         
-        // Add the class to the student
-        alumno.addClass(claseId.toString());
+        // Add the class to the student using JPA relationship
+        alumno.agregarClase(clase);
         
-        // Add the student to the class
-        clase.agregarAlumno(alumnoId.toString());
+        // Add the student to the class using JPA relationship
+        clase.agregarAlumno(alumno);
         
         // Guardar cambios
         repositorioClase.save(clase);
@@ -389,15 +389,15 @@ public class ServicioAlumno {
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Verificar que el alumno esté inscrito en la clase
-        if (!alumno.getClassIds().contains(claseId.toString())) {
+        if (!alumno.getClasses().stream().anyMatch(c -> c.getId().equals(claseId))) {
             throw new IllegalArgumentException("El alumno no está inscrito en esta clase.");
         }
         
-        // Remove the class from the student
-        alumno.removeClass(claseId.toString());
+        // Remove the class from the student using JPA relationship
+        alumno.removerClase(clase);
         
-        // Remove the student from the class
-        clase.removerAlumno(alumnoId.toString());
+        // Remove the student from the class using JPA relationship
+        clase.removerAlumno(alumno);
         
         // Guardar cambios
         repositorioClase.save(clase);
@@ -417,7 +417,7 @@ public class ServicioAlumno {
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
         
         // Obtenemos las clases del alumno usando el repositorio de clase
-        return repositorioClase.findByAlumnoId(alumnoId.toString())
+        return repositorioClase.findByAlumnoId(alumnoId)
                 .stream()
                 .map(DTOClase::new)
                 .collect(Collectors.toList());
@@ -433,7 +433,7 @@ public class ServicioAlumno {
         Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
                 
-        return alumno.isEnrolledInClass(claseId.toString());
+        return alumno.estaInscritoEnClasePorId(claseId);
     }
     
     /**
@@ -445,7 +445,7 @@ public class ServicioAlumno {
         Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
                 
-        return alumno.getClassIds().size();
+        return alumno.getClasses().size();
     }
 
     // metodos con paginación
@@ -597,12 +597,8 @@ public class ServicioAlumno {
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
-        // Obtenemos los alumnos de la clase usando filtrado en memoria
-        // Nota: En un escenario real se implementaría una consulta específica
-        List<Alumno> alumnosDeClase = repositorioAlumno.findAll().stream()
-                .filter(alumno -> alumno.getClassIds() != null &&
-                                 alumno.getClassIds().contains(claseId.toString()))
-                .collect(Collectors.toList());
+        // Obtenemos los alumnos de la clase usando la relación JPA
+        List<Alumno> alumnosDeClase = clase.getStudents();
         
         // Aplicamos paginación manualmente
         int start = (int) pageable.getOffset();
@@ -713,16 +709,13 @@ public class ServicioAlumno {
             Alumno alumno = repositorioAlumno.findById(currentUserId).orElse(null);
             ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", currentUserId);
             
-            if (!alumno.isEnrolledInClass(claseId.toString())) {
+            if (!alumno.estaInscritoEnClasePorId(claseId)) {
                 ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a esta clase. Debes estar inscrito.");
             }
         }
         
-        // Obtenemos los alumnos de la clase usando filtrado en memoria
-        List<Alumno> alumnosDeClase = repositorioAlumno.findAll().stream()
-                .filter(alumno -> alumno.getClassIds() != null &&
-                                 alumno.getClassIds().contains(claseId.toString()))
-                .collect(Collectors.toList());
+        // Obtenemos los alumnos de la clase usando la relación JPA
+        List<Alumno> alumnosDeClase = clase.getStudents();
         
         // Aplicamos paginación manualmente
         int start = (int) pageable.getOffset();
@@ -749,7 +742,7 @@ public class ServicioAlumno {
             // Profesor: verificar si es profesor de esta clase específica
             // La clase ya fue verificada arriba, podemos usarla directamente
             
-            if (clase.getTeacherIds().contains(currentUserId.toString())) {
+            if (clase.getTeachers().stream().anyMatch(p -> p.getId().equals(currentUserId))) {
                 // Es profesor de esta clase: ve toda la información
                 pageDTOs = pageAlumnos.map(DTOAlumno::new);
                 tipoInformacion = DTORespuestaAlumnosClase.TIPO_COMPLETA;

@@ -17,8 +17,8 @@ public record DTOEntregaEjercicio(
         LocalDateTime fechaEntrega,
         EEstadoEjercicio estado,
         List<String> archivosEntregados,
-        String alumnoEntreganteId,
-        String ejercicioId,
+        Long alumnoId,
+        Long ejercicioId,
         int numeroArchivos,
         String comentarios
 ) {
@@ -33,8 +33,8 @@ public record DTOEntregaEjercicio(
                 entrega.getFechaEntrega(),
                 entrega.getEstado(),
                 entrega.getArchivosEntregados(),
-                entrega.getAlumnoEntreganteId(),
-                entrega.getEjercicioId(),
+                entrega.getAlumno() != null ? entrega.getAlumno().getId() : null,
+                entrega.getEjercicio() != null ? entrega.getEjercicio().getId() : null,
                 entrega.contarArchivos(),
                 entrega.getComentarios()
         );

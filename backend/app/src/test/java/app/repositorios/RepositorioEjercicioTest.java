@@ -1,29 +1,71 @@
 package app.repositorios;
 
 import app.entidades.Ejercicio;
+import app.entidades.Clase;
+import app.entidades.Curso;
+import app.entidades.enums.EPresencialidad;
+import app.entidades.enums.EDificultad;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@DataJpaTest
 @ActiveProfiles("test")
-@Transactional
-public class RepositorioEjercicioTest {
+@DisplayName("Tests para RepositorioEjercicio")
+class RepositorioEjercicioTest {
 
     @Autowired
     private RepositorioEjercicio repositorioEjercicio;
 
+    @Autowired
+    private RepositorioClase repositorioClase;
+
+    @Autowired
+    private TestEntityManager entityManager;
+
+    private Clase clase1;
+    private Clase clase2;
+
+    @BeforeEach
+    void setUp() {
+        // Limpiar la base de datos antes de cada test
+        repositorioEjercicio.deleteAll();
+        repositorioClase.deleteAll();
+
+        // Crear clases de prueba
+        clase1 = new Curso(
+                "Clase 1", "Descripción de la clase 1", new BigDecimal("99.99"),
+                EPresencialidad.ONLINE, "imagen1.jpg", EDificultad.PRINCIPIANTE,
+                LocalDate.now().plusDays(7), LocalDate.now().plusDays(30)
+        );
+
+        clase2 = new Curso(
+                "Clase 2", "Descripción de la clase 2", new BigDecimal("149.99"),
+                EPresencialidad.PRESENCIAL, "imagen2.jpg", EDificultad.INTERMEDIO,
+                LocalDate.now().plusDays(14), LocalDate.now().plusDays(45)
+        );
+
+        // Guardar clases
+        clase1 = repositorioClase.save(clase1);
+        clase2 = repositorioClase.save(clase2);
+    }
+
     @Test
+    @DisplayName("testBasicCRUDOperations debe realizar operaciones CRUD básicas")
     public void testBasicCRUDOperations() {
         // Create test exercise
         Ejercicio ejercicio = new Ejercicio(
@@ -33,6 +75,7 @@ public class RepositorioEjercicioTest {
             LocalDateTime.now().plusDays(7),
             "1"
         );
+        ejercicio.setClase(clase1);
         
         // Save exercise
         Ejercicio saved = repositorioEjercicio.save(ejercicio);
@@ -40,6 +83,7 @@ public class RepositorioEjercicioTest {
         assertEquals("Test Exercise", saved.getName());
         assertEquals("Test Statement", saved.getStatement());
         assertEquals("1", saved.getClassId());
+        assertEquals(clase1.getId(), saved.getClase().getId());
         
         // Find by ID
         Optional<Ejercicio> found = repositorioEjercicio.findById(saved.getId());
@@ -78,6 +122,7 @@ public class RepositorioEjercicioTest {
     }
 
     @Test
+    @DisplayName("testFlexibleFilteringQuery debe probar consultas de filtrado flexible")
     public void testFlexibleFilteringQuery() {
         // Create test exercise
         Ejercicio ejercicio = new Ejercicio(
@@ -87,6 +132,7 @@ public class RepositorioEjercicioTest {
             LocalDateTime.now().plusDays(7),
             "1"
         );
+        ejercicio.setClase(clase1);
         
         // Save exercise
         Ejercicio saved = repositorioEjercicio.save(ejercicio);
@@ -100,6 +146,7 @@ public class RepositorioEjercicioTest {
     }
 
     @Test
+    @DisplayName("testDateRangeQueries debe probar consultas por rango de fechas")
     public void testDateRangeQueries() {
         // Create test exercises with different dates
         LocalDateTime now = LocalDateTime.now();
@@ -111,6 +158,7 @@ public class RepositorioEjercicioTest {
             now.minusDays(5),
             "1"
         );
+        pastExercise.setClase(clase1);
         
         Ejercicio currentExercise = new Ejercicio(
             "Current Exercise",
@@ -119,6 +167,7 @@ public class RepositorioEjercicioTest {
             now.plusDays(5),
             "1"
         );
+        currentExercise.setClase(clase1);
         
         Ejercicio futureExercise = new Ejercicio(
             "Future Exercise",
@@ -127,6 +176,7 @@ public class RepositorioEjercicioTest {
             now.plusDays(10),
             "1"
         );
+        futureExercise.setClase(clase2);
         
         repositorioEjercicio.save(pastExercise);
         repositorioEjercicio.save(currentExercise);
@@ -145,6 +195,7 @@ public class RepositorioEjercicioTest {
     }
 
     @Test
+    @DisplayName("testPagination debe probar paginación")
     public void testPagination() {
         // Create multiple exercises
         for (int i = 1; i <= 15; i++) {
@@ -155,6 +206,7 @@ public class RepositorioEjercicioTest {
                 LocalDateTime.now().plusDays(7),
                 "1"
             );
+            ejercicio.setClase(clase1);
             repositorioEjercicio.save(ejercicio);
         }
         
@@ -165,5 +217,40 @@ public class RepositorioEjercicioTest {
         
         Page<Ejercicio> secondPage = repositorioEjercicio.findAll(PageRequest.of(1, 10));
         assertTrue(secondPage.getContent().size() > 0);
+    }
+
+    @Test
+    @DisplayName("testFindByClaseId debe probar búsqueda por clase usando JPA relationships")
+    public void testFindByClaseId() {
+        // Create exercises for different classes
+        Ejercicio ejercicio1 = new Ejercicio(
+            "Exercise 1",
+            "Statement 1",
+            LocalDateTime.now(),
+            LocalDateTime.now().plusDays(7),
+            "1"
+        );
+        ejercicio1.setClase(clase1);
+        
+        Ejercicio ejercicio2 = new Ejercicio(
+            "Exercise 2",
+            "Statement 2",
+            LocalDateTime.now(),
+            LocalDateTime.now().plusDays(7),
+            "2"
+        );
+        ejercicio2.setClase(clase2);
+        
+        repositorioEjercicio.save(ejercicio1);
+        repositorioEjercicio.save(ejercicio2);
+        
+        // Test finding exercises by class using JPA relationship
+        List<Ejercicio> ejerciciosClase1 = repositorioEjercicio.findByClaseId(clase1.getId());
+        assertEquals(1, ejerciciosClase1.size());
+        assertEquals("Exercise 1", ejerciciosClase1.get(0).getName());
+        
+        List<Ejercicio> ejerciciosClase2 = repositorioEjercicio.findByClaseId(clase2.getId());
+        assertEquals(1, ejerciciosClase2.size());
+        assertEquals("Exercise 2", ejerciciosClase2.get(0).getName());
     }
 }

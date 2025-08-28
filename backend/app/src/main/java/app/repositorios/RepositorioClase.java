@@ -159,31 +159,31 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @param alumnoId ID del alumno
      * @return Lista de clases
      */
-    @Query("SELECT c FROM Clase c WHERE :alumnoId MEMBER OF c.studentIds")
-    List<Clase> findByAlumnoId(@Param("alumnoId") String alumnoId);
+    @Query("SELECT c FROM Clase c JOIN c.students s WHERE s.id = :alumnoId")
+    List<Clase> findByAlumnoId(@Param("alumnoId") Long alumnoId);
     
     /**
      * Busca clases que tienen un profesor específico asignado
      * @param profesorId ID del profesor
      * @return Lista de clases
      */
-    @Query("SELECT c FROM Clase c WHERE :profesorId MEMBER OF c.teacherIds")
-    List<Clase> findByProfesorId(@Param("profesorId") String profesorId);
+    @Query("SELECT c FROM Clase c JOIN c.teachers t WHERE t.id = :profesorId")
+    List<Clase> findByProfesorId(@Param("profesorId") Long profesorId);
     
     /**
      * Busca clases que tienen un ejercicio específico
      * @param ejercicioId ID del ejercicio
      * @return Lista de clases
      */
-    @Query("SELECT c FROM Clase c WHERE :ejercicioId MEMBER OF c.exerciseIds")
-    List<Clase> findByEjercicioId(@Param("ejercicioId") String ejercicioId);
+    @Query("SELECT c FROM Clase c JOIN c.exercises e WHERE e.id = :ejercicioId")
+    List<Clase> findByEjercicioId(@Param("ejercicioId") Long ejercicioId);
     
     /**
      * Cuenta el número de alumnos inscritos en una clase
      * @param claseId ID de la clase
      * @return Número de alumnos
      */
-    @Query("SELECT SIZE(c.studentIds) FROM Clase c WHERE c.id = :claseId")
+    @Query("SELECT COUNT(s) FROM Clase c JOIN c.students s WHERE c.id = :claseId")
     Integer countAlumnosByClaseId(@Param("claseId") Long claseId);
     
     /**
@@ -191,20 +191,42 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @param claseId ID de la clase
      * @return Número de profesores
      */
-    @Query("SELECT SIZE(c.teacherIds) FROM Clase c WHERE c.id = :claseId")
+    @Query("SELECT COUNT(t) FROM Clase c JOIN c.teachers t WHERE c.id = :claseId")
     Integer countProfesoresByClaseId(@Param("claseId") Long claseId);
     
     /**
      * Busca clases que no tienen alumnos inscritos
      * @return Lista de clases sin alumnos
      */
-    @Query("SELECT c FROM Clase c WHERE SIZE(c.studentIds) = 0")
+    @Query("SELECT c FROM Clase c WHERE SIZE(c.students) = 0")
     List<Clase> findClasesSinAlumnos();
     
     /**
      * Busca clases que no tienen profesores asignados
      * @return Lista de clases sin profesores
      */
-    @Query("SELECT c FROM Clase c WHERE SIZE(c.teacherIds) = 0")
+    @Query("SELECT c FROM Clase c WHERE SIZE(c.teachers) = 0")
     List<Clase> findClasesSinProfesores();
+
+    /**
+     * Busca una clase por ID con todas sus relaciones cargadas
+     * @param claseId ID de la clase
+     * @return Optional<Clase> con relaciones cargadas
+     */
+    @Query("SELECT DISTINCT c FROM Clase c " +
+           "LEFT JOIN FETCH c.students " +
+           "LEFT JOIN FETCH c.teachers " +
+           "LEFT JOIN FETCH c.exercises " +
+           "WHERE c.id = :claseId")
+    Optional<Clase> findByIdWithRelationships(@Param("claseId") Long claseId);
+
+    /**
+     * Busca todas las clases con sus relaciones cargadas
+     * @return Lista de clases con relaciones cargadas
+     */
+    @Query("SELECT DISTINCT c FROM Clase c " +
+           "LEFT JOIN FETCH c.students " +
+           "LEFT JOIN FETCH c.teachers " +
+           "LEFT JOIN FETCH c.exercises")
+    List<Clase> findAllWithRelationships();
 }

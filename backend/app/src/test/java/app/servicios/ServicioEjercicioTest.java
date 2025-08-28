@@ -107,7 +107,11 @@ class ServicioEjercicioTest {
         when(repositorioEjercicio.findByName(exerciseName)).thenReturn(Optional.empty());
         when(repositorioEjercicio.save(any(Ejercicio.class))).thenReturn(testEjercicio);
         when(repositorioClase.findById(1L)).thenReturn(Optional.of(testClase));
-        when(repositorioClase.save(any(Clase.class))).thenReturn(testClase);
+        when(repositorioClase.save(any(Clase.class))).thenAnswer(invocation -> {
+            Clase savedClase = invocation.getArgument(0);
+            savedClase.agregarEjercicio(testEjercicio);
+            return savedClase;
+        });
         
         // Act
         DTOEjercicio result = servicioEjercicio.crearEjercicio(
@@ -125,7 +129,7 @@ class ServicioEjercicioTest {
         verify(repositorioClase).save(any(Clase.class));
         
         // Verify that agregarEjercicio was called on the class
-        assertTrue(testClase.getExerciseIds().contains("1"));
+        assertTrue(testClase.getExercises().contains(testEjercicio));
     }
 
     @Test
@@ -134,14 +138,18 @@ class ServicioEjercicioTest {
         // Arrange
         Long exerciseId = 1L;
         
-        // Add exercise to class's list
-        testClase.agregarEjercicio("1");
-        assertTrue(testClase.getExerciseIds().contains("1"));
+        // Add exercise to class's list using JPA relationship
+        testClase.agregarEjercicio(testEjercicio);
+        assertTrue(testClase.getExercises().contains(testEjercicio));
         
         // Mock repository responses
         when(repositorioEjercicio.findById(exerciseId)).thenReturn(Optional.of(testEjercicio));
         when(repositorioClase.findById(1L)).thenReturn(Optional.of(testClase));
-        when(repositorioClase.save(any(Clase.class))).thenReturn(testClase);
+        when(repositorioClase.save(any(Clase.class))).thenAnswer(invocation -> {
+            Clase savedClase = invocation.getArgument(0);
+            savedClase.removerEjercicio(testEjercicio);
+            return savedClase;
+        });
         
         // Act
         boolean result = servicioEjercicio.borrarEjercicioPorId(exerciseId);
@@ -154,7 +162,7 @@ class ServicioEjercicioTest {
         verify(repositorioClase).save(any(Clase.class));
         
         // Verify that removerEjercicio was called on the class
-        assertFalse(testClase.getExerciseIds().contains("1"));
+        assertFalse(testClase.getExercises().contains(testEjercicio));
     }
 
     @Test
