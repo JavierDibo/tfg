@@ -16,9 +16,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Entidad Alumno
- * Representa a un alumno en la plataforma
- * Basado en el UML de especificación
+ * Student Entity
+ * Represents a student in the platform
+ * Based on UML specification
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -27,28 +27,28 @@ import lombok.EqualsAndHashCode;
 public class Alumno extends Usuario {
     
     @NotNull
-    @Column(name = "fecha_inscripcion")
+    @Column(name = "enrollment_date")
     private LocalDateTime enrollDate = LocalDateTime.now();
     
     @NotNull
     private boolean enrolled = false;
     
-    // Lista de clases a las que está inscrito el alumno
+    // List of classes the student is enrolled in
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "alumno_clases", joinColumns = @JoinColumn(name = "alumno_id"))
-    @Column(name = "clase_id")
+    @CollectionTable(name = "student_classes", joinColumns = @JoinColumn(name = "student_id"))
+    @Column(name = "class_id")
     private List<String> classIds = new ArrayList<>();
     
-    // Lista de pagos realizados por el alumno
+    // List of payments made by the student
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "alumno_pagos", joinColumns = @JoinColumn(name = "alumno_id"))
-    @Column(name = "pago_id")
+    @CollectionTable(name = "student_payments", joinColumns = @JoinColumn(name = "student_id"))
+    @Column(name = "payment_id")
     private List<String> paymentIds = new ArrayList<>();
     
-    // Lista de entregas de ejercicios del alumno
+    // List of exercise submissions by the student
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "alumno_entregas", joinColumns = @JoinColumn(name = "alumno_id"))
-    @Column(name = "entrega_id")
+    @CollectionTable(name = "student_submissions", joinColumns = @JoinColumn(name = "student_id"))
+    @Column(name = "submission_id")
     private List<String> submissionIds = new ArrayList<>();
     
     public Alumno() {
@@ -63,83 +63,84 @@ public class Alumno extends Usuario {
     }
     
     /**
-     * metodo para resetear password según UML
-     * TODO: Implementar lógica de reseteo por email
+     * Method to reset password according to UML
+     * TODO: Implement email-based reset logic
      */
-    public void resetearpassword() {
-        // TODO: Implementar según especificaciones del proyecto
-        throw new UnsupportedOperationException("metodo resetearpassword por implementar");
+    public void resetPassword() {
+        // TODO: Implement according to project specifications
+        throw new UnsupportedOperationException("resetPassword method not implemented");
     }
     
     /**
-     * Agrega una clase al alumno
-     * @param classId ID de la clase
+     * Adds a class to the student
+     * @param classId ID of the class
      */
-    public void agregarClase(String classId) {
+    public void addClass(String classId) {
         if (!this.classIds.contains(classId)) {
             this.classIds.add(classId);
         }
     }
     
     /**
-     * Remueve una clase del alumno
-     * @param classId ID de la clase
+     * Removes a class from the student
+     * @param classId ID of the class
      */
-    public void removerClase(String classId) {
+    public void removeClass(String classId) {
         this.classIds.remove(classId);
     }
     
     /**
-     * Agrega un pago al alumno
-     * @param paymentId ID del pago
+     * Adds a payment to the student
+     * @param paymentId ID of the payment
      */
-    public void agregarPago(String paymentId) {
+    public void addPayment(String paymentId) {
         if (!this.paymentIds.contains(paymentId)) {
             this.paymentIds.add(paymentId);
         }
     }
     
     /**
-     * Remueve un pago del alumno
-     * @param paymentId ID del pago
+     * Removes a payment from the student
+     * @param paymentId ID of the payment
      */
-    public void removerPago(String paymentId) {
+    public void removePayment(String paymentId) {
         this.paymentIds.remove(paymentId);
     }
     
     /**
-     * Agrega una entrega de ejercicio al alumno
-     * @param submissionId ID de la entrega
+     * Adds an exercise submission to the student
+     * @param submissionId ID of the submission
      */
-    public void agregarEntrega(String submissionId) {
+    public void addSubmission(String submissionId) {
         if (!this.submissionIds.contains(submissionId)) {
             this.submissionIds.add(submissionId);
         }
     }
     
     /**
-     * Remueve una entrega de ejercicio del alumno
-     * @param submissionId ID de la entrega
+     * Removes an exercise submission from the student
+     * @param submissionId ID of the submission
      */
-    public void removerEntrega(String submissionId) {
+    public void removeSubmission(String submissionId) {
         this.submissionIds.remove(submissionId);
     }
     
     /**
-     * Verifica si el alumno está inscrito en una clase específica
-     * @param classId ID de la clase
-     * @return true si está inscrito, false en caso contrario
+     * Checks if the student is enrolled in a specific class
+     * @param classId ID of the class
+     * @return true if enrolled, false otherwise
      */
-    public boolean estaInscritoEnClase(String classId) {
+    public boolean isEnrolledInClass(String classId) {
         return this.classIds.contains(classId);
     }
     
     /**
-     * Verifica si el alumno tiene una entrega específica
-     * @param submissionId ID de la entrega
-     * @return true si tiene la entrega, false en caso contrario
+     * Checks if the student has a specific submission
+     * @param submissionId ID of the submission
+     * @return true if has the submission, false otherwise
      */
-    public boolean tieneEntrega(String submissionId) {
+    public boolean hasSubmission(String submissionId) {
         return this.submissionIds.contains(submissionId);
     }
+    
 }

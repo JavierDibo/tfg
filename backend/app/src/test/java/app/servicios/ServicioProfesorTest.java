@@ -88,15 +88,15 @@ class ServicioProfesorTest {
         dtoProfesor1 = new DTOProfesor(profesor1.getId(), profesor1.getUsername(), profesor1.getFirstName(),
                                       profesor1.getLastName(), profesor1.getDni(), profesor1.getEmail(),
                                       profesor1.getPhoneNumber(), profesor1.getRole(), profesor1.isEnabled(),
-                                      profesor1.getClasesId(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
+                                      profesor1.getClassIds(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
         dtoProfesor2 = new DTOProfesor(profesor2.getId(), profesor2.getUsername(), profesor2.getFirstName(),
                                       profesor2.getLastName(), profesor2.getDni(), profesor2.getEmail(),
                                       profesor2.getPhoneNumber(), profesor2.getRole(), profesor2.isEnabled(),
-                                      profesor2.getClasesId(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
+                                      profesor2.getClassIds(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
         dtoProfesor3 = new DTOProfesor(profesor3.getId(), profesor3.getUsername(), profesor3.getFirstName(),
                                       profesor3.getLastName(), profesor3.getDni(), profesor3.getEmail(),
                                       profesor3.getPhoneNumber(), profesor3.getRole(), profesor3.isEnabled(),
-                                      profesor3.getClasesId(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
+                                      profesor3.getClassIds(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
     }
 
     @Test

@@ -12,49 +12,109 @@ import org.springframework.stereotype.Repository;
 
 import app.entidades.Alumno;
 
+/**
+ * Repositorio para la entidad Alumno
+ * Proporciona operaciones de acceso a datos para alumnos
+ */
 @Repository
 public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
     
-    Optional<Alumno> findByUsername(String username);
+    /**
+     * Busca un alumno por su nombre de usuario
+     * @param username Nombre de usuario
+     * @return Optional<Alumno>
+     */
+    @Query("SELECT a FROM Alumno a WHERE a.username = :username")
+    Optional<Alumno> findByUsername(@Param("username") String username);
     
-    Optional<Alumno> findByEmail(String email);
+    /**
+     * Busca un alumno por su email
+     * @param email Email del alumno
+     * @return Optional<Alumno>
+     */
+    @Query("SELECT a FROM Alumno a WHERE a.email = :email")
+    Optional<Alumno> findByEmail(@Param("email") String email);
     
-    Optional<Alumno> findByDni(String dni);
+    /**
+     * Busca un alumno por su DNI
+     * @param dni DNI del alumno
+     * @return Optional<Alumno>
+     */
+    @Query("SELECT a FROM Alumno a WHERE a.dni = :dni")
+    Optional<Alumno> findByDni(@Param("dni") String dni);
     
-    boolean existsByUsername(String username);
+    /**
+     * Verifica si existe un alumno con el nombre de usuario dado
+     * @param username Nombre de usuario
+     * @return true si existe, false en caso contrario
+     */
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Alumno a WHERE a.username = :username")
+    boolean existsByUsername(@Param("username") String username);
     
-    boolean existsByEmail(String email);
+    /**
+     * Verifica si existe un alumno con el email dado
+     * @param email Email
+     * @return true si existe, false en caso contrario
+     */
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Alumno a WHERE a.email = :email")
+    boolean existsByEmail(@Param("email") String email);
     
-    boolean existsByDni(String dni);
+    /**
+     * Verifica si existe un alumno con el DNI dado
+     * @param dni DNI
+     * @return true si existe, false en caso contrario
+     */
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Alumno a WHERE a.dni = :dni")
+    boolean existsByDni(@Param("dni") String dni);
     
-    @Query(value = "SELECT * FROM usuarios a WHERE normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%' AND a.tipo_usuario = 'ALUMNO' ORDER BY a.id", nativeQuery = true)
+    /**
+     * Busca alumnos por nombre (contiene, ignorando mayúsculas)
+     * @param nombre Nombre a buscar
+     * @return Lista de alumnos
+     */
+    @Query("SELECT a FROM Alumno a WHERE UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%')) ORDER BY a.id")
     List<Alumno> findByNombreContainingIgnoreCase(@Param("nombre") String nombre);
     
-    @Query(value = "SELECT * FROM usuarios a WHERE normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%' AND a.tipo_usuario = 'ALUMNO' ORDER BY a.id", nativeQuery = true)
+    /**
+     * Busca alumnos por apellidos (contiene, ignorando mayúsculas)
+     * @param apellidos Apellidos a buscar
+     * @return Lista de alumnos
+     */
+    @Query("SELECT a FROM Alumno a WHERE UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%')) ORDER BY a.id")
     List<Alumno> findByApellidosContainingIgnoreCase(@Param("apellidos") String apellidos);
     
+    /**
+     * Cuenta alumnos por estado de matriculación
+     * @param matriculado Estado de matriculación
+     * @return Número de alumnos
+     */
     @Query("SELECT COUNT(a) FROM Alumno a WHERE a.enrolled = :matriculado")
     long countByMatriculado(@Param("matriculado") boolean matriculado);
     
-    // metodos con paginación
+    /**
+     * Obtiene todos los alumnos con paginación
+     * @param pageable Configuración de paginación
+     * @return Página de alumnos
+     */
     @Query("SELECT a FROM Alumno a")
     Page<Alumno> findAllPaged(Pageable pageable);
     
-    @Query(value = "SELECT * FROM usuarios a WHERE " +
-           "(:nombre IS NULL OR normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:apellidos IS NULL OR normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%') AND " +
-           "(:dni IS NULL OR LOWER(a.dni) LIKE '%' || LOWER(:dni) || '%') AND " +
-           "(:email IS NULL OR LOWER(a.email) LIKE '%' || LOWER(:email) || '%') AND " +
-           "(:matriculado IS NULL OR a.matriculado = :matriculado) AND " +
-           "a.tipo_usuario = 'ALUMNO'",
-           countQuery = "SELECT COUNT(*) FROM usuarios a WHERE " +
-           "(:nombre IS NULL OR normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:apellidos IS NULL OR normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%') AND " +
-           "(:dni IS NULL OR LOWER(a.dni) LIKE '%' || LOWER(:dni) || '%') AND " +
-           "(:email IS NULL OR LOWER(a.email) LIKE '%' || LOWER(:email) || '%') AND " +
-           "(:matriculado IS NULL OR a.matriculado = :matriculado) AND " +
-           "a.tipo_usuario = 'ALUMNO'",
-           nativeQuery = true)
+    /**
+     * Busca alumnos por múltiples filtros con paginación
+     * @param nombre Filtro por nombre
+     * @param apellidos Filtro por apellidos
+     * @param dni Filtro por DNI
+     * @param email Filtro por email
+     * @param matriculado Filtro por estado de matriculación
+     * @param pageable Configuración de paginación
+     * @return Página de alumnos
+     */
+    @Query("SELECT a FROM Alumno a WHERE " +
+           "(:nombre IS NULL OR UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
+           "(:apellidos IS NULL OR UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))) AND " +
+           "(:dni IS NULL OR LOWER(a.dni) LIKE LOWER(CONCAT('%', :dni, '%'))) AND " +
+           "(:email IS NULL OR LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
+           "(:matriculado IS NULL OR a.enrolled = :matriculado)")
     Page<Alumno> findByFiltrosPaged(
         @Param("nombre") String nombre,
         @Param("apellidos") String apellidos,
@@ -64,58 +124,51 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
         Pageable pageable
     );
     
+    /**
+     * Busca alumnos por estado de matriculación con paginación
+     * @param matriculado Estado de matriculación
+     * @param pageable Configuración de paginación
+     * @return Página de alumnos
+     */
     @Query("SELECT a FROM Alumno a WHERE a.enrolled = :matriculado")
     Page<Alumno> findByMatriculadoPaged(@Param("matriculado") boolean matriculado, Pageable pageable);
     
-    // NEW: General search methods for "q" parameter
-    
     /**
-     * General search across multiple fields using the "q" parameter
-     * Searches in nombre, apellidos, dni, and email fields
+     * Búsqueda general en múltiples campos usando el parámetro "q"
+     * Busca en nombre, apellidos, DNI y email
+     * @param searchTerm Término de búsqueda
+     * @param pageable Configuración de paginación
+     * @return Página de alumnos
      */
-    @Query(value = "SELECT * FROM usuarios a WHERE " +
-           "(normalize_text(a.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(a.apellidos) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "LOWER(a.dni) LIKE '%' || LOWER(:searchTerm) || '%' OR " +
-           "LOWER(a.email) LIKE '%' || LOWER(:searchTerm) || '%') AND " +
-           "a.tipo_usuario = 'ALUMNO'",
-           countQuery = "SELECT COUNT(*) FROM usuarios a WHERE " +
-           "(normalize_text(a.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(a.apellidos) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "LOWER(a.dni) LIKE '%' || LOWER(:searchTerm) || '%' OR " +
-           "LOWER(a.email) LIKE '%' || LOWER(:searchTerm) || '%') AND " +
-           "a.tipo_usuario = 'ALUMNO'",
-           nativeQuery = true)
+    @Query("SELECT a FROM Alumno a WHERE " +
+           "UPPER(a.firstName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(a.lastName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(a.dni) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(a.email) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     Page<Alumno> findByGeneralSearch(@Param("searchTerm") String searchTerm, Pageable pageable);
     
     /**
-     * Combined search with general term and specific filters
+     * Búsqueda combinada con término general y filtros específicos
+     * @param searchTerm Término de búsqueda general
+     * @param nombre Filtro por nombre
+     * @param apellidos Filtro por apellidos
+     * @param dni Filtro por DNI
+     * @param email Filtro por email
+     * @param matriculado Filtro por estado de matriculación
+     * @param pageable Configuración de paginación
+     * @return Página de alumnos
      */
-    @Query(value = "SELECT * FROM usuarios a WHERE " +
+    @Query("SELECT a FROM Alumno a WHERE " +
            "(:searchTerm IS NULL OR (" +
-           "normalize_text(a.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(a.apellidos) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "LOWER(a.dni) LIKE '%' || LOWER(:searchTerm) || '%' OR " +
-           "LOWER(a.email) LIKE '%' || LOWER(:searchTerm) || '%')) AND " +
-           "(:nombre IS NULL OR normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:apellidos IS NULL OR normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%') AND " +
-           "(:dni IS NULL OR LOWER(a.dni) LIKE '%' || LOWER(:dni) || '%') AND " +
-           "(:email IS NULL OR LOWER(a.email) LIKE '%' || LOWER(:email) || '%') AND " +
-           "(:matriculado IS NULL OR a.matriculado = :matriculado) AND " +
-           "a.tipo_usuario = 'ALUMNO'",
-           countQuery = "SELECT COUNT(*) FROM usuarios a WHERE " +
-           "(:searchTerm IS NULL OR (" +
-           "normalize_text(a.nombre) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(a.apellidos) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "LOWER(a.dni) LIKE '%' || LOWER(:searchTerm) || '%' OR " +
-           "LOWER(a.email) LIKE '%' || LOWER(:searchTerm) || '%')) AND " +
-           "(:nombre IS NULL OR normalize_text(a.nombre) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:apellidos IS NULL OR normalize_text(a.apellidos) LIKE '%' || normalize_text(:apellidos) || '%') AND " +
-           "(:dni IS NULL OR LOWER(a.dni) LIKE '%' || LOWER(:dni) || '%') AND " +
-           "(:email IS NULL OR LOWER(a.email) LIKE '%' || LOWER(:email) || '%') AND " +
-           "(:matriculado IS NULL OR a.matriculado = :matriculado) AND " +
-           "a.tipo_usuario = 'ALUMNO'",
-           nativeQuery = true)
+           "UPPER(a.firstName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(a.lastName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(a.dni) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(a.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')))) AND " +
+           "(:nombre IS NULL OR UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
+           "(:apellidos IS NULL OR UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))) AND " +
+           "(:dni IS NULL OR LOWER(a.dni) LIKE LOWER(CONCAT('%', :dni, '%'))) AND " +
+           "(:email IS NULL OR LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
+           "(:matriculado IS NULL OR a.enrolled = :matriculado)")
     Page<Alumno> findByGeneralAndSpecificFilters(
         @Param("searchTerm") String searchTerm,
         @Param("nombre") String nombre,

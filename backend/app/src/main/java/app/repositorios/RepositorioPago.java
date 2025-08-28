@@ -28,14 +28,16 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @param metodoPago metodo de pago
      * @return Lista de pagos
      */
-    List<Pago> findByMetodoPago(EMetodoPago metodoPago);
+    @Query("SELECT p FROM Pago p WHERE p.metodoPago = :metodoPago")
+    List<Pago> findByMetodoPago(@Param("metodoPago") EMetodoPago metodoPago);
     
     /**
      * Busca pagos por estado
      * @param estado Estado del pago
      * @return Lista de pagos
      */
-    List<Pago> findByEstado(EEstadoPago estado);
+    @Query("SELECT p FROM Pago p WHERE p.estado = :estado")
+    List<Pago> findByEstado(@Param("estado") EEstadoPago estado);
     
     /**
      * Busca pagos por rango de fechas
@@ -43,7 +45,8 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @param fechaFin Fecha de fin
      * @return Lista de pagos
      */
-    List<Pago> findByFechaPagoBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+    @Query("SELECT p FROM Pago p WHERE p.fechaPago BETWEEN :fechaInicio AND :fechaFin")
+    List<Pago> findByFechaPagoBetween(@Param("fechaInicio") LocalDateTime fechaInicio, @Param("fechaFin") LocalDateTime fechaFin);
     
     /**
      * Busca pagos por rango de importe
@@ -51,21 +54,24 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @param importeMax Importe máximo
      * @return Lista de pagos
      */
-    List<Pago> findByImporteBetween(BigDecimal importeMin, BigDecimal importeMax);
+    @Query("SELECT p FROM Pago p WHERE p.importe BETWEEN :importeMin AND :importeMax")
+    List<Pago> findByImporteBetween(@Param("importeMin") BigDecimal importeMin, @Param("importeMax") BigDecimal importeMax);
     
     /**
      * Busca pagos que tienen factura creada
      * @param facturaCreada true para buscar con factura, false para sin factura
      * @return Lista de pagos
      */
-    List<Pago> findByFacturaCreada(Boolean facturaCreada);
+    @Query("SELECT p FROM Pago p WHERE p.facturaCreada = :facturaCreada")
+    List<Pago> findByFacturaCreada(@Param("facturaCreada") Boolean facturaCreada);
     
     /**
      * Busca un pago por su Stripe Payment Intent ID
      * @param stripePaymentIntentId ID del payment intent de Stripe
      * @return Optional del pago encontrado
      */
-    Optional<Pago> findByStripePaymentIntentId(String stripePaymentIntentId);
+    @Query("SELECT p FROM Pago p WHERE p.stripePaymentIntentId = :stripePaymentIntentId")
+    Optional<Pago> findByStripePaymentIntentId(@Param("stripePaymentIntentId") String stripePaymentIntentId);
     
     /**
      * Obtiene todos los pagos ordenados por ID
@@ -136,7 +142,8 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @return Lista de pagos con items cargados
      */
     @EntityGraph(value = "Pago.withItems")
-    List<Pago> findByAlumnoId(String alumnoId);
+    @Query("SELECT p FROM Pago p WHERE p.alumnoId = :alumnoId")
+    List<Pago> findByAlumnoId(@Param("alumnoId") String alumnoId);
     
     /**
      * Obtiene todos los pagos ordenados por fecha descendente con items cargados

@@ -79,18 +79,23 @@ class AlumnoTest {
     }
 
     @Test
-    @DisplayName("Método resetearpassword debe lanzar UnsupportedOperationException")
-    void testResetearPassword() {
+    @DisplayName("Método resetPassword debe lanzar UnsupportedOperationException")
+    void testResetPassword() {
         assertThrows(UnsupportedOperationException.class, () -> {
-            alumno.resetearpassword();
+            alumno.resetPassword();
         });
     }
 
     @Test
     @DisplayName("Equals y hashCode deben funcionar correctamente")
     void testEqualsYHashCode() {
+        LocalDateTime fixedDate = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        
         Alumno alumno1 = new Alumno(USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO);
+        alumno1.setEnrollDate(fixedDate);
+        
         Alumno alumno2 = new Alumno(USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO);
+        alumno2.setEnrollDate(fixedDate);
         
         // Los objetos deben ser iguales si tienen los mismos valores
         assertEquals(alumno1, alumno2);

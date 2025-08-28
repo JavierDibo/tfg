@@ -20,9 +20,9 @@ public class Administrador extends Usuario {
         this.setRole(Role.ADMIN);
     }
     
-    public Administrador(String usuario, String password, String nombre, String apellidos, 
-                        String dni, String email, String numeroTelefono) {
-        super(usuario, password, nombre, apellidos, dni, email, numeroTelefono);
+    public Administrador(String username, String password, String firstName, String lastName, 
+                        String dni, String email, String phoneNumber) {
+        super(username, password, firstName, lastName, dni, email, phoneNumber);
         this.setRole(Role.ADMIN);
     }
     

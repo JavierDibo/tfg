@@ -24,14 +24,16 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param nombre Nombre del ejercicio
      * @return Optional<Ejercicio>
      */
-    Optional<Ejercicio> findByName(String nombre);
+    @Query("SELECT e FROM Ejercicio e WHERE e.name = :nombre")
+    Optional<Ejercicio> findByName(@Param("nombre") String nombre);
     
     /**
      * Busca ejercicios por nombre (contiene, ignorando mayúsculas)
      * @param nombre Nombre a buscar
      * @return Lista de ejercicios
      */
-    List<Ejercicio> findByNameContainingIgnoreCase(String nombre);
+    @Query("SELECT e FROM Ejercicio e WHERE UPPER(e.name) LIKE UPPER(CONCAT('%', :nombre, '%'))")
+    List<Ejercicio> findByNameContainingIgnoreCase(@Param("nombre") String nombre);
     
     /**
      * Busca ejercicios por nombre (contiene, ignorando mayúsculas) con paginación
@@ -39,14 +41,16 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param pageable Parámetros de paginación
      * @return Página de ejercicios
      */
-    Page<Ejercicio> findByNameContainingIgnoreCase(String nombre, Pageable pageable);
+    @Query("SELECT e FROM Ejercicio e WHERE UPPER(e.name) LIKE UPPER(CONCAT('%', :nombre, '%'))")
+    Page<Ejercicio> findByNameContainingIgnoreCase(@Param("nombre") String nombre, Pageable pageable);
     
     /**
      * Busca ejercicios por enunciado (contiene, ignorando mayúsculas)
      * @param enunciado Enunciado a buscar
      * @return Lista de ejercicios
      */
-    List<Ejercicio> findByStatementContainingIgnoreCase(String enunciado);
+    @Query("SELECT e FROM Ejercicio e WHERE UPPER(e.statement) LIKE UPPER(CONCAT('%', :enunciado, '%'))")
+    List<Ejercicio> findByStatementContainingIgnoreCase(@Param("enunciado") String enunciado);
     
     /**
      * Busca ejercicios por enunciado (contiene, ignorando mayúsculas) con paginación
@@ -54,7 +58,8 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param pageable Parámetros de paginación
      * @return Página de ejercicios
      */
-    Page<Ejercicio> findByStatementContainingIgnoreCase(String enunciado, Pageable pageable);
+    @Query("SELECT e FROM Ejercicio e WHERE UPPER(e.statement) LIKE UPPER(CONCAT('%', :enunciado, '%'))")
+    Page<Ejercicio> findByStatementContainingIgnoreCase(@Param("enunciado") String enunciado, Pageable pageable);
     
     /**
      * Busca ejercicios por nombre o enunciado (contiene, ignorando mayúsculas) con paginación
@@ -63,14 +68,22 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param pageable Parámetros de paginación
      * @return Página de ejercicios
      */
-    Page<Ejercicio> findByNameContainingIgnoreCaseOrStatementContainingIgnoreCase(String nombre, String enunciado, Pageable pageable);
+    @Query("SELECT e FROM Ejercicio e WHERE " +
+           "UPPER(e.name) LIKE UPPER(CONCAT('%', :nombre, '%')) OR " +
+           "UPPER(e.statement) LIKE UPPER(CONCAT('%', :enunciado, '%'))")
+    Page<Ejercicio> findByNameContainingIgnoreCaseOrStatementContainingIgnoreCase(
+        @Param("nombre") String nombre, 
+        @Param("enunciado") String enunciado, 
+        Pageable pageable
+    );
     
     /**
      * Busca ejercicios por ID de clase
      * @param claseId ID de la clase
      * @return Lista de ejercicios de la clase
      */
-    List<Ejercicio> findByClassId(String claseId);
+    @Query("SELECT e FROM Ejercicio e WHERE e.classId = :claseId")
+    List<Ejercicio> findByClassId(@Param("claseId") String claseId);
     
     /**
      * Busca ejercicios por ID de clase con paginación
@@ -78,35 +91,31 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param pageable Parámetros de paginación
      * @return Página de ejercicios
      */
-    Page<Ejercicio> findByClassId(String claseId, Pageable pageable);
+    @Query("SELECT e FROM Ejercicio e WHERE e.classId = :claseId")
+    Page<Ejercicio> findByClassId(@Param("claseId") String claseId, Pageable pageable);
     
     /**
      * Búsqueda flexible de ejercicios con múltiples filtros opcionales
      * Permite combinar filtros de nombre, enunciado, clase, estado y fechas
+     * @param nombre Filtro por nombre
+     * @param enunciado Filtro por enunciado
+     * @param classId Filtro por ID de clase
+     * @param status Filtro por estado
+     * @param now Fecha actual para cálculos de estado
+     * @param pageable Configuración de paginación
+     * @return Página de ejercicios
      */
-    @Query(value = "SELECT * FROM ejercicios e WHERE " +
-           "(:nombre IS NULL OR normalize_text(e.name) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:enunciado IS NULL OR normalize_text(e.statement) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
-           "(:classId IS NULL OR e.class_id = :classId) AND " +
+    @Query("SELECT e FROM Ejercicio e WHERE " +
+           "(:nombre IS NULL OR UPPER(e.name) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
+           "(:enunciado IS NULL OR UPPER(e.statement) LIKE UPPER(CONCAT('%', :enunciado, '%'))) AND " +
+           "(:classId IS NULL OR e.classId = :classId) AND " +
            "(:status IS NULL OR (" +
-           "  CASE WHEN :status = 'ACTIVE' THEN e.end_date > :now " +
-           "       WHEN :status = 'EXPIRED' THEN e.end_date <= :now " +
-           "       WHEN :status = 'FUTURE' THEN e.start_date > :now " +
-           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
-           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
-           "       ELSE TRUE END))",
-           countQuery = "SELECT COUNT(*) FROM ejercicios e WHERE " +
-           "(:nombre IS NULL OR normalize_text(e.name) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:enunciado IS NULL OR normalize_text(e.statement) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
-           "(:classId IS NULL OR e.class_id = :classId) AND " +
-           "(:status IS NULL OR (" +
-           "  CASE WHEN :status = 'ACTIVE' THEN e.end_date > :now " +
-           "       WHEN :status = 'EXPIRED' THEN e.end_date <= :now " +
-           "       WHEN :status = 'FUTURE' THEN e.start_date > :now " +
-           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
-           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
-           "       ELSE TRUE END))",
-           nativeQuery = true)
+           "  CASE WHEN :status = 'ACTIVE' THEN e.endDate > :now " +
+           "       WHEN :status = 'EXPIRED' THEN e.endDate <= :now " +
+           "       WHEN :status = 'FUTURE' THEN e.startDate > :now " +
+           "       WHEN :status = 'WITH_DELIVERIES' THEN SIZE(e.entregas) > 0 " +
+           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN SIZE(e.entregas) = 0 " +
+           "       ELSE TRUE END))")
     Page<Ejercicio> findByFiltrosFlexibles(
         @Param("nombre") String nombre,
         @Param("enunciado") String enunciado,
@@ -118,48 +127,40 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
     
     /**
      * Búsqueda general con término de búsqueda "q" que busca en nombre y enunciado
+     * @param searchTerm Término de búsqueda
+     * @param pageable Configuración de paginación
+     * @return Página de ejercicios
      */
-    @Query(value = "SELECT * FROM ejercicios e WHERE " +
-           "(normalize_text(e.name) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(e.statement) LIKE '%' || normalize_text(:searchTerm) || '%')",
-           countQuery = "SELECT COUNT(*) FROM ejercicios e WHERE " +
-           "(normalize_text(e.name) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(e.statement) LIKE '%' || normalize_text(:searchTerm) || '%')",
-           nativeQuery = true)
+    @Query("SELECT e FROM Ejercicio e WHERE " +
+           "UPPER(e.name) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(e.statement) LIKE UPPER(CONCAT('%', :searchTerm, '%'))")
     Page<Ejercicio> findByGeneralSearch(@Param("searchTerm") String searchTerm, Pageable pageable);
     
     /**
      * Búsqueda combinada con término general y filtros específicos
+     * @param searchTerm Término de búsqueda general
+     * @param nombre Filtro por nombre
+     * @param enunciado Filtro por enunciado
+     * @param classId Filtro por ID de clase
+     * @param status Filtro por estado
+     * @param now Fecha actual para cálculos de estado
+     * @param pageable Configuración de paginación
+     * @return Página de ejercicios
      */
-    @Query(value = "SELECT * FROM ejercicios e WHERE " +
+    @Query("SELECT e FROM Ejercicio e WHERE " +
            "(:searchTerm IS NULL OR (" +
-           "normalize_text(e.name) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(e.statement) LIKE '%' || normalize_text(:searchTerm) || '%')) AND " +
-           "(:nombre IS NULL OR normalize_text(e.name) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:enunciado IS NULL OR normalize_text(e.statement) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
-           "(:classId IS NULL OR e.class_id = :classId) AND " +
+           "UPPER(e.name) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "UPPER(e.statement) LIKE UPPER(CONCAT('%', :searchTerm, '%')))) AND " +
+           "(:nombre IS NULL OR UPPER(e.name) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
+           "(:enunciado IS NULL OR UPPER(e.statement) LIKE UPPER(CONCAT('%', :enunciado, '%'))) AND " +
+           "(:classId IS NULL OR e.classId = :classId) AND " +
            "(:status IS NULL OR (" +
-           "  CASE WHEN :status = 'ACTIVE' THEN e.end_date > :now " +
-           "       WHEN :status = 'EXPIRED' THEN e.end_date <= :now " +
-           "       WHEN :status = 'FUTURE' THEN e.start_date > :now " +
-           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
-           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
-           "       ELSE TRUE END))",
-           countQuery = "SELECT COUNT(*) FROM ejercicios e WHERE " +
-           "(:searchTerm IS NULL OR (" +
-           "normalize_text(e.name) LIKE '%' || normalize_text(:searchTerm) || '%' OR " +
-           "normalize_text(e.statement) LIKE '%' || normalize_text(:searchTerm) || '%')) AND " +
-           "(:nombre IS NULL OR normalize_text(e.name) LIKE '%' || normalize_text(:nombre) || '%') AND " +
-           "(:enunciado IS NULL OR normalize_text(e.statement) LIKE '%' || normalize_text(:enunciado) || '%') AND " +
-           "(:classId IS NULL OR e.class_id = :classId) AND " +
-           "(:status IS NULL OR (" +
-           "  CASE WHEN :status = 'ACTIVE' THEN e.end_date > :now " +
-           "       WHEN :status = 'EXPIRED' THEN e.end_date <= :now " +
-           "       WHEN :status = 'FUTURE' THEN e.start_date > :now " +
-           "       WHEN :status = 'WITH_DELIVERIES' THEN EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
-           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN NOT EXISTS (SELECT 1 FROM entregas_ejercicio ee WHERE ee.ejercicio_entity_id = e.id) " +
-           "       ELSE TRUE END))",
-           nativeQuery = true)
+           "  CASE WHEN :status = 'ACTIVE' THEN e.endDate > :now " +
+           "       WHEN :status = 'EXPIRED' THEN e.endDate <= :now " +
+           "       WHEN :status = 'FUTURE' THEN e.startDate > :now " +
+           "       WHEN :status = 'WITH_DELIVERIES' THEN SIZE(e.entregas) > 0 " +
+           "       WHEN :status = 'WITHOUT_DELIVERIES' THEN SIZE(e.entregas) = 0 " +
+           "       ELSE TRUE END))")
     Page<Ejercicio> findByGeneralAndSpecificFilters(
         @Param("searchTerm") String searchTerm,
         @Param("nombre") String nombre,
@@ -176,7 +177,8 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param fechaFin Fecha de fin del rango
      * @return Lista de ejercicios
      */
-    List<Ejercicio> findByStartDateBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+    @Query("SELECT e FROM Ejercicio e WHERE e.startDate BETWEEN :fechaInicio AND :fechaFin")
+    List<Ejercicio> findByStartDateBetween(@Param("fechaInicio") LocalDateTime fechaInicio, @Param("fechaFin") LocalDateTime fechaFin);
     
     /**
      * Busca ejercicios por rango de fechas de fin de plazo
@@ -184,7 +186,8 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param fechaFin Fecha de fin del rango
      * @return Lista de ejercicios
      */
-    List<Ejercicio> findByEndDateBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+    @Query("SELECT e FROM Ejercicio e WHERE e.endDate BETWEEN :fechaInicio AND :fechaFin")
+    List<Ejercicio> findByEndDateBetween(@Param("fechaInicio") LocalDateTime fechaInicio, @Param("fechaFin") LocalDateTime fechaFin);
     
     /**
      * Obtiene todos los ejercicios ordenados por ID

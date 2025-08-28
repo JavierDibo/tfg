@@ -24,40 +24,46 @@ public interface RepositorioAdministrador extends JpaRepository<Administrador, L
      * @param username Nombre de usuario
      * @return Optional<Administrador>
      */
-    Optional<Administrador> findByUsername(String username);
+    @Query("SELECT a FROM Administrador a WHERE a.username = :username")
+    Optional<Administrador> findByUsername(@Param("username") String username);
     
     /**
      * Busca un administrador por su email
      * @param email Email del administrador
      * @return Optional<Administrador>
      */
-    Optional<Administrador> findByEmail(String email);
+    @Query("SELECT a FROM Administrador a WHERE a.email = :email")
+    Optional<Administrador> findByEmail(@Param("email") String email);
     
     /**
      * Busca un administrador por su DNI
      * @param dni DNI del administrador
      * @return Optional<Administrador>
      */
-    Optional<Administrador> findByDni(String dni);
+    @Query("SELECT a FROM Administrador a WHERE a.dni = :dni")
+    Optional<Administrador> findByDni(@Param("dni") String dni);
     
     /**
      * Busca administradores por nombre (contiene, ignorando mayúsculas)
      * @param nombre Nombre a buscar
      * @return Lista de administradores
      */
-    List<Administrador> findByFirstNameContainingIgnoreCase(String nombre);
+    @Query("SELECT a FROM Administrador a WHERE UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))")
+    List<Administrador> findByFirstNameContainingIgnoreCase(@Param("nombre") String nombre);
     
     /**
      * Busca administradores por apellidos (contiene, ignorando mayúsculas)
      * @param apellidos Apellidos a buscar
      * @return Lista de administradores
      */
-    List<Administrador> findByLastNameContainingIgnoreCase(String apellidos);
+    @Query("SELECT a FROM Administrador a WHERE UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))")
+    List<Administrador> findByLastNameContainingIgnoreCase(@Param("apellidos") String apellidos);
     
     /**
      * Busca administradores que están habilitados
      * @return Lista de administradores habilitados
      */
+    @Query("SELECT a FROM Administrador a WHERE a.enabled = true")
     List<Administrador> findByEnabledTrue();
     
     /**
@@ -79,19 +85,22 @@ public interface RepositorioAdministrador extends JpaRepository<Administrador, L
      * @param username Nombre de usuario
      * @return true si existe, false en caso contrario
      */
-    boolean existsByUsername(String username);
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Administrador a WHERE a.username = :username")
+    boolean existsByUsername(@Param("username") String username);
     
     /**
      * Verifica si existe un administrador con el email dado
      * @param email Email
      * @return true si existe, false en caso contrario
      */
-    boolean existsByEmail(String email);
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Administrador a WHERE a.email = :email")
+    boolean existsByEmail(@Param("email") String email);
     
     /**
      * Verifica si existe un administrador con el DNI dado
      * @param dni DNI
      * @return true si existe, false en caso contrario
      */
-    boolean existsByDni(String dni);
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Administrador a WHERE a.dni = :dni")
+    boolean existsByDni(@Param("dni") String dni);
 }

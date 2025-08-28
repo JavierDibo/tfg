@@ -43,8 +43,21 @@ public record DTOClase(
                 clase.getTeacherIds(),
                 clase.getExerciseIds(),
                 clase.getMaterial(),
-                clase.getClass().getAnnotation(jakarta.persistence.DiscriminatorValue.class).value()
+                determinarTipoClase(clase)
         );
+    }
+    
+    /**
+     * Determina el tipo de clase de forma segura sin usar reflection
+     */
+    private static String determinarTipoClase(Clase clase) {
+        if (clase instanceof app.entidades.Curso) {
+            return "CURSO";
+        } else if (clase instanceof app.entidades.Taller) {
+            return "TALLER";
+        } else {
+            return "CLASE"; // Fallback para la clase abstracta
+        }
     }
     
     /**

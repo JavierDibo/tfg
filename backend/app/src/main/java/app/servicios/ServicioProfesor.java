@@ -483,7 +483,7 @@ public class ServicioProfesor {
             ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
             // Verificar si el profesor ya tiene asignada la clase
-            if (profesor.getClasesId().contains(claseId)) {
+            if (profesor.getClassIds().contains(claseId)) {
                 throw new IllegalArgumentException("El profesor ya tiene asignada esta clase.");
             }
             
@@ -524,7 +524,7 @@ public class ServicioProfesor {
             ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
             // Verificar si el profesor tiene asignada la clase
-            if (!profesor.getClasesId().contains(claseId)) {
+            if (!profesor.getClassIds().contains(claseId)) {
                 throw new IllegalArgumentException("El profesor no tiene asignada esta clase.");
             }
             
@@ -553,7 +553,7 @@ public class ServicioProfesor {
         Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
                 
-        return profesor.getClasesId().size();
+        return profesor.getClassIds().size();
     }
     
     /**
@@ -792,7 +792,7 @@ public class ServicioProfesor {
             // Filtrar profesores por clase manualmente
             List<Profesor> profesoresDeClase = repositorioProfesor.findAll(Sort.by(direction, sortBy))
                 .stream()
-                .filter(p -> p.getClasesId() != null && p.getClasesId().contains(claseId))
+                .filter(p -> p.getClassIds() != null && p.getClassIds().contains(claseId))
                 .collect(Collectors.toList());
             
             // Aplicar paginación

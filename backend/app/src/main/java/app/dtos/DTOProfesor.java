@@ -77,7 +77,7 @@ public record DTOProfesor(
             profesor.getPhoneNumber(),
             profesor.getRole(),
             profesor.isEnabled(),
-            profesor.getClasesId(),
+            profesor.getClassIds(),
             LocalDateTime.now() // placeholder, in a real implementation would be creation date from entity
         );
     }

@@ -73,7 +73,7 @@ class DTOProfesorTest {
         assertEquals(profesor.getPhoneNumber(), dtoDesdeEntidad.phoneNumber());
         assertEquals(profesor.getRole(), dtoDesdeEntidad.role());
         assertEquals(profesor.isEnabled(), dtoDesdeEntidad.enabled());
-        assertEquals(profesor.getClasesId(), dtoDesdeEntidad.classIds());
+        assertEquals(profesor.getClassIds(), dtoDesdeEntidad.classIds());
         assertNotNull(dtoDesdeEntidad.createdAt());
     }
 
@@ -92,7 +92,7 @@ class DTOProfesorTest {
         assertEquals(profesor.getPhoneNumber(), dtoFrom.phoneNumber());
         assertEquals(profesor.getRole(), dtoFrom.role());
         assertEquals(profesor.isEnabled(), dtoFrom.enabled());
-        assertEquals(profesor.getClasesId(), dtoFrom.classIds());
+        assertEquals(profesor.getClassIds(), dtoFrom.classIds());
     }
 
     @Test

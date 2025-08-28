@@ -37,10 +37,10 @@ public class Taller extends Clase {
         super();
     }
     
-    public Taller(String titulo, String descripcion, BigDecimal precio, 
-                 EPresencialidad presencialidad, String imagenPortada, EDificultad nivel,
+    public Taller(String title, String description, BigDecimal price, 
+                 EPresencialidad format, String image, EDificultad difficulty,
                  Integer duracionHoras, LocalDate fechaRealizacion, LocalTime horaComienzo) {
-        super(titulo, descripcion, precio, presencialidad, imagenPortada, nivel);
+        super(title, description, price, format, image, difficulty);
         this.duracionHoras = duracionHoras;
         this.fechaRealizacion = fechaRealizacion;
         this.horaComienzo = horaComienzo;

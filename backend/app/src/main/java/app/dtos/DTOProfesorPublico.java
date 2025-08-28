@@ -50,7 +50,7 @@ public record DTOProfesorPublico(
             profesor.getEmail(),
             profesor.getPhoneNumber(),
             profesor.isEnabled(),
-            profesor.getClasesId() != null ? profesor.getClasesId().size() : 0,
+            profesor.getClassIds() != null ? profesor.getClassIds().size() : 0,
             LocalDateTime.now() // placeholder, in a real implementation would be creation date from entity
         );
     }

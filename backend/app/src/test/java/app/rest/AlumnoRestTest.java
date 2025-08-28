@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.context.annotation.Import;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -37,9 +39,11 @@ import app.servicios.ServicioClase;
 import app.servicios.ServicioJwt;
 import app.util.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import app.rest.BaseRestTestConfig;
 
 @WebMvcTest(AlumnoRest.class)
 @ActiveProfiles("test")
+@Import(BaseRestTestConfig.class)
 public class AlumnoRestTest {
 
     @Autowired
@@ -53,9 +57,6 @@ public class AlumnoRestTest {
     
     @MockBean
     private RepositorioAlumno repositorioAlumno;
-    
-    @MockBean
-    private ServicioJwt servicioJwt;
     
     @MockBean
     private SecurityUtils securityUtils;
@@ -231,6 +232,13 @@ public class AlumnoRestTest {
         
         DTOAlumno dtoAlumno = new DTOAlumno(alumno);
         
+        // Mock SecurityUtils behavior for ADMIN role
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        when(securityUtils.hasRole("PROFESOR")).thenReturn(false);
+        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
+        when(securityUtils.getCurrentUserId()).thenReturn(1L);
+        
+        // Mock the service method - this should work now with proper security mocking
         when(servicioAlumno.actualizarAlumno(eq(alumnoId), eq(dtoActualizacion))).thenReturn(dtoAlumno);
         
         // When & Then

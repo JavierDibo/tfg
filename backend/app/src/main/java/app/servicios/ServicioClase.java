@@ -259,12 +259,12 @@ public class ServicioClase {
         }
         
         Curso curso = new Curso(
-                peticion.titulo(),
-                peticion.descripcion(),
-                peticion.precio(),
-                peticion.presencialidad(),
-                peticion.imagenPortada(),
-                peticion.nivel(),
+                peticion.titulo(),           // title
+                peticion.descripcion(),      // description
+                peticion.precio(),           // price
+                peticion.presencialidad(),   // format
+                peticion.imagenPortada(),    // image
+                peticion.nivel(),            // difficulty
                 fechaInicio,
                 fechaFin
         );
@@ -320,12 +320,12 @@ public class ServicioClase {
         }
         
         Taller taller = new Taller(
-                peticion.titulo(),
-                peticion.descripcion(),
-                peticion.precio(),
-                peticion.presencialidad(),
-                peticion.imagenPortada(),
-                peticion.nivel(),
+                peticion.titulo(),           // title
+                peticion.descripcion(),      // description
+                peticion.precio(),           // price
+                peticion.presencialidad(),   // format
+                peticion.imagenPortada(),    // image
+                peticion.nivel(),            // difficulty
                 duracionHoras,
                 fechaRealizacion,
                 horaComienzo
@@ -890,7 +890,7 @@ public class ServicioClase {
             Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
             ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
             
-            alumno.agregarClase(claseId.toString());
+            alumno.addClass(claseId.toString());
             repositorioAlumno.save(alumno);
         } catch (Exception e) {
             // Log the error but continue with the class update

@@ -362,10 +362,10 @@ public class ServicioAlumno {
             throw new IllegalArgumentException("El alumno ya está inscrito en esta clase.");
         }
         
-        // Agregar la clase al alumno
-        alumno.agregarClase(claseId.toString());
+        // Add the class to the student
+        alumno.addClass(claseId.toString());
         
-        // Agregar el alumno a la clase
+        // Add the student to the class
         clase.agregarAlumno(alumnoId.toString());
         
         // Guardar cambios
@@ -393,10 +393,10 @@ public class ServicioAlumno {
             throw new IllegalArgumentException("El alumno no está inscrito en esta clase.");
         }
         
-        // Remover la clase del alumno
-        alumno.removerClase(claseId.toString());
+        // Remove the class from the student
+        alumno.removeClass(claseId.toString());
         
-        // Remover el alumno de la clase
+        // Remove the student from the class
         clase.removerAlumno(alumnoId.toString());
         
         // Guardar cambios
@@ -433,7 +433,7 @@ public class ServicioAlumno {
         Alumno alumno = repositorioAlumno.findById(alumnoId).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
                 
-        return alumno.estaInscritoEnClase(claseId.toString());
+        return alumno.isEnrolledInClass(claseId.toString());
     }
     
     /**
@@ -713,7 +713,7 @@ public class ServicioAlumno {
             Alumno alumno = repositorioAlumno.findById(currentUserId).orElse(null);
             ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", currentUserId);
             
-            if (!alumno.estaInscritoEnClase(claseId.toString())) {
+            if (!alumno.isEnrolledInClass(claseId.toString())) {
                 ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a esta clase. Debes estar inscrito.");
             }
         }

@@ -177,7 +177,7 @@ class RepositorioProfesorTest {
         List<Profesor> resultado = repositorioProfesor.findByClaseId("clase1");
 
         assertEquals(1, resultado.size());
-        assertTrue(resultado.get(0).getClasesId().contains("clase1"));
+        assertTrue(resultado.get(0).getClassIds().contains("clase1"));
     }
 
     @Test
@@ -210,7 +210,7 @@ class RepositorioProfesorTest {
         List<Profesor> resultado = repositorioProfesor.findProfesoresSinClases();
 
         assertEquals(1, resultado.size());
-        assertTrue(resultado.get(0).getClasesId().isEmpty());
+        assertTrue(resultado.get(0).getClassIds().isEmpty());
     }
 
     @Test
@@ -280,7 +280,7 @@ class RepositorioProfesorTest {
                 null, null, null, null, null, null, "clase1", null);
 
         assertEquals(1, resultado.size());
-        assertTrue(resultado.get(0).getClasesId().contains("clase1"));
+        assertTrue(resultado.get(0).getClassIds().contains("clase1"));
     }
 
     @Test
@@ -290,7 +290,7 @@ class RepositorioProfesorTest {
                 null, null, null, null, null, null, null, true);
 
         assertEquals(1, resultado.size());
-        assertTrue(resultado.get(0).getClasesId().isEmpty());
+        assertTrue(resultado.get(0).getClassIds().isEmpty());
     }
 
     @Test
@@ -325,7 +325,7 @@ class RepositorioProfesorTest {
         assertNotNull(resultado.getId());
         assertEquals("nuevo", resultado.getUsername());
         assertEquals("Nuevo", resultado.getFirstName());
-        assertTrue(resultado.getClasesId().contains("claseNueva"));
+        assertTrue(resultado.getClassIds().contains("claseNueva"));
     }
 
     @Test

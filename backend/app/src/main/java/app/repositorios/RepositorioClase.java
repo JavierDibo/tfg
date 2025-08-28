@@ -26,35 +26,40 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @param title Título de la clase
      * @return Optional<Clase>
      */
-    Optional<Clase> findByTitle(String title);
+    @Query("SELECT c FROM Clase c WHERE c.title = :title")
+    Optional<Clase> findByTitle(@Param("title") String title);
     
     /**
      * Busca clases por título (contiene, ignorando mayúsculas)
      * @param title Título a buscar
      * @return Lista de clases
      */
-    List<Clase> findByTitleContainingIgnoreCase(String title);
+    @Query("SELECT c FROM Clase c WHERE UPPER(c.title) LIKE UPPER(CONCAT('%', :title, '%'))")
+    List<Clase> findByTitleContainingIgnoreCase(@Param("title") String title);
     
     /**
      * Busca clases por descripción (contiene, ignorando mayúsculas)
      * @param description Descripción a buscar
      * @return Lista de clases
      */
-    List<Clase> findByDescriptionContainingIgnoreCase(String description);
+    @Query("SELECT c FROM Clase c WHERE UPPER(c.description) LIKE UPPER(CONCAT('%', :description, '%'))")
+    List<Clase> findByDescriptionContainingIgnoreCase(@Param("description") String description);
     
     /**
      * Busca clases por presencialidad
      * @param format Tipo de presencialidad
      * @return Lista de clases
      */
-    List<Clase> findByFormat(EPresencialidad format);
+    @Query("SELECT c FROM Clase c WHERE c.format = :format")
+    List<Clase> findByFormat(@Param("format") EPresencialidad format);
     
     /**
      * Busca clases por nivel
      * @param difficulty Nivel de la clase
      * @return Lista de clases
      */
-    List<Clase> findByDifficulty(EDificultad difficulty);
+    @Query("SELECT c FROM Clase c WHERE c.difficulty = :difficulty")
+    List<Clase> findByDifficulty(@Param("difficulty") EDificultad difficulty);
     
     /**
      * Busca clases por rango de precio
@@ -62,14 +67,16 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @param precioMax Precio máximo
      * @return Lista de clases
      */
-    List<Clase> findByPriceBetween(BigDecimal precioMin, BigDecimal precioMax);
+    @Query("SELECT c FROM Clase c WHERE c.price BETWEEN :precioMin AND :precioMax")
+    List<Clase> findByPriceBetween(@Param("precioMin") BigDecimal precioMin, @Param("precioMax") BigDecimal precioMax);
     
     /**
      * Busca clases con precio menor o igual al especificado
      * @param precio Precio máximo
      * @return Lista de clases
      */
-    List<Clase> findByPriceLessThanEqual(BigDecimal precio);
+    @Query("SELECT c FROM Clase c WHERE c.price <= :precio")
+    List<Clase> findByPriceLessThanEqual(@Param("precio") BigDecimal precio);
     
     /**
      * Obtiene todas las clases ordenadas por ID
@@ -92,11 +99,11 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
     @Query("SELECT c FROM Clase c ORDER BY c.title ASC")
     List<Clase> findAllOrderedByTitulo();
     
-    // NEW: General search methods for "q" parameter
-    
     /**
      * General search across multiple fields using the "q" parameter
      * Searches in title and description fields
+     * @param searchTerm Término de búsqueda
+     * @return Lista de clases
      */
     @Query("SELECT c FROM Clase c WHERE " +
            "UPPER(c.title) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
@@ -105,6 +112,9 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
     
     /**
      * General search with pagination
+     * @param searchTerm Término de búsqueda
+     * @param pageable Configuración de paginación
+     * @return Página de clases
      */
     @Query("SELECT c FROM Clase c WHERE " +
            "UPPER(c.title) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
@@ -113,6 +123,15 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
     
     /**
      * Combined search with general term and specific filters
+     * @param searchTerm Término de búsqueda general
+     * @param title Filtro por título
+     * @param description Filtro por descripción
+     * @param format Filtro por formato
+     * @param difficulty Filtro por dificultad
+     * @param precioMinimo Filtro por precio mínimo
+     * @param precioMaximo Filtro por precio máximo
+     * @param pageable Configuración de paginación
+     * @return Página de clases
      */
     @Query("SELECT c FROM Clase c WHERE " +
            "(:searchTerm IS NULL OR (" +

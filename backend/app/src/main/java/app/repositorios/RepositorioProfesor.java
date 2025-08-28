@@ -23,42 +23,48 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @param usuario Nombre de usuario
      * @return Optional<Profesor>
      */
-    Optional<Profesor> findByUsername(String username);
+    @Query("SELECT p FROM Profesor p WHERE p.username = :username")
+    Optional<Profesor> findByUsername(@Param("username") String username);
     
     /**
      * Busca un profesor por su email
      * @param email Email del profesor
      * @return Optional<Profesor>
      */
-    Optional<Profesor> findByEmail(String email);
+    @Query("SELECT p FROM Profesor p WHERE p.email = :email")
+    Optional<Profesor> findByEmail(@Param("email") String email);
     
     /**
      * Busca un profesor por su DNI
      * @param dni DNI del profesor
      * @return Optional<Profesor>
      */
-    Optional<Profesor> findByDni(String dni);
+    @Query("SELECT p FROM Profesor p WHERE p.dni = :dni")
+    Optional<Profesor> findByDni(@Param("dni") String dni);
     
     /**
      * Verifica si un profesor con el nombre de usuario dado existe
      * @param username Nombre de usuario a verificar
      * @return true si existe, false en caso contrario
      */
-    boolean existsByUsername(String username);
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Profesor p WHERE p.username = :username")
+    boolean existsByUsername(@Param("username") String username);
     
     /**
      * Verifica si un profesor con el email dado existe
      * @param email Email a verificar
      * @return true si existe, false en caso contrario
      */
-    boolean existsByEmail(String email);
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Profesor p WHERE p.email = :email")
+    boolean existsByEmail(@Param("email") String email);
     
     /**
      * Verifica si un profesor con el DNI dado existe
      * @param dni DNI a verificar
      * @return true si existe, false en caso contrario
      */
-    boolean existsByDni(String dni);
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Profesor p WHERE p.dni = :dni")
+    boolean existsByDni(@Param("dni") String dni);
     
     /**
      * Busca profesores por nombre (contiene, ignorando mayúsculas y acentos)
@@ -80,6 +86,7 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * Busca profesores que están habilitados
      * @return Lista de profesores habilitados
      */
+    @Query("SELECT p FROM Profesor p WHERE p.enabled = true")
     List<Profesor> findByEnabledTrue();
     
     /**
@@ -87,18 +94,21 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @param pageable Configuración de paginación
      * @return Página de profesores habilitados
      */
+    @Query("SELECT p FROM Profesor p WHERE p.enabled = true")
     Page<Profesor> findByEnabledTrue(Pageable pageable);
     
     /**
      * Cuenta profesores habilitados
      * @return número de profesores habilitados
      */
+    @Query("SELECT COUNT(p) FROM Profesor p WHERE p.enabled = true")
     long countByEnabledTrue();
     
     /**
      * Cuenta profesores deshabilitados
      * @return número de profesores deshabilitados
      */
+    @Query("SELECT COUNT(p) FROM Profesor p WHERE p.enabled = false")
     long countByEnabledFalse();
     
     /**
@@ -116,11 +126,12 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
     @Query("SELECT p FROM Profesor p")
     Page<Profesor> findAllOrderedById(Pageable pageable);
     
-    // NEW: General search methods for "q" parameter
-    
     /**
      * General search across multiple fields using the "q" parameter
      * Searches in nombre, apellidos, email, usuario, and dni fields
+     * @param searchTerm Término de búsqueda
+     * @param pageable Configuración de paginación
+     * @return Página de profesores
      */
     @Query("SELECT p FROM Profesor p WHERE " +
            "UPPER(p.firstName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
@@ -132,6 +143,15 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
     
     /**
      * Combined search with general term and specific filters
+     * @param searchTerm Término de búsqueda general
+     * @param nombre Filtro por nombre
+     * @param apellidos Filtro por apellidos
+     * @param email Filtro por email
+     * @param usuario Filtro por usuario
+     * @param dni Filtro por DNI
+     * @param habilitado Filtro por estado habilitado
+     * @param pageable Configuración de paginación
+     * @return Página de profesores
      */
     @Query("SELECT p FROM Profesor p WHERE " +
            "(:searchTerm IS NULL OR (" +

@@ -40,8 +40,8 @@ class ProfesorTest {
         assertEquals(TELEFONO, profesor.getPhoneNumber());
         assertEquals(Usuario.Role.PROFESOR, profesor.getRole());
         assertTrue(profesor.isEnabled());
-        assertNotNull(profesor.getClasesId());
-        assertTrue(profesor.getClasesId().isEmpty());
+        assertNotNull(profesor.getClassIds());
+        assertTrue(profesor.getClassIds().isEmpty());
     }
 
     @Test
@@ -52,8 +52,8 @@ class ProfesorTest {
         assertNotNull(profesorVacio);
         assertEquals(Usuario.Role.PROFESOR, profesorVacio.getRole());
         assertTrue(profesorVacio.isEnabled());
-        assertNotNull(profesorVacio.getClasesId());
-        assertTrue(profesorVacio.getClasesId().isEmpty());
+        assertNotNull(profesorVacio.getClassIds());
+        assertTrue(profesorVacio.getClassIds().isEmpty());
     }
 
     @Test
@@ -63,8 +63,8 @@ class ProfesorTest {
         List<String> nuevasClases = new ArrayList<>();
         nuevasClases.add("clase1");
         nuevasClases.add("clase2");
-        profesor.setClasesId(nuevasClases);
-        assertEquals(nuevasClases, profesor.getClasesId());
+        profesor.setClassIds(nuevasClases);
+        assertEquals(nuevasClases, profesor.getClassIds());
 
         // Test enabled (heredado de Usuario)
         profesor.setEnabled(false);
@@ -88,24 +88,24 @@ class ProfesorTest {
         String claseId = "clase123";
         
         // Verificar que la lista está vacía inicialmente
-        assertTrue(profesor.getClasesId().isEmpty());
+        assertTrue(profesor.getClassIds().isEmpty());
         
         // Agregar clase
         profesor.agregarClase(claseId);
         
         // Verificar que se agregó
-        assertTrue(profesor.getClasesId().contains(claseId));
-        assertEquals(1, profesor.getClasesId().size());
+        assertTrue(profesor.getClassIds().contains(claseId));
+        assertEquals(1, profesor.getClassIds().size());
         
         // Agregar la misma clase no debe duplicar
         profesor.agregarClase(claseId);
-        assertEquals(1, profesor.getClasesId().size());
+        assertEquals(1, profesor.getClassIds().size());
         
         // Agregar otra clase
         profesor.agregarClase("clase456");
-        assertEquals(2, profesor.getClasesId().size());
-        assertTrue(profesor.getClasesId().contains("clase123"));
-        assertTrue(profesor.getClasesId().contains("clase456"));
+        assertEquals(2, profesor.getClassIds().size());
+        assertTrue(profesor.getClassIds().contains("clase123"));
+        assertTrue(profesor.getClassIds().contains("clase456"));
     }
 
     @Test
@@ -115,12 +115,12 @@ class ProfesorTest {
         
         // Agregar clase
         profesor.agregarClase(claseId);
-        assertTrue(profesor.getClasesId().contains(claseId));
+        assertTrue(profesor.getClassIds().contains(claseId));
         
         // Remover clase
         profesor.removerClase(claseId);
-        assertFalse(profesor.getClasesId().contains(claseId));
-        assertTrue(profesor.getClasesId().isEmpty());
+        assertFalse(profesor.getClassIds().contains(claseId));
+        assertTrue(profesor.getClassIds().isEmpty());
         
         // Remover clase que no existe no debe causar error
         assertDoesNotThrow(() -> profesor.removerClase("claseInexistente"));
@@ -163,11 +163,11 @@ class ProfesorTest {
     }
 
     @Test
-    @DisplayName("ClasesId debe ser lista vacía por defecto")
-    void testClasesIdPorDefecto() {
+    @DisplayName("ClassIds debe ser lista vacía por defecto")
+    void testClassIdsPorDefecto() {
         Profesor nuevoProfesor = new Profesor();
-        assertNotNull(nuevoProfesor.getClasesId());
-        assertTrue(nuevoProfesor.getClasesId().isEmpty());
+        assertNotNull(nuevoProfesor.getClassIds());
+        assertTrue(nuevoProfesor.getClassIds().isEmpty());
     }
 
     @Test
@@ -178,18 +178,18 @@ class ProfesorTest {
     }
 
     @Test
-    @DisplayName("Manejo de clasesId con valores nulos")
-    void testClasesIdConValoresNulos() {
-        // Establecer clasesId como null
-        profesor.setClasesId(null);
+    @DisplayName("Manejo de classIds con valores nulos")
+    void testClassIdsConValoresNulos() {
+        // Establecer classIds como null
+        profesor.setClassIds(null);
         // El getter debe inicializar la lista si es null
-        assertNotNull(profesor.getClasesId());
-        assertTrue(profesor.getClasesId().isEmpty());
+        assertNotNull(profesor.getClassIds());
+        assertTrue(profesor.getClassIds().isEmpty());
         
-        // Agregar clase cuando clasesId era null debe funcionar
+        // Agregar clase cuando classIds era null debe funcionar
         profesor.agregarClase("clase123");
-        assertNotNull(profesor.getClasesId());
-        assertTrue(profesor.getClasesId().contains("clase123"));
+        assertNotNull(profesor.getClassIds());
+        assertTrue(profesor.getClassIds().contains("clase123"));
     }
 
     @Test
@@ -200,21 +200,21 @@ class ProfesorTest {
         profesor.agregarClase("clase2");
         profesor.agregarClase("clase3");
         
-        assertEquals(3, profesor.getClasesId().size());
-        assertTrue(profesor.getClasesId().contains("clase1"));
-        assertTrue(profesor.getClasesId().contains("clase2"));
-        assertTrue(profesor.getClasesId().contains("clase3"));
+        assertEquals(3, profesor.getClassIds().size());
+        assertTrue(profesor.getClassIds().contains("clase1"));
+        assertTrue(profesor.getClassIds().contains("clase2"));
+        assertTrue(profesor.getClassIds().contains("clase3"));
         
         // Remover clase del medio
         profesor.removerClase("clase2");
-        assertEquals(2, profesor.getClasesId().size());
-        assertTrue(profesor.getClasesId().contains("clase1"));
-        assertFalse(profesor.getClasesId().contains("clase2"));
-        assertTrue(profesor.getClasesId().contains("clase3"));
+        assertEquals(2, profesor.getClassIds().size());
+        assertTrue(profesor.getClassIds().contains("clase1"));
+        assertFalse(profesor.getClassIds().contains("clase2"));
+        assertTrue(profesor.getClassIds().contains("clase3"));
         
         // Remover todas las clases
         profesor.removerClase("clase1");
         profesor.removerClase("clase3");
-        assertTrue(profesor.getClasesId().isEmpty());
+        assertTrue(profesor.getClassIds().isEmpty());
     }
 }

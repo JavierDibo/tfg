@@ -32,10 +32,10 @@ public class Curso extends Clase {
         super();
     }
     
-    public Curso(String titulo, String descripcion, BigDecimal precio, 
-                EPresencialidad presencialidad, String imagenPortada, EDificultad nivel,
+    public Curso(String title, String description, BigDecimal price, 
+                EPresencialidad format, String image, EDificultad difficulty,
                 LocalDate fechaInicio, LocalDate fechaFin) {
-        super(titulo, descripcion, precio, presencialidad, imagenPortada, nivel);
+        super(title, description, price, format, image, difficulty);
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         

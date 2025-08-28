@@ -23,17 +23,17 @@ public class Profesor extends Usuario {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "profesor_clases", joinColumns = @JoinColumn(name = "profesor_id"))
     @Column(name = "clase_id")
-    private List<String> clasesId = new ArrayList<>();
+    private List<String> classIds = new ArrayList<>();
     
     /**
      * Obtiene la lista de clases del profesor, inicializando si es null
      * @return Lista de clases
      */
-    public List<String> getClasesId() {
-        if (this.clasesId == null) {
-            this.clasesId = new ArrayList<>();
+    public List<String> getClassIds() {
+        if (this.classIds == null) {
+            this.classIds = new ArrayList<>();
         }
-        return this.clasesId;
+        return this.classIds;
     }
     
     public Profesor() {
@@ -41,9 +41,9 @@ public class Profesor extends Usuario {
         this.setRole(Role.PROFESOR);
     }
     
-    public Profesor(String usuario, String password, String nombre, String apellidos, 
-                   String dni, String email, String numeroTelefono) {
-        super(usuario, password, nombre, apellidos, dni, email, numeroTelefono);
+    public Profesor(String username, String password, String firstName, String lastName, 
+                   String dni, String email, String phoneNumber) {
+        super(username, password, firstName, lastName, dni, email, phoneNumber);
         this.setRole(Role.PROFESOR);
     }
     
@@ -58,34 +58,34 @@ public class Profesor extends Usuario {
     
     /**
      * Agrega una clase al profesor
-     * @param claseId ID de la clase
+     * @param classId ID de la clase
      */
-    public void agregarClase(String claseId) {
-        if (this.clasesId == null) {
-            this.clasesId = new ArrayList<>();
+    public void agregarClase(String classId) {
+        if (this.classIds == null) {
+            this.classIds = new ArrayList<>();
         }
-        if (!this.clasesId.contains(claseId)) {
-            this.clasesId.add(claseId);
+        if (!this.classIds.contains(classId)) {
+            this.classIds.add(classId);
         }
     }
     
     /**
      * Remueve una clase del profesor
-     * @param claseId ID de la clase
+     * @param classId ID de la clase
      */
-    public void removerClase(String claseId) {
-        if (this.clasesId != null) {
-            this.clasesId.remove(claseId);
+    public void removerClase(String classId) {
+        if (this.classIds != null) {
+            this.classIds.remove(classId);
         }
     }
     
     /**
      * Verifica si el profesor imparte una clase específica
-     * @param claseId ID de la clase
+     * @param classId ID de la clase
      * @return true si imparte la clase, false en caso contrario
      */
-    public boolean imparteClase(String claseId) {
-        return this.clasesId != null && this.clasesId.contains(claseId);
+    public boolean imparteClase(String classId) {
+        return this.classIds != null && this.classIds.contains(classId);
     }
     
     /**
@@ -93,6 +93,6 @@ public class Profesor extends Usuario {
      * @return Número de clases
      */
     public int getNumeroClases() {
-        return this.clasesId != null ? this.clasesId.size() : 0;
+        return this.classIds != null ? this.classIds.size() : 0;
     }
 }

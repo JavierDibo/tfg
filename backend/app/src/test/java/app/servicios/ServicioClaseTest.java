@@ -486,8 +486,8 @@ class ServicioClaseTest {
         verify(repositorioProfesor, times(1)).save(any(Profesor.class));
         
         // Verificar que el profesor tiene la clase en su lista
-        assertTrue(profesor.getClasesId().contains("1"));
-        assertEquals(1, profesor.getClasesId().size());
+        assertTrue(profesor.getClassIds().contains("1"));
+        assertEquals(1, profesor.getClassIds().size());
     }
 
     @Test
@@ -525,8 +525,8 @@ class ServicioClaseTest {
         verify(repositorioProfesor, times(1)).save(any(Profesor.class));
         
         // Verificar que el profesor tiene la clase en su lista
-        assertTrue(profesor.getClasesId().contains("2"));
-        assertEquals(1, profesor.getClasesId().size());
+        assertTrue(profesor.getClassIds().contains("2"));
+        assertEquals(1, profesor.getClassIds().size());
     }
 
     @Test
@@ -550,8 +550,8 @@ class ServicioClaseTest {
         verify(repositorioProfesor, times(1)).save(any(Profesor.class));
         
         // Verificar que el profesor ya no tiene la clase en su lista
-        assertFalse(profesor.getClasesId().contains("2"));
-        assertEquals(0, profesor.getClasesId().size());
+        assertFalse(profesor.getClassIds().contains("2"));
+        assertEquals(0, profesor.getClassIds().size());
     }
 
     // ===== TESTS PARA FILTRADO FLEXIBLE =====
