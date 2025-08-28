@@ -70,8 +70,8 @@ public class ServicioProfesor {
      */
     @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorId(Long id) {
-        // Use Entity Graph to load all relationships for better performance
-        Profesor profesor = repositorioProfesor.findByIdWithAllRelationships(id).orElse(null);
+        // Use basic findById to avoid MultipleBagFetchException
+        Profesor profesor = repositorioProfesor.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
         
         // Security check: Only ADMIN, or the professor themselves can access professor data

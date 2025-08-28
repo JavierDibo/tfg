@@ -36,9 +36,34 @@ import jakarta.persistence.NamedEntityGraph;
     }
 )
 @NamedEntityGraph(
-    name = "Alumno.withAllRelationships",
+    name = "Alumno.withPayments",
+    attributeNodes = {
+        @NamedAttributeNode("payments")
+    }
+)
+@NamedEntityGraph(
+    name = "Alumno.withSubmissions",
+    attributeNodes = {
+        @NamedAttributeNode("submissions")
+    }
+)
+@NamedEntityGraph(
+    name = "Alumno.withClassesAndPayments",
     attributeNodes = {
         @NamedAttributeNode("classes"),
+        @NamedAttributeNode("payments")
+    }
+)
+@NamedEntityGraph(
+    name = "Alumno.withClassesAndSubmissions",
+    attributeNodes = {
+        @NamedAttributeNode("classes"),
+        @NamedAttributeNode("submissions")
+    }
+)
+@NamedEntityGraph(
+    name = "Alumno.withPaymentsAndSubmissions",
+    attributeNodes = {
         @NamedAttributeNode("payments"),
         @NamedAttributeNode("submissions")
     }
@@ -52,7 +77,7 @@ public class Alumno extends Usuario {
     @NotNull
     private boolean enrolled = false;
     
-    // JPA Relationships - replacing ID-based collections
+    // JPA Relationships - using List for consistency
     @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)
     private List<Clase> classes = new ArrayList<>();
     

@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 /**
  * DTO para mostrar información detallada de una clase con información pública del profesor
@@ -42,10 +43,10 @@ public record DTOClaseConDetallesPublico(
 ) {
     
     /**
-     * Constructor que crea un DTO desde una entidad Clase
+     * Constructor that creates a DTO from a Class entity with public details
      */
     public DTOClaseConDetallesPublico(Clase clase, DTOProfesorPublico profesor, boolean inscrito, 
-                                      LocalDateTime fechaInscripcion, int numeroAlumnos, int numeroProfesores) {
+                                       LocalDateTime fechaInscripcion, int numeroAlumnos, int numeroProfesores) {
         this(
                 clase.getId(),
                 clase.getTitle(),
@@ -63,7 +64,7 @@ public record DTOClaseConDetallesPublico(
                 clase.getExercises().stream()
                     .map(exercise -> exercise.getId().toString())
                     .collect(Collectors.toList()),
-                clase.getMaterial(),
+                clase.getMaterial() != null ? new ArrayList<>(clase.getMaterial()) : null,
                 determinarTipoClase(clase),
                 profesor,
                 inscrito,

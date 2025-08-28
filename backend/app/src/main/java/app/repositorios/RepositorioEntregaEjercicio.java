@@ -344,6 +344,7 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @return Optional<EntregaEjercicio> con alumno cargado
      */
     @EntityGraph(value = "EntregaEjercicio.withAlumno")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.id = :entregaId")
     Optional<EntregaEjercicio> findByIdWithAlumno(@Param("entregaId") Long entregaId);
 
     /**
@@ -352,6 +353,7 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @return Optional<EntregaEjercicio> con ejercicio cargado
      */
     @EntityGraph(value = "EntregaEjercicio.withEjercicio")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.id = :entregaId")
     Optional<EntregaEjercicio> findByIdWithEjercicio(@Param("entregaId") Long entregaId);
 
     /**
@@ -359,7 +361,8 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param entregaId ID de la entrega
      * @return Optional<EntregaEjercicio> con todas las relaciones cargadas
      */
-    @EntityGraph(value = "EntregaEjercicio.withAllRelationships")
+    @EntityGraph(value = "EntregaEjercicio.withAlumnoAndEjercicio")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.id = :entregaId")
     Optional<EntregaEjercicio> findByIdWithAllRelationships(@Param("entregaId") Long entregaId);
 
     /**
@@ -385,7 +388,7 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param alumnoId ID del alumno
      * @return Lista de entregas con todas las relaciones cargadas
      */
-    @EntityGraph(value = "EntregaEjercicio.withAllRelationships")
+    @EntityGraph(value = "EntregaEjercicio.withAlumnoAndEjercicio")
     @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId")
     List<EntregaEjercicio> findByAlumnoIdWithAllRelationships(@Param("alumnoId") Long alumnoId);
 
@@ -394,7 +397,7 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param ejercicioId ID del ejercicio
      * @return Lista de entregas con todas las relaciones cargadas
      */
-    @EntityGraph(value = "EntregaEjercicio.withAllRelationships")
+    @EntityGraph(value = "EntregaEjercicio.withAlumnoAndEjercicio")
     @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId")
     List<EntregaEjercicio> findByEjercicioIdWithAllRelationships(@Param("ejercicioId") Long ejercicioId);
 
@@ -456,7 +459,7 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @param ejercicioId ID del ejercicio
      * @return Optional<EntregaEjercicio> con todas las relaciones cargadas
      */
-    @EntityGraph(value = "EntregaEjercicio.withAllRelationships")
+    @EntityGraph(value = "EntregaEjercicio.withAlumnoAndEjercicio")
     @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.ejercicio.id = :ejercicioId")
     Optional<EntregaEjercicio> findByAlumnoIdAndEjercicioIdWithAllRelationships(@Param("alumnoId") Long alumnoId, @Param("ejercicioId") Long ejercicioId);
 
@@ -465,6 +468,7 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @return Lista de entregas con alumno cargado
      */
     @EntityGraph(value = "EntregaEjercicio.withAlumno")
+    @Query("SELECT e FROM EntregaEjercicio e")
     List<EntregaEjercicio> findAllWithAlumno();
 
     /**
@@ -472,12 +476,14 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      * @return Lista de entregas con ejercicio cargado
      */
     @EntityGraph(value = "EntregaEjercicio.withEjercicio")
+    @Query("SELECT e FROM EntregaEjercicio e")
     List<EntregaEjercicio> findAllWithEjercicio();
 
     /**
      * Obtiene todas las entregas con todas las relaciones cargadas usando EntityGraph
      * @return Lista de entregas con todas las relaciones cargadas
      */
-    @EntityGraph(value = "EntregaEjercicio.withAllRelationships")
+    @EntityGraph(value = "EntregaEjercicio.withAlumnoAndEjercicio")
+    @Query("SELECT e FROM EntregaEjercicio e")
     List<EntregaEjercicio> findAllWithAllRelationships();
 }

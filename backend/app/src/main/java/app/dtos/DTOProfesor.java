@@ -18,49 +18,49 @@ import jakarta.validation.constraints.Size;
  */
 @Schema(description = "Professor data")
 public record DTOProfesor(
-    @Schema(description = "Unique professor ID", example = "1", required = true)
+    @Schema(description = "Unique professor ID", example = "1")
     @Positive(message = "ID must be positive")
     Long id,
     
-    @Schema(description = "Unique username", example = "professor123", required = true)
+    @Schema(description = "Unique username", example = "professor123")
     @NotBlank(message = "Username cannot be empty")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     String username,
     
-    @Schema(description = "Professor's first name", example = "Maria", required = true)
+    @Schema(description = "Professor's first name", example = "Maria")
     @NotBlank(message = "First name cannot be empty")
     @Size(max = 100, message = "First name cannot exceed 100 characters")
     String firstName,
     
-    @Schema(description = "Professor's last name", example = "Garcia Lopez", required = true)
+    @Schema(description = "Professor's last name", example = "Garcia Lopez")
     @NotBlank(message = "Last name cannot be empty")
     @Size(max = 100, message = "Last name cannot exceed 100 characters")
     String lastName,
     
-    @Schema(description = "Professor's DNI", example = "87654321B", required = true)
+    @Schema(description = "Professor's DNI", example = "87654321B")
     @NotBlank(message = "DNI cannot be empty")
     @Size(max = 20, message = "DNI cannot exceed 20 characters")
     String dni,
     
-    @Schema(description = "Professor's email", example = "maria.garcia@email.com", required = true)
+    @Schema(description = "Professor's email", example = "maria.garcia@email.com")
     @NotBlank(message = "Email cannot be empty")
     @Email(message = "Email must have a valid format")
     String email,
     
-    @Schema(description = "Phone number", example = "+34687654321", required = false)
+    @Schema(description = "Phone number", example = "+34687654321")
     @Size(max = 15, message = "Phone number cannot exceed 15 characters")
     String phoneNumber,
     
-    @Schema(description = "User role", example = "PROFESSOR", required = true)
+    @Schema(description = "User role", example = "PROFESSOR")
     Usuario.Role role,
     
-    @Schema(description = "Indicates if the account is enabled", example = "true", required = true)
+    @Schema(description = "Indicates if the account is enabled", example = "true")
     boolean enabled,
     
-    @Schema(description = "List of assigned class IDs", example = "[1, 2]", required = false)
+    @Schema(description = "List of assigned class IDs", example = "[1, 2]")
     List<Long> classIds,
     
-    @Schema(description = "Profile creation date", example = "2024-01-15T10:30:00", required = false)
+    @Schema(description = "Profile creation date", example = "2024-01-15T10:30:00")
     LocalDateTime createdAt
 ) {
 

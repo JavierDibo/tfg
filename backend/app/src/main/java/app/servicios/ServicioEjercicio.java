@@ -32,8 +32,8 @@ public class ServicioEjercicio {
 
     @Transactional(readOnly = true)
     public DTOEjercicio obtenerEjercicioPorId(Long id) {
-        // Use Entity Graph to load all relationships for better performance
-        Ejercicio ejercicio = repositorioEjercicio.findByIdWithAllRelationships(id).orElse(null);
+        // Use basic findById to avoid MultipleBagFetchException
+        Ejercicio ejercicio = repositorioEjercicio.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", id);
         
         // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises

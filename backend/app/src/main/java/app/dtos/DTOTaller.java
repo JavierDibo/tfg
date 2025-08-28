@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 /**
  * DTO específico para la entidad Taller
@@ -33,30 +34,30 @@ public record DTOTaller(
 ) {
     
     /**
-     * Constructor que crea un DTO desde una entidad Taller
+     * Constructor that creates a DTO from a Taller entity
      */
     public DTOTaller(Taller taller) {
         this(
-                taller.getId(),
-                taller.getTitle(),
-                taller.getDescription(),
-                taller.getPrice(),
-                taller.getFormat(),
-                taller.getImage(),
-                taller.getDifficulty(),
-                taller.getStudents().stream()
-                    .map(student -> student.getId().toString())
-                    .collect(Collectors.toList()),
-                taller.getTeachers().stream()
-                    .map(teacher -> teacher.getId().toString())
-                    .collect(Collectors.toList()),
-                taller.getExercises().stream()
-                    .map(exercise -> exercise.getId().toString())
-                    .collect(Collectors.toList()),
-                taller.getMaterial(),
-                taller.getDuracionHoras(),
-                taller.getFechaRealizacion(),
-                taller.getHoraComienzo()
+            taller.getId(),
+            taller.getTitle(),
+            taller.getDescription(),
+            taller.getPrice(),
+            taller.getFormat(),
+            taller.getImage(),
+            taller.getDifficulty(),
+            taller.getStudents() != null ? taller.getStudents().stream()
+                .map(alumno -> alumno.getId().toString())
+                .collect(Collectors.toList()) : null,
+            taller.getTeachers() != null ? taller.getTeachers().stream()
+                .map(profesor -> profesor.getId().toString())
+                .collect(Collectors.toList()) : null,
+            taller.getExercises() != null ? taller.getExercises().stream()
+                .map(ejercicio -> ejercicio.getId().toString())
+                .collect(Collectors.toList()) : null,
+            taller.getMaterial() != null ? new ArrayList<>(taller.getMaterial()) : null,
+            taller.getDuracionHoras(),
+            taller.getFechaRealizacion(),
+            taller.getHoraComienzo()
         );
     }
     

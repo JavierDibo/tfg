@@ -205,11 +205,8 @@ public interface RepositorioPago extends JpaRepository<Pago, Long> {
      * @param pagoId ID del pago
      * @return Optional<Pago> con relaciones cargadas
      */
-    @EntityGraph(value = "Pago.withItems")
-    @Query("SELECT p FROM Pago p " +
-           "LEFT JOIN FETCH p.alumno " +
-           "LEFT JOIN FETCH p.clase " +
-           "WHERE p.id = :pagoId")
+    @EntityGraph(value = "Pago.withItemsAndAlumno")
+    @Query("SELECT p FROM Pago p WHERE p.id = :pagoId")
     Optional<Pago> findByIdWithRelationships(@Param("pagoId") Long pagoId);
 
     /**

@@ -6,6 +6,7 @@ import app.entidades.enums.EEstadoEjercicio;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * DTO para la entidad EntregaEjercicio
@@ -24,19 +25,19 @@ public record DTOEntregaEjercicio(
 ) {
     
     /**
-     * Constructor que crea un DTO desde una entidad EntregaEjercicio
+     * Constructor that creates a DTO from an EntregaEjercicio entity
      */
     public DTOEntregaEjercicio(EntregaEjercicio entrega) {
         this(
-                entrega.getId(),
-                entrega.getNota(),
-                entrega.getFechaEntrega(),
-                entrega.getEstado(),
-                entrega.getArchivosEntregados(),
-                entrega.getAlumno() != null ? entrega.getAlumno().getId() : null,
-                entrega.getEjercicio() != null ? entrega.getEjercicio().getId() : null,
-                entrega.contarArchivos(),
-                entrega.getComentarios()
+            entrega.getId(),
+            entrega.getNota(),
+            entrega.getFechaEntrega(),
+            entrega.getEstado(),
+            entrega.getArchivosEntregados(),
+            entrega.getAlumno() != null ? entrega.getAlumno().getId() : null,
+            entrega.getEjercicio() != null ? entrega.getEjercicio().getId() : null,
+            entrega.contarArchivos(),
+            entrega.getComentarios()
         );
     }
     

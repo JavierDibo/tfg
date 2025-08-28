@@ -214,21 +214,16 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @param claseId ID de la clase
      * @return Optional<Clase> con relaciones cargadas
      */
-    @Query("SELECT DISTINCT c FROM Clase c " +
-           "LEFT JOIN FETCH c.students " +
-           "LEFT JOIN FETCH c.teachers " +
-           "LEFT JOIN FETCH c.exercises " +
-           "WHERE c.id = :claseId")
+    @EntityGraph(value = "Clase.withStudentsAndTeachers")
+    @Query("SELECT c FROM Clase c WHERE c.id = :claseId")
     Optional<Clase> findByIdWithRelationships(@Param("claseId") Long claseId);
 
     /**
      * Busca todas las clases con sus relaciones cargadas
      * @return Lista de clases con relaciones cargadas
      */
-    @Query("SELECT DISTINCT c FROM Clase c " +
-           "LEFT JOIN FETCH c.students " +
-           "LEFT JOIN FETCH c.teachers " +
-           "LEFT JOIN FETCH c.exercises")
+    @EntityGraph(value = "Clase.withStudentsAndTeachers")
+    @Query("SELECT c FROM Clase c")
     List<Clase> findAllWithRelationships();
 
     /**
@@ -236,6 +231,7 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @return Lista de clases con relaciones cargadas
      */
     @EntityGraph(value = "Clase.withStudentsAndTeachers")
+    @Query("SELECT c FROM Clase c")
     List<Clase> findAllForDashboard();
 
     /**
@@ -243,6 +239,7 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @return Lista de clases con ejercicios cargados
      */
     @EntityGraph(value = "Clase.withExercises")
+    @Query("SELECT c FROM Clase c")
     List<Clase> findAllForExerciseManagement();
 
     /**
@@ -250,7 +247,8 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @param claseId ID de la clase
      * @return Optional<Clase> con todas las relaciones cargadas
      */
-    @EntityGraph(value = "Clase.withAllRelationships")
+    @EntityGraph(value = "Clase.withStudentsAndTeachers")
+    @Query("SELECT c FROM Clase c WHERE c.id = :claseId")
     Optional<Clase> findByIdWithAllRelationships(@Param("claseId") Long claseId);
 
     /**

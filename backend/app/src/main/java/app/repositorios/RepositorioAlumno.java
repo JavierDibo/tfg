@@ -200,11 +200,8 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @param alumnoId ID del alumno
      * @return Optional<Alumno> con relaciones cargadas
      */
-    @Query("SELECT DISTINCT a FROM Alumno a " +
-           "LEFT JOIN FETCH a.classes " +
-           "LEFT JOIN FETCH a.payments " +
-           "LEFT JOIN FETCH a.submissions " +
-           "WHERE a.id = :alumnoId")
+    @EntityGraph(value = "Alumno.withClassesAndPayments")
+    @Query("SELECT a FROM Alumno a WHERE a.id = :alumnoId")
     Optional<Alumno> findByIdWithRelationships(@Param("alumnoId") Long alumnoId);
 
     /**
@@ -231,6 +228,7 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @return Optional<Alumno> con clases cargadas
      */
     @EntityGraph(value = "Alumno.withClasses")
+    @Query("SELECT a FROM Alumno a WHERE a.id = :alumnoId")
     Optional<Alumno> findByIdWithClasses(@Param("alumnoId") Long alumnoId);
 
     /**
@@ -238,7 +236,8 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @param alumnoId ID del alumno
      * @return Optional<Alumno> con todas las relaciones cargadas
      */
-    @EntityGraph(value = "Alumno.withAllRelationships")
+    @EntityGraph(value = "Alumno.withClassesAndPayments")
+    @Query("SELECT a FROM Alumno a WHERE a.id = :alumnoId")
     Optional<Alumno> findByIdWithAllRelationships(@Param("alumnoId") Long alumnoId);
 
     /**
@@ -282,12 +281,14 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @return Lista de alumnos con clases cargadas
      */
     @EntityGraph(value = "Alumno.withClasses")
+    @Query("SELECT a FROM Alumno a")
     List<Alumno> findAllWithClasses();
 
     /**
      * Obtiene todos los alumnos con todas sus relaciones cargadas usando EntityGraph
      * @return Lista de alumnos con todas las relaciones cargadas
      */
-    @EntityGraph(value = "Alumno.withAllRelationships")
+    @EntityGraph(value = "Alumno.withClassesAndPayments")
+    @Query("SELECT a FROM Alumno a")
     List<Alumno> findAllWithAllRelationships();
 }

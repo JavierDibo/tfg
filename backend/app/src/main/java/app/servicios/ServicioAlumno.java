@@ -2,6 +2,7 @@ package app.servicios;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,8 +42,8 @@ public class ServicioAlumno {
 
     @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorId(Long id) {
-        // Use Entity Graph to load all relationships for better performance
-        Alumno alumno = repositorioAlumno.findByIdWithAllRelationships(id).orElse(null);
+        // Use basic findById to avoid MultipleBagFetchException
+        Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
         
         // Security check: Only ADMIN, PROFESOR, or the student themselves can access student data
@@ -599,7 +600,7 @@ public class ServicioAlumno {
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         
         // Obtenemos los alumnos de la clase usando la relación JPA
-        List<Alumno> alumnosDeClase = clase.getStudents();
+        List<Alumno> alumnosDeClase = new ArrayList<>(clase.getStudents());
         
         // Aplicamos paginación manualmente
         int start = (int) pageable.getOffset();
@@ -716,7 +717,7 @@ public class ServicioAlumno {
         }
         
         // Obtenemos los alumnos de la clase usando la relación JPA
-        List<Alumno> alumnosDeClase = clase.getStudents();
+        List<Alumno> alumnosDeClase = new ArrayList<>(clase.getStudents());
         
         // Aplicamos paginación manualmente
         int start = (int) pageable.getOffset();
@@ -804,7 +805,7 @@ public class ServicioAlumno {
         // Security check: Only ADMIN, PROFESOR, or the student themselves can access student data
         if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
             // Admins and professors can see any student's data
-            Alumno alumno = repositorioAlumno.findByIdWithAllRelationships(id).orElse(null);
+            Alumno alumno = repositorioAlumno.findByIdWithClasses(id).orElse(null);
             ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
             return new DTOAlumno(alumno);
         } else if (securityUtils.hasRole("ALUMNO")) {
@@ -813,7 +814,7 @@ public class ServicioAlumno {
             if (!id.equals(currentUserId)) {
                 ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros alumnos");
             }
-            Alumno alumno = repositorioAlumno.findByIdWithAllRelationships(id).orElse(null);
+            Alumno alumno = repositorioAlumno.findByIdWithClasses(id).orElse(null);
             ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
             return new DTOAlumno(alumno);
         } else {

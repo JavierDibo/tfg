@@ -8,6 +8,7 @@ import app.entidades.enums.EDificultad;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 /**
  * DTO para la entidad Clase (abstracta)
@@ -29,28 +30,28 @@ public record DTOClase(
 ) {
     
     /**
-     * Constructor que crea un DTO desde una entidad Clase
+     * Constructor that creates a DTO from a Class entity
      */
     public DTOClase(Clase clase) {
         this(
-                clase.getId(),
-                clase.getTitle(),
-                clase.getDescription(),
-                clase.getPrice(),
-                clase.getFormat(),
-                clase.getImage(),
-                clase.getDifficulty(),
-                clase.getStudents().stream()
-                    .map(student -> student.getId().toString())
-                    .collect(Collectors.toList()),
-                clase.getTeachers().stream()
-                    .map(teacher -> teacher.getId().toString())
-                    .collect(Collectors.toList()),
-                clase.getExercises().stream()
-                    .map(exercise -> exercise.getId().toString())
-                    .collect(Collectors.toList()),
-                clase.getMaterial(),
-                determinarTipoClase(clase)
+            clase.getId(),
+            clase.getTitle(),
+            clase.getDescription(),
+            clase.getPrice(),
+            clase.getFormat(),
+            clase.getImage(),
+            clase.getDifficulty(),
+            clase.getStudents().stream()
+                .map(student -> student.getId().toString())
+                .collect(Collectors.toList()),
+            clase.getTeachers().stream()
+                .map(teacher -> teacher.getId().toString())
+                .collect(Collectors.toList()),
+            clase.getExercises().stream()
+                .map(exercise -> exercise.getId().toString())
+                .collect(Collectors.toList()),
+            clase.getMaterial(),
+            determinarTipoClase(clase)
         );
     }
     

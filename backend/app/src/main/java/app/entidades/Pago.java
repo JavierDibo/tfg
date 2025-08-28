@@ -29,6 +29,35 @@ import java.util.List;
     name = "Pago.withItems",
     attributeNodes = @NamedAttributeNode("items")
 )
+@NamedEntityGraph(
+    name = "Pago.withAlumno",
+    attributeNodes = @NamedAttributeNode("alumno")
+)
+@NamedEntityGraph(
+    name = "Pago.withClase",
+    attributeNodes = @NamedAttributeNode("clase")
+)
+@NamedEntityGraph(
+    name = "Pago.withAlumnoAndClase",
+    attributeNodes = {
+        @NamedAttributeNode("alumno"),
+        @NamedAttributeNode("clase")
+    }
+)
+@NamedEntityGraph(
+    name = "Pago.withItemsAndAlumno",
+    attributeNodes = {
+        @NamedAttributeNode("items"),
+        @NamedAttributeNode("alumno")
+    }
+)
+@NamedEntityGraph(
+    name = "Pago.withItemsAndClase",
+    attributeNodes = {
+        @NamedAttributeNode("items"),
+        @NamedAttributeNode("clase")
+    }
+)
 public class Pago {
     
     @Id

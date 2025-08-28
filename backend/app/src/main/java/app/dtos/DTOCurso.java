@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 /**
  * DTO específico para la entidad Curso
@@ -32,29 +33,29 @@ public record DTOCurso(
 ) {
     
     /**
-     * Constructor que crea un DTO desde una entidad Curso
+     * Constructor that creates a DTO from a Curso entity
      */
     public DTOCurso(Curso curso) {
         this(
-                curso.getId(),
-                curso.getTitle(),
-                curso.getDescription(),
-                curso.getPrice(),
-                curso.getFormat(),
-                curso.getImage(),
-                curso.getDifficulty(),
-                curso.getStudents().stream()
-                    .map(student -> student.getId().toString())
-                    .collect(Collectors.toList()),
-                curso.getTeachers().stream()
-                    .map(teacher -> teacher.getId().toString())
-                    .collect(Collectors.toList()),
-                curso.getExercises().stream()
-                    .map(exercise -> exercise.getId().toString())
-                    .collect(Collectors.toList()),
-                curso.getMaterial(),
-                curso.getFechaInicio(),
-                curso.getFechaFin()
+            curso.getId(),
+            curso.getTitle(),
+            curso.getDescription(),
+            curso.getPrice(),
+            curso.getFormat(),
+            curso.getImage(),
+            curso.getDifficulty(),
+            curso.getStudents() != null ? curso.getStudents().stream()
+                .map(alumno -> alumno.getId().toString())
+                .collect(Collectors.toList()) : null,
+            curso.getTeachers() != null ? curso.getTeachers().stream()
+                .map(profesor -> profesor.getId().toString())
+                .collect(Collectors.toList()) : null,
+            curso.getExercises() != null ? curso.getExercises().stream()
+                .map(ejercicio -> ejercicio.getId().toString())
+                .collect(Collectors.toList()) : null,
+            curso.getMaterial() != null ? new ArrayList<>(curso.getMaterial()) : null,
+            curso.getFechaInicio(),
+            curso.getFechaFin()
         );
     }
     

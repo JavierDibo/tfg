@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 /**
  * DTO para mostrar información detallada de las clases en las que está inscrito un estudiante
@@ -35,7 +36,35 @@ public record DTOClaseInscrita(
 ) {
     
     /**
-     * Constructor que crea un DTO desde una entidad Clase
+     * Constructor that creates a DTO from a Class entity for enrolled students
+     */
+    public DTOClaseInscrita(Clase clase) {
+        this(
+            clase.getId(),
+            clase.getTitle(),
+            clase.getDescription(),
+            clase.getPrice(),
+            clase.getFormat(),
+            clase.getImage(),
+            clase.getDifficulty(),
+            clase.getStudents() != null ? clase.getStudents().stream()
+                .map(alumno -> alumno.getId().toString())
+                .collect(Collectors.toList()) : null,
+            clase.getTeachers() != null ? clase.getTeachers().stream()
+                .map(profesor -> profesor.getId().toString())
+                .collect(Collectors.toList()) : null,
+            clase.getExercises() != null ? clase.getExercises().stream()
+                .map(ejercicio -> ejercicio.getId().toString())
+                .collect(Collectors.toList()) : null,
+            clase.getMaterial() != null ? new ArrayList<>(clase.getMaterial()) : null,
+            determinarTipoClase(clase),
+            null, // profesor - will be set separately
+            null // fechaInscripcion - will be set separately
+        );
+    }
+    
+    /**
+     * Constructor that creates a DTO from a Class entity for enrolled students
      */
     public DTOClaseInscrita(Clase clase, DTOProfesor profesor, LocalDateTime fechaInscripcion) {
         this(
@@ -55,7 +84,7 @@ public record DTOClaseInscrita(
                 clase.getExercises().stream()
                     .map(exercise -> exercise.getId().toString())
                     .collect(Collectors.toList()),
-                clase.getMaterial(),
+                clase.getMaterial() != null ? new ArrayList<>(clase.getMaterial()) : null,
                 determinarTipoClase(clase),
                 profesor,
                 fechaInscripcion

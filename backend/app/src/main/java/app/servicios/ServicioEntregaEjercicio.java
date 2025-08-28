@@ -37,8 +37,8 @@ public class ServicioEntregaEjercicio {
 
     @Transactional(readOnly = true)
     public DTOEntregaEjercicio obtenerEntregaPorId(Long id) {
-        // Use Entity Graph to load all relationships for better performance
-        EntregaEjercicio entrega = repositorioEntregaEjercicio.findByIdWithAllRelationships(id).orElse(null);
+        // Use basic findById to avoid MultipleBagFetchException
+        EntregaEjercicio entrega = repositorioEntregaEjercicio.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(entrega, "Entrega", "ID", id);
         
         // Security check: Only ADMIN, PROFESOR, or the student who owns the delivery can see it

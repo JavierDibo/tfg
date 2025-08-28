@@ -275,9 +275,8 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @param profesorId ID del profesor
      * @return Optional<Profesor> con relaciones cargadas
      */
-    @Query("SELECT DISTINCT p FROM Profesor p " +
-           "LEFT JOIN FETCH p.classes " +
-           "WHERE p.id = :profesorId")
+    @EntityGraph(value = "Profesor.withClasses")
+    @Query("SELECT p FROM Profesor p WHERE p.id = :profesorId")
     Optional<Profesor> findByIdWithRelationships(@Param("profesorId") Long profesorId);
 
     /**
@@ -296,6 +295,7 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @return Optional<Profesor> con clases cargadas
      */
     @EntityGraph(value = "Profesor.withClasses")
+    @Query("SELECT p FROM Profesor p WHERE p.id = :profesorId")
     Optional<Profesor> findByIdWithClasses(@Param("profesorId") Long profesorId);
 
     /**
@@ -304,6 +304,7 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @return Optional<Profesor> con todas las relaciones cargadas
      */
     @EntityGraph(value = "Profesor.withAllRelationships")
+    @Query("SELECT p FROM Profesor p WHERE p.id = :profesorId")
     Optional<Profesor> findByIdWithAllRelationships(@Param("profesorId") Long profesorId);
 
     /**
@@ -363,6 +364,7 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @return Lista de profesores con clases cargadas
      */
     @EntityGraph(value = "Profesor.withClasses")
+    @Query("SELECT p FROM Profesor p")
     List<Profesor> findAllWithClasses();
 
     /**
@@ -370,5 +372,6 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @return Lista de profesores con todas las relaciones cargadas
      */
     @EntityGraph(value = "Profesor.withAllRelationships")
+    @Query("SELECT p FROM Profesor p")
     List<Profesor> findAllWithAllRelationships();
 }

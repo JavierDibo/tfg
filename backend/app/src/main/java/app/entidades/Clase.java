@@ -26,11 +26,15 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "tipo_clase", discriminatorType = DiscriminatorType.STRING)
 @NamedEntityGraph(
-    name = "Clase.withStudentsAndTeachers",
+    name = "Clase.withStudents",
     attributeNodes = {
-        @NamedAttributeNode("students"),
-        @NamedAttributeNode("teachers"),
-        @NamedAttributeNode("material")
+        @NamedAttributeNode("students")
+    }
+)
+@NamedEntityGraph(
+    name = "Clase.withTeachers",
+    attributeNodes = {
+        @NamedAttributeNode("teachers")
     }
 )
 @NamedEntityGraph(
@@ -40,12 +44,30 @@ import java.util.List;
     }
 )
 @NamedEntityGraph(
-    name = "Clase.withAllRelationships",
+    name = "Clase.withMaterial",
+    attributeNodes = {
+        @NamedAttributeNode("material")
+    }
+)
+@NamedEntityGraph(
+    name = "Clase.withStudentsAndTeachers",
     attributeNodes = {
         @NamedAttributeNode("students"),
+        @NamedAttributeNode("teachers")
+    }
+)
+@NamedEntityGraph(
+    name = "Clase.withStudentsAndExercises",
+    attributeNodes = {
+        @NamedAttributeNode("students"),
+        @NamedAttributeNode("exercises")
+    }
+)
+@NamedEntityGraph(
+    name = "Clase.withTeachersAndExercises",
+    attributeNodes = {
         @NamedAttributeNode("teachers"),
-        @NamedAttributeNode("exercises"),
-        @NamedAttributeNode("material")
+        @NamedAttributeNode("exercises")
     }
 )
 public abstract class Clase {
@@ -177,7 +199,14 @@ public abstract class Clase {
         ejercicio.setClase(null);
     }
     
-
+    /**
+     * Verifica si un profesor está asignado a la clase
+     * @param profesorId ID del profesor
+     * @return true si está asignado, false en caso contrario
+     */
+    public boolean tieneProfesor(Long profesorId) {
+        return this.teachers.stream().anyMatch(p -> p.getId().equals(profesorId));
+    }
     
     /**
      * Agrega material a la clase

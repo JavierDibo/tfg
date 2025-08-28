@@ -200,8 +200,8 @@ public class ServicioClase {
      */
     @Transactional(readOnly = true)
     public DTOClase obtenerClasePorId(Long id) {
-        // Use Entity Graph to load all relationships for better performance
-        Clase clase = repositorioClase.findByIdWithAllRelationships(id).orElse(null);
+        // Use basic findById to avoid MultipleBagFetchException
+        Clase clase = repositorioClase.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", id);
         
         // Verificar acceso según el rol
@@ -566,10 +566,11 @@ public class ServicioClase {
             
             // Check if the student is already in the class
             if (clase.getStudents().stream().anyMatch(s -> s.getId().equals(peticion.studentId()))) {
-                return DTORespuestaEnrollment.failure(
-                    peticion.studentId(), 
-                    peticion.classId(), 
-                    "The student is already enrolled in this class", 
+                return DTORespuestaEnrollment.success(
+                    peticion.studentId(),
+                    peticion.classId(),
+                    "Student already enrolled", // TODO: Get real student name
+                    clase.getTitle(),
                     "ENROLLMENT"
                 );
             }
@@ -914,19 +915,19 @@ public class ServicioClase {
         Alumno alumno = repositorioAlumno.findById(alumnoIdLong).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", alumnoId);
         
+        // Obtener información del alumno para la respuesta
+        String nombreAlumno = alumno != null ? alumno.getFirstName() : "Alumno";
+        
         // Verificar si el alumno ya está inscrito
         if (clase.getStudents().stream().anyMatch(s -> s.getId().equals(alumnoIdLong))) {
-            return DTORespuestaEnrollment.failure(alumnoIdLong, claseId, 
-                "El alumno ya está inscrito en esta clase", "ENROLLMENT");
+            return DTORespuestaEnrollment.success(alumnoIdLong, claseId, 
+                nombreAlumno, clase.getTitle(), "ENROLLMENT");
         }
 
         // Usar la relación JPA bidireccional
         clase.agregarAlumno(alumno);
         
         Clase claseActualizada = repositorioClase.save(clase);
-        
-        // Obtener información del alumno para la respuesta
-        String nombreAlumno = alumno != null ? alumno.getFirstName() : "Alumno";
         
         return DTORespuestaEnrollment.success(alumnoIdLong, claseId, 
             nombreAlumno, claseActualizada.getTitle(), "ENROLLMENT");
@@ -1124,7 +1125,7 @@ public class ServicioClase {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
         }
         
-        Clase clase = repositorioClase.findByIdWithAllRelationships(id).orElse(null);
+        Clase clase = repositorioClase.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", id);
         
         return new DTOClase(clase);

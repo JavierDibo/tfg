@@ -338,10 +338,8 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param ejercicioId ID del ejercicio
      * @return Optional<Ejercicio> con relaciones cargadas
      */
-    @Query("SELECT DISTINCT e FROM Ejercicio e " +
-           "LEFT JOIN FETCH e.clase " +
-           "LEFT JOIN FETCH e.entregas " +
-           "WHERE e.id = :ejercicioId")
+    @EntityGraph(value = "Ejercicio.withAllRelationships")
+    @Query("SELECT e FROM Ejercicio e WHERE e.id = :ejercicioId")
     Optional<Ejercicio> findByIdWithRelationships(@Param("ejercicioId") Long ejercicioId);
 
     // ========== ENTITY GRAPH METHODS ==========
@@ -352,6 +350,7 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @return Optional<Ejercicio> con clase cargada
      */
     @EntityGraph(value = "Ejercicio.withClase")
+    @Query("SELECT e FROM Ejercicio e WHERE e.id = :ejercicioId")
     Optional<Ejercicio> findByIdWithClase(@Param("ejercicioId") Long ejercicioId);
 
     /**
@@ -360,6 +359,7 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @return Optional<Ejercicio> con entregas cargadas
      */
     @EntityGraph(value = "Ejercicio.withEntregas")
+    @Query("SELECT e FROM Ejercicio e WHERE e.id = :ejercicioId")
     Optional<Ejercicio> findByIdWithEntregas(@Param("ejercicioId") Long ejercicioId);
 
     /**
@@ -368,6 +368,7 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @return Optional<Ejercicio> con todas las relaciones cargadas
      */
     @EntityGraph(value = "Ejercicio.withAllRelationships")
+    @Query("SELECT e FROM Ejercicio e WHERE e.id = :ejercicioId")
     Optional<Ejercicio> findByIdWithAllRelationships(@Param("ejercicioId") Long ejercicioId);
 
     /**
@@ -446,6 +447,7 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @return Lista de ejercicios con clase cargada
      */
     @EntityGraph(value = "Ejercicio.withClase")
+    @Query("SELECT e FROM Ejercicio e")
     List<Ejercicio> findAllWithClase();
 
     /**
@@ -453,6 +455,7 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @return Lista de ejercicios con entregas cargadas
      */
     @EntityGraph(value = "Ejercicio.withEntregas")
+    @Query("SELECT e FROM Ejercicio e")
     List<Ejercicio> findAllWithEntregas();
 
     /**
@@ -460,5 +463,6 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @return Lista de ejercicios con todas las relaciones cargadas
      */
     @EntityGraph(value = "Ejercicio.withAllRelationships")
+    @Query("SELECT e FROM Ejercicio e")
     List<Ejercicio> findAllWithAllRelationships();
 }
