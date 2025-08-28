@@ -7,6 +7,7 @@ import app.entidades.enums.EDificultad;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DTO para la entidad Clase (abstracta)
@@ -39,9 +40,15 @@ public record DTOClase(
                 clase.getFormat(),
                 clase.getImage(),
                 clase.getDifficulty(),
-                clase.getStudentIds(),
-                clase.getTeacherIds(),
-                clase.getExerciseIds(),
+                clase.getStudents().stream()
+                    .map(student -> student.getId().toString())
+                    .collect(Collectors.toList()),
+                clase.getTeachers().stream()
+                    .map(teacher -> teacher.getId().toString())
+                    .collect(Collectors.toList()),
+                clase.getExercises().stream()
+                    .map(exercise -> exercise.getId().toString())
+                    .collect(Collectors.toList()),
                 clase.getMaterial(),
                 determinarTipoClase(clase)
         );

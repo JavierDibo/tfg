@@ -2,6 +2,7 @@ package app.dtos;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import app.entidades.Profesor;
 import app.entidades.Usuario;
@@ -56,8 +57,8 @@ public record DTOProfesor(
     @Schema(description = "Indicates if the account is enabled", example = "true", required = true)
     boolean enabled,
     
-    @Schema(description = "List of assigned class IDs", example = "[\"1\", \"2\"]", required = false)
-    List<String> classIds,
+    @Schema(description = "List of assigned class IDs", example = "[1, 2]", required = false)
+    List<Long> classIds,
     
     @Schema(description = "Profile creation date", example = "2024-01-15T10:30:00", required = false)
     LocalDateTime createdAt
@@ -77,7 +78,9 @@ public record DTOProfesor(
             profesor.getPhoneNumber(),
             profesor.getRole(),
             profesor.isEnabled(),
-            profesor.getClassIds(),
+            profesor.getClasses() != null ? profesor.getClasses().stream()
+                .map(clase -> clase.getId())
+                .collect(Collectors.toList()) : null,
             LocalDateTime.now() // placeholder, in a real implementation would be creation date from entity
         );
     }

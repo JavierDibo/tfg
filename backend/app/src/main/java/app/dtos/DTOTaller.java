@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DTO específico para la entidad Taller
@@ -43,9 +44,15 @@ public record DTOTaller(
                 taller.getFormat(),
                 taller.getImage(),
                 taller.getDifficulty(),
-                taller.getStudentIds(),
-                taller.getTeacherIds(),
-                taller.getExerciseIds(),
+                taller.getStudents().stream()
+                    .map(student -> student.getId().toString())
+                    .collect(Collectors.toList()),
+                taller.getTeachers().stream()
+                    .map(teacher -> teacher.getId().toString())
+                    .collect(Collectors.toList()),
+                taller.getExercises().stream()
+                    .map(exercise -> exercise.getId().toString())
+                    .collect(Collectors.toList()),
                 taller.getMaterial(),
                 taller.getDuracionHoras(),
                 taller.getFechaRealizacion(),

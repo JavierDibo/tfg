@@ -2,6 +2,7 @@ package app.dtos;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import app.entidades.Alumno;
 import app.entidades.Usuario;
@@ -41,11 +42,11 @@ public record DTOPerfilAlumno(
     
     boolean enrolled,
     
-    List<String> classIds,
+    List<Long> classIds,
     
-    List<String> paymentIds,
+    List<Long> paymentIds,
     
-    List<String> submissionIds,
+    List<Long> submissionIds,
     
     Usuario.Role role
 ) {
@@ -64,9 +65,15 @@ public record DTOPerfilAlumno(
             alumno.getPhoneNumber(),
             alumno.getEnrollDate(),
             alumno.isEnrolled(),
-            alumno.getClassIds(),
-            alumno.getPaymentIds(),
-            alumno.getSubmissionIds(),
+            alumno.getClasses() != null ? alumno.getClasses().stream()
+                .map(clase -> clase.getId())
+                .collect(Collectors.toList()) : null,
+            alumno.getPayments() != null ? alumno.getPayments().stream()
+                .map(pago -> pago.getId())
+                .collect(Collectors.toList()) : null,
+            alumno.getSubmissions() != null ? alumno.getSubmissions().stream()
+                .map(entrega -> entrega.getId())
+                .collect(Collectors.toList()) : null,
             alumno.getRole()
         );
     }

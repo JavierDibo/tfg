@@ -1,0 +1,187 @@
+@startuml JPA Relationships - Simple View
+
+!define ENTITY class
+!define ABSTRACT_CLASS abstract class
+
+' Styling
+skinparam class {
+    BackgroundColor<<Entity>> LightBlue
+    BackgroundColor<<Abstract>> LightYellow
+    BorderColor Black
+    FontSize 11
+}
+
+' Core Entities
+ABSTRACT_CLASS Usuario <<Abstract>> {
+    +Long id
+    +String username
+    +String password
+    +String firstName
+    +String lastName
+    +String dni
+    +String email
+    +String phoneNumber
+    +Role role
+    +boolean enabled
+}
+
+ENTITY Administrador <<Entity>> {
+    @DiscriminatorValue("ADMINISTRADOR")
+}
+
+ENTITY Profesor <<Entity>> {
+    @DiscriminatorValue("PROFESOR")
+    +List<Clase> classes
+}
+
+ENTITY Alumno <<Entity>> {
+    @DiscriminatorValue("ALUMNO")
+    +LocalDateTime enrollDate
+    +boolean enrolled
+    +List<Clase> classes
+    +List<Pago> payments
+    +List<EntregaEjercicio> submissions
+}
+
+' Class Hierarchy
+ABSTRACT_CLASS Clase <<Abstract>> {
+    +Long id
+    +String title
+    +String description
+    +BigDecimal price
+    +EPresencialidad format
+    +String image
+    +EDificultad difficulty
+    +List<Alumno> students
+    +List<Profesor> teachers
+    +List<Ejercicio> exercises
+    +List<Material> material
+}
+
+ENTITY Curso <<Entity>> {
+    @DiscriminatorValue("CURSO")
+    +LocalDate fechaInicio
+    +LocalDate fechaFin
+}
+
+ENTITY Taller <<Entity>> {
+    @DiscriminatorValue("TALLER")
+    +Integer duracionHoras
+    +LocalDate fechaRealizacion
+    +LocalTime horaComienzo
+}
+
+' Exercise and Submission
+ENTITY Ejercicio <<Entity>> {
+    +Long id
+    +String name
+    +String statement
+    +LocalDateTime startDate
+    +LocalDateTime endDate
+    +Clase clase
+    +List<EntregaEjercicio> entregas
+}
+
+ENTITY EntregaEjercicio <<Entity>> {
+    +Long id
+    +BigDecimal nota
+    +LocalDateTime fechaEntrega
+    +EEstadoEjercicio estado
+    +List<String> archivosEntregados
+    +String comentarios
+    +Alumno alumno
+    +Ejercicio ejercicio
+}
+
+' Payment System
+ENTITY Pago <<Entity>> {
+    +Long id
+    +LocalDateTime fechaPago
+    +BigDecimal importe
+    +EMetodoPago metodoPago
+    +EEstadoPago estado
+    +Boolean facturaCreada
+    +String stripePaymentIntentId
+    +String stripeChargeId
+    +String failureReason
+    +LocalDateTime fechaExpiracion
+    +Long classId
+    +Alumno alumno
+    +Clase clase
+    +List<ItemPago> items
+}
+
+ENTITY ItemPago <<Entity>> {
+    @Embeddable
+    +String id
+    +String concepto
+    +BigDecimal precioUnitario
+    +Integer cantidad
+}
+
+ENTITY Material <<Entity>> {
+    +String id
+    +String name
+    +String url
+}
+
+ENTITY FactoriaFacturacion <<Entity>> {
+    +crearFacturaDesdePago(Pago): String
+}
+
+' Inheritance Relationships
+Usuario <|-- Administrador
+Usuario <|-- Profesor
+Usuario <|-- Alumno
+
+Clase <|-- Curso
+Clase <|-- Taller
+
+' JPA Relationships with Annotations
+
+' Many-to-Many Relationships
+Clase ||--o{ Alumno : "@ManyToMany\n@JoinTable(clase_alumno)"
+Alumno ||--o{ Clase : "@ManyToMany(mappedBy='students')"
+
+Clase ||--o{ Profesor : "@ManyToMany\n@JoinTable(clase_profesor)"
+Profesor ||--o{ Clase : "@ManyToMany(mappedBy='teachers')"
+
+Clase ||--o{ Material : "@ManyToMany\n@JoinTable(clase_material)"
+Material ||--o{ Clase : "@ManyToMany"
+
+' One-to-Many Relationships
+Clase ||--o{ Ejercicio : "@OneToMany(mappedBy='clase')"
+Ejercicio }o--|| Clase : "@ManyToOne\n@JoinColumn(class_id)"
+
+Ejercicio ||--o{ EntregaEjercicio : "@OneToMany(mappedBy='ejercicio')"
+EntregaEjercicio }o--|| Ejercicio : "@ManyToOne\n@JoinColumn(ejercicio_id)"
+
+Alumno ||--o{ EntregaEjercicio : "@OneToMany(mappedBy='alumno')"
+EntregaEjercicio }o--|| Alumno : "@ManyToOne\n@JoinColumn(alumno_id)"
+
+Alumno ||--o{ Pago : "@OneToMany(mappedBy='alumno')"
+Pago }o--|| Alumno : "@ManyToOne\n@JoinColumn(alumno_id)"
+
+Clase ||--o{ Pago : "@OneToMany(mappedBy='clase')"
+Pago }o--|| Clase : "@ManyToOne\n@JoinColumn(clase_id)"
+
+' Element Collections
+Pago ||--o{ ItemPago : "@ElementCollection\n@CollectionTable(pago_items)"
+EntregaEjercicio ||--o{ String : "@ElementCollection\n@CollectionTable(entrega_archivos)"
+
+' Utility Relationships
+FactoriaFacturacion ..> Pago : "creates invoices from"
+
+' Notes
+note top of Usuario : "Single Table Inheritance\n@Inheritance(strategy = SINGLE_TABLE)\n@DiscriminatorColumn(name = 'tipo_usuario')"
+note top of Clase : "Single Table Inheritance\n@Inheritance(strategy = SINGLE_TABLE)\n@DiscriminatorColumn(name = 'tipo_clase')"
+note top of Pago : "Named Entity Graph\n@NamedEntityGraph(name = 'Pago.withItems')"
+note top of ItemPago : "@Embeddable - Embedded in Pago"
+note top of EntregaEjercicio : "@ElementCollection for file paths\n@CollectionTable for archivosEntregados"
+
+' Relationship Details
+note right of Clase : "All relationships use\nFetchType.LAZY by default\nCascadeType.ALL for child entities"
+note right of Pago : "Stripe integration fields\nfor payment processing"
+note right of Ejercicio : "Time-based validation\nfor exercise deadlines"
+
+@enduml

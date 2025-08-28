@@ -419,4 +419,146 @@ public class EjercicioRest extends BaseRestController {
         
         return new ResponseEntity<>(estadisticas, HttpStatus.OK);
     }
+
+    // ===== OPTIMIZED ENTITY GRAPH ENDPOINTS =====
+
+    /**
+     * Gets an exercise with its class loaded using Entity Graph
+     */
+    @GetMapping("/{id}/con-clase")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
+    @Operation(
+        summary = "Get exercise with class",
+        description = "Gets an exercise with its class loaded using Entity Graph for optimal performance"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Exercise with class retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOEjercicio.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Exercise not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view this exercise"
+        )
+    })
+    public ResponseEntity<DTOEjercicio> obtenerEjercicioConClase(
+            @Parameter(description = "ID of the exercise", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOEjercicio dtoEjercicio = servicioEjercicio.obtenerEjercicioConClase(id);
+        return new ResponseEntity<>(dtoEjercicio, HttpStatus.OK);
+    }
+
+    /**
+     * Gets an exercise with its deliveries loaded using Entity Graph
+     */
+    @GetMapping("/{id}/con-entregas")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @Operation(
+        summary = "Get exercise with deliveries",
+        description = "Gets an exercise with its deliveries loaded using Entity Graph for optimal performance"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Exercise with deliveries retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOEjercicio.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Exercise not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ADMIN or PROFESOR role is required"
+        )
+    })
+    public ResponseEntity<DTOEjercicio> obtenerEjercicioConEntregas(
+            @Parameter(description = "ID of the exercise", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOEjercicio dtoEjercicio = servicioEjercicio.obtenerEjercicioConEntregas(id);
+        return new ResponseEntity<>(dtoEjercicio, HttpStatus.OK);
+    }
+
+    /**
+     * Gets an exercise with all its relationships loaded using Entity Graph
+     */
+    @GetMapping("/{id}/completo")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @Operation(
+        summary = "Get exercise with all relationships",
+        description = "Gets an exercise with all its relationships (class and deliveries) loaded using Entity Graph"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Exercise with all relationships retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOEjercicio.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Exercise not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ADMIN or PROFESOR role is required"
+        )
+    })
+    public ResponseEntity<DTOEjercicio> obtenerEjercicioCompleto(
+            @Parameter(description = "ID of the exercise", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOEjercicio dtoEjercicio = servicioEjercicio.obtenerEjercicioPorId(id);
+        return new ResponseEntity<>(dtoEjercicio, HttpStatus.OK);
+    }
+
+    /**
+     * Gets exercises by class with deliveries loaded using Entity Graph
+     */
+    @GetMapping("/clase/{claseId}/con-entregas")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @Operation(
+        summary = "Get exercises by class with deliveries",
+        description = "Gets exercises for a specific class with deliveries loaded using Entity Graph"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Exercises with deliveries retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOEjercicio.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Class not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ADMIN or PROFESOR role is required"
+        )
+    })
+    public ResponseEntity<List<DTOEjercicio>> obtenerEjerciciosConEntregas(
+            @Parameter(description = "ID of the class", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long claseId) {
+        
+        List<DTOEjercicio> ejercicios = servicioEjercicio.obtenerEjerciciosConEntregasPorClase(claseId);
+        return new ResponseEntity<>(ejercicios, HttpStatus.OK);
+    }
 }

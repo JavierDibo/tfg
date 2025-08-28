@@ -48,7 +48,7 @@ public record DTOPeticionCrearTaller(
         @NotNull
         LocalTime horaComienzo,
         
-        List<String> profesoresId,
+        List<Long> profesoresId,
         List<Material> material
 ) {
     

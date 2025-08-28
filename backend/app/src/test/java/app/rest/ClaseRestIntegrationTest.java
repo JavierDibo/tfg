@@ -83,7 +83,7 @@ class ClaseRestIntegrationTest {
                 EDificultad.AVANZADO,
                 LocalDate.now().plusDays(15),
                 LocalDate.now().plusDays(45),
-                Arrays.asList("profesor1"),
+                Arrays.asList(1L),
                 Arrays.asList(material)
         );
 
@@ -98,7 +98,7 @@ class ClaseRestIntegrationTest {
                 8,
                 LocalDate.now().plusDays(7),
                 LocalTime.of(16, 0),
-                Arrays.asList("profesor2"),
+                Arrays.asList(2L),
                 Arrays.asList()
         );
     }
@@ -209,7 +209,7 @@ class ClaseRestIntegrationTest {
                 "Curso Inválido", "Curso con datos inválidos", new BigDecimal("-10"),
                 EPresencialidad.ONLINE, "imagen.jpg", EDificultad.PRINCIPIANTE,
                 LocalDate.now().minusDays(1), LocalDate.now().minusDays(2),
-                Arrays.asList("profesor1"), Arrays.asList());
+                Arrays.asList(1L), Arrays.asList());
 
         when(servicioClase.crearCurso(any(DTOPeticionCrearClase.class), any(LocalDate.class), any(LocalDate.class)))
                 .thenThrow(new app.excepciones.ValidationException("Datos inválidos"));
@@ -253,7 +253,7 @@ class ClaseRestIntegrationTest {
                 "Curso de Python", "Aprende Python desde cero", new BigDecimal("99.99"),
                 EPresencialidad.ONLINE, "imagen-python.jpg", EDificultad.PRINCIPIANTE,
                 LocalDate.now().plusDays(10), LocalDate.now().plusDays(40),
-                Arrays.asList("profesor2"), Arrays.asList());
+                Arrays.asList(2L), Arrays.asList());
 
         DTOCurso cursoPython = new DTOCurso(
                 2L,

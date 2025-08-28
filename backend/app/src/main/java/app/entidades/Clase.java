@@ -25,6 +25,29 @@ import java.util.List;
 @Table(name = "clases")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "tipo_clase", discriminatorType = DiscriminatorType.STRING)
+@NamedEntityGraph(
+    name = "Clase.withStudentsAndTeachers",
+    attributeNodes = {
+        @NamedAttributeNode("students"),
+        @NamedAttributeNode("teachers"),
+        @NamedAttributeNode("material")
+    }
+)
+@NamedEntityGraph(
+    name = "Clase.withExercises",
+    attributeNodes = {
+        @NamedAttributeNode("exercises")
+    }
+)
+@NamedEntityGraph(
+    name = "Clase.withAllRelationships",
+    attributeNodes = {
+        @NamedAttributeNode("students"),
+        @NamedAttributeNode("teachers"),
+        @NamedAttributeNode("exercises"),
+        @NamedAttributeNode("material")
+    }
+)
 public abstract class Clase {
     
     @Id
@@ -76,27 +99,11 @@ public abstract class Clase {
     // Relación Many-to-Many con Material (already JPA-based)
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
     @JoinTable(
-        name = "clase_materiales",
+        name = "clase_material",
         joinColumns = @JoinColumn(name = "clase_id"),
         inverseJoinColumns = @JoinColumn(name = "material_id")
     )
     private List<Material> material = new ArrayList<>();
-    
-    // TODO: Legacy ID-based fields for backward compatibility (to be removed after migration)
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "clase_alumnos", joinColumns = @JoinColumn(name = "clase_id"))
-    @Column(name = "alumno_id")
-    private List<String> studentIds = new ArrayList<>();
-    
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "clase_profesores", joinColumns = @JoinColumn(name = "clase_id"))
-    @Column(name = "profesor_id")
-    private List<String> teacherIds = new ArrayList<>();
-    
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "clase_ejercicios", joinColumns = @JoinColumn(name = "clase_id"))
-    @Column(name = "ejercicio_id")
-    private List<String> exerciseIds = new ArrayList<>();
     
     public Clase() {}
     

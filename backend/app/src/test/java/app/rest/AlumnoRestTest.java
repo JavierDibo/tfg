@@ -94,10 +94,10 @@ public class AlumnoRestTest {
         List<DTOAlumno> mockAlumnos = Arrays.asList(
             new DTOAlumno(1L, "alumno1", "John", "Doe", generateValidDNI(1), "john.doe@email.com", 
                          "+34612345678", LocalDateTime.now(), true, true, 
-                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Role.ALUMNO),
+                         Arrays.asList(1L, 2L), Arrays.asList(1L), Arrays.asList(1L), Usuario.Role.ALUMNO),
             new DTOAlumno(2L, "alumno2", "Johnny", "Smith", generateValidDNI(2), "johnny.smith@email.com", 
                          "+34687654321", LocalDateTime.now(), true, true, 
-                         Arrays.asList("1"), Arrays.asList("2"), Arrays.asList("2"), Usuario.Role.ALUMNO)
+                         Arrays.asList(1L), Arrays.asList(2L), Arrays.asList(2L), Usuario.Role.ALUMNO)
         );
         
         DTORespuestaPaginada<DTOAlumno> mockResponse = DTORespuestaPaginada.of(
@@ -141,7 +141,7 @@ public class AlumnoRestTest {
         List<DTOAlumno> mockAlumnos = Arrays.asList(
             new DTOAlumno(1L, "alumno1", "John", "Doe", generateValidDNI(1), "john.doe@email.com", 
                          "+34612345678", LocalDateTime.now(), true, true, 
-                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Role.ALUMNO)
+                         Arrays.asList(1L, 2L), Arrays.asList(1L), Arrays.asList(1L), Usuario.Role.ALUMNO)
         );
         
         DTORespuestaPaginada<DTOAlumno> mockResponse = DTORespuestaPaginada.of(
@@ -183,7 +183,7 @@ public class AlumnoRestTest {
         List<DTOAlumno> mockAlumnos = Arrays.asList(
             new DTOAlumno(1L, "alumno1", "John", "Doe", generateValidDNI(1), "john.doe@email.com", 
                          "+34612345678", LocalDateTime.now(), true, true, 
-                         Arrays.asList("1", "2"), Arrays.asList("1"), Arrays.asList("1"), Usuario.Role.ALUMNO)
+                         Arrays.asList(1L, 2L), Arrays.asList(1L), Arrays.asList(1L), Usuario.Role.ALUMNO)
         );
         
         DTORespuestaPaginada<DTOAlumno> mockResponse = DTORespuestaPaginada.of(

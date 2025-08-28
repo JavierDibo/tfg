@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import app.entidades.Alumno;
 
@@ -221,4 +222,72 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      */
     @Query("SELECT a FROM Alumno a WHERE SIZE(a.classes) >= :minClases")
     List<Alumno> findAlumnosConMultipleClases(@Param("minClases") Integer minClases);
+
+    // ========== ENTITY GRAPH METHODS ==========
+
+    /**
+     * Busca un alumno por ID con clases cargadas usando EntityGraph
+     * @param alumnoId ID del alumno
+     * @return Optional<Alumno> con clases cargadas
+     */
+    @EntityGraph(value = "Alumno.withClasses")
+    Optional<Alumno> findByIdWithClasses(@Param("alumnoId") Long alumnoId);
+
+    /**
+     * Busca un alumno por ID con todas sus relaciones cargadas usando EntityGraph
+     * @param alumnoId ID del alumno
+     * @return Optional<Alumno> con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "Alumno.withAllRelationships")
+    Optional<Alumno> findByIdWithAllRelationships(@Param("alumnoId") Long alumnoId);
+
+    /**
+     * Busca alumnos por clase con relaciones cargadas usando EntityGraph
+     * @param claseId ID de la clase
+     * @return Lista de alumnos con relaciones cargadas
+     */
+    @EntityGraph(value = "Alumno.withClasses")
+    @Query("SELECT a FROM Alumno a JOIN a.classes c WHERE c.id = :claseId")
+    List<Alumno> findByClaseIdWithClasses(@Param("claseId") Long claseId);
+
+    /**
+     * Busca alumnos matriculados con clases cargadas usando EntityGraph
+     * @param matriculado Estado de matriculación
+     * @return Lista de alumnos matriculados con clases cargadas
+     */
+    @EntityGraph(value = "Alumno.withClasses")
+    @Query("SELECT a FROM Alumno a WHERE a.enrolled = :matriculado")
+    List<Alumno> findByMatriculadoWithClasses(@Param("matriculado") boolean matriculado);
+
+    /**
+     * Busca alumnos por nombre con clases cargadas usando EntityGraph
+     * @param nombre Nombre a buscar
+     * @return Lista de alumnos con clases cargadas
+     */
+    @EntityGraph(value = "Alumno.withClasses")
+    @Query("SELECT a FROM Alumno a WHERE UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))")
+    List<Alumno> findByNombreContainingIgnoreCaseWithClasses(@Param("nombre") String nombre);
+
+    /**
+     * Busca alumnos por apellidos con clases cargadas usando EntityGraph
+     * @param apellidos Apellidos a buscar
+     * @return Lista de alumnos con clases cargadas
+     */
+    @EntityGraph(value = "Alumno.withClasses")
+    @Query("SELECT a FROM Alumno a WHERE UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))")
+    List<Alumno> findByApellidosContainingIgnoreCaseWithClasses(@Param("apellidos") String apellidos);
+
+    /**
+     * Obtiene todos los alumnos con clases cargadas usando EntityGraph
+     * @return Lista de alumnos con clases cargadas
+     */
+    @EntityGraph(value = "Alumno.withClasses")
+    List<Alumno> findAllWithClasses();
+
+    /**
+     * Obtiene todos los alumnos con todas sus relaciones cargadas usando EntityGraph
+     * @return Lista de alumnos con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "Alumno.withAllRelationships")
+    List<Alumno> findAllWithAllRelationships();
 }

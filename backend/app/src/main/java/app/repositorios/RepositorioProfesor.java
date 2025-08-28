@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import java.util.List;
 import java.util.Optional;
@@ -286,4 +287,88 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      */
     @Query("SELECT p FROM Profesor p WHERE SIZE(p.classes) >= :minClases")
     List<Profesor> findProfesoresConMultipleClases(@Param("minClases") Integer minClases);
+
+    // ========== ENTITY GRAPH METHODS ==========
+
+    /**
+     * Busca un profesor por ID con clases cargadas usando EntityGraph
+     * @param profesorId ID del profesor
+     * @return Optional<Profesor> con clases cargadas
+     */
+    @EntityGraph(value = "Profesor.withClasses")
+    Optional<Profesor> findByIdWithClasses(@Param("profesorId") Long profesorId);
+
+    /**
+     * Busca un profesor por ID con todas sus relaciones cargadas usando EntityGraph
+     * @param profesorId ID del profesor
+     * @return Optional<Profesor> con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "Profesor.withAllRelationships")
+    Optional<Profesor> findByIdWithAllRelationships(@Param("profesorId") Long profesorId);
+
+    /**
+     * Busca profesores por clase con clases cargadas usando EntityGraph
+     * @param claseId ID de la clase
+     * @return Lista de profesores con clases cargadas
+     */
+    @EntityGraph(value = "Profesor.withClasses")
+    @Query("SELECT p FROM Profesor p JOIN p.classes c WHERE c.id = :claseId")
+    List<Profesor> findByClaseIdWithClasses(@Param("claseId") Long claseId);
+
+    /**
+     * Busca profesores habilitados con clases cargadas usando EntityGraph
+     * @return Lista de profesores habilitados con clases cargadas
+     */
+    @EntityGraph(value = "Profesor.withClasses")
+    @Query("SELECT p FROM Profesor p WHERE p.enabled = true")
+    List<Profesor> findByEnabledTrueWithClasses();
+
+    /**
+     * Busca profesores por nombre con clases cargadas usando EntityGraph
+     * @param nombre Nombre a buscar
+     * @return Lista de profesores con clases cargadas
+     */
+    @EntityGraph(value = "Profesor.withClasses")
+    @Query("SELECT p FROM Profesor p WHERE UPPER(p.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))")
+    List<Profesor> findByNombreContainingIgnoreCaseWithClasses(@Param("nombre") String nombre);
+
+    /**
+     * Busca profesores por apellidos con clases cargadas usando EntityGraph
+     * @param apellidos Apellidos a buscar
+     * @return Lista de profesores con clases cargadas
+     */
+    @EntityGraph(value = "Profesor.withClasses")
+    @Query("SELECT p FROM Profesor p WHERE UPPER(p.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))")
+    List<Profesor> findByApellidosContainingIgnoreCaseWithClasses(@Param("apellidos") String apellidos);
+
+    /**
+     * Busca profesores sin clases con clases cargadas usando EntityGraph
+     * @return Lista de profesores sin clases con clases cargadas
+     */
+    @EntityGraph(value = "Profesor.withClasses")
+    @Query("SELECT p FROM Profesor p WHERE SIZE(p.classes) = 0")
+    List<Profesor> findProfesoresSinClasesWithClasses();
+
+    /**
+     * Busca profesores con múltiples clases con clases cargadas usando EntityGraph
+     * @param minClases Número mínimo de clases
+     * @return Lista de profesores con múltiples clases
+     */
+    @EntityGraph(value = "Profesor.withClasses")
+    @Query("SELECT p FROM Profesor p WHERE SIZE(p.classes) >= :minClases")
+    List<Profesor> findProfesoresConMultipleClasesWithClasses(@Param("minClases") Integer minClases);
+
+    /**
+     * Obtiene todos los profesores con clases cargadas usando EntityGraph
+     * @return Lista de profesores con clases cargadas
+     */
+    @EntityGraph(value = "Profesor.withClasses")
+    List<Profesor> findAllWithClasses();
+
+    /**
+     * Obtiene todos los profesores con todas sus relaciones cargadas usando EntityGraph
+     * @return Lista de profesores con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "Profesor.withAllRelationships")
+    List<Profesor> findAllWithAllRelationships();
 }

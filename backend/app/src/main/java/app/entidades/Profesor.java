@@ -17,27 +17,22 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @DiscriminatorValue("PROFESOR")
+@NamedEntityGraph(
+    name = "Profesor.withClasses",
+    attributeNodes = {
+        @NamedAttributeNode("classes")
+    }
+)
+@NamedEntityGraph(
+    name = "Profesor.withAllRelationships",
+    attributeNodes = {
+        @NamedAttributeNode("classes")
+    }
+)
 public class Profesor extends Usuario {
     
     @ManyToMany(mappedBy = "teachers", fetch = FetchType.LAZY)
     private List<Clase> classes = new ArrayList<>();
-    
-    // TODO: Legacy ID-based fields for backward compatibility (to be removed after migration)
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "profesor_clases", joinColumns = @JoinColumn(name = "profesor_id"))
-    @Column(name = "clase_id")
-    private List<String> classIds = new ArrayList<>();
-    
-    /**
-     * Obtiene la lista de clases del profesor, inicializando si es null
-     * @return Lista de clases
-     */
-    public List<String> getClassIds() {
-        if (this.classIds == null) {
-            this.classIds = new ArrayList<>();
-        }
-        return this.classIds;
-    }
     
     public Profesor() {
         super();
@@ -105,5 +100,11 @@ public class Profesor extends Usuario {
         return this.classes.size();
     }
     
-
+    /**
+     * Verifica si el profesor está disponible (no tiene clases asignadas)
+     * @return true si está disponible, false en caso contrario
+     */
+    public boolean estaDisponible() {
+        return this.classes.isEmpty();
+    }
 }

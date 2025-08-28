@@ -40,8 +40,9 @@ class ProfesorTest {
         assertEquals(TELEFONO, profesor.getPhoneNumber());
         assertEquals(Usuario.Role.PROFESOR, profesor.getRole());
         assertTrue(profesor.isEnabled());
-        assertNotNull(profesor.getClassIds());
-        assertTrue(profesor.getClassIds().isEmpty());
+        assertNotNull(profesor.getClasses());
+        assertTrue(profesor.getClasses().isEmpty());
+        assertEquals(0, profesor.getNumeroClases());
     }
 
     @Test
@@ -52,20 +53,14 @@ class ProfesorTest {
         assertNotNull(profesorVacio);
         assertEquals(Usuario.Role.PROFESOR, profesorVacio.getRole());
         assertTrue(profesorVacio.isEnabled());
-        assertNotNull(profesorVacio.getClassIds());
-        assertTrue(profesorVacio.getClassIds().isEmpty());
+        assertNotNull(profesorVacio.getClasses());
+        assertTrue(profesorVacio.getClasses().isEmpty());
+        assertEquals(0, profesorVacio.getNumeroClases());
     }
 
     @Test
     @DisplayName("Getters y setters deben funcionar correctamente")
     void testGettersYSetters() {
-        // Test clasesId
-        List<String> nuevasClases = new ArrayList<>();
-        nuevasClases.add("clase1");
-        nuevasClases.add("clase2");
-        profesor.setClassIds(nuevasClases);
-        assertEquals(nuevasClases, profesor.getClassIds());
-
         // Test enabled (heredado de Usuario)
         profesor.setEnabled(false);
         assertFalse(profesor.isEnabled());
@@ -85,136 +80,152 @@ class ProfesorTest {
     @Test
     @DisplayName("Método agregarClase debe agregar clase correctamente")
     void testAgregarClase() {
-        String claseId = "clase123";
+        Clase clase = new Curso();
+        clase.setId(1L);
+        clase.setTitle("Matemáticas");
         
         // Verificar que la lista está vacía inicialmente
-        assertTrue(profesor.getClassIds().isEmpty());
+        assertTrue(profesor.getClasses().isEmpty());
+        assertEquals(0, profesor.getNumeroClases());
         
         // Agregar clase
-        profesor.agregarClase(claseId);
+        profesor.agregarClase(clase);
         
         // Verificar que se agregó
-        assertTrue(profesor.getClassIds().contains(claseId));
-        assertEquals(1, profesor.getClassIds().size());
+        assertTrue(profesor.getClasses().contains(clase));
+        assertEquals(1, profesor.getClasses().size());
+        assertEquals(1, profesor.getNumeroClases());
+        
+        // Verificar que la clase también tiene al profesor
+        assertTrue(clase.getTeachers().contains(profesor));
         
         // Agregar la misma clase no debe duplicar
-        profesor.agregarClase(claseId);
-        assertEquals(1, profesor.getClassIds().size());
-        
-        // Agregar otra clase
-        profesor.agregarClase("clase456");
-        assertEquals(2, profesor.getClassIds().size());
-        assertTrue(profesor.getClassIds().contains("clase123"));
-        assertTrue(profesor.getClassIds().contains("clase456"));
+        profesor.agregarClase(clase);
+        assertEquals(1, profesor.getClasses().size());
+        assertEquals(1, profesor.getNumeroClases());
     }
 
     @Test
     @DisplayName("Método removerClase debe remover clase correctamente")
     void testRemoverClase() {
-        String claseId = "clase123";
+        Clase clase1 = new Curso();
+        clase1.setId(1L);
+        clase1.setTitle("Matemáticas");
+        
+        Clase clase2 = new Curso();
+        clase2.setId(2L);
+        clase2.setTitle("Física");
+        
+        // Agregar dos clases
+        profesor.agregarClase(clase1);
+        profesor.agregarClase(clase2);
+        assertEquals(2, profesor.getClasses().size());
+        assertEquals(2, profesor.getNumeroClases());
+        
+        // Remover una clase
+        profesor.removerClase(clase1);
+        assertEquals(1, profesor.getClasses().size());
+        assertEquals(1, profesor.getNumeroClases());
+        assertFalse(profesor.getClasses().contains(clase1));
+        assertTrue(profesor.getClasses().contains(clase2));
+        
+        // Verificar que la clase también removió al profesor
+        assertFalse(clase1.getTeachers().contains(profesor));
+        assertTrue(clase2.getTeachers().contains(profesor));
+    }
+
+    @Test
+    @DisplayName("Método imparteClasePorId debe retornar true si imparte la clase")
+    void testImparteClasePorId() {
+        Clase clase = new Curso();
+        clase.setId(1L);
+        clase.setTitle("Matemáticas");
+        
+        // Inicialmente no imparte ninguna clase
+        assertFalse(profesor.imparteClasePorId(1L));
+        assertFalse(profesor.imparteClasePorId(2L));
         
         // Agregar clase
-        profesor.agregarClase(claseId);
-        assertTrue(profesor.getClassIds().contains(claseId));
+        profesor.agregarClase(clase);
         
-        // Remover clase
-        profesor.removerClase(claseId);
-        assertFalse(profesor.getClassIds().contains(claseId));
-        assertTrue(profesor.getClassIds().isEmpty());
+        // Ahora debe impartir la clase
+        assertTrue(profesor.imparteClasePorId(1L));
+        assertFalse(profesor.imparteClasePorId(2L));
+    }
+
+    @Test
+    @DisplayName("Método getNumeroClases debe retornar el número correcto de clases")
+    void testGetNumeroClases() {
+        // Inicialmente 0 clases
+        assertEquals(0, profesor.getNumeroClases());
         
-        // Remover clase que no existe no debe causar error
-        assertDoesNotThrow(() -> profesor.removerClase("claseInexistente"));
+        // Agregar una clase
+        Clase clase1 = new Curso();
+        clase1.setId(1L);
+        profesor.agregarClase(clase1);
+        assertEquals(1, profesor.getNumeroClases());
+        
+        // Agregar otra clase
+        Clase clase2 = new Curso();
+        clase2.setId(2L);
+        profesor.agregarClase(clase2);
+        assertEquals(2, profesor.getNumeroClases());
+        
+        // Remover una clase
+        profesor.removerClase(clase1);
+        assertEquals(1, profesor.getNumeroClases());
     }
 
     @Test
     @DisplayName("Equals y hashCode deben funcionar correctamente")
     void testEqualsYHashCode() {
-        Profesor profesor1 = new Profesor(USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO);
-        Profesor profesor2 = new Profesor(USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO);
+        Profesor profesor1 = new Profesor("user1", "pass1", "Juan", "Pérez", "12345678A", "juan@test.com", "123456789");
+        Profesor profesor2 = new Profesor("user2", "pass2", "María", "García", "87654321B", "maria@test.com", "987654321");
+        Profesor profesor3 = new Profesor("user1", "pass1", "Juan", "Pérez", "12345678A", "juan@test.com", "123456789");
         
-        // Los objetos deben ser iguales si tienen los mismos valores
-        assertEquals(profesor1, profesor2);
-        assertEquals(profesor1.hashCode(), profesor2.hashCode());
+        // Establecer IDs para comparación
+        profesor1.setId(1L);
+        profesor2.setId(2L);
+        profesor3.setId(1L);
         
-        // Modificar un campo debe hacer que no sean iguales
-        profesor2.agregarClase("clase123");
+        // Test equals
+        assertEquals(profesor1, profesor3);
         assertNotEquals(profesor1, profesor2);
-    }
-
-    @Test
-    @DisplayName("ToString debe contener información relevante")
-    void testToString() {
-        String toString = profesor.toString();
+        assertNotEquals(profesor2, profesor3);
         
-        // Verificar que toString no está vacío y tiene contenido
-        assertFalse(toString.isEmpty());
-        assertTrue(toString.length() > 10);
-        assertNotNull(toString);
+        // Test hashCode
+        assertEquals(profesor1.hashCode(), profesor3.hashCode());
+        assertNotEquals(profesor1.hashCode(), profesor2.hashCode());
     }
 
     @Test
-    @DisplayName("Rol debe ser PROFESOR por defecto")
+    @DisplayName("Rol por defecto debe ser PROFESOR")
     void testRolPorDefecto() {
         assertEquals(Usuario.Role.PROFESOR, profesor.getRole());
         
-        // Verificar que se puede cambiar el rol (Lombok @Data permite esto)
-        profesor.setRole(Usuario.Role.ALUMNO);
-        assertEquals(Usuario.Role.ALUMNO, profesor.getRole());
-    }
-
-    @Test
-    @DisplayName("ClassIds debe ser lista vacía por defecto")
-    void testClassIdsPorDefecto() {
         Profesor nuevoProfesor = new Profesor();
-        assertNotNull(nuevoProfesor.getClassIds());
-        assertTrue(nuevoProfesor.getClassIds().isEmpty());
+        assertEquals(Usuario.Role.PROFESOR, nuevoProfesor.getRole());
     }
 
     @Test
-    @DisplayName("Enabled debe ser true por defecto")
+    @DisplayName("Enabled por defecto debe ser true")
     void testEnabledPorDefecto() {
+        assertTrue(profesor.isEnabled());
+        
         Profesor nuevoProfesor = new Profesor();
         assertTrue(nuevoProfesor.isEnabled());
     }
 
     @Test
-    @DisplayName("Manejo de classIds con valores nulos")
-    void testClassIdsConValoresNulos() {
-        // Establecer classIds como null
-        profesor.setClassIds(null);
-        // El getter debe inicializar la lista si es null
-        assertNotNull(profesor.getClassIds());
-        assertTrue(profesor.getClassIds().isEmpty());
+    @DisplayName("Lista de clases por defecto debe estar vacía")
+    void testClassesPorDefecto() {
+        assertNotNull(profesor.getClasses());
+        assertTrue(profesor.getClasses().isEmpty());
+        assertEquals(0, profesor.getNumeroClases());
         
-        // Agregar clase cuando classIds era null debe funcionar
-        profesor.agregarClase("clase123");
-        assertNotNull(profesor.getClassIds());
-        assertTrue(profesor.getClassIds().contains("clase123"));
-    }
-
-    @Test
-    @DisplayName("Múltiples operaciones con clases")
-    void testMultiplesOperacionesConClases() {
-        // Agregar múltiples clases
-        profesor.agregarClase("clase1");
-        profesor.agregarClase("clase2");
-        profesor.agregarClase("clase3");
-        
-        assertEquals(3, profesor.getClassIds().size());
-        assertTrue(profesor.getClassIds().contains("clase1"));
-        assertTrue(profesor.getClassIds().contains("clase2"));
-        assertTrue(profesor.getClassIds().contains("clase3"));
-        
-        // Remover clase del medio
-        profesor.removerClase("clase2");
-        assertEquals(2, profesor.getClassIds().size());
-        assertTrue(profesor.getClassIds().contains("clase1"));
-        assertFalse(profesor.getClassIds().contains("clase2"));
-        assertTrue(profesor.getClassIds().contains("clase3"));
-        
-        // Remover todas las clases
-        profesor.removerClase("clase1");
-        profesor.removerClase("clase3");
-        assertTrue(profesor.getClassIds().isEmpty());
+        Profesor nuevoProfesor = new Profesor();
+        assertNotNull(nuevoProfesor.getClasses());
+        assertTrue(nuevoProfesor.getClasses().isEmpty());
+        assertEquals(0, nuevoProfesor.getNumeroClases());
     }
 }

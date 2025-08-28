@@ -9,6 +9,7 @@ import app.entidades.enums.EDificultad;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DTO para mostrar información detallada de una clase con información pública del profesor
@@ -53,9 +54,15 @@ public record DTOClaseConDetallesPublico(
                 clase.getFormat(),
                 clase.getImage(),
                 clase.getDifficulty(),
-                clase.getStudentIds(),
-                clase.getTeacherIds(),
-                clase.getExerciseIds(),
+                clase.getStudents().stream()
+                    .map(student -> student.getId().toString())
+                    .collect(Collectors.toList()),
+                clase.getTeachers().stream()
+                    .map(teacher -> teacher.getId().toString())
+                    .collect(Collectors.toList()),
+                clase.getExercises().stream()
+                    .map(exercise -> exercise.getId().toString())
+                    .collect(Collectors.toList()),
                 clase.getMaterial(),
                 determinarTipoClase(clase),
                 profesor,

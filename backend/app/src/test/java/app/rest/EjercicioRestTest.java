@@ -178,7 +178,7 @@ public class EjercicioRestTest {
         // Given
         DTOPeticionCrearEjercicio peticion = new DTOPeticionCrearEjercicio(
             "Ejercicio Nuevo", "Descripción del nuevo ejercicio", 
-            LocalDateTime.now(), LocalDateTime.now().plusDays(7), "1"
+            LocalDateTime.now(), LocalDateTime.now().plusDays(7), 1L
         );
         
         DTOEjercicio mockEjercicio = new DTOEjercicio(
@@ -188,7 +188,7 @@ public class EjercicioRestTest {
         
         when(servicioEjercicio.crearEjercicio(
             eq("Ejercicio Nuevo"), eq("Descripción del nuevo ejercicio"), 
-            any(LocalDateTime.class), any(LocalDateTime.class), eq("1")
+            any(LocalDateTime.class), any(LocalDateTime.class), eq(1L)
         )).thenReturn(mockEjercicio);
 
         // When & Then
@@ -206,7 +206,7 @@ public class EjercicioRestTest {
     public void testCrearEjercicio_InvalidInput() throws Exception {
         // Given - Create an invalid request that should trigger validation
         DTOPeticionCrearEjercicio peticion = new DTOPeticionCrearEjercicio(
-            "", "", LocalDateTime.now(), LocalDateTime.now().minusDays(1), "" // Invalid: empty fields and end date before start date
+            "", "", LocalDateTime.now(), LocalDateTime.now().minusDays(1), 1L // Invalid: empty fields and end date before start date
         );
 
         // When & Then
@@ -222,7 +222,7 @@ public class EjercicioRestTest {
         // Given
         DTOPeticionCrearEjercicio peticion = new DTOPeticionCrearEjercicio(
             "Ejercicio Nuevo", "Descripción del nuevo ejercicio", 
-            LocalDateTime.now(), LocalDateTime.now().plusDays(7), "1"
+            LocalDateTime.now(), LocalDateTime.now().plusDays(7), 1L
         );
 
         // When & Then
@@ -240,7 +240,7 @@ public class EjercicioRestTest {
         // Given
         DTOPeticionCrearEjercicio peticion = new DTOPeticionCrearEjercicio(
             "Ejercicio Actualizado", "Descripción actualizada", 
-            LocalDateTime.now(), LocalDateTime.now().plusDays(7), "1"
+            LocalDateTime.now(), LocalDateTime.now().plusDays(7), 1L
         );
         
         DTOEjercicio mockEjercicio = new DTOEjercicio(
@@ -269,7 +269,7 @@ public class EjercicioRestTest {
         // Given
         DTOPeticionCrearEjercicio peticion = new DTOPeticionCrearEjercicio(
             "Ejercicio Actualizado", "Descripción actualizada", 
-            LocalDateTime.now(), LocalDateTime.now().plusDays(7), "1"
+            LocalDateTime.now(), LocalDateTime.now().plusDays(7), 1L
         );
 
         // When & Then
@@ -287,7 +287,7 @@ public class EjercicioRestTest {
         // Given
         DTOPeticionCrearEjercicio peticion = new DTOPeticionCrearEjercicio(
             "Ejercicio Parcial", "Descripción parcial", 
-            LocalDateTime.now(), LocalDateTime.now().plusDays(7), "1"
+            LocalDateTime.now(), LocalDateTime.now().plusDays(7), 1L
         );
         
         DTOEjercicio mockEjercicio = new DTOEjercicio(

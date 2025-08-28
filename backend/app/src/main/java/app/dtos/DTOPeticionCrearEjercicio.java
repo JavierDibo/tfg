@@ -25,8 +25,7 @@ public record DTOPeticionCrearEjercicio(
         LocalDateTime fechaFinalPlazo,
         
         @NotNull
-        @Size(max = 255)
-        String claseId
+        Long claseId
 ) {
     
     /**

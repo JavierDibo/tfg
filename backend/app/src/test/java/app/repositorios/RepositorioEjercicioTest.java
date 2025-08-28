@@ -73,16 +73,14 @@ class RepositorioEjercicioTest {
             "Test Statement",
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(7),
-            "1"
+            clase1
         );
-        ejercicio.setClase(clase1);
         
         // Save exercise
         Ejercicio saved = repositorioEjercicio.save(ejercicio);
         assertNotNull(saved.getId());
         assertEquals("Test Exercise", saved.getName());
         assertEquals("Test Statement", saved.getStatement());
-        assertEquals("1", saved.getClassId());
         assertEquals(clase1.getId(), saved.getClase().getId());
         
         // Find by ID
@@ -106,9 +104,9 @@ class RepositorioEjercicioTest {
         assertTrue(foundByStatement.stream().anyMatch(e -> e.getStatement().contains("Test")));
         
         // Find by class ID
-        List<Ejercicio> foundByClassId = repositorioEjercicio.findByClassId("1");
+        List<Ejercicio> foundByClassId = repositorioEjercicio.findByClaseId(clase1.getId());
         assertFalse(foundByClassId.isEmpty());
-        assertTrue(foundByClassId.stream().allMatch(e -> e.getClassId().equals("1")));
+        assertTrue(foundByClassId.stream().allMatch(e -> e.getClase().getId().equals(clase1.getId())));
         
         // Update exercise
         saved.setName("Updated Exercise");
@@ -130,19 +128,18 @@ class RepositorioEjercicioTest {
             "Test Statement",
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(7),
-            "1"
+            clase1
         );
-        ejercicio.setClase(clase1);
         
         // Save exercise
         Ejercicio saved = repositorioEjercicio.save(ejercicio);
         
         // Test simple query without normalize_text for H2 compatibility
-        List<Ejercicio> result = repositorioEjercicio.findByClassId("1");
+        List<Ejercicio> result = repositorioEjercicio.findByClaseId(clase1.getId());
         
         assertNotNull(result);
         assertFalse(result.isEmpty());
-        assertTrue(result.stream().allMatch(e -> "1".equals(e.getClassId())));
+        assertTrue(result.stream().allMatch(e -> e.getClase().getId().equals(clase1.getId())));
     }
 
     @Test
@@ -156,27 +153,24 @@ class RepositorioEjercicioTest {
             "Past Statement",
             now.minusDays(10),
             now.minusDays(5),
-            "1"
+            clase1
         );
-        pastExercise.setClase(clase1);
         
         Ejercicio currentExercise = new Ejercicio(
             "Current Exercise",
             "Current Statement",
             now.minusDays(2),
             now.plusDays(5),
-            "1"
+            clase1
         );
-        currentExercise.setClase(clase1);
         
         Ejercicio futureExercise = new Ejercicio(
             "Future Exercise",
             "Future Statement",
             now.plusDays(5),
             now.plusDays(10),
-            "1"
+            clase2
         );
-        futureExercise.setClase(clase2);
         
         repositorioEjercicio.save(pastExercise);
         repositorioEjercicio.save(currentExercise);
@@ -204,9 +198,8 @@ class RepositorioEjercicioTest {
                 "Statement " + i,
                 LocalDateTime.now(),
                 LocalDateTime.now().plusDays(7),
-                "1"
+                clase1
             );
-            ejercicio.setClase(clase1);
             repositorioEjercicio.save(ejercicio);
         }
         
@@ -228,18 +221,16 @@ class RepositorioEjercicioTest {
             "Statement 1",
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(7),
-            "1"
+            clase1
         );
-        ejercicio1.setClase(clase1);
         
         Ejercicio ejercicio2 = new Ejercicio(
             "Exercise 2",
             "Statement 2",
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(7),
-            "2"
+            clase2
         );
-        ejercicio2.setClase(clase2);
         
         repositorioEjercicio.save(ejercicio1);
         repositorioEjercicio.save(ejercicio2);

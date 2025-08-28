@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -82,7 +83,7 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param claseId ID de la clase
      * @return Lista de ejercicios de la clase
      */
-    @Query("SELECT e FROM Ejercicio e WHERE e.classId = :claseId")
+    @Query("SELECT e FROM Ejercicio e WHERE e.clase.id = :claseId")
     List<Ejercicio> findByClassId(@Param("claseId") String claseId);
     
     /**
@@ -91,7 +92,7 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @param pageable Parámetros de paginación
      * @return Página de ejercicios
      */
-    @Query("SELECT e FROM Ejercicio e WHERE e.classId = :claseId")
+    @Query("SELECT e FROM Ejercicio e WHERE e.clase.id = :claseId")
     Page<Ejercicio> findByClassId(@Param("claseId") String claseId, Pageable pageable);
     
     /**
@@ -108,7 +109,7 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
     @Query("SELECT e FROM Ejercicio e WHERE " +
            "(:nombre IS NULL OR UPPER(e.name) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
            "(:enunciado IS NULL OR UPPER(e.statement) LIKE UPPER(CONCAT('%', :enunciado, '%'))) AND " +
-           "(:classId IS NULL OR e.classId = :classId) AND " +
+           "(:classId IS NULL OR e.clase.id = :classId) AND " +
            "(:status IS NULL OR (" +
            "  CASE WHEN :status = 'ACTIVE' THEN e.endDate > :now " +
            "       WHEN :status = 'EXPIRED' THEN e.endDate <= :now " +
@@ -153,7 +154,7 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
            "UPPER(e.statement) LIKE UPPER(CONCAT('%', :searchTerm, '%')))) AND " +
            "(:nombre IS NULL OR UPPER(e.name) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
            "(:enunciado IS NULL OR UPPER(e.statement) LIKE UPPER(CONCAT('%', :enunciado, '%'))) AND " +
-           "(:classId IS NULL OR e.classId = :classId) AND " +
+           "(:classId IS NULL OR e.clase.id = :classId) AND " +
            "(:status IS NULL OR (" +
            "  CASE WHEN :status = 'ACTIVE' THEN e.endDate > :now " +
            "       WHEN :status = 'EXPIRED' THEN e.endDate <= :now " +
@@ -342,4 +343,122 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
            "LEFT JOIN FETCH e.entregas " +
            "WHERE e.id = :ejercicioId")
     Optional<Ejercicio> findByIdWithRelationships(@Param("ejercicioId") Long ejercicioId);
+
+    // ========== ENTITY GRAPH METHODS ==========
+
+    /**
+     * Busca un ejercicio por ID con clase cargada usando EntityGraph
+     * @param ejercicioId ID del ejercicio
+     * @return Optional<Ejercicio> con clase cargada
+     */
+    @EntityGraph(value = "Ejercicio.withClase")
+    Optional<Ejercicio> findByIdWithClase(@Param("ejercicioId") Long ejercicioId);
+
+    /**
+     * Busca un ejercicio por ID con entregas cargadas usando EntityGraph
+     * @param ejercicioId ID del ejercicio
+     * @return Optional<Ejercicio> con entregas cargadas
+     */
+    @EntityGraph(value = "Ejercicio.withEntregas")
+    Optional<Ejercicio> findByIdWithEntregas(@Param("ejercicioId") Long ejercicioId);
+
+    /**
+     * Busca un ejercicio por ID con todas sus relaciones cargadas usando EntityGraph
+     * @param ejercicioId ID del ejercicio
+     * @return Optional<Ejercicio> con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "Ejercicio.withAllRelationships")
+    Optional<Ejercicio> findByIdWithAllRelationships(@Param("ejercicioId") Long ejercicioId);
+
+    /**
+     * Busca ejercicios por clase con entregas cargadas usando EntityGraph
+     * @param claseId ID de la clase
+     * @return Lista de ejercicios con entregas cargadas
+     */
+    @EntityGraph(value = "Ejercicio.withEntregas")
+    @Query("SELECT e FROM Ejercicio e WHERE e.clase.id = :claseId")
+    List<Ejercicio> findByClaseIdWithEntregas(@Param("claseId") Long claseId);
+
+    /**
+     * Busca ejercicios por clase con clase cargada usando EntityGraph
+     * @param claseId ID de la clase
+     * @return Lista de ejercicios con clase cargada
+     */
+    @EntityGraph(value = "Ejercicio.withClase")
+    @Query("SELECT e FROM Ejercicio e WHERE e.clase.id = :claseId")
+    List<Ejercicio> findByClaseIdWithClase(@Param("claseId") Long claseId);
+
+    /**
+     * Busca ejercicios por clase con todas las relaciones cargadas usando EntityGraph
+     * @param claseId ID de la clase
+     * @return Lista de ejercicios con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "Ejercicio.withAllRelationships")
+    @Query("SELECT e FROM Ejercicio e WHERE e.clase.id = :claseId")
+    List<Ejercicio> findByClaseIdWithAllRelationships(@Param("claseId") Long claseId);
+
+    /**
+     * Busca ejercicios en plazo con entregas cargadas usando EntityGraph
+     * @param ahora Fecha y hora actual
+     * @return Lista de ejercicios en plazo con entregas cargadas
+     */
+    @EntityGraph(value = "Ejercicio.withEntregas")
+    @Query("SELECT e FROM Ejercicio e WHERE :ahora >= e.startDate AND :ahora <= e.endDate")
+    List<Ejercicio> findEjerciciosEnPlazoWithEntregas(@Param("ahora") LocalDateTime ahora);
+
+    /**
+     * Busca ejercicios vencidos con entregas cargadas usando EntityGraph
+     * @param ahora Fecha y hora actual
+     * @return Lista de ejercicios vencidos con entregas cargadas
+     */
+    @EntityGraph(value = "Ejercicio.withEntregas")
+    @Query("SELECT e FROM Ejercicio e WHERE :ahora > e.endDate")
+    List<Ejercicio> findEjerciciosVencidosWithEntregas(@Param("ahora") LocalDateTime ahora);
+
+    /**
+     * Busca ejercicios con entregas usando EntityGraph
+     * @return Lista de ejercicios con entregas cargadas
+     */
+    @EntityGraph(value = "Ejercicio.withEntregas")
+    @Query("SELECT DISTINCT e FROM Ejercicio e WHERE SIZE(e.entregas) > 0")
+    List<Ejercicio> findEjerciciosConEntregasWithEntregas();
+
+    /**
+     * Busca ejercicios por nombre con clase cargada usando EntityGraph
+     * @param nombre Nombre a buscar
+     * @return Lista de ejercicios con clase cargada
+     */
+    @EntityGraph(value = "Ejercicio.withClase")
+    @Query("SELECT e FROM Ejercicio e WHERE UPPER(e.name) LIKE UPPER(CONCAT('%', :nombre, '%'))")
+    List<Ejercicio> findByNameContainingIgnoreCaseWithClase(@Param("nombre") String nombre);
+
+    /**
+     * Busca ejercicios por enunciado con clase cargada usando EntityGraph
+     * @param enunciado Enunciado a buscar
+     * @return Lista de ejercicios con clase cargada
+     */
+    @EntityGraph(value = "Ejercicio.withClase")
+    @Query("SELECT e FROM Ejercicio e WHERE UPPER(e.statement) LIKE UPPER(CONCAT('%', :enunciado, '%'))")
+    List<Ejercicio> findByStatementContainingIgnoreCaseWithClase(@Param("enunciado") String enunciado);
+
+    /**
+     * Obtiene todos los ejercicios con clase cargada usando EntityGraph
+     * @return Lista de ejercicios con clase cargada
+     */
+    @EntityGraph(value = "Ejercicio.withClase")
+    List<Ejercicio> findAllWithClase();
+
+    /**
+     * Obtiene todos los ejercicios con entregas cargadas usando EntityGraph
+     * @return Lista de ejercicios con entregas cargadas
+     */
+    @EntityGraph(value = "Ejercicio.withEntregas")
+    List<Ejercicio> findAllWithEntregas();
+
+    /**
+     * Obtiene todos los ejercicios con todas las relaciones cargadas usando EntityGraph
+     * @return Lista de ejercicios con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "Ejercicio.withAllRelationships")
+    List<Ejercicio> findAllWithAllRelationships();
 }

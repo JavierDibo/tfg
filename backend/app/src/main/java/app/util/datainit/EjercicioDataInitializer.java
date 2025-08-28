@@ -39,8 +39,8 @@ public class EjercicioDataInitializer extends BaseDataInitializer {
         }
         
         // Get all created courses to assign exercises to them
-        List<String> courseIds = courseInit.getCreatedCourses().stream()
-            .map(course -> course.id().toString())
+        List<Long> courseIds = courseInit.getCreatedCourses().stream()
+            .map(course -> course.id())
             .toList();
         
         if (courseIds.isEmpty()) {
@@ -48,7 +48,7 @@ public class EjercicioDataInitializer extends BaseDataInitializer {
             return;
         }
         
-        for (String courseId : courseIds) {
+        for (Long courseId : courseIds) {
             for (int i = 0; i < EXERCISES_PER_COURSE; i++) {
                 String exerciseName = generateRandomExerciseName();
                 String statement = generateRandomStatement(exerciseName);

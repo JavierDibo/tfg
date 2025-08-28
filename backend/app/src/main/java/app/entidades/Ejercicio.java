@@ -19,6 +19,25 @@ import java.util.List;
 @EqualsAndHashCode
 @Entity
 @Table(name = "ejercicios")
+@NamedEntityGraph(
+    name = "Ejercicio.withClase",
+    attributeNodes = {
+        @NamedAttributeNode("clase")
+    }
+)
+@NamedEntityGraph(
+    name = "Ejercicio.withEntregas",
+    attributeNodes = {
+        @NamedAttributeNode("entregas")
+    }
+)
+@NamedEntityGraph(
+    name = "Ejercicio.withAllRelationships",
+    attributeNodes = {
+        @NamedAttributeNode("clase"),
+        @NamedAttributeNode("entregas")
+    }
+)
 public class Ejercicio {
     
     @Id
@@ -44,35 +63,13 @@ public class Ejercicio {
     private LocalDateTime endDate;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "clase_id")
+    @JoinColumn(name = "class_id")
     private Clase clase;
     
-    // TODO: Legacy ID-based field for backward compatibility (to be removed after migration)
-    @NotNull
-    @Size(max = 255)
-    @Column(name = "class_id", length = 255, nullable = false)
-    private String classId;
-    
-    // Relación con entregas - por ahora como lista de entidades
-    // TODO: Esta relación se puede refactorizar según necesidades
     @OneToMany(mappedBy = "ejercicio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<EntregaEjercicio> entregas = new ArrayList<>();
     
     public Ejercicio() {}
-    
-    public Ejercicio(String name, String statement, LocalDateTime startDate, 
-                    LocalDateTime endDate, String classId) {
-        this.name = name;
-        this.statement = statement;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.classId = classId;
-        
-        // Validación: la fecha final debe ser posterior a la inicial
-        if (endDate.isBefore(startDate)) {
-            throw new IllegalArgumentException("La fecha final del plazo no puede ser anterior a la fecha inicial");
-        }
-    }
     
     public Ejercicio(String name, String statement, LocalDateTime startDate, 
                     LocalDateTime endDate, Clase clase) {
@@ -81,7 +78,6 @@ public class Ejercicio {
         this.startDate = startDate;
         this.endDate = endDate;
         this.clase = clase;
-        this.classId = clase != null ? clase.getId().toString() : null;
         
         // Validación: la fecha final debe ser posterior a la inicial
         if (endDate.isBefore(startDate)) {

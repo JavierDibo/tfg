@@ -24,6 +24,26 @@ import java.util.List;
 @EqualsAndHashCode
 @Entity
 @Table(name = "entregas_ejercicio")
+@NamedEntityGraph(
+    name = "EntregaEjercicio.withAlumno",
+    attributeNodes = {
+        @NamedAttributeNode("alumno")
+    }
+)
+@NamedEntityGraph(
+    name = "EntregaEjercicio.withEjercicio",
+    attributeNodes = {
+        @NamedAttributeNode("ejercicio")
+    }
+)
+@NamedEntityGraph(
+    name = "EntregaEjercicio.withAllRelationships",
+    attributeNodes = {
+        @NamedAttributeNode("alumno"),
+        @NamedAttributeNode("ejercicio"),
+        @NamedAttributeNode("archivosEntregados")
+    }
+)
 public class EntregaEjercicio {
     
     @Id

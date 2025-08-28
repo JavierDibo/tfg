@@ -388,4 +388,40 @@ public class ProfesorRest extends BaseRestController {
         
         return new ResponseEntity<>(estadisticas, HttpStatus.OK);
     }
+
+    // ===== OPTIMIZED ENTITY GRAPH ENDPOINTS =====
+
+    /**
+     * Gets a professor with their classes loaded using Entity Graph
+     */
+    @GetMapping("/{id}/con-clases")
+    @Operation(
+        summary = "Get professor with classes",
+        description = "Gets a professor with their classes loaded using Entity Graph for optimal performance"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Professor with classes retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOProfesor.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Professor not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view this professor"
+        )
+    })
+    public ResponseEntity<DTOProfesor> obtenerProfesorConClases(
+            @Parameter(description = "ID of the professor", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOProfesor dtoProfesor = servicioProfesor.obtenerProfesorConClases(id);
+        return new ResponseEntity<>(dtoProfesor, HttpStatus.OK);
+    }
 }

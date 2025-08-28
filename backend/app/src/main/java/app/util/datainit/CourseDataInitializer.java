@@ -68,7 +68,7 @@ public class CourseDataInitializer extends BaseDataInitializer {
                 LocalDate startDate = LocalDate.now().plusDays(1);
                 LocalDate endDate = startDate.plusMonths(3);
                 
-                List<String> profesorIds = Collections.singletonList(profesor.id().toString());
+                List<Long> profesorIds = Collections.singletonList(profesor.id());
                 
                 // Select random materials for this course (minimum 2 materials per course, up to 4)
                 // Use Material IDs instead of Material objects to avoid Hibernate session conflicts

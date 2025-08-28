@@ -346,4 +346,74 @@ public class AlumnoRest extends BaseRestController {
         List<DTOClaseInscrita> clases = servicioClase.obtenerClasesInscritasConDetalles(id);
         return new ResponseEntity<>(clases, HttpStatus.OK);
     }
+
+    // ===== OPTIMIZED ENTITY GRAPH ENDPOINTS =====
+
+    /**
+     * Gets a student with their classes loaded using Entity Graph
+     */
+    @GetMapping("/{id}/con-clases")
+    @Operation(
+        summary = "Get student with classes",
+        description = "Gets a student with their classes loaded using Entity Graph for optimal performance"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Student with classes retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumno.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Student not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view this student"
+        )
+    })
+    public ResponseEntity<DTOAlumno> obtenerAlumnoConClases(
+            @Parameter(description = "ID of the student", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoConClases(id);
+        return new ResponseEntity<>(dtoAlumno, HttpStatus.OK);
+    }
+
+    /**
+     * Gets a student with all their relationships loaded using Entity Graph
+     */
+    @GetMapping("/{id}/completo")
+    @Operation(
+        summary = "Get student with all relationships",
+        description = "Gets a student with all their relationships (classes, payments, submissions) loaded using Entity Graph"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Student with all relationships retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOAlumno.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Student not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view this student"
+        )
+    })
+    public ResponseEntity<DTOAlumno> obtenerAlumnoCompleto(
+            @Parameter(description = "ID of the student", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOAlumno dtoAlumno = servicioAlumno.obtenerAlumnoConTodo(id);
+        return new ResponseEntity<>(dtoAlumno, HttpStatus.OK);
+    }
 }

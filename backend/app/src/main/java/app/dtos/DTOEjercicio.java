@@ -29,7 +29,7 @@ public record DTOEjercicio(
                 ejercicio.getStatement(),
                 ejercicio.getStartDate(),
                 ejercicio.getEndDate(),
-                ejercicio.getClassId(),
+                ejercicio.getClase() != null ? ejercicio.getClase().getId().toString() : null,
                 ejercicio.contarEntregas(),
                 ejercicio.contarEntregasCalificadas()
         );

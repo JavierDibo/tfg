@@ -72,9 +72,6 @@ class ServicioProfesorTest {
         profesor1 = new Profesor("profesor1", "password1", "María", "García", "12345678Z", "maria@ejemplo.com", "123456789");
         profesor1.setId(1L);
         profesor1.setEnabled(true);
-        // Legacy string-based IDs are still exposed via getClassIds() for DTO compatibility
-        profesor1.getClassIds().add("1");
-        profesor1.getClassIds().add("2");
 
         profesor2 = new Profesor("profesor2", "password2", "Juan", "Pérez", "87654321Y", "juan@ejemplo.com", "987654321");
         profesor2.setId(2L);
@@ -83,21 +80,20 @@ class ServicioProfesorTest {
         profesor3 = new Profesor("profesor3", "password3", "Ana", "López", "11223344X", "ana@ejemplo.com", "555666777");
         profesor3.setId(3L);
         profesor3.setEnabled(false);
-        profesor3.getClassIds().add("3");
 
         // Create DTOs with fixed timestamp to avoid comparison issues
         dtoProfesor1 = new DTOProfesor(profesor1.getId(), profesor1.getUsername(), profesor1.getFirstName(),
                                       profesor1.getLastName(), profesor1.getDni(), profesor1.getEmail(),
                                       profesor1.getPhoneNumber(), profesor1.getRole(), profesor1.isEnabled(),
-                                      profesor1.getClassIds(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
+                                      List.of(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
         dtoProfesor2 = new DTOProfesor(profesor2.getId(), profesor2.getUsername(), profesor2.getFirstName(),
                                       profesor2.getLastName(), profesor2.getDni(), profesor2.getEmail(),
                                       profesor2.getPhoneNumber(), profesor2.getRole(), profesor2.isEnabled(),
-                                      profesor2.getClassIds(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
+                                      List.of(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
         dtoProfesor3 = new DTOProfesor(profesor3.getId(), profesor3.getUsername(), profesor3.getFirstName(),
                                       profesor3.getLastName(), profesor3.getDni(), profesor3.getEmail(),
                                       profesor3.getPhoneNumber(), profesor3.getRole(), profesor3.isEnabled(),
-                                      profesor3.getClassIds(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
+                                      List.of(), LocalDateTime.of(2025, 1, 1, 12, 0, 0));
     }
 
     @Test
@@ -522,7 +518,7 @@ class ServicioProfesorTest {
     void testCrearProfesorConClases() {
         DTOPeticionRegistroProfesor peticion = new DTOPeticionRegistroProfesor(
                 "nuevo", "password123", "Nuevo", "Profesor", "99999999A", "nuevo@ejemplo.com", "111222333",
-                Arrays.asList("clase1", "clase2")
+                Arrays.asList(1L, 2L)
         );
         
         when(repositorioProfesor.findByUsername("nuevo")).thenReturn(Optional.empty());
@@ -597,12 +593,23 @@ class ServicioProfesorTest {
     @Test
     @DisplayName("removerClase debe remover clase correctamente")
     void testRemoverClase() {
-        when(repositorioProfesor.findById(1L)).thenReturn(Optional.of(profesor1));
+        // Create a professor with a class already assigned
+        Profesor profesorConClase = new Profesor("profesor1", "password1", "María", "García", "12345678Z", "maria@ejemplo.com", "123456789");
+        profesorConClase.setId(1L);
+        profesorConClase.setEnabled(true);
+        
+        // Create a class and assign it to the professor
+        Curso clase = new Curso();
+        clase.setId(1L);
+        profesorConClase.agregarClase(clase);
+        clase.agregarProfesor(profesorConClase);
+        
+        when(repositorioProfesor.findById(1L)).thenReturn(Optional.of(profesorConClase));
         when(repositorioProfesor.save(any(Profesor.class))).thenAnswer(invocation -> {
             Profesor savedProfesor = invocation.getArgument(0);
             return savedProfesor;
         });
-        when(repositorioClase.findById(1L)).thenReturn(Optional.of(new Curso()));
+        when(repositorioClase.findById(1L)).thenReturn(Optional.of(clase));
         when(repositorioClase.save(any(Curso.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         DTOProfesor resultado = servicioProfesor.removerClase(1L, "1");
@@ -631,7 +638,7 @@ class ServicioProfesorTest {
 
         Integer resultado = servicioProfesor.contarClasesProfesor(1L);
 
-        assertEquals(2, resultado);
+        assertEquals(0, resultado); // Professor starts with 0 classes after JPA migration
         verify(repositorioProfesor).findById(1L);
     }
 

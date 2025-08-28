@@ -22,9 +22,9 @@ class DTOPeticionRegistroProfesorTest {
     @Test
     @DisplayName("Constructor completo debe crear DTO correctamente")
     void testConstructorCompleto() {
-        List<String> clases = new ArrayList<>();
-        clases.add("clase1");
-        clases.add("clase2");
+        List<Long> clases = new ArrayList<>();
+        clases.add(1L);
+        clases.add(2L);
         
         DTOPeticionRegistroProfesor dto = new DTOPeticionRegistroProfesor(
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, clases);
@@ -78,7 +78,7 @@ class DTOPeticionRegistroProfesorTest {
     @Test
     @DisplayName("Constructor con clases vacía debe crear DTO correctamente")
     void testConstructorConClasesVacia() {
-        List<String> clasesVacia = new ArrayList<>();
+        List<Long> clasesVacia = new ArrayList<>();
         
         DTOPeticionRegistroProfesor dto = new DTOPeticionRegistroProfesor(
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, clasesVacia);
@@ -91,7 +91,7 @@ class DTOPeticionRegistroProfesorTest {
     @Test
     @DisplayName("Constructor con múltiples clases debe crear DTO correctamente")
     void testConstructorConMultiplesClases() {
-        List<String> clases = List.of("clase1", "clase2", "clase3", "clase4");
+        List<Long> clases = List.of(1L, 2L, 3L, 4L);
         
         DTOPeticionRegistroProfesor dto = new DTOPeticionRegistroProfesor(
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, clases);
@@ -99,10 +99,10 @@ class DTOPeticionRegistroProfesorTest {
         assertNotNull(dto);
         assertEquals(clases, dto.classIds());
         assertEquals(4, dto.classIds().size());
-        assertTrue(dto.classIds().contains("clase1"));
-        assertTrue(dto.classIds().contains("clase2"));
-        assertTrue(dto.classIds().contains("clase3"));
-        assertTrue(dto.classIds().contains("clase4"));
+        assertTrue(dto.classIds().contains(1L));
+        assertTrue(dto.classIds().contains(2L));
+        assertTrue(dto.classIds().contains(3L));
+        assertTrue(dto.classIds().contains(4L));
     }
 
     @Test
@@ -187,7 +187,7 @@ class DTOPeticionRegistroProfesorTest {
     @Test
     @DisplayName("Constructor con clases inmutables debe crear DTO correctamente")
     void testConstructorConClasesInmutables() {
-        List<String> clases = List.of("clase1", "clase2");
+        List<Long> clases = List.of(1L, 2L);
         
         DTOPeticionRegistroProfesor dto = new DTOPeticionRegistroProfesor(
                 USUARIO, PASSWORD, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, clases);

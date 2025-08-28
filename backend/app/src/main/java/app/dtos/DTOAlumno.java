@@ -2,6 +2,7 @@ package app.dtos;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import app.entidades.Alumno;
 import app.entidades.Usuario;
@@ -59,14 +60,14 @@ public record DTOAlumno(
     @Schema(description = "Indicates if the account is enabled", example = "true", required = true)
     boolean enabled,
     
-    @Schema(description = "List of enrolled class IDs", example = "[\"1\", \"2\"]", required = false)
-    List<String> classIds,
+    @Schema(description = "List of enrolled class IDs", example = "[1, 2]", required = false)
+    List<Long> classIds,
     
-    @Schema(description = "List of payment IDs", example = "[\"1\", \"2\"]", required = false)
-    List<String> paymentIds,
+    @Schema(description = "List of payment IDs", example = "[1, 2]", required = false)
+    List<Long> paymentIds,
     
-    @Schema(description = "List of exercise submission IDs", example = "[\"1\", \"2\"]", required = false)
-    List<String> submissionIds,
+    @Schema(description = "List of exercise submission IDs", example = "[1, 2]", required = false)
+    List<Long> submissionIds,
     
     @Schema(description = "User role", example = "STUDENT", required = true)
     Usuario.Role role
@@ -87,9 +88,15 @@ public record DTOAlumno(
             alumno.getEnrollDate(),
             alumno.isEnrolled(),
             alumno.isEnabled(),
-            alumno.getClassIds(),
-            alumno.getPaymentIds(),
-            alumno.getSubmissionIds(),
+            alumno.getClasses() != null ? alumno.getClasses().stream()
+                .map(clase -> clase.getId())
+                .collect(Collectors.toList()) : null,
+            alumno.getPayments() != null ? alumno.getPayments().stream()
+                .map(pago -> pago.getId())
+                .collect(Collectors.toList()) : null,
+            alumno.getSubmissions() != null ? alumno.getSubmissions().stream()
+                .map(entrega -> entrega.getId())
+                .collect(Collectors.toList()) : null,
             alumno.getRole()
         );
     }

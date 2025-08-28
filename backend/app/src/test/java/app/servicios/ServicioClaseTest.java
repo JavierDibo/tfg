@@ -101,7 +101,7 @@ class ServicioClaseTest {
         peticionCrearClase = new DTOPeticionCrearClase(
                 "Nuevo Curso", "Descripción del curso", new BigDecimal("89.99"),
                 EPresencialidad.ONLINE, "nueva-imagen.jpg", EDificultad.PRINCIPIANTE,
-                Arrays.asList("3"), Arrays.asList(material)
+                Arrays.asList(3L), Arrays.asList(material)
         );
 
         // Crear profesor de prueba
@@ -112,7 +112,7 @@ class ServicioClaseTest {
         alumno = new Alumno("alumno1", "password", "Juan", "Pérez López", "12345678B", "alumno1@academia.com", "647940541");
         alumno.setId(1L);
 
-        ejercicio = new Ejercicio("ejercicio1", "Descripción del ejercicio", LocalDateTime.now(), LocalDateTime.now().plusDays(7), "1");
+        ejercicio = new Ejercicio("ejercicio1", "Descripción del ejercicio", LocalDateTime.now(), LocalDateTime.now().plusDays(7), curso);
         ejercicio.setId(1L);
     }
 
@@ -134,26 +134,26 @@ class ServicioClaseTest {
     @Test
     @DisplayName("obtenerClasePorId debe retornar la clase cuando existe")
     void testObtenerClasePorIdExiste() {
-        when(repositorioClase.findById(1L)).thenReturn(Optional.of(curso));
+        when(repositorioClase.findByIdWithAllRelationships(1L)).thenReturn(Optional.of(curso));
 
         DTOClase resultado = servicioClase.obtenerClasePorId(1L);
 
         assertNotNull(resultado);
         assertEquals(1L, resultado.id());
         assertEquals("Curso de Java", resultado.titulo());
-        verify(repositorioClase).findById(1L);
+        verify(repositorioClase).findByIdWithAllRelationships(1L);
     }
 
     @Test
     @DisplayName("obtenerClasePorId debe lanzar excepción cuando no existe")
     void testObtenerClasePorIdNoExiste() {
-        when(repositorioClase.findById(999L)).thenReturn(Optional.empty());
+        when(repositorioClase.findByIdWithAllRelationships(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             servicioClase.obtenerClasePorId(999L);
         });
 
-        verify(repositorioClase).findById(999L);
+        verify(repositorioClase).findByIdWithAllRelationships(999L);
     }
 
     @Test

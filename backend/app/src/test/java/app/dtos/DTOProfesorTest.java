@@ -1,5 +1,7 @@
 package app.dtos;
 
+import app.entidades.Clase;
+import app.entidades.Curso;
 import app.entidades.Profesor;
 import app.entidades.Usuario;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,8 +17,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Tests para DTOProfesor")
 class DTOProfesorTest {
 
-    private Profesor profesor;
     private DTOProfesor dtoProfesor;
+    private Profesor profesor;
+    
     private final Long ID = 1L;
     private final String USUARIO = "profesor123";
     private final String NOMBRE = "María";
@@ -26,15 +29,15 @@ class DTOProfesorTest {
     private final String TELEFONO = "987654321";
     private final Usuario.Role Role = Usuario.Role.PROFESOR;
     private final boolean ENABLED = true;
-    private final LocalDateTime FECHA_CREACION = LocalDateTime.now();
+    private final LocalDateTime FECHA_CREACION = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
 
     @BeforeEach
     void setUp() {
+        dtoProfesor = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
+        
         profesor = new Profesor(USUARIO, "password123", NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO);
         profesor.setId(ID);
         profesor.setEnabled(ENABLED);
-        
-        dtoProfesor = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
     }
 
     @Test
@@ -58,8 +61,16 @@ class DTOProfesorTest {
     @DisplayName("Constructor desde entidad Profesor debe crear DTO correctamente")
     void testConstructorDesdeEntidad() {
         // Agregar algunas clases al profesor
-        profesor.agregarClase("clase1");
-        profesor.agregarClase("clase2");
+        Clase clase1 = new Curso();
+        clase1.setId(1L);
+        clase1.setTitle("Matemáticas");
+        
+        Clase clase2 = new Curso();
+        clase2.setId(2L);
+        clase2.setTitle("Física");
+        
+        profesor.agregarClase(clase1);
+        profesor.agregarClase(clase2);
         
         DTOProfesor dtoDesdeEntidad = new DTOProfesor(profesor);
         
@@ -73,7 +84,9 @@ class DTOProfesorTest {
         assertEquals(profesor.getPhoneNumber(), dtoDesdeEntidad.phoneNumber());
         assertEquals(profesor.getRole(), dtoDesdeEntidad.role());
         assertEquals(profesor.isEnabled(), dtoDesdeEntidad.enabled());
-        assertEquals(profesor.getClassIds(), dtoDesdeEntidad.classIds());
+        assertEquals(2, dtoDesdeEntidad.classIds().size());
+        assertTrue(dtoDesdeEntidad.classIds().contains(1L));
+        assertTrue(dtoDesdeEntidad.classIds().contains(2L));
         assertNotNull(dtoDesdeEntidad.createdAt());
     }
 
@@ -92,7 +105,7 @@ class DTOProfesorTest {
         assertEquals(profesor.getPhoneNumber(), dtoFrom.phoneNumber());
         assertEquals(profesor.getRole(), dtoFrom.role());
         assertEquals(profesor.isEnabled(), dtoFrom.enabled());
-        assertEquals(profesor.getClassIds(), dtoFrom.classIds());
+        assertEquals(0, dtoFrom.classIds().size()); // No classes assigned yet
     }
 
     @Test
@@ -119,9 +132,9 @@ class DTOProfesorTest {
     @Test
     @DisplayName("Método tieneClases debe retornar true cuando hay clases")
     void testTieneClasesConClases() {
-        List<String> clases = new ArrayList<>();
-        clases.add("clase1");
-        clases.add("clase2");
+        List<Long> clases = new ArrayList<>();
+        clases.add(1L);
+        clases.add(2L);
         
         DTOProfesor dtoConClases = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, clases, FECHA_CREACION);
         assertTrue(dtoConClases.hasClasses());
@@ -143,10 +156,10 @@ class DTOProfesorTest {
     @Test
     @DisplayName("Método getNumeroClases debe retornar número correcto de clases")
     void testGetNumeroClasesConClases() {
-        List<String> clases = new ArrayList<>();
-        clases.add("clase1");
-        clases.add("clase2");
-        clases.add("clase3");
+        List<Long> clases = new ArrayList<>();
+        clases.add(1L);
+        clases.add(2L);
+        clases.add(3L);
         
         DTOProfesor dtoConClases = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, clases, FECHA_CREACION);
         assertEquals(3, dtoConClases.getClassCount());
@@ -160,12 +173,54 @@ class DTOProfesorTest {
     }
 
     @Test
-    @DisplayName("Record debe ser inmutable")
-    void testRecordInmutable() {
-        // Los records son inmutables por defecto, no se pueden modificar después de la creación
-        assertNotNull(dtoProfesor);
-        assertEquals(ID, dtoProfesor.id());
-        assertEquals(USUARIO, dtoProfesor.username());
+    @DisplayName("Método getEnabledStatus debe retornar texto correcto cuando está habilitado")
+    void testGetEnabledStatusHabilitado() {
+        assertEquals("Enabled", dtoProfesor.getEnabledStatus());
+    }
+
+    @Test
+    @DisplayName("Método getEnabledStatus debe retornar texto correcto cuando está deshabilitado")
+    void testGetEnabledStatusDeshabilitado() {
+        DTOProfesor dtoDeshabilitado = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, false, new ArrayList<>(), FECHA_CREACION);
+        assertEquals("Disabled", dtoDeshabilitado.getEnabledStatus());
+    }
+
+    @Test
+    @DisplayName("Método isEnabled debe retornar true cuando está habilitado")
+    void testIsEnabledHabilitado() {
+        assertTrue(dtoProfesor.isEnabled());
+    }
+
+    @Test
+    @DisplayName("Método isEnabled debe retornar false cuando está deshabilitado")
+    void testIsEnabledDeshabilitado() {
+        DTOProfesor dtoDeshabilitado = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, false, new ArrayList<>(), FECHA_CREACION);
+        assertFalse(dtoDeshabilitado.isEnabled());
+    }
+
+    @Test
+    @DisplayName("Constructor desde entidad con clases debe crear DTO correctamente")
+    void testConstructorDesdeEntidadConClases() {
+        // Crear clases y agregarlas al profesor
+        Clase clase1 = new Curso();
+        clase1.setId(1L);
+        clase1.setTitle("Matemáticas");
+        
+        Clase clase2 = new Curso();
+        clase2.setId(2L);
+        clase2.setTitle("Física");
+        
+        profesor.agregarClase(clase1);
+        profesor.agregarClase(clase2);
+        
+        DTOProfesor dtoDesdeEntidad = new DTOProfesor(profesor);
+        
+        assertNotNull(dtoDesdeEntidad);
+        assertEquals(2, dtoDesdeEntidad.classIds().size());
+        assertTrue(dtoDesdeEntidad.classIds().contains(1L));
+        assertTrue(dtoDesdeEntidad.classIds().contains(2L));
+        assertTrue(dtoDesdeEntidad.hasClasses());
+        assertEquals(2, dtoDesdeEntidad.getClassCount());
     }
 
     @Test
@@ -173,49 +228,11 @@ class DTOProfesorTest {
     void testEqualsYHashCode() {
         DTOProfesor dto1 = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
         DTOProfesor dto2 = new DTOProfesor(ID, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
+        DTOProfesor dto3 = new DTOProfesor(2L, "otro", NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
         
         assertEquals(dto1, dto2);
-        assertEquals(dto1.hashCode(), dto2.hashCode());
-        
-        // Crear con diferentes valores
-        DTOProfesor dto3 = new DTOProfesor(2L, USUARIO, NOMBRE, APELLIDOS, DNI, EMAIL, TELEFONO, Role, ENABLED, new ArrayList<>(), FECHA_CREACION);
         assertNotEquals(dto1, dto3);
-    }
-
-    @Test
-    @DisplayName("ToString debe contener información relevante")
-    void testToString() {
-        String toString = dtoProfesor.toString();
-        
-        assertFalse(toString.isEmpty());
-        assertTrue(toString.length() > 10);
-        assertNotNull(toString);
-        // Verificar que contiene información del record
-        assertTrue(toString.contains("DTOProfesor"));
-    }
-
-    @Test
-    @DisplayName("Constructor desde entidad con clases")
-    void testConstructorDesdeEntidadConClases() {
-        // Agregar clases al profesor
-        profesor.agregarClase("clase1");
-        profesor.agregarClase("clase2");
-        
-        DTOProfesor dto = new DTOProfesor(profesor);
-        
-        assertTrue(dto.hasClasses());
-        assertEquals(2, dto.getClassCount());
-        assertTrue(dto.classIds().contains("clase1"));
-        assertTrue(dto.classIds().contains("clase2"));
-    }
-
-    @Test
-    @DisplayName("Constructor desde entidad con profesor deshabilitado")
-    void testConstructorDesdeEntidadDeshabilitado() {
-        profesor.setEnabled(false);
-        
-        DTOProfesor dto = new DTOProfesor(profesor);
-        
-        assertFalse(dto.enabled());
+        assertEquals(dto1.hashCode(), dto2.hashCode());
+        assertNotEquals(dto1.hashCode(), dto3.hashCode());
     }
 }

@@ -65,11 +65,11 @@ class ProfesorRestTest {
 
         dtoProfesor1 = new DTOProfesor(
             1L, "juan123", "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", 
-            "123456789", app.entidades.Usuario.Role.PROFESOR, true, Arrays.asList("clase1", "clase2"), java.time.LocalDateTime.now()
+            "123456789", app.entidades.Usuario.Role.PROFESOR, true, Arrays.asList(1L, 2L), java.time.LocalDateTime.now()
         );
         dtoProfesor2 = new DTOProfesor(
             2L, "maria123", "María", "García", "87654321Y", "maria@ejemplo.com", 
-            "987654321", app.entidades.Usuario.Role.PROFESOR, true, Arrays.asList("clase3"), java.time.LocalDateTime.now()
+            "987654321", app.entidades.Usuario.Role.PROFESOR, true, Arrays.asList(3L), java.time.LocalDateTime.now()
         );
         dtoProfesor3 = new DTOProfesor(
             3L, "carlos123", "Carlos", "López", "11223344W", "carlos@ejemplo.com", 

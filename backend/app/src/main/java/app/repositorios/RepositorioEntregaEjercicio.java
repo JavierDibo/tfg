@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -334,4 +335,149 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
      */
     @Query("SELECT e FROM EntregaEjercicio e WHERE SIZE(e.archivosEntregados) = 0")
     List<EntregaEjercicio> findEntregasSinArchivos();
+
+    // ========== ENTITY GRAPH METHODS ==========
+
+    /**
+     * Busca una entrega por ID con alumno cargado usando EntityGraph
+     * @param entregaId ID de la entrega
+     * @return Optional<EntregaEjercicio> con alumno cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAlumno")
+    Optional<EntregaEjercicio> findByIdWithAlumno(@Param("entregaId") Long entregaId);
+
+    /**
+     * Busca una entrega por ID con ejercicio cargado usando EntityGraph
+     * @param entregaId ID de la entrega
+     * @return Optional<EntregaEjercicio> con ejercicio cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withEjercicio")
+    Optional<EntregaEjercicio> findByIdWithEjercicio(@Param("entregaId") Long entregaId);
+
+    /**
+     * Busca una entrega por ID con todas sus relaciones cargadas usando EntityGraph
+     * @param entregaId ID de la entrega
+     * @return Optional<EntregaEjercicio> con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAllRelationships")
+    Optional<EntregaEjercicio> findByIdWithAllRelationships(@Param("entregaId") Long entregaId);
+
+    /**
+     * Busca entregas por alumno con alumno cargado usando EntityGraph
+     * @param alumnoId ID del alumno
+     * @return Lista de entregas con alumno cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAlumno")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId")
+    List<EntregaEjercicio> findByAlumnoIdWithAlumno(@Param("alumnoId") Long alumnoId);
+
+    /**
+     * Busca entregas por ejercicio con ejercicio cargado usando EntityGraph
+     * @param ejercicioId ID del ejercicio
+     * @return Lista de entregas con ejercicio cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withEjercicio")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId")
+    List<EntregaEjercicio> findByEjercicioIdWithEjercicio(@Param("ejercicioId") Long ejercicioId);
+
+    /**
+     * Busca entregas por alumno con todas las relaciones cargadas usando EntityGraph
+     * @param alumnoId ID del alumno
+     * @return Lista de entregas con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAllRelationships")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId")
+    List<EntregaEjercicio> findByAlumnoIdWithAllRelationships(@Param("alumnoId") Long alumnoId);
+
+    /**
+     * Busca entregas por ejercicio con todas las relaciones cargadas usando EntityGraph
+     * @param ejercicioId ID del ejercicio
+     * @return Lista de entregas con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAllRelationships")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId")
+    List<EntregaEjercicio> findByEjercicioIdWithAllRelationships(@Param("ejercicioId") Long ejercicioId);
+
+    /**
+     * Busca entregas por estado con alumno cargado usando EntityGraph
+     * @param estado Estado de la entrega
+     * @return Lista de entregas con alumno cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAlumno")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.estado = :estado")
+    List<EntregaEjercicio> findByEstadoWithAlumno(@Param("estado") EEstadoEjercicio estado);
+
+    /**
+     * Busca entregas por estado con ejercicio cargado usando EntityGraph
+     * @param estado Estado de la entrega
+     * @return Lista de entregas con ejercicio cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withEjercicio")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.estado = :estado")
+    List<EntregaEjercicio> findByEstadoWithEjercicio(@Param("estado") EEstadoEjercicio estado);
+
+    /**
+     * Busca entregas calificadas con alumno cargado usando EntityGraph
+     * @param alumnoId ID del alumno
+     * @return Lista de entregas calificadas con alumno cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAlumno")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.estado = 'CALIFICADO'")
+    List<EntregaEjercicio> findEntregasCalificadasByAlumnoWithAlumno(@Param("alumnoId") Long alumnoId);
+
+    /**
+     * Busca entregas calificadas con ejercicio cargado usando EntityGraph
+     * @param ejercicioId ID del ejercicio
+     * @return Lista de entregas calificadas con ejercicio cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withEjercicio")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.ejercicio.id = :ejercicioId AND e.estado = 'CALIFICADO'")
+    List<EntregaEjercicio> findEntregasCalificadasByEjercicioWithEjercicio(@Param("ejercicioId") Long ejercicioId);
+
+    /**
+     * Busca entregas pendientes de calificación con alumno cargado usando EntityGraph
+     * @return Lista de entregas pendientes con alumno cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAlumno")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.estado = 'ENTREGADO'")
+    List<EntregaEjercicio> findEntregasPendientesCalificacionWithAlumno();
+
+    /**
+     * Busca entregas pendientes de calificación con ejercicio cargado usando EntityGraph
+     * @return Lista de entregas pendientes con ejercicio cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withEjercicio")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.estado = 'ENTREGADO'")
+    List<EntregaEjercicio> findEntregasPendientesCalificacionWithEjercicio();
+
+    /**
+     * Busca una entrega específica por alumno y ejercicio con todas las relaciones cargadas usando EntityGraph
+     * @param alumnoId ID del alumno
+     * @param ejercicioId ID del ejercicio
+     * @return Optional<EntregaEjercicio> con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAllRelationships")
+    @Query("SELECT e FROM EntregaEjercicio e WHERE e.alumno.id = :alumnoId AND e.ejercicio.id = :ejercicioId")
+    Optional<EntregaEjercicio> findByAlumnoIdAndEjercicioIdWithAllRelationships(@Param("alumnoId") Long alumnoId, @Param("ejercicioId") Long ejercicioId);
+
+    /**
+     * Obtiene todas las entregas con alumno cargado usando EntityGraph
+     * @return Lista de entregas con alumno cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAlumno")
+    List<EntregaEjercicio> findAllWithAlumno();
+
+    /**
+     * Obtiene todas las entregas con ejercicio cargado usando EntityGraph
+     * @return Lista de entregas con ejercicio cargado
+     */
+    @EntityGraph(value = "EntregaEjercicio.withEjercicio")
+    List<EntregaEjercicio> findAllWithEjercicio();
+
+    /**
+     * Obtiene todas las entregas con todas las relaciones cargadas usando EntityGraph
+     * @return Lista de entregas con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "EntregaEjercicio.withAllRelationships")
+    List<EntregaEjercicio> findAllWithAllRelationships();
 }

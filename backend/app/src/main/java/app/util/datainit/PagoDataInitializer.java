@@ -34,8 +34,8 @@ public class PagoDataInitializer extends BaseDataInitializer {
         }
 
         // Get all student IDs to assign payments to
-        List<String> studentIds = repositorioAlumno.findAll().stream()
-                .map(alumno -> alumno.getId().toString())
+        List<Long> studentIds = repositorioAlumno.findAll().stream()
+                .map(alumno -> alumno.getId())
                 .toList();
 
         if (studentIds.isEmpty()) {
@@ -52,13 +52,13 @@ public class PagoDataInitializer extends BaseDataInitializer {
         System.out.println("Payments created: " + createdPayments.size());
     }
 
-    private void createSuccessfulPayments(RepositorioPago repositorioPago, List<String> studentIds, RepositorioAlumno repositorioAlumno) {
+    private void createSuccessfulPayments(RepositorioPago repositorioPago, List<Long> studentIds, RepositorioAlumno repositorioAlumno) {
         // Create successful payments with different payment methods
         EMetodoPago[] successfulMethods = {EMetodoPago.STRIPE, EMetodoPago.DEBITO, EMetodoPago.CREDITO, EMetodoPago.TRANSFERENCIA};
         
         for (int i = 0; i < 15; i++) {
             try {
-                String studentId = studentIds.get(random.nextInt(studentIds.size()));
+                Long studentId = studentIds.get(random.nextInt(studentIds.size()));
                 EMetodoPago method = successfulMethods[random.nextInt(successfulMethods.length)];
                 
                 Pago pago = createPayment(
@@ -81,11 +81,11 @@ public class PagoDataInitializer extends BaseDataInitializer {
         }
     }
 
-    private void createFailedPayments(RepositorioPago repositorioPago, List<String> studentIds, RepositorioAlumno repositorioAlumno) {
+    private void createFailedPayments(RepositorioPago repositorioPago, List<Long> studentIds, RepositorioAlumno repositorioAlumno) {
         // Create failed payments
         for (int i = 0; i < 5; i++) {
             try {
-                String studentId = studentIds.get(random.nextInt(studentIds.size()));
+                Long studentId = studentIds.get(random.nextInt(studentIds.size()));
                 
                 Pago pago = createPayment(
                     generateRandomAmount(25.0, 200.0),
@@ -107,11 +107,11 @@ public class PagoDataInitializer extends BaseDataInitializer {
         }
     }
 
-    private void createRefundedPayments(RepositorioPago repositorioPago, List<String> studentIds, RepositorioAlumno repositorioAlumno) {
+    private void createRefundedPayments(RepositorioPago repositorioPago, List<Long> studentIds, RepositorioAlumno repositorioAlumno) {
         // Create refunded payments
         for (int i = 0; i < 3; i++) {
             try {
-                String studentId = studentIds.get(random.nextInt(studentIds.size()));
+                Long studentId = studentIds.get(random.nextInt(studentIds.size()));
                 
                 Pago pago = createPayment(
                     generateRandomAmount(100.0, 300.0),
@@ -133,11 +133,11 @@ public class PagoDataInitializer extends BaseDataInitializer {
         }
     }
 
-    private void createManualPayments(RepositorioPago repositorioPago, List<String> studentIds, RepositorioAlumno repositorioAlumno) {
+    private void createManualPayments(RepositorioPago repositorioPago, List<Long> studentIds, RepositorioAlumno repositorioAlumno) {
         // Create manual cash payments
         for (int i = 0; i < 7; i++) {
             try {
-                String studentId = studentIds.get(random.nextInt(studentIds.size()));
+                Long studentId = studentIds.get(random.nextInt(studentIds.size()));
                 
                 Pago pago = createPayment(
                     generateRandomAmount(20.0, 150.0),
@@ -165,9 +165,9 @@ public class PagoDataInitializer extends BaseDataInitializer {
     }
 
     private Pago createPayment(BigDecimal amount, EMetodoPago method, EEstadoPago status, 
-                              String studentId, LocalDateTime date, RepositorioAlumno repositorioAlumno) {
+                              Long studentId, LocalDateTime date, RepositorioAlumno repositorioAlumno) {
         // Get the student entity
-        Alumno alumno = repositorioAlumno.findById(Long.valueOf(studentId))
+        Alumno alumno = repositorioAlumno.findById(studentId)
             .orElseThrow(() -> new RuntimeException("Alumno no encontrado con ID: " + studentId));
         
         // Create payment with JPA relationship

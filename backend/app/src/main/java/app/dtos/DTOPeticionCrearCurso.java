@@ -42,7 +42,7 @@ public record DTOPeticionCrearCurso(
         @Future(message = "La fecha de fin debe ser en el futuro")
         LocalDate fechaFin,
         
-        List<String> profesoresId,
+        List<Long> profesoresId,
         List<Material> material
 ) {
     

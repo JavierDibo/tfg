@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DTO específico para la entidad Curso
@@ -42,9 +43,15 @@ public record DTOCurso(
                 curso.getFormat(),
                 curso.getImage(),
                 curso.getDifficulty(),
-                curso.getStudentIds(),
-                curso.getTeacherIds(),
-                curso.getExerciseIds(),
+                curso.getStudents().stream()
+                    .map(student -> student.getId().toString())
+                    .collect(Collectors.toList()),
+                curso.getTeachers().stream()
+                    .map(teacher -> teacher.getId().toString())
+                    .collect(Collectors.toList()),
+                curso.getExercises().stream()
+                    .map(exercise -> exercise.getId().toString())
+                    .collect(Collectors.toList()),
                 curso.getMaterial(),
                 curso.getFechaInicio(),
                 curso.getFechaFin()

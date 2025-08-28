@@ -35,7 +35,7 @@ public record DTOPeticionCrearClase(
         @NotNull
         EDificultad nivel,
         
-        List<String> profesoresId,
+        List<Long> profesoresId,
         List<Material> material
 ) {
     

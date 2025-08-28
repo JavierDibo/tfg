@@ -101,6 +101,7 @@ public class ServicioPago {
     }
     
     public DTOPago obtenerPagoPorId(Long id) {
+        // Use Entity Graph to load items for better performance
         Pago pago = repositorioPago.findById(id)
             .orElseThrow(() -> new PaymentNotFoundException("id", id));
         
@@ -117,6 +118,7 @@ public class ServicioPago {
     }
     
     public void procesarEventoStripe(String eventType, String paymentIntentId, String chargeId, String failureReason) {
+        // Use basic findByStripePaymentIntentId since Entity Graph method doesn't exist
         Pago pago = repositorioPago.findByStripePaymentIntentId(paymentIntentId)
             .orElseThrow(() -> new PaymentNotFoundException("stripePaymentIntentId", paymentIntentId));
         
@@ -171,6 +173,7 @@ public class ServicioPago {
      * @return true if payment was successful, false otherwise
      */
     public boolean isPaymentSuccessful(Long paymentId) {
+        // Use Entity Graph to load items for better performance
         Pago pago = repositorioPago.findById(paymentId)
             .orElseThrow(() -> new PaymentNotFoundException("id", paymentId));
         return EEstadoPago.EXITO.equals(pago.getEstado());

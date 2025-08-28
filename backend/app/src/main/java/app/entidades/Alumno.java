@@ -17,6 +17,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
 
 /**
  * Student Entity
@@ -27,6 +29,20 @@ import jakarta.persistence.CascadeType;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @DiscriminatorValue("ALUMNO")
+@NamedEntityGraph(
+    name = "Alumno.withClasses",
+    attributeNodes = {
+        @NamedAttributeNode("classes")
+    }
+)
+@NamedEntityGraph(
+    name = "Alumno.withAllRelationships",
+    attributeNodes = {
+        @NamedAttributeNode("classes"),
+        @NamedAttributeNode("payments"),
+        @NamedAttributeNode("submissions")
+    }
+)
 public class Alumno extends Usuario {
     
     @NotNull
@@ -45,22 +61,6 @@ public class Alumno extends Usuario {
     
     @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<EntregaEjercicio> submissions = new ArrayList<>();
-    
-    // Legacy ID-based fields for backward compatibility (to be removed after migration)
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "student_classes", joinColumns = @JoinColumn(name = "student_id"))
-    @Column(name = "class_id")
-    private List<String> classIds = new ArrayList<>();
-    
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "student_payments", joinColumns = @JoinColumn(name = "student_id"))
-    @Column(name = "payment_id")
-    private List<String> paymentIds = new ArrayList<>();
-    
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "student_submissions", joinColumns = @JoinColumn(name = "student_id"))
-    @Column(name = "submission_id")
-    private List<String> submissionIds = new ArrayList<>();
     
     public Alumno() {
         super();

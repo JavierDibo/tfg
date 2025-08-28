@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 /**
  * Repositorio para la entidad Clase
@@ -229,4 +230,44 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
            "LEFT JOIN FETCH c.teachers " +
            "LEFT JOIN FETCH c.exercises")
     List<Clase> findAllWithRelationships();
+
+    /**
+     * Busca todas las clases con estudiantes y profesores cargados (optimizado)
+     * @return Lista de clases con relaciones cargadas
+     */
+    @EntityGraph(value = "Clase.withStudentsAndTeachers")
+    List<Clase> findAllForDashboard();
+
+    /**
+     * Busca todas las clases con ejercicios cargados (optimizado)
+     * @return Lista de clases con ejercicios cargados
+     */
+    @EntityGraph(value = "Clase.withExercises")
+    List<Clase> findAllForExerciseManagement();
+
+    /**
+     * Busca una clase por ID con todas sus relaciones cargadas (optimizado)
+     * @param claseId ID de la clase
+     * @return Optional<Clase> con todas las relaciones cargadas
+     */
+    @EntityGraph(value = "Clase.withAllRelationships")
+    Optional<Clase> findByIdWithAllRelationships(@Param("claseId") Long claseId);
+
+    /**
+     * Busca clases por profesor con relaciones cargadas (optimizado)
+     * @param profesorId ID del profesor
+     * @return Lista de clases con relaciones cargadas
+     */
+    @EntityGraph(value = "Clase.withStudentsAndTeachers")
+    @Query("SELECT c FROM Clase c JOIN c.teachers t WHERE t.id = :profesorId")
+    List<Clase> findByProfesorIdWithRelationships(@Param("profesorId") Long profesorId);
+
+    /**
+     * Busca clases por alumno con relaciones cargadas (optimizado)
+     * @param alumnoId ID del alumno
+     * @return Lista de clases con relaciones cargadas
+     */
+    @EntityGraph(value = "Clase.withStudentsAndTeachers")
+    @Query("SELECT c FROM Clase c JOIN c.students s WHERE s.id = :alumnoId")
+    List<Clase> findByAlumnoIdWithRelationships(@Param("alumnoId") Long alumnoId);
 }

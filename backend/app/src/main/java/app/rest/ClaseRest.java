@@ -36,6 +36,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 /**
  * REST controller for basic CRUD operations of classes (Courses and Workshops)
  * Handles creation, reading, updating and deletion of classes
@@ -162,6 +164,96 @@ public class ClaseRest extends BaseRestController {
             @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
         DTOClase dtoClase = servicioClase.obtenerClasePorId(id);
+        return new ResponseEntity<>(dtoClase, HttpStatus.OK);
+    }
+
+    // ===== OPTIMIZED ENTITY GRAPH ENDPOINTS =====
+
+    /**
+     * Gets classes optimized for dashboard display with students and teachers loaded
+     */
+    @GetMapping("/dashboard")
+    @Operation(
+        summary = "Get classes for dashboard",
+        description = "Gets classes optimized for dashboard display with students and teachers loaded using Entity Graph"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Dashboard classes retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClase.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view classes"
+        )
+    })
+    public ResponseEntity<List<DTOClase>> obtenerClasesParaDashboard() {
+        List<DTOClase> clases = servicioClase.obtenerClasesParaDashboard();
+        return new ResponseEntity<>(clases, HttpStatus.OK);
+    }
+
+    /**
+     * Gets classes optimized for exercise management with exercises loaded
+     */
+    @GetMapping("/ejercicios")
+    @Operation(
+        summary = "Get classes for exercise management",
+        description = "Gets classes optimized for exercise management with exercises loaded using Entity Graph"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Exercise management classes retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClase.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view classes"
+        )
+    })
+    public ResponseEntity<List<DTOClase>> obtenerClasesParaGestionEjercicios() {
+        List<DTOClase> clases = servicioClase.obtenerClasesParaGestionEjercicios();
+        return new ResponseEntity<>(clases, HttpStatus.OK);
+    }
+
+    /**
+     * Gets a class with all its details and relationships loaded using Entity Graph
+     */
+    @GetMapping("/{id}/detalles")
+    @Operation(
+        summary = "Get class with all details",
+        description = "Gets a class with all its relationships loaded using Entity Graph for optimal performance"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Class details retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOClase.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Class not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view this class"
+        )
+    })
+    public ResponseEntity<DTOClase> obtenerClaseConDetalles(
+            @Parameter(description = "ID of the class", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOClase dtoClase = servicioClase.obtenerClaseConDetalles(id);
         return new ResponseEntity<>(dtoClase, HttpStatus.OK);
     }
 

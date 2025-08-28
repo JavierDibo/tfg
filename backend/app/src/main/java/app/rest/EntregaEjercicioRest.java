@@ -340,4 +340,74 @@ public class EntregaEjercicioRest extends BaseRestController {
         
         return new ResponseEntity<>(estadisticas, HttpStatus.OK);
     }
+
+    // ===== OPTIMIZED ENTITY GRAPH ENDPOINTS =====
+
+    /**
+     * Gets a delivery with its student loaded using Entity Graph
+     */
+    @GetMapping("/{id}/con-alumno")
+    @Operation(
+        summary = "Get delivery with student",
+        description = "Gets a delivery with its student loaded using Entity Graph for optimal performance"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Delivery with student retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOEntregaEjercicio.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Delivery not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view this delivery"
+        )
+    })
+    public ResponseEntity<DTOEntregaEjercicio> obtenerEntregaConAlumno(
+            @Parameter(description = "ID of the delivery", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOEntregaEjercicio dtoEntrega = servicioEntregaEjercicio.obtenerEntregaConAlumno(id);
+        return new ResponseEntity<>(dtoEntrega, HttpStatus.OK);
+    }
+
+    /**
+     * Gets a delivery with its exercise loaded using Entity Graph
+     */
+    @GetMapping("/{id}/con-ejercicio")
+    @Operation(
+        summary = "Get delivery with exercise",
+        description = "Gets a delivery with its exercise loaded using Entity Graph for optimal performance"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Delivery with exercise retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOEntregaEjercicio.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Delivery not found"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view this delivery"
+        )
+    })
+    public ResponseEntity<DTOEntregaEjercicio> obtenerEntregaConEjercicio(
+            @Parameter(description = "ID of the delivery", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        DTOEntregaEjercicio dtoEntrega = servicioEntregaEjercicio.obtenerEntregaConEjercicio(id);
+        return new ResponseEntity<>(dtoEntrega, HttpStatus.OK);
+    }
 }

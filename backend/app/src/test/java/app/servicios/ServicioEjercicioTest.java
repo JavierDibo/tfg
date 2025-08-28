@@ -88,7 +88,7 @@ class ServicioEjercicioTest {
             "Test Statement",
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(7),
-            "1"
+            testClase
         );
         testEjercicio.setId(1L);
     }
@@ -115,7 +115,7 @@ class ServicioEjercicioTest {
         
         // Act
         DTOEjercicio result = servicioEjercicio.crearEjercicio(
-            exerciseName, statement, startDate, endDate, classId
+            exerciseName, statement, startDate, endDate, 1L
         );
         
         // Assert
@@ -182,7 +182,7 @@ class ServicioEjercicioTest {
         // Act & Assert
         assertThrows(RuntimeException.class, () -> {
             servicioEjercicio.crearEjercicio(
-                exerciseName, statement, startDate, endDate, invalidClassId
+                exerciseName, statement, startDate, endDate, 999L
             );
         });
     }
@@ -205,7 +205,7 @@ class ServicioEjercicioTest {
         // Act & Assert
         assertThrows(RuntimeException.class, () -> {
             servicioEjercicio.crearEjercicio(
-                exerciseName, statement, startDate, endDate, nonExistentClassId
+                exerciseName, statement, startDate, endDate, 999L
             );
         });
     }

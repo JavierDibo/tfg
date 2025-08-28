@@ -32,7 +32,8 @@ public class ServicioEjercicio {
 
     @Transactional(readOnly = true)
     public DTOEjercicio obtenerEjercicioPorId(Long id) {
-        Ejercicio ejercicio = repositorioEjercicio.findById(id).orElse(null);
+        // Use Entity Graph to load all relationships for better performance
+        Ejercicio ejercicio = repositorioEjercicio.findByIdWithAllRelationships(id).orElse(null);
         ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", id);
         
         // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
@@ -165,14 +166,57 @@ public class ServicioEjercicio {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Obtiene un ejercicio con su clase cargada usando Entity Graph
+     * @param id ID del ejercicio
+     * @return DTOEjercicio con clase cargada
+     * @throws EntidadNoEncontradaException si no se encuentra el ejercicio
+     */
     @Transactional(readOnly = true)
-    public List<DTOEjercicio> obtenerEjerciciosConEntregas() {
-        // Security check: Only ADMIN and PROFESOR can see exercises with deliveries
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para ver ejercicios con entregas");
+    public DTOEjercicio obtenerEjercicioConClase(Long id) {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
         }
         
-        return repositorioEjercicio.findEjerciciosConEntregas().stream()
+        Ejercicio ejercicio = repositorioEjercicio.findByIdWithClase(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", id);
+        
+        return new DTOEjercicio(ejercicio);
+    }
+
+    /**
+     * Obtiene un ejercicio con sus entregas cargadas usando Entity Graph
+     * @param id ID del ejercicio
+     * @return DTOEjercicio con entregas cargadas
+     * @throws EntidadNoEncontradaException si no se encuentra el ejercicio
+     */
+    @Transactional(readOnly = true)
+    public DTOEjercicio obtenerEjercicioConEntregas(Long id) {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
+        }
+        
+        Ejercicio ejercicio = repositorioEjercicio.findByIdWithEntregas(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", id);
+        
+        return new DTOEjercicio(ejercicio);
+    }
+
+    /**
+     * Obtiene ejercicios por clase con entregas cargadas usando Entity Graph
+     * @param claseId ID de la clase
+     * @return Lista de DTOEjercicio con entregas cargadas
+     */
+    @Transactional(readOnly = true)
+    public List<DTOEjercicio> obtenerEjerciciosConEntregasPorClase(Long claseId) {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
+        }
+        
+        return repositorioEjercicio.findByClaseIdWithEntregas(claseId).stream()
                 .map(DTOEjercicio::new)
                 .collect(Collectors.toList());
     }
@@ -190,7 +234,7 @@ public class ServicioEjercicio {
     }
 
     public DTOEjercicio crearEjercicio(String nombre, String enunciado, LocalDateTime fechaInicioPlazo, 
-                                      LocalDateTime fechaFinalPlazo, String claseId) {
+                                      LocalDateTime fechaFinalPlazo, Long claseId) {
         // Security check: Only ADMIN and PROFESOR can create exercises
         if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR")) {
             ExceptionUtils.throwAccessDenied("No tienes permisos para crear ejercicios");
@@ -213,15 +257,8 @@ public class ServicioEjercicio {
             ExceptionUtils.throwValidationError("La fecha final del plazo no puede estar vacía");
         }
         
-        if (claseId == null || claseId.trim().isEmpty()) {
+        if (claseId == null) {
             ExceptionUtils.throwValidationError("El ID de la clase no puede estar vacío");
-        }
-        
-        // Validate that claseId is a valid number
-        try {
-            Long.parseLong(claseId.trim());
-        } catch (NumberFormatException e) {
-            ExceptionUtils.throwValidationError("El ID de la clase debe ser un número válido: " + claseId);
         }
 
         // Validate date logic
@@ -234,22 +271,22 @@ public class ServicioEjercicio {
             ExceptionUtils.throwValidationError("Ya existe un ejercicio con el nombre: " + nombre);
         }
 
-        // Create exercise
+        // Get the class first
+        Clase clase = repositorioClase.findById(claseId).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
+        
+        // Create exercise with the class
         Ejercicio ejercicio = new Ejercicio(
             nombre.trim(),
             enunciado.trim(),
             fechaInicioPlazo,
             fechaFinalPlazo,
-            claseId.trim()
+            clase
         );
 
         Ejercicio ejercicioGuardado = repositorioEjercicio.save(ejercicio);
         
         // Automatically add the exercise to the class's exercise list
-        Long claseIdLong = Long.parseLong(claseId.trim());
-        Clase clase = repositorioClase.findById(claseIdLong).orElse(null);
-        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
-        
         clase.agregarEjercicio(ejercicioGuardado);
         repositorioClase.save(clase);
         
@@ -315,10 +352,10 @@ public class ServicioEjercicio {
         }
 
         // Remove the exercise from the class's exercise list before deleting
-        String claseId = ejercicio.getClassId();
-        Long claseIdLong = Long.parseLong(claseId);
-        Clase clase = repositorioClase.findById(claseIdLong).orElse(null);
-        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId + " for exercise " + ejercicio.getId());
+        Clase clase = ejercicio.getClase();
+        if (clase == null) {
+            ExceptionUtils.throwValidationError("Exercise " + ejercicio.getId() + " is not associated with any class");
+        }
         
         clase.removerEjercicio(ejercicio);
         repositorioClase.save(clase);

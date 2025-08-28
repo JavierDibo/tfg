@@ -41,7 +41,8 @@ public class ServicioAlumno {
 
     @Transactional(readOnly = true)
     public DTOAlumno obtenerAlumnoPorId(Long id) {
-        Alumno alumno = repositorioAlumno.findById(id).orElse(null);
+        // Use Entity Graph to load all relationships for better performance
+        Alumno alumno = repositorioAlumno.findByIdWithAllRelationships(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
         
         // Security check: Only ADMIN, PROFESOR, or the student themselves can access student data
@@ -758,5 +759,67 @@ public class ServicioAlumno {
         }
         
         return new DTORespuestaAlumnosClase(pageDTOs, tipoInformacion);
+    }
+
+    // ===== OPTIMIZED ENTITY GRAPH METHODS =====
+
+    /**
+     * Obtiene un alumno con sus clases cargadas usando Entity Graph
+     * @param id ID del alumno
+     * @return DTOAlumno con clases cargadas
+     * @throws EntidadNoEncontradaException si no se encuentra el alumno
+     */
+    @Transactional(readOnly = true)
+    public DTOAlumno obtenerAlumnoConClases(Long id) {
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can access student data
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can see any student's data
+            Alumno alumno = repositorioAlumno.findByIdWithClasses(id).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
+            return new DTOAlumno(alumno);
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!id.equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros alumnos");
+            }
+            Alumno alumno = repositorioAlumno.findByIdWithClasses(id).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
+            return new DTOAlumno(alumno);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de alumnos");
+            return null; // This line will never be reached due to the exception above
+        }
+    }
+
+    /**
+     * Obtiene un alumno con todas sus relaciones cargadas usando Entity Graph
+     * @param id ID del alumno
+     * @return DTOAlumno con todas las relaciones cargadas
+     * @throws EntidadNoEncontradaException si no se encuentra el alumno
+     */
+    @Transactional(readOnly = true)
+    public DTOAlumno obtenerAlumnoConTodo(Long id) {
+        // Security check: Only ADMIN, PROFESOR, or the student themselves can access student data
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can see any student's data
+            Alumno alumno = repositorioAlumno.findByIdWithAllRelationships(id).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
+            return new DTOAlumno(alumno);
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!id.equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros alumnos");
+            }
+            Alumno alumno = repositorioAlumno.findByIdWithAllRelationships(id).orElse(null);
+            ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
+            return new DTOAlumno(alumno);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de alumnos");
+            return null; // This line will never be reached due to the exception above
+        }
     }
 }

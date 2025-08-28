@@ -37,7 +37,8 @@ public class ServicioEntregaEjercicio {
 
     @Transactional(readOnly = true)
     public DTOEntregaEjercicio obtenerEntregaPorId(Long id) {
-        EntregaEjercicio entrega = repositorioEntregaEjercicio.findById(id).orElse(null);
+        // Use Entity Graph to load all relationships for better performance
+        EntregaEjercicio entrega = repositorioEntregaEjercicio.findByIdWithAllRelationships(id).orElse(null);
         ExceptionUtils.throwIfNotFound(entrega, "Entrega", "ID", id);
         
         // Security check: Only ADMIN, PROFESOR, or the student who owns the delivery can see it
@@ -564,6 +565,66 @@ public class ServicioEntregaEjercicio {
             // Any other role is not authorized
             ExceptionUtils.throwAccessDenied("No tienes permisos para ver promedios");
             return BigDecimal.ZERO; // This line will never be reached due to the exception above
+        }
+    }
+
+    /**
+     * Obtiene una entrega con su alumno cargado usando Entity Graph
+     * @param id ID de la entrega
+     * @return DTOEntregaEjercicio con alumno cargado
+     * @throws EntidadNoEncontradaException si no se encuentra la entrega
+     */
+    @Transactional(readOnly = true)
+    public DTOEntregaEjercicio obtenerEntregaConAlumno(Long id) {
+        // Security check: Only ADMIN, PROFESOR, or the student who owns the delivery can see it
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can see all deliveries
+            EntregaEjercicio entrega = repositorioEntregaEjercicio.findByIdWithAlumno(id).orElse(null);
+            ExceptionUtils.throwIfNotFound(entrega, "Entrega", "ID", id);
+            return new DTOEntregaEjercicio(entrega);
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only see their own deliveries
+            Long currentUserId = securityUtils.getCurrentUserId();
+            EntregaEjercicio entrega = repositorioEntregaEjercicio.findByIdWithAlumno(id).orElse(null);
+            ExceptionUtils.throwIfNotFound(entrega, "Entrega", "ID", id);
+            if (!entrega.getAlumno().getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver esta entrega");
+            }
+            return new DTOEntregaEjercicio(entrega);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a entregas de ejercicios");
+            return null; // This line will never be reached due to the exception above
+        }
+    }
+
+    /**
+     * Obtiene una entrega con su ejercicio cargado usando Entity Graph
+     * @param id ID de la entrega
+     * @return DTOEntregaEjercicio con ejercicio cargado
+     * @throws EntidadNoEncontradaException si no se encuentra la entrega
+     */
+    @Transactional(readOnly = true)
+    public DTOEntregaEjercicio obtenerEntregaConEjercicio(Long id) {
+        // Security check: Only ADMIN, PROFESOR, or the student who owns the delivery can see it
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can see all deliveries
+            EntregaEjercicio entrega = repositorioEntregaEjercicio.findByIdWithEjercicio(id).orElse(null);
+            ExceptionUtils.throwIfNotFound(entrega, "Entrega", "ID", id);
+            return new DTOEntregaEjercicio(entrega);
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            // Students can only see their own deliveries
+            Long currentUserId = securityUtils.getCurrentUserId();
+            EntregaEjercicio entrega = repositorioEntregaEjercicio.findByIdWithEjercicio(id).orElse(null);
+            ExceptionUtils.throwIfNotFound(entrega, "Entrega", "ID", id);
+            if (!entrega.getAlumno().getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver esta entrega");
+            }
+            return new DTOEntregaEjercicio(entrega);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a entregas de ejercicios");
+            return null; // This line will never be reached due to the exception above
         }
     }
 }

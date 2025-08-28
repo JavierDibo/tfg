@@ -44,7 +44,7 @@ public record DTOPeticionRegistroProfesor(
         @ValidPhone
         String phoneNumber,
         
-        List<String> classIds
+        List<Long> classIds
 ) {
     
     /**

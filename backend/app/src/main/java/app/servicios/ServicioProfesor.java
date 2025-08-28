@@ -70,7 +70,8 @@ public class ServicioProfesor {
      */
     @Transactional(readOnly = true)
     public DTOProfesor obtenerProfesorPorId(Long id) {
-        Profesor profesor = repositorioProfesor.findById(id).orElse(null);
+        // Use Entity Graph to load all relationships for better performance
+        Profesor profesor = repositorioProfesor.findByIdWithAllRelationships(id).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
         
         // Security check: Only ADMIN, or the professor themselves can access professor data
@@ -83,6 +84,36 @@ public class ServicioProfesor {
             if (!id.equals(currentUserId)) {
                 ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros profesores");
             }
+            return new DTOProfesor(profesor);
+        } else {
+            // Any other role is not authorized
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a datos de profesores");
+            return null; // This line will never be reached due to the exception above
+        }
+    }
+
+    /**
+     * Obtiene un profesor con sus clases cargadas usando Entity Graph
+     * @param id ID del profesor
+     * @return DTOProfesor con clases cargadas
+     * @throws EntidadNoEncontradaException si no se encuentra el profesor
+     */
+    @Transactional(readOnly = true)
+    public DTOProfesor obtenerProfesorConClases(Long id) {
+        // Security check: Only ADMIN, or the professor themselves can access professor data
+        if (securityUtils.hasRole("ADMIN")) {
+            // Admins can see any professor's data
+            Profesor profesor = repositorioProfesor.findByIdWithClasses(id).orElse(null);
+            ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
+            return new DTOProfesor(profesor);
+        } else if (securityUtils.hasRole("PROFESOR")) {
+            // Professors can only see their own data
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!id.equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para ver los datos de otros profesores");
+            }
+            Profesor profesor = repositorioProfesor.findByIdWithClasses(id).orElse(null);
+            ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", id);
             return new DTOProfesor(profesor);
         } else {
             // Any other role is not authorized
@@ -483,7 +514,7 @@ public class ServicioProfesor {
             ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
             // Verificar si el profesor ya tiene asignada la clase
-            if (profesor.getClassIds().contains(claseId)) {
+            if (profesor.imparteClasePorId(claseIdLong)) {
                 throw new IllegalArgumentException("El profesor ya tiene asignada esta clase.");
             }
             
@@ -524,7 +555,7 @@ public class ServicioProfesor {
             ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
 
             // Verificar si el profesor tiene asignada la clase
-            if (!profesor.getClassIds().contains(claseId)) {
+            if (!profesor.imparteClasePorId(claseIdLong)) {
                 throw new IllegalArgumentException("El profesor no tiene asignada esta clase.");
             }
             
@@ -553,7 +584,7 @@ public class ServicioProfesor {
         Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
         ExceptionUtils.throwIfNotFound(profesor, "Profesor", "ID", profesorId);
                 
-        return profesor.getClassIds().size();
+        return profesor.getNumeroClases();
     }
     
     /**
@@ -789,10 +820,10 @@ public class ServicioProfesor {
             Clase clase = repositorioClase.findById(claseIdLong).orElse(null);
             ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
             
-            // Filtrar profesores por clase manualmente
+            // Filtrar profesores por clase usando JPA relationships
             List<Profesor> profesoresDeClase = repositorioProfesor.findAll(Sort.by(direction, sortBy))
                 .stream()
-                .filter(p -> p.getClassIds() != null && p.getClassIds().contains(claseId))
+                .filter(p -> p.imparteClasePorId(claseIdLong))
                 .collect(Collectors.toList());
             
             // Aplicar paginación

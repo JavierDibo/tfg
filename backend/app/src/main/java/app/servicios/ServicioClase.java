@@ -200,7 +200,8 @@ public class ServicioClase {
      */
     @Transactional(readOnly = true)
     public DTOClase obtenerClasePorId(Long id) {
-        Clase clase = repositorioClase.findById(id).orElse(null);
+        // Use Entity Graph to load all relationships for better performance
+        Clase clase = repositorioClase.findByIdWithAllRelationships(id).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", id);
         
         // Verificar acceso según el rol
@@ -237,6 +238,7 @@ public class ServicioClase {
      */
     @Transactional(readOnly = true)
     public DTOClase obtenerClasePorTitulo(String titulo) {
+        // Use basic findByTitle since Entity Graph method doesn't exist for title search
         Clase clase = repositorioClase.findByTitle(titulo).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "título", titulo);
         
@@ -274,15 +276,10 @@ public class ServicioClase {
         
         // Agregar profesores si se proporcionaron
         if (peticion.profesoresId() != null) {
-            for (String profesorId : peticion.profesoresId()) {
-                try {
-                    Long profesorIdLong = Long.parseLong(profesorId);
-                    Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
-                    if (profesor != null) {
-                        curso.agregarProfesor(profesor);
-                    }
-                } catch (NumberFormatException e) {
-                    // Si no se puede parsear el ID, continuar con el siguiente profesor
+            for (Long profesorId : peticion.profesoresId()) {
+                Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
+                if (profesor != null) {
+                    curso.agregarProfesor(profesor);
                 }
             }
         }
@@ -298,16 +295,11 @@ public class ServicioClase {
         
         // Actualizar la lista de clases de los profesores para mantener consistencia bidireccional
         if (peticion.profesoresId() != null) {
-            for (String profesorId : peticion.profesoresId()) {
-                try {
-                    Long profesorIdLong = Long.parseLong(profesorId);
-                    Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
-                    if (profesor != null) {
-                        profesor.agregarClase(cursoGuardado);
-                        repositorioProfesor.save(profesor);
-                    }
-                } catch (NumberFormatException e) {
-                    // Si no se puede parsear el ID, continuar con el siguiente profesor
+            for (Long profesorId : peticion.profesoresId()) {
+                Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
+                if (profesor != null) {
+                    profesor.agregarClase(cursoGuardado);
+                    repositorioProfesor.save(profesor);
                 }
             }
         }
@@ -344,15 +336,10 @@ public class ServicioClase {
         
         // Agregar profesores si se proporcionaron
         if (peticion.profesoresId() != null) {
-            for (String profesorId : peticion.profesoresId()) {
-                try {
-                    Long profesorIdLong = Long.parseLong(profesorId);
-                    Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
-                    if (profesor != null) {
-                        taller.agregarProfesor(profesor);
-                    }
-                } catch (NumberFormatException e) {
-                    // Si no se puede parsear el ID, continuar con el siguiente profesor
+            for (Long profesorId : peticion.profesoresId()) {
+                Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
+                if (profesor != null) {
+                    taller.agregarProfesor(profesor);
                 }
             }
         }
@@ -368,16 +355,11 @@ public class ServicioClase {
         
         // Actualizar la lista de clases de los profesores para mantener consistencia bidireccional
         if (peticion.profesoresId() != null) {
-            for (String profesorId : peticion.profesoresId()) {
-                try {
-                    Long profesorIdLong = Long.parseLong(profesorId);
-                    Profesor profesor = repositorioProfesor.findById(profesorIdLong).orElse(null);
-                    if (profesor != null) {
-                        profesor.agregarClase(tallerGuardado);
-                        repositorioProfesor.save(profesor);
-                    }
-                } catch (NumberFormatException e) {
-                    // Si no se puede parsear el ID, continuar con el siguiente profesor
+            for (Long profesorId : peticion.profesoresId()) {
+                Profesor profesor = repositorioProfesor.findById(profesorId).orElse(null);
+                if (profesor != null) {
+                    profesor.agregarClase(tallerGuardado);
+                    repositorioProfesor.save(profesor);
                 }
             }
         }
@@ -1093,5 +1075,58 @@ public class ServicioClase {
         return clase.getStudents().stream()
                 .map(alumno -> new DTOAlumnoPublico(alumno))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene todas las clases con relaciones cargadas para el dashboard
+     * @return Lista de DTOClase con relaciones optimizadas
+     */
+    @Transactional(readOnly = true)
+    public List<DTOClase> obtenerClasesParaDashboard() {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access classes
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
+        }
+        
+        // Use Entity Graph to load students and teachers for dashboard
+        return repositorioClase.findAllForDashboard().stream()
+                .map(DTOClase::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene todas las clases con ejercicios cargados para gestión de ejercicios
+     * @return Lista de DTOClase con ejercicios optimizados
+     */
+    @Transactional(readOnly = true)
+    public List<DTOClase> obtenerClasesParaGestionEjercicios() {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access classes
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
+        }
+        
+        // Use Entity Graph to load exercises for exercise management
+        return repositorioClase.findAllForExerciseManagement().stream()
+                .map(DTOClase::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene una clase con todos sus detalles usando Entity Graph
+     * @param id ID de la clase
+     * @return DTOClase con todas las relaciones cargadas
+     * @throws EntidadNoEncontradaException si no se encuentra la clase
+     */
+    @Transactional(readOnly = true)
+    public DTOClase obtenerClaseConDetalles(Long id) {
+        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access classes
+        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
+        }
+        
+        Clase clase = repositorioClase.findByIdWithAllRelationships(id).orElse(null);
+        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", id);
+        
+        return new DTOClase(clase);
     }
 }
