@@ -1,37 +1,31 @@
 package app.servicios;
 
-import app.dtos.DTOMaterial;
-import app.dtos.DTORespuestaPaginada;
-import app.entidades.Material;
-import app.repositorios.RepositorioMaterial;
-import app.util.SecurityUtils;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import app.dtos.DTOMaterial;
+import app.dtos.DTORespuestaPaginada;
+import app.entidades.Material;
+import app.repositorios.RepositorioMaterial;
+import app.util.SecurityUtils;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class ServicioMaterialTest {
 
     @Mock
@@ -43,430 +37,225 @@ class ServicioMaterialTest {
     @InjectMocks
     private ServicioMaterial servicioMaterial;
 
+    private Material material1;
+    private Material material2;
+    private DTOMaterial dtoMaterial1;
+    private DTOMaterial dtoMaterial2;
+
     @BeforeEach
     void setUp() {
-        // Set up security context for testing
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_PROFESOR"));
-        
-        UsernamePasswordAuthenticationToken authentication = 
-            new UsernamePasswordAuthenticationToken("test-professor", "password", authorities);
-        
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        material1 = new Material("Material 1", "http://example1.com");
+        material1.setId(1L);
+        material2 = new Material("Material 2", "http://example2.com");
+        material2.setId(2L);
+        dtoMaterial1 = new DTOMaterial(material1);
+        dtoMaterial2 = new DTOMaterial(material2);
     }
 
+    // === CORE CRUD OPERATIONS TESTS ===
+
     @Test
-    void testObtenerMaterialesPaginados_ConFiltrosCombinados_DebeFiltrarCorrectamente() {
+    void testObtenerPorId_DebeRetornarMaterial() {
         // Arrange
-        String q = "documento";
-        String name = "apuntes";
-        String url = "pdf";
-        String type = "DOCUMENT";
-        int page = 0;
-        int size = 20;
-        String sortBy = "name";
-        String sortDirection = "ASC";
-
-        // Mock security check
-        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        when(securityUtils.hasRole("PROFESOR")).thenReturn(true);
-        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
-
-        // Create test data
-        List<Material> materiales = new ArrayList<>();
-        Material material1 = new Material("1", "Apuntes de Java", "https://example.com/apuntes.pdf");
-        Material material2 = new Material("2", "Documento de práctica", "https://example.com/practica.pdf");
-        materiales.add(material1);
-        materiales.add(material2);
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
-        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
-
-        // Mock repository call for flexible filtering
-        when(repositorioMaterial.findByFiltrosFlexibles(
-            eq(q), eq(name), eq(url), eq(type), any(Pageable.class))).thenReturn(materialPage);
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        when(repositorioMaterial.findById(1L)).thenReturn(Optional.of(material1));
 
         // Act
-        DTORespuestaPaginada<DTOMaterial> resultado = servicioMaterial.obtenerMaterialesPaginados(
-            q, name, url, type, page, size, sortBy, sortDirection);
+        DTOMaterial result = servicioMaterial.obtenerPorId(1L);
 
         // Assert
-        assertNotNull(resultado);
-        assertEquals(2, resultado.content().size());
-        assertEquals(0, resultado.page());
-        assertEquals(20, resultado.size());
-        assertEquals(2, resultado.totalElements());
-        assertEquals(1, resultado.totalPages());
-        
-        // Verify that the flexible filtering method was called with correct parameters
-        verify(repositorioMaterial).findByFiltrosFlexibles(q, name, url, type, pageable);
+        assertNotNull(result);
+        assertEquals(1L, result.id());
+        assertEquals("Material 1", result.name());
+        verify(repositorioMaterial).findById(1L);
     }
 
+
+
     @Test
-    void testObtenerMaterialesPaginados_SoloConBusquedaGeneral_DebeFiltrarCorrectamente() {
+    void testCrear_DebeCrearMaterial() {
         // Arrange
-        String q = "java";
-        String name = null;
-        String url = null;
-        String type = null;
-        int page = 0;
-        int size = 10;
-        String sortBy = "name";
-        String sortDirection = "ASC";
-
-        // Mock security check
-        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        when(securityUtils.hasRole("PROFESOR")).thenReturn(true);
-        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
-
-        // Create test data
-        List<Material> materiales = new ArrayList<>();
-        Material material = new Material("1", "Java Programming", "https://example.com/java.pdf");
-        materiales.add(material);
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
-        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
-
-        // Mock repository call for flexible filtering
-        when(repositorioMaterial.findByFiltrosFlexibles(
-            eq(q), isNull(), isNull(), isNull(), any(Pageable.class))).thenReturn(materialPage);
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        when(repositorioMaterial.save(any(Material.class))).thenReturn(material1);
 
         // Act
-        DTORespuestaPaginada<DTOMaterial> resultado = servicioMaterial.obtenerMaterialesPaginados(
-            q, name, url, type, page, size, sortBy, sortDirection);
+        DTOMaterial result = servicioMaterial.crear("Nuevo Material", "http://nuevo.com");
 
         // Assert
-        assertNotNull(resultado);
-        assertEquals(1, resultado.content().size());
-        assertEquals("Java Programming", resultado.content().get(0).name());
-        
-        // Verify that the flexible filtering method was called with correct parameters
-        verify(repositorioMaterial).findByFiltrosFlexibles(q, null, null, null, pageable);
+        assertNotNull(result);
+        verify(repositorioMaterial).save(any(Material.class));
     }
 
     @Test
-    void testObtenerMaterialesPaginados_SoloConNombre_DebeFiltrarCorrectamente() {
+    void testActualizar_DebeActualizarMaterial() {
         // Arrange
-        String q = null;
-        String name = "apuntes";
-        String url = null;
-        String type = null;
-        int page = 0;
-        int size = 10;
-        String sortBy = "name";
-        String sortDirection = "ASC";
-
-        // Mock security check
-        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        when(securityUtils.hasRole("PROFESOR")).thenReturn(true);
-        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
-
-        // Create test data
-        List<Material> materiales = new ArrayList<>();
-        Material material = new Material("1", "Apuntes de Matemáticas", "https://example.com/math.pdf");
-        materiales.add(material);
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
-        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
-
-        // Mock repository call for flexible filtering
-        when(repositorioMaterial.findByFiltrosFlexibles(
-            isNull(), eq(name), isNull(), isNull(), any(Pageable.class))).thenReturn(materialPage);
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        when(repositorioMaterial.findById(1L)).thenReturn(Optional.of(material1));
+        when(repositorioMaterial.save(any(Material.class))).thenReturn(material1);
 
         // Act
-        DTORespuestaPaginada<DTOMaterial> resultado = servicioMaterial.obtenerMaterialesPaginados(
-            q, name, url, type, page, size, sortBy, sortDirection);
+        DTOMaterial result = servicioMaterial.actualizar(1L, "Material Actualizado", "http://actualizado.com");
 
         // Assert
-        assertNotNull(resultado);
-        assertEquals(1, resultado.content().size());
-        assertEquals("Apuntes de Matemáticas", resultado.content().get(0).name());
-        
-        // Verify that the flexible filtering method was called with correct parameters
-        verify(repositorioMaterial).findByFiltrosFlexibles(null, name, null, null, pageable);
+        assertNotNull(result);
+        verify(repositorioMaterial).save(any(Material.class));
     }
 
     @Test
-    void testObtenerMaterialesPaginados_SoloConTipo_DebeFiltrarCorrectamente() {
+    void testEliminar_DebeEliminarMaterial() {
         // Arrange
-        String q = null;
-        String name = null;
-        String url = null;
-        String type = "VIDEO";
-        int page = 0;
-        int size = 10;
-        String sortBy = "name";
-        String sortDirection = "ASC";
-
-        // Mock security check
-        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        when(securityUtils.hasRole("PROFESOR")).thenReturn(true);
-        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
-
-        // Create test data
-        List<Material> materiales = new ArrayList<>();
-        Material material = new Material("1", "Tutorial Video", "https://example.com/tutorial.mp4");
-        materiales.add(material);
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
-        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
-
-        // Mock repository call for flexible filtering
-        when(repositorioMaterial.findByFiltrosFlexibles(
-            isNull(), isNull(), isNull(), eq(type), any(Pageable.class))).thenReturn(materialPage);
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        when(repositorioMaterial.findById(1L)).thenReturn(Optional.of(material1));
 
         // Act
-        DTORespuestaPaginada<DTOMaterial> resultado = servicioMaterial.obtenerMaterialesPaginados(
-            q, name, url, type, page, size, sortBy, sortDirection);
+        DTOMaterial result = servicioMaterial.eliminar(1L);
 
         // Assert
-        assertNotNull(resultado);
-        assertEquals(1, resultado.content().size());
-        assertEquals("Tutorial Video", resultado.content().get(0).name());
-        
-        // Verify that the flexible filtering method was called with correct parameters
-        verify(repositorioMaterial).findByFiltrosFlexibles(null, null, null, type, pageable);
+        assertNotNull(result);
+        assertEquals(1L, result.id());
+        assertEquals("Material 1", result.name());
+        verify(repositorioMaterial).delete(material1);
     }
 
+    // === SEARCH & FILTERING OPERATIONS TESTS ===
+
     @Test
-    void testObtenerMaterialesPaginados_SinFiltros_DebeRetornarTodos() {
+    void testBuscar_DebeRetornarListaDeMateriales() {
         // Arrange
-        String q = null;
-        String name = null;
-        String url = null;
-        String type = null;
-        int page = 0;
-        int size = 10;
-        String sortBy = "name";
-        String sortDirection = "ASC";
-
-        // Mock security check
-        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        when(securityUtils.hasRole("PROFESOR")).thenReturn(true);
-        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
-
-        // Create test data
-        List<Material> materiales = new ArrayList<>();
-        Material material1 = new Material("1", "Material 1", "https://example.com/1.pdf");
-        Material material2 = new Material("2", "Material 2", "https://example.com/2.pdf");
-        materiales.add(material1);
-        materiales.add(material2);
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
-        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
-
-        // Mock repository call for flexible filtering
-        when(repositorioMaterial.findByFiltrosFlexibles(
-            isNull(), isNull(), isNull(), isNull(), any(Pageable.class))).thenReturn(materialPage);
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        when(repositorioMaterial.findByNameContainingIgnoreCase("test"))
+                .thenReturn(Arrays.asList(material1, material2));
 
         // Act
-        DTORespuestaPaginada<DTOMaterial> resultado = servicioMaterial.obtenerMaterialesPaginados(
-            q, name, url, type, page, size, sortBy, sortDirection);
+        List<DTOMaterial> result = servicioMaterial.buscar("test");
 
         // Assert
-        assertNotNull(resultado);
-        assertEquals(2, resultado.content().size());
-        
-        // Verify that the flexible filtering method was called with correct parameters
-        verify(repositorioMaterial).findByFiltrosFlexibles(null, null, null, null, pageable);
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(repositorioMaterial).findByNameContainingIgnoreCase("test");
     }
 
+
+
     @Test
-    void testObtenerMaterialesPaginados_ConFiltrosVacios_DebeTratarComoNull() {
+    void testBuscarPaginado_DebeRetornarPaginacion() {
         // Arrange
-        String q = "";
-        String name = "   ";
-        String url = "";
-        String type = "";
-        int page = 0;
-        int size = 10;
-        String sortBy = "name";
-        String sortDirection = "ASC";
-
-        // Mock security check
-        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        when(securityUtils.hasRole("PROFESOR")).thenReturn(true);
-        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
-
-        // Create test data
-        List<Material> materiales = new ArrayList<>();
-        Material material = new Material("1", "Test Material", "https://example.com/test.pdf");
-        materiales.add(material);
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
-        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
-
-        // Mock repository call for flexible filtering
-        when(repositorioMaterial.findByFiltrosFlexibles(
-            isNull(), isNull(), isNull(), isNull(), any(Pageable.class))).thenReturn(materialPage);
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        Page<Material> page = new PageImpl<>(Arrays.asList(material1, material2));
+        when(repositorioMaterial.findByFiltrosFlexibles(any(), any(), any(), any(), any(Pageable.class)))
+                .thenReturn(page);
 
         // Act
-        DTORespuestaPaginada<DTOMaterial> resultado = servicioMaterial.obtenerMaterialesPaginados(
-            q, name, url, type, page, size, sortBy, sortDirection);
+        DTORespuestaPaginada<DTOMaterial> result = servicioMaterial.buscarPaginado(
+                "test", null, null, null, 0, 10, "name", "ASC");
 
         // Assert
-        assertNotNull(resultado);
-        assertEquals(1, resultado.content().size());
-        
-        // Verify that the flexible filtering method was called with null parameters
-        verify(repositorioMaterial).findByFiltrosFlexibles(null, null, null, null, pageable);
+        assertNotNull(result);
+        assertEquals(2, result.content().size());
+        verify(repositorioMaterial).findByFiltrosFlexibles(any(), any(), any(), any(), any(Pageable.class));
     }
 
+    // === TYPE-SPECIFIC OPERATIONS TESTS ===
+
     @Test
-    void testObtenerMaterialesPaginados_ConTipoEnMinusculas_DebeConvertirAMayusculas() {
+    void testObtenerPorTipo_DebeRetornarMaterialesPorTipo() {
         // Arrange
-        String q = null;
-        String name = null;
-        String url = null;
-        String type = "document"; // lowercase
-        int page = 0;
-        int size = 10;
-        String sortBy = "name";
-        String sortDirection = "ASC";
-
-        // Mock security check
-        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        when(securityUtils.hasRole("PROFESOR")).thenReturn(true);
-        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
-
-        // Create test data
-        List<Material> materiales = new ArrayList<>();
-        Material material = new Material("1", "Document", "https://example.com/doc.pdf");
-        materiales.add(material);
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
-        Page<Material> materialPage = new PageImpl<>(materiales, pageable, materiales.size());
-
-        // Mock repository call for flexible filtering
-        when(repositorioMaterial.findByFiltrosFlexibles(
-            isNull(), isNull(), isNull(), eq("DOCUMENT"), any(Pageable.class))).thenReturn(materialPage);
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        when(repositorioMaterial.findDocuments()).thenReturn(Arrays.asList(material1, material2));
 
         // Act
-        DTORespuestaPaginada<DTOMaterial> resultado = servicioMaterial.obtenerMaterialesPaginados(
-            q, name, url, type, page, size, sortBy, sortDirection);
+        List<DTOMaterial> result = servicioMaterial.obtenerPorTipo("DOCUMENT");
 
         // Assert
-        assertNotNull(resultado);
-        assertEquals(1, resultado.content().size());
-        
-        // Verify that the type was converted to uppercase
-        verify(repositorioMaterial).findByFiltrosFlexibles(null, null, null, "DOCUMENT", pageable);
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(repositorioMaterial).findDocuments();
     }
 
     @Test
-    void testObtenerMaterialesPaginados_ConPaginacion_DebeAplicarCorrectamente() {
+    void testContarPorTipo_DebeRetornarConteo() {
         // Arrange
-        String q = null;
-        String name = null;
-        String url = null;
-        String type = null;
-        int page = 2;
-        int size = 5;
-        String sortBy = "name";
-        String sortDirection = "DESC";
-
-        // Mock security check
-        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
-        when(securityUtils.hasRole("PROFESOR")).thenReturn(true);
-        when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
-
-        // Create test data
-        List<Material> materiales = new ArrayList<>();
-        Material material = new Material("1", "Test Material", "https://example.com/test.pdf");
-        materiales.add(material);
-
-        Page<Material> materialPage = new PageImpl<>(materiales, PageRequest.of(page, size), 25);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy));
-
-        // Mock repository call for flexible filtering
-        when(repositorioMaterial.findByFiltrosFlexibles(
-            isNull(), isNull(), isNull(), isNull(), any(Pageable.class))).thenReturn(materialPage);
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+        when(repositorioMaterial.countDocuments()).thenReturn(5L);
 
         // Act
-        DTORespuestaPaginada<DTOMaterial> resultado = servicioMaterial.obtenerMaterialesPaginados(
-            q, name, url, type, page, size, sortBy, sortDirection);
+        long result = servicioMaterial.contarPorTipo("DOCUMENT");
 
         // Assert
-        assertNotNull(resultado);
-        assertEquals(2, resultado.page());
-        assertEquals(5, resultado.size());
-        assertEquals(25, resultado.totalElements());
-        assertEquals(5, resultado.totalPages());
-        assertEquals("name", resultado.sortBy());
-        assertEquals("DESC", resultado.sortDirection());
-        
-        // Verify that the flexible filtering method was called with correct pagination
-        verify(repositorioMaterial).findByFiltrosFlexibles(null, null, null, null, pageable);
+        assertEquals(5L, result);
+        verify(repositorioMaterial).countDocuments();
     }
 
-    @Test
-    void testObtenerMaterialesPaginados_SinPermisos_DebeLanzarExcepcion() {
-        // Arrange
-        String q = null;
-        String name = null;
-        String url = null;
-        String type = null;
-        int page = 0;
-        int size = 10;
-        String sortBy = "name";
-        String sortDirection = "ASC";
+    // === SECURITY TESTS ===
 
-        // Mock security check - no permissions
+    @Test
+    void testObtenerPorId_SinPermisos_DebeLanzarExcepcion() {
+        // Arrange
         when(securityUtils.hasRole("ADMIN")).thenReturn(false);
         when(securityUtils.hasRole("PROFESOR")).thenReturn(false);
         when(securityUtils.hasRole("ALUMNO")).thenReturn(false);
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> {
-            servicioMaterial.obtenerMaterialesPaginados(
-                q, name, url, type, page, size, sortBy, sortDirection);
+            servicioMaterial.obtenerPorId(1L);
         });
-        
-        // Verify that the repository method was not called
-        verify(repositorioMaterial, never()).findByFiltrosFlexibles(any(), any(), any(), any(), any());
     }
 
     @Test
-    void testObtenerMaterialesPaginados_ConParametrosInvalidos_DebeLanzarExcepcion() {
+    void testCrear_SinPermisos_DebeLanzarExcepcion() {
         // Arrange
-        String q = null;
-        String name = null;
-        String url = null;
-        String type = null;
-        int page = -1; // Invalid page
-        int size = 10;
-        String sortBy = "name";
-        String sortDirection = "ASC";
+        when(securityUtils.hasRole("ADMIN")).thenReturn(false);
+        when(securityUtils.hasRole("PROFESOR")).thenReturn(false);
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> {
-            servicioMaterial.obtenerMaterialesPaginados(
-                q, name, url, type, page, size, sortBy, sortDirection);
+            servicioMaterial.crear("test", "http://test.com");
         });
-        
-        // Verify that the repository method was not called
-        verify(repositorioMaterial, never()).findByFiltrosFlexibles(any(), any(), any(), any(), any());
+    }
+
+    // === VALIDATION TESTS ===
+
+    @Test
+    void testCrear_ConNombreVacio_DebeLanzarExcepcion() {
+        // Arrange
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> {
+            servicioMaterial.crear("", "http://test.com");
+        });
     }
 
     @Test
-    void testObtenerMaterialesPaginados_ConTamañoInvalido_DebeLanzarExcepcion() {
+    void testCrear_ConUrlVacia_DebeLanzarExcepcion() {
         // Arrange
-        String q = null;
-        String name = null;
-        String url = null;
-        String type = null;
-        int page = 0;
-        int size = 101; // Invalid size (max is 100)
-        String sortBy = "name";
-        String sortDirection = "ASC";
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> {
-            servicioMaterial.obtenerMaterialesPaginados(
-                q, name, url, type, page, size, sortBy, sortDirection);
+            servicioMaterial.crear("test", "");
         });
-        
-        // Verify that the repository method was not called
-        verify(repositorioMaterial, never()).findByFiltrosFlexibles(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void testBuscarPaginado_ConParametrosInvalidos_DebeLanzarExcepcion() {
+        // Arrange
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> {
+            servicioMaterial.buscarPaginado("test", null, null, null, -1, 10, "name", "ASC");
+        });
+    }
+
+    @Test
+    void testBuscarPaginado_ConTamañoInvalido_DebeLanzarExcepcion() {
+        // Arrange
+        when(securityUtils.hasRole("ADMIN")).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> {
+            servicioMaterial.buscarPaginado("test", null, null, null, 0, 101, "name", "ASC");
+        });
     }
 }

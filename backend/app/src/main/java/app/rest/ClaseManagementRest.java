@@ -175,7 +175,7 @@ public class ClaseManagementRest {
     })
     public ResponseEntity<String> quitarMaterialDeClase(
             @PathVariable Long claseId,
-            @PathVariable String materialId) {
+            @PathVariable Long materialId) {
 
         DTOClase resultado = servicioClase.removerMaterial(claseId, materialId);
         if (resultado != null) {

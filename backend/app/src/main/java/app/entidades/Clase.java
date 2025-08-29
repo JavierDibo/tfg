@@ -220,7 +220,7 @@ public abstract class Clase {
      * Remueve material de la clase por ID
      * @param materialId ID del material
      */
-    public void removerMaterial(String materialId) {
+    public void removerMaterial(Long materialId) {
         this.material.removeIf(m -> m.getId().equals(materialId));
     }
 }

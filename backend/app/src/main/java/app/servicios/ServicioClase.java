@@ -846,7 +846,7 @@ public class ServicioClase {
      * @param materialId ID del material
      * @return DTOClase actualizada
      */
-    public DTOClase removerMaterial(Long claseId, String materialId) {
+    public DTOClase removerMaterial(Long claseId, Long materialId) {
         Clase clase = repositorioClase.findById(claseId).orElse(null);
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", claseId);
         

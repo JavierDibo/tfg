@@ -25,7 +25,7 @@ public class MaterialDataInitializer extends BaseDataInitializer {
         ServicioMaterial servicioMaterial = context.getBean(ServicioMaterial.class);
         
         // Check if materials already exist to avoid duplicates
-        if (servicioMaterial.obtenerTodosLosMateriales().size() > 0) {
+        if (servicioMaterial.buscar(null).size() > 0) {
             System.out.println("Materials already exist, skipping material creation");
             return;
         }
@@ -88,7 +88,7 @@ public class MaterialDataInitializer extends BaseDataInitializer {
         int minLength = Math.min(documentNames.length, documentUrls.length);
         for (int i = 0; i < minLength; i++) {
             try {
-                DTOMaterial material = servicioMaterial.crearMaterial(documentNames[i], documentUrls[i]);
+                DTOMaterial material = servicioMaterial.crear(documentNames[i], documentUrls[i]);
                 createdMaterials.add(material);
             } catch (Exception e) {
                 System.err.println("Error creating document material: " + e.getMessage());
@@ -136,7 +136,7 @@ public class MaterialDataInitializer extends BaseDataInitializer {
         int minLength = Math.min(imageNames.length, imageUrls.length);
         for (int i = 0; i < minLength; i++) {
             try {
-                DTOMaterial material = servicioMaterial.crearMaterial(imageNames[i], imageUrls[i]);
+                DTOMaterial material = servicioMaterial.crear(imageNames[i], imageUrls[i]);
                 createdMaterials.add(material);
             } catch (Exception e) {
                 System.err.println("Error creating image material: " + e.getMessage());
@@ -184,7 +184,7 @@ public class MaterialDataInitializer extends BaseDataInitializer {
         int minLength = Math.min(videoNames.length, videoUrls.length);
         for (int i = 0; i < minLength; i++) {
             try {
-                DTOMaterial material = servicioMaterial.crearMaterial(videoNames[i], videoUrls[i]);
+                DTOMaterial material = servicioMaterial.crear(videoNames[i], videoUrls[i]);
                 createdMaterials.add(material);
             } catch (Exception e) {
                 System.err.println("Error creating video material: " + e.getMessage());
