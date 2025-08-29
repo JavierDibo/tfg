@@ -104,25 +104,25 @@ export interface DTOClase {
      * @type {number}
      * @memberof DTOClase
      */
-    numeroAlumnos?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOClase
-     */
     numeroProfesores?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOClase
      */
-    numeroMateriales?: number;
+    numeroAlumnos?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOClase
      */
     numeroEjercicios?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOClase
+     */
+    numeroMateriales?: number;
 }
 
 
@@ -131,7 +131,8 @@ export interface DTOClase {
  */
 export const DTOClasePresencialidadEnum = {
     Online: 'ONLINE',
-    Presencial: 'PRESENCIAL'
+    Presencial: 'PRESENCIAL',
+    Hibrido: 'HIBRIDO'
 } as const;
 export type DTOClasePresencialidadEnum = typeof DTOClasePresencialidadEnum[keyof typeof DTOClasePresencialidadEnum];
 
@@ -175,10 +176,10 @@ export function DTOClaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'ejerciciosId': json['ejerciciosId'] == null ? undefined : json['ejerciciosId'],
         'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(MaterialFromJSON)),
         'tipoClase': json['tipoClase'] == null ? undefined : json['tipoClase'],
-        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
         'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
-        'numeroMateriales': json['numeroMateriales'] == null ? undefined : json['numeroMateriales'],
+        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
         'numeroEjercicios': json['numeroEjercicios'] == null ? undefined : json['numeroEjercicios'],
+        'numeroMateriales': json['numeroMateriales'] == null ? undefined : json['numeroMateriales'],
     };
 }
 
@@ -205,10 +206,10 @@ export function DTOClaseToJSONTyped(value?: DTOClase | null, ignoreDiscriminator
         'ejerciciosId': value['ejerciciosId'],
         'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(MaterialToJSON)),
         'tipoClase': value['tipoClase'],
-        'numeroAlumnos': value['numeroAlumnos'],
         'numeroProfesores': value['numeroProfesores'],
-        'numeroMateriales': value['numeroMateriales'],
+        'numeroAlumnos': value['numeroAlumnos'],
         'numeroEjercicios': value['numeroEjercicios'],
+        'numeroMateriales': value['numeroMateriales'],
     };
 }
 

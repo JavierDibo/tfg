@@ -69,22 +69,22 @@ export interface DTOPerfilAlumno {
     enrolled?: boolean;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<number>}
      * @memberof DTOPerfilAlumno
      */
-    classIds?: Array<string>;
+    classIds?: Array<number>;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<number>}
      * @memberof DTOPerfilAlumno
      */
-    paymentIds?: Array<string>;
+    paymentIds?: Array<number>;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<number>}
      * @memberof DTOPerfilAlumno
      */
-    submissionIds?: Array<string>;
+    submissionIds?: Array<number>;
     /**
      * 
      * @type {string}
@@ -108,13 +108,13 @@ export interface DTOPerfilAlumno {
      * @type {number}
      * @memberof DTOPerfilAlumno
      */
-    submissionCount?: number;
+    paymentCount?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOPerfilAlumno
      */
-    paymentCount?: number;
+    submissionCount?: number;
 }
 
 
@@ -166,8 +166,8 @@ export function DTOPerfilAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boo
         'role': json['role'] == null ? undefined : json['role'],
         'fullName': json['fullName'] == null ? undefined : json['fullName'],
         'classCount': json['classCount'] == null ? undefined : json['classCount'],
-        'submissionCount': json['submissionCount'] == null ? undefined : json['submissionCount'],
         'paymentCount': json['paymentCount'] == null ? undefined : json['paymentCount'],
+        'submissionCount': json['submissionCount'] == null ? undefined : json['submissionCount'],
     };
 }
 
@@ -196,8 +196,8 @@ export function DTOPerfilAlumnoToJSONTyped(value?: DTOPerfilAlumno | null, ignor
         'role': value['role'],
         'fullName': value['fullName'],
         'classCount': value['classCount'],
-        'submissionCount': value['submissionCount'],
         'paymentCount': value['paymentCount'],
+        'submissionCount': value['submissionCount'],
     };
 }
 

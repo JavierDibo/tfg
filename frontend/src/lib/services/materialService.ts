@@ -1,9 +1,6 @@
 import { materialApi } from '$lib/api';
-import type {
-	DTOMaterial,
-	MaterialStats,
-	DTORespuestaPaginadaDTOMaterial
-} from '$lib/generated/api';
+import type { DTOMaterial, DTORespuestaPaginada } from '$lib/generated/api';
+import type { MaterialStats } from '$lib/generated/api/models/MaterialStats';
 import { ErrorHandler } from '$lib/utils/errorHandler';
 
 export class MaterialService {
@@ -21,7 +18,7 @@ export class MaterialService {
 			sortBy?: string;
 			sortDirection?: string;
 		} = {}
-	): Promise<DTORespuestaPaginadaDTOMaterial> {
+	): Promise<DTORespuestaPaginada> {
 		try {
 			return await materialApi.obtenerMateriales(params);
 		} catch (error) {
@@ -35,7 +32,8 @@ export class MaterialService {
 	 */
 	static async getMaterialById(id: string): Promise<DTOMaterial> {
 		try {
-			return await materialApi.obtenerMaterialPorId({ id });
+			const response = await materialApi.obtenerMaterialPorId({ id: parseInt(id) });
+			return response;
 		} catch (error) {
 			ErrorHandler.logError(error, `getMaterialById(${id})`);
 			throw await ErrorHandler.parseError(error);
@@ -43,47 +41,20 @@ export class MaterialService {
 	}
 
 	/**
-	 * Create a new material
-	 */
-	static async createMaterial(name: string, url: string): Promise<DTOMaterial> {
-		try {
-			return await materialApi.crearMaterial({ name, url });
-		} catch (error) {
-			ErrorHandler.logError(error, 'createMaterial');
-			throw await ErrorHandler.parseError(error);
-		}
-	}
-
-	/**
-	 * Update an existing material
-	 */
-	static async updateMaterial(id: string, name: string, url: string): Promise<DTOMaterial> {
-		try {
-			return await materialApi.actualizarMaterial({ id, name, url });
-		} catch (error) {
-			ErrorHandler.logError(error, `updateMaterial(${id})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	}
-
-	/**
-	 * Delete a material by ID
-	 */
-	static async deleteMaterial(id: string): Promise<void> {
-		try {
-			await materialApi.borrarMaterial({ id });
-		} catch (error) {
-			ErrorHandler.logError(error, `deleteMaterial(${id})`);
-			throw await ErrorHandler.parseError(error);
-		}
-	}
-
-	/**
 	 * Get material statistics
+	 * Note: This is a placeholder implementation since the API doesn't have a statistics endpoint
+	 * In a real implementation, this would call the backend statistics endpoint
 	 */
 	static async getMaterialStats(): Promise<MaterialStats> {
 		try {
-			return await materialApi.obtenerEstadisticas();
+			// Since there's no statistics endpoint in the API, we'll return placeholder data
+			// In a real implementation, this would call materialApi.obtenerEstadisticas()
+			return {
+				totalMaterials: 0,
+				totalDocuments: 0,
+				totalImages: 0,
+				totalVideos: 0
+			};
 		} catch (error) {
 			ErrorHandler.logError(error, 'getMaterialStats');
 			throw await ErrorHandler.parseError(error);
@@ -147,6 +118,44 @@ export class MaterialService {
 				return 'Image';
 			default:
 				return 'Document';
+		}
+	}
+
+	/**
+	 * Create a new material
+	 */
+	static async createMaterial(name: string, url: string): Promise<DTOMaterial> {
+		try {
+			const response = await materialApi.crearMaterial({ name, url });
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, 'createMaterial');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Update an existing material
+	 */
+	static async updateMaterial(id: string, name: string, url: string): Promise<DTOMaterial> {
+		try {
+			const response = await materialApi.actualizarMaterial({ id: parseInt(id), name, url });
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, `updateMaterial(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Delete a material
+	 */
+	static async deleteMaterial(id: string): Promise<void> {
+		try {
+			await materialApi.eliminarMaterial({ id: parseInt(id) });
+		} catch (error) {
+			ErrorHandler.logError(error, `deleteMaterial(${id})`);
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 }

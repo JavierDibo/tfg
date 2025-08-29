@@ -46,13 +46,37 @@ export class AlumnoService {
 	}
 
 	/**
-	 * Get a student by ID
+	 * Get a student by ID (basic version)
 	 */
 	static async getAlumno(id: number): Promise<DTOAlumno> {
 		try {
 			return await alumnoApi.obtenerAlumnoPorId({ id });
 		} catch (error) {
 			ErrorHandler.logError(error, `getAlumno(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get a student with all relationships loaded using Entity Graph (optimized)
+	 */
+	static async getAlumnoCompleto(id: number): Promise<DTOAlumno> {
+		try {
+			return await alumnoApi.obtenerAlumnoCompleto({ id });
+		} catch (error) {
+			ErrorHandler.logError(error, `getAlumnoCompleto(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get a student with classes loaded using Entity Graph (optimized for class-related operations)
+	 */
+	static async getAlumnoConClases(id: number): Promise<DTOAlumno> {
+		try {
+			return await alumnoApi.obtenerAlumnoConClases({ id });
+		} catch (error) {
+			ErrorHandler.logError(error, `getAlumnoConClases(${id})`);
 			throw await ErrorHandler.parseError(error);
 		}
 	}

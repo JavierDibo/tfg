@@ -145,7 +145,8 @@
 					fechaInicio: new Date(fechaInicio),
 					fechaFin: new Date(fechaFin),
 					imagenPortada: imagenPortada.trim() || undefined,
-					profesoresId: profesoresId.length > 0 ? profesoresId : undefined,
+					profesoresId:
+						profesoresId.length > 0 ? profesoresId.map((id) => parseInt(id)) : undefined,
 					material: material.length > 0 ? material : undefined
 				};
 
@@ -161,7 +162,8 @@
 					fechaRealizacion: new Date(fechaRealizacion),
 					horaComienzo: horaComienzo,
 					imagenPortada: imagenPortada.trim() || undefined,
-					profesoresId: profesoresId.length > 0 ? profesoresId : undefined,
+					profesoresId:
+						profesoresId.length > 0 ? profesoresId.map((id) => parseInt(id)) : undefined,
 					material: material.length > 0 ? material : undefined
 				};
 

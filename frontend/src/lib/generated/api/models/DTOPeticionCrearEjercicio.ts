@@ -45,10 +45,10 @@ export interface DTOPeticionCrearEjercicio {
     fechaFinalPlazo: Date;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOPeticionCrearEjercicio
      */
-    claseId: string;
+    claseId: number;
     /**
      * 
      * @type {number}

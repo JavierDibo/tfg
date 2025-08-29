@@ -1,5 +1,5 @@
 import { pagoApi } from '$lib/api';
-import type { DTOPago, DTOPeticionCrearPago } from '$lib/generated/api';
+import type { DTOPago, DTOPeticionCrearPago, DTORespuestaPaginada } from '$lib/generated/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
 import { ValidationUtils } from '$lib/utils/validators';
 import { FormatterUtils } from '$lib/utils/formatters';
@@ -49,21 +49,16 @@ export class PagoService {
 	}
 
 	/**
-	 * Get all payments with pagination and sorting
+	 * Get all payments with pagination and sorting (Admin/Professor only)
 	 */
 	static async getPayments(params?: {
 		page?: number;
 		size?: number;
 		sortBy?: string;
 		sortDirection?: string;
-	}): Promise<{ content: DTOPago[]; totalElements: number; totalPages: number }> {
+	}): Promise<DTORespuestaPaginada> {
 		try {
-			const response = await pagoApi.obtenerPagos(params || {});
-			return {
-				content: response.content || [],
-				totalElements: response.totalElements || 0,
-				totalPages: response.totalPages || 0
-			};
+			return await pagoApi.obtenerPagos(params || {});
 		} catch (error) {
 			ErrorHandler.logError(error, 'getPayments');
 			throw await ErrorHandler.parseError(error);
@@ -71,21 +66,16 @@ export class PagoService {
 	}
 
 	/**
-	 * Get all payments for admin view with enhanced details
+	 * Get all payments for admin view with enhanced details (Admin/Professor only)
 	 */
 	static async getAllPayments(params?: {
 		page?: number;
 		size?: number;
 		sortBy?: string;
 		sortDirection?: string;
-	}): Promise<{ content: DTOPago[]; totalElements: number; totalPages: number }> {
+	}): Promise<DTORespuestaPaginada> {
 		try {
-			const response = await pagoApi.obtenerPagos(params || {});
-			return {
-				content: response.content || [],
-				totalElements: response.totalElements || 0,
-				totalPages: response.totalPages || 0
-			};
+			return await pagoApi.obtenerPagos(params || {});
 		} catch (error) {
 			ErrorHandler.logError(error, 'getAllPayments');
 			throw await ErrorHandler.parseError(error);
@@ -93,8 +83,7 @@ export class PagoService {
 	}
 
 	/**
-	 * Get payments for a specific student by ID
-	 * Note: This method currently returns all payments as the API doesn't support filtering by student
+	 * Get payments for a specific student by ID (Admin/Professor only)
 	 */
 	static async getPaymentsByStudentId(
 		studentId: string,
@@ -104,20 +93,12 @@ export class PagoService {
 			sortBy?: string;
 			sortDirection?: string;
 		}
-	): Promise<{ content: DTOPago[]; totalElements: number; totalPages: number }> {
+	): Promise<DTORespuestaPaginada> {
 		try {
-			// TODO: Update when API supports filtering by student
-			const response = await pagoApi.obtenerPagos(params || {});
-			const allPayments = response.content || [];
-
-			// Filter payments by student ID on the client side
-			const studentPayments = allPayments.filter((payment) => payment.alumnoId === studentId);
-
-			return {
-				content: studentPayments,
-				totalElements: studentPayments.length,
-				totalPages: Math.ceil(studentPayments.length / (params?.size || 10))
-			};
+			return await pagoApi.obtenerPagosPorAlumno({
+				alumnoId: studentId,
+				...params
+			});
 		} catch (error) {
 			ErrorHandler.logError(error, `getPaymentsByStudentId(${studentId})`);
 			throw await ErrorHandler.parseError(error);
@@ -343,7 +324,7 @@ export class PagoService {
 			// Get all payments
 			const allPayments = await this.getPayments({ size: 1000 }); // Get a large number to calculate stats
 
-			const payments = allPayments.content;
+			const payments = allPayments.content as DTOPago[];
 			const totalPayments = payments.length;
 			const totalAmount = payments.reduce((sum, payment) => sum + (payment.importe || 0), 0);
 			const successfulPayments = payments.filter((p) => p.estado === 'EXITO').length;

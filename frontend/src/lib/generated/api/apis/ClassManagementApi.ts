@@ -165,8 +165,8 @@ export class ClassManagementApi extends runtime.BaseAPI {
     }
 
     /**
-     * Unenrolls a student from a specific class
-     * Unenroll student from class
+     * Unenrolls a student from a specific class. Only administrators can perform this operation.
+     * Unenroll student from class (Admin only)
      */
     async darDeBajaAlumnoDeClaseRaw(requestParameters: DarDeBajaAlumnoDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaEnrollment>> {
         if (requestParameters['claseId'] == null) {
@@ -203,8 +203,8 @@ export class ClassManagementApi extends runtime.BaseAPI {
     }
 
     /**
-     * Unenrolls a student from a specific class
-     * Unenroll student from class
+     * Unenrolls a student from a specific class. Only administrators can perform this operation.
+     * Unenroll student from class (Admin only)
      */
     async darDeBajaAlumnoDeClase(requestParameters: DarDeBajaAlumnoDeClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaEnrollment> {
         const response = await this.darDeBajaAlumnoDeClaseRaw(requestParameters, initOverrides);

@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { MaterialService } from '$lib/services/materialService';
 	import ErrorDisplay from '$lib/components/common/ErrorDisplay.svelte';
-	import type { MaterialStats } from '$lib/generated/api/models/MaterialStats';
 
-	let stats: MaterialStats | null = null;
 	let loading = true;
 	let error: string | null = null;
 
@@ -13,7 +10,9 @@
 		try {
 			loading = true;
 			error = null;
-			stats = await MaterialService.getMaterialStats();
+			// Statistics endpoint is not available in the current API
+			// This could be implemented by fetching all materials and calculating stats locally
+			// For now, we'll show a message that it's not available
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Error loading material statistics';
 		} finally {
@@ -53,206 +52,29 @@
 			></div>
 			<p class="mt-4 text-gray-600">Loading statistics...</p>
 		</div>
-	{:else if stats}
-		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-			<!-- Total Materials -->
-			<div class="overflow-hidden rounded-lg bg-white shadow">
-				<div class="p-5">
-					<div class="flex items-center">
-						<div class="flex-shrink-0">
-							<div class="flex h-8 w-8 items-center justify-center rounded-md bg-blue-500">
-								<span class="text-lg text-white">📚</span>
-							</div>
-						</div>
-						<div class="ml-5 w-0 flex-1">
-							<dl>
-								<dt class="truncate text-sm font-medium text-gray-500">Total Materials</dt>
-								<dd class="text-lg font-medium text-gray-900">
-									{stats.totalMaterials || 0}
-								</dd>
-							</dl>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Documents -->
-			<div class="overflow-hidden rounded-lg bg-white shadow">
-				<div class="p-5">
-					<div class="flex items-center">
-						<div class="flex-shrink-0">
-							<div class="flex h-8 w-8 items-center justify-center rounded-md bg-green-500">
-								<span class="text-lg text-white">📄</span>
-							</div>
-						</div>
-						<div class="ml-5 w-0 flex-1">
-							<dl>
-								<dt class="truncate text-sm font-medium text-gray-500">Documents</dt>
-								<dd class="text-lg font-medium text-gray-900">
-									{stats.totalDocuments || 0}
-								</dd>
-							</dl>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Images -->
-			<div class="overflow-hidden rounded-lg bg-white shadow">
-				<div class="p-5">
-					<div class="flex items-center">
-						<div class="flex-shrink-0">
-							<div class="flex h-8 w-8 items-center justify-center rounded-md bg-purple-500">
-								<span class="text-lg text-white">🖼️</span>
-							</div>
-						</div>
-						<div class="ml-5 w-0 flex-1">
-							<dl>
-								<dt class="truncate text-sm font-medium text-gray-500">Images</dt>
-								<dd class="text-lg font-medium text-gray-900">
-									{stats.totalImages || 0}
-								</dd>
-							</dl>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Videos -->
-			<div class="overflow-hidden rounded-lg bg-white shadow">
-				<div class="p-5">
-					<div class="flex items-center">
-						<div class="flex-shrink-0">
-							<div class="flex h-8 w-8 items-center justify-center rounded-md bg-red-500">
-								<span class="text-lg text-white">🎥</span>
-							</div>
-						</div>
-						<div class="ml-5 w-0 flex-1">
-							<dl>
-								<dt class="truncate text-sm font-medium text-gray-500">Videos</dt>
-								<dd class="text-lg font-medium text-gray-900">
-									{stats.totalVideos || 0}
-								</dd>
-							</dl>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<!-- Chart Section -->
-		<div class="mt-8 rounded-lg bg-white shadow">
-			<div class="border-b border-gray-200 px-6 py-4">
-				<h3 class="text-lg font-medium text-gray-900">Material Distribution</h3>
-			</div>
-			<div class="p-6">
-				{#if stats.totalMaterials && stats.totalMaterials > 0}
-					<div class="space-y-4">
-						<!-- Documents -->
-						<div class="flex items-center">
-							<div class="w-16 flex-shrink-0">
-								<span class="text-sm font-medium text-gray-900">Documents</span>
-							</div>
-							<div class="ml-4 flex-1">
-								<div class="h-2 rounded-full bg-gray-200">
-									<div
-										class="h-2 rounded-full bg-green-500"
-										style="width: {((stats.totalDocuments || 0) / stats.totalMaterials) * 100}%"
-									></div>
-								</div>
-							</div>
-							<div class="ml-4 w-16 text-right">
-								<span class="text-sm font-medium text-gray-900">
-									{stats.totalDocuments || 0}
-								</span>
-								<span class="text-sm text-gray-500">
-									({(((stats.totalDocuments || 0) / stats.totalMaterials) * 100).toFixed(1)}%)
-								</span>
-							</div>
-						</div>
-
-						<!-- Images -->
-						<div class="flex items-center">
-							<div class="w-16 flex-shrink-0">
-								<span class="text-sm font-medium text-gray-900">Images</span>
-							</div>
-							<div class="ml-4 flex-1">
-								<div class="h-2 rounded-full bg-gray-200">
-									<div
-										class="h-2 rounded-full bg-purple-500"
-										style="width: {((stats.totalImages || 0) / stats.totalMaterials) * 100}%"
-									></div>
-								</div>
-							</div>
-							<div class="ml-4 w-16 text-right">
-								<span class="text-sm font-medium text-gray-900">
-									{stats.totalImages || 0}
-								</span>
-								<span class="text-sm text-gray-500">
-									({(((stats.totalImages || 0) / stats.totalMaterials) * 100).toFixed(1)}%)
-								</span>
-							</div>
-						</div>
-
-						<!-- Videos -->
-						<div class="flex items-center">
-							<div class="w-16 flex-shrink-0">
-								<span class="text-sm font-medium text-gray-900">Videos</span>
-							</div>
-							<div class="ml-4 flex-1">
-								<div class="h-2 rounded-full bg-gray-200">
-									<div
-										class="h-2 rounded-full bg-red-500"
-										style="width: {((stats.totalVideos || 0) / stats.totalMaterials) * 100}%"
-									></div>
-								</div>
-							</div>
-							<div class="ml-4 w-16 text-right">
-								<span class="text-sm font-medium text-gray-900">
-									{stats.totalVideos || 0}
-								</span>
-								<span class="text-sm text-gray-500">
-									({(((stats.totalVideos || 0) / stats.totalMaterials) * 100).toFixed(1)}%)
-								</span>
-							</div>
-						</div>
-					</div>
-				{:else}
-					<div class="py-8 text-center">
-						<div class="mb-4 text-4xl text-gray-400">📊</div>
-						<h3 class="mb-2 text-lg font-medium text-gray-900">No Materials Available</h3>
-						<p class="text-gray-600">There are no materials in the system yet.</p>
-						<button
-							on:click={() => goto('/materiales/nuevo')}
-							class="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-						>
-							Add First Material
-						</button>
-					</div>
-				{/if}
-			</div>
-		</div>
-
-		<!-- Quick Actions -->
-		<div class="mt-8 flex justify-center space-x-4">
-			<button
-				on:click={() => goto('/materiales')}
-				class="rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
-			>
-				View All Materials
-			</button>
-			<button
-				on:click={() => goto('/materiales/nuevo')}
-				class="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-			>
-				Add New Material
-			</button>
-		</div>
 	{:else}
-		<div class="py-12 text-center">
-			<div class="mb-4 text-6xl text-gray-400">📊</div>
-			<h3 class="mb-2 text-lg font-medium text-gray-900">No Statistics Available</h3>
-			<p class="text-gray-600">Unable to load material statistics.</p>
+		<div class="rounded-lg border border-yellow-200 bg-yellow-50 p-6">
+			<div class="flex">
+				<div class="flex-shrink-0">
+					<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+						<path
+							fill-rule="evenodd"
+							d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</div>
+				<div class="ml-3">
+					<h3 class="text-sm font-medium text-yellow-800">Statistics Not Available</h3>
+					<div class="mt-2 text-sm text-yellow-700">
+						<p>
+							Material statistics are not currently available through the API. This feature could be
+							implemented by fetching all materials and calculating statistics locally, or by adding
+							a statistics endpoint to the backend API.
+						</p>
+					</div>
+				</div>
+			</div>
 		</div>
 	{/if}
 </div>

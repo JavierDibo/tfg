@@ -219,7 +219,7 @@
 					<div class="space-y-4">
 						<div>
 							<span class="text-sm font-medium text-gray-500">Estudiante</span>
-							<p class="text-lg text-gray-900">{entrega.alumnoEntreganteId || 'N/A'}</p>
+							<p class="text-lg text-gray-900">{entrega.alumnoId || 'N/A'}</p>
 						</div>
 
 						<div>

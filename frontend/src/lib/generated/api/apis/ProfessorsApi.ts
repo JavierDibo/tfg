@@ -61,6 +61,10 @@ export interface ObtenerPerfilProfesorRequest {
     id: number;
 }
 
+export interface ObtenerProfesorConClasesRequest {
+    id: number;
+}
+
 export interface ObtenerProfesorPorIdRequest {
     id: number;
 }
@@ -325,6 +329,45 @@ export class ProfessorsApi extends runtime.BaseAPI {
      */
     async obtenerPerfilProfesor(requestParameters: ObtenerPerfilProfesorRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesorPublico> {
         const response = await this.obtenerPerfilProfesorRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets a professor with their classes loaded using Entity Graph for optimal performance
+     * Get professor with classes
+     */
+    async obtenerProfesorConClasesRaw(requestParameters: ObtenerProfesorConClasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOProfesor>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerProfesorConClases().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/profesores/{id}/con-clases`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOProfesorFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a professor with their classes loaded using Entity Graph for optimal performance
+     * Get professor with classes
+     */
+    async obtenerProfesorConClases(requestParameters: ObtenerProfesorConClasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOProfesor> {
+        const response = await this.obtenerProfesorConClasesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

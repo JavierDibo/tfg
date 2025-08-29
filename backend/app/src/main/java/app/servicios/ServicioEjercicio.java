@@ -32,7 +32,6 @@ public class ServicioEjercicio {
 
     @Transactional(readOnly = true)
     public DTOEjercicio obtenerEjercicioPorId(Long id) {
-        // Use basic findById to avoid MultipleBagFetchException
         Ejercicio ejercicio = repositorioEjercicio.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", id);
         
@@ -76,7 +75,7 @@ public class ServicioEjercicio {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
         }
         
-        return repositorioEjercicio.findByNameContainingIgnoreCase(nombre).stream()
+        return repositorioEjercicio.findByNameContaining(nombre).stream()
                 .map(DTOEjercicio::new)
                 .collect(Collectors.toList());
     }
@@ -88,43 +87,32 @@ public class ServicioEjercicio {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
         }
         
-        return repositorioEjercicio.findByStatementContainingIgnoreCase(enunciado).stream()
+        return repositorioEjercicio.findByStatementContaining(enunciado).stream()
                 .map(DTOEjercicio::new)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<DTOEjercicio> obtenerEjerciciosPorClase(String claseId) {
+    public List<DTOEjercicio> obtenerEjerciciosPorClase(Long claseId) {
         // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
         if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
         }
         
-        return repositorioEjercicio.findByClassId(claseId).stream()
+        return repositorioEjercicio.findByClaseId(claseId).stream()
                 .map(DTOEjercicio::new)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<DTOEjercicio> obtenerEjerciciosPorRangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+    public List<DTOEjercicio> obtenerEjerciciosEnPlazo() {
         // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
         if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
         }
         
-        return repositorioEjercicio.findByStartDateBetween(fechaInicio, fechaFin).stream()
-                .map(DTOEjercicio::new)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<DTOEjercicio> obtenerEjerciciosActivos() {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
-        }
-        
-        return repositorioEjercicio.findEjerciciosEnPlazo(LocalDateTime.now()).stream()
+        LocalDateTime ahora = LocalDateTime.now();
+        return repositorioEjercicio.findByStartDateLessThanEqualAndEndDateGreaterThanEqual(ahora, ahora).stream()
                 .map(DTOEjercicio::new)
                 .collect(Collectors.toList());
     }
@@ -136,7 +124,8 @@ public class ServicioEjercicio {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
         }
         
-        return repositorioEjercicio.findEjerciciosVencidos(LocalDateTime.now()).stream()
+        LocalDateTime ahora = LocalDateTime.now();
+        return repositorioEjercicio.findByEndDateBefore(ahora).stream()
                 .map(DTOEjercicio::new)
                 .collect(Collectors.toList());
     }
@@ -148,87 +137,8 @@ public class ServicioEjercicio {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
         }
         
-        return repositorioEjercicio.findEjerciciosFuturos(LocalDateTime.now()).stream()
-                .map(DTOEjercicio::new)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<DTOEjercicio> obtenerEjerciciosProximosAVencer(int horasLimite) {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
-        }
-        
-        LocalDateTime limite = LocalDateTime.now().plusHours(horasLimite);
-        return repositorioEjercicio.findEjerciciosProximosAVencer(limite).stream()
-                .map(DTOEjercicio::new)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Obtiene un ejercicio con su clase cargada usando Entity Graph
-     * @param id ID del ejercicio
-     * @return DTOEjercicio con clase cargada
-     * @throws EntidadNoEncontradaException si no se encuentra el ejercicio
-     */
-    @Transactional(readOnly = true)
-    public DTOEjercicio obtenerEjercicioConClase(Long id) {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
-        }
-        
-        Ejercicio ejercicio = repositorioEjercicio.findByIdWithClase(id).orElse(null);
-        ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", id);
-        
-        return new DTOEjercicio(ejercicio);
-    }
-
-    /**
-     * Obtiene un ejercicio con sus entregas cargadas usando Entity Graph
-     * @param id ID del ejercicio
-     * @return DTOEjercicio con entregas cargadas
-     * @throws EntidadNoEncontradaException si no se encuentra el ejercicio
-     */
-    @Transactional(readOnly = true)
-    public DTOEjercicio obtenerEjercicioConEntregas(Long id) {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
-        }
-        
-        Ejercicio ejercicio = repositorioEjercicio.findByIdWithEntregas(id).orElse(null);
-        ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", id);
-        
-        return new DTOEjercicio(ejercicio);
-    }
-
-    /**
-     * Obtiene ejercicios por clase con entregas cargadas usando Entity Graph
-     * @param claseId ID de la clase
-     * @return Lista de DTOEjercicio con entregas cargadas
-     */
-    @Transactional(readOnly = true)
-    public List<DTOEjercicio> obtenerEjerciciosConEntregasPorClase(Long claseId) {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
-        }
-        
-        return repositorioEjercicio.findByClaseIdWithEntregas(claseId).stream()
-                .map(DTOEjercicio::new)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<DTOEjercicio> obtenerEjerciciosSinEntregas() {
-        // Security check: Only ADMIN and PROFESOR can see exercises without deliveries
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para ver ejercicios sin entregas");
-        }
-        
-        return repositorioEjercicio.findEjerciciosSinEntregas().stream()
+        LocalDateTime ahora = LocalDateTime.now();
+        return repositorioEjercicio.findByStartDateAfter(ahora).stream()
                 .map(DTOEjercicio::new)
                 .collect(Collectors.toList());
     }
@@ -267,7 +177,7 @@ public class ServicioEjercicio {
         }
 
         // Check for duplicates
-        if (repositorioEjercicio.findByName(nombre).isPresent()) {
+        if (repositorioEjercicio.existsByName(nombre)) {
             ExceptionUtils.throwValidationError("Ya existe un ejercicio con el nombre: " + nombre);
         }
 
@@ -326,11 +236,9 @@ public class ServicioEjercicio {
         }
 
         // Check for duplicates (excluding current exercise)
-        repositorioEjercicio.findByName(nombre).ifPresent(existingEjercicio -> {
-            if (!existingEjercicio.getId().equals(id)) {
-                ExceptionUtils.throwValidationError("Ya existe un ejercicio con el nombre: " + nombre);
-            }
-        });
+        if (repositorioEjercicio.existsByNameAndIdNot(nombre, id)) {
+            ExceptionUtils.throwValidationError("Ya existe un ejercicio con el nombre: " + nombre);
+        }
 
         // Update exercise
         ejercicio.setName(nombre.trim());
@@ -406,7 +314,7 @@ public class ServicioEjercicio {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        // Build query based on filters using flexible approach
+        // Build query based on filters using simple approach
         Page<Ejercicio> ejercicioPage;
         
         // Prepare filter parameters
@@ -414,22 +322,62 @@ public class ServicioEjercicio {
         String nombreFilter = (name != null && !name.trim().isEmpty()) ? name.trim() : null;
         String enunciadoFilter = (statement != null && !statement.trim().isEmpty()) ? statement.trim() : null;
         String classIdFilter = (classId != null && !classId.trim().isEmpty()) ? classId.trim() : null;
-        String statusFilter = (status != null && !status.trim().isEmpty()) ? status.toUpperCase() : null;
         LocalDateTime now = LocalDateTime.now();
         
+        // Simple filtering approach - use basic Spring Data JPA methods
+        if (searchTerm != null) {
+            // Search in both name and statement
+            ejercicioPage = repositorioEjercicio.findByNameContainingOrStatementContaining(
+                searchTerm, searchTerm, pageable);
+        } else if (nombreFilter != null && enunciadoFilter != null) {
+            // Both name and statement filters
+            ejercicioPage = repositorioEjercicio.findByNameContainingOrStatementContaining(
+                nombreFilter, enunciadoFilter, pageable);
+        } else if (nombreFilter != null) {
+            // Only name filter
+            ejercicioPage = repositorioEjercicio.findByNameContaining(nombreFilter, pageable);
+        } else if (enunciadoFilter != null) {
+            // Only statement filter
+            ejercicioPage = repositorioEjercicio.findByStatementContaining(enunciadoFilter, pageable);
+        } else if (classIdFilter != null) {
+            // Only class ID filter
+            ejercicioPage = repositorioEjercicio.findByClaseId(Long.parseLong(classIdFilter), pageable);
+        } else {
+            // No filters, get all
+            ejercicioPage = repositorioEjercicio.findAll(pageable);
+        }
 
-        
-        // Use flexible query that handles all combinations
-        ejercicioPage = repositorioEjercicio.findByGeneralAndSpecificFilters(
-            searchTerm, nombreFilter, enunciadoFilter, classIdFilter, statusFilter, now, pageable);
+        // Apply status filter in memory if needed
+        List<Ejercicio> filteredContent = ejercicioPage.getContent();
+        if (status != null && !status.trim().isEmpty()) {
+            String statusFilter = status.toUpperCase();
+            filteredContent = filteredContent.stream()
+                .filter(ejercicio -> {
+                    switch (statusFilter) {
+                        case "ACTIVE":
+                            return ejercicio.estaEnPlazo();
+                        case "EXPIRED":
+                            return ejercicio.haVencido();
+                        case "FUTURE":
+                            return ejercicio.noHaComenzado();
+                        case "WITH_DELIVERIES":
+                            return ejercicio.contarEntregas() > 0;
+                        case "WITHOUT_DELIVERIES":
+                            return ejercicio.contarEntregas() == 0;
+                        default:
+                            return true;
+                    }
+                })
+                .collect(Collectors.toList());
+        }
 
         // Convert to DTOs
-        List<DTOEjercicio> ejercicios = ejercicioPage.getContent().stream()
+        List<DTOEjercicio> ejercicios = filteredContent.stream()
                 .map(DTOEjercicio::new)
                 .collect(Collectors.toList());
 
         // Build response
-        return new DTORespuestaPaginada<>(
+        return new DTORespuestaPaginada<DTOEjercicio>(
             ejercicios,
             ejercicioPage.getNumber(),
             ejercicioPage.getSize(),
@@ -441,32 +389,5 @@ public class ServicioEjercicio {
             sortBy,
             sortDirection
         );
-    }
-
-    @Transactional(readOnly = true)
-    public long contarEjercicios() {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
-        }
-        return repositorioEjercicio.count();
-    }
-
-    @Transactional(readOnly = true)
-    public long contarEjerciciosPorClase(String claseId) {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
-        }
-        return repositorioEjercicio.countByClaseId(Long.parseLong(claseId));
-    }
-
-    @Transactional(readOnly = true)
-    public int contarEntregasPorEjercicio(Long ejercicioId) {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access exercises
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a ejercicios");
-        }
-        return repositorioEjercicio.countEntregasByEjercicioId(ejercicioId);
     }
 }

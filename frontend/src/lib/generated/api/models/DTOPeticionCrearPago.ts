@@ -43,6 +43,12 @@ export interface DTOPeticionCrearPago {
      * @memberof DTOPeticionCrearPago
      */
     currency: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOPeticionCrearPago
+     */
+    classId?: number;
 }
 
 /**
@@ -70,6 +76,7 @@ export function DTOPeticionCrearPagoFromJSONTyped(json: any, ignoreDiscriminator
         'alumnoId': json['alumnoId'],
         'description': json['description'],
         'currency': json['currency'],
+        'classId': json['classId'] == null ? undefined : json['classId'],
     };
 }
 
@@ -88,6 +95,7 @@ export function DTOPeticionCrearPagoToJSONTyped(value?: DTOPeticionCrearPago | n
         'alumnoId': value['alumnoId'],
         'description': value['description'],
         'currency': value['currency'],
+        'classId': value['classId'],
     };
 }
 

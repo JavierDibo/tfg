@@ -47,6 +47,18 @@ export interface EliminarEjercicioRequest {
     id: number;
 }
 
+export interface ObtenerEjercicioCompletoRequest {
+    id: number;
+}
+
+export interface ObtenerEjercicioConClaseRequest {
+    id: number;
+}
+
+export interface ObtenerEjercicioConEntregasRequest {
+    id: number;
+}
+
 export interface ObtenerEjercicioPorIdRequest {
     id: number;
 }
@@ -61,6 +73,10 @@ export interface ObtenerEjerciciosRequest {
     size?: number;
     sortBy?: string;
     sortDirection?: string;
+}
+
+export interface ObtenerEjerciciosConEntregasPorClaseRequest {
+    claseId: number;
 }
 
 export interface ObtenerEntregasEjercicioRequest {
@@ -127,6 +143,41 @@ export class ExercisesApi extends runtime.BaseAPI {
      */
     async actualizarEjercicioParcial(requestParameters: ActualizarEjercicioParcialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEjercicio> {
         const response = await this.actualizarEjercicioParcialRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets the total count of exercises in the system
+     * Get exercise count
+     */
+    async contarEjerciciosRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<number>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/ejercicios/count`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<number>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Gets the total count of exercises in the system
+     * Get exercise count
+     */
+    async contarEjercicios(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<number> {
+        const response = await this.contarEjerciciosRaw(initOverrides);
         return await response.value();
     }
 
@@ -207,6 +258,123 @@ export class ExercisesApi extends runtime.BaseAPI {
      */
     async eliminarEjercicio(requestParameters: EliminarEjercicioRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.eliminarEjercicioRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Gets an exercise with all its relationships (class and deliveries) loaded using Entity Graph
+     * Get exercise with all relationships
+     */
+    async obtenerEjercicioCompletoRaw(requestParameters: ObtenerEjercicioCompletoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEjercicio>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerEjercicioCompleto().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/ejercicios/{id}/completo`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEjercicioFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets an exercise with all its relationships (class and deliveries) loaded using Entity Graph
+     * Get exercise with all relationships
+     */
+    async obtenerEjercicioCompleto(requestParameters: ObtenerEjercicioCompletoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEjercicio> {
+        const response = await this.obtenerEjercicioCompletoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets an exercise with its class loaded using Entity Graph for optimal performance
+     * Get exercise with class
+     */
+    async obtenerEjercicioConClaseRaw(requestParameters: ObtenerEjercicioConClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEjercicio>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerEjercicioConClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/ejercicios/{id}/con-clase`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEjercicioFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets an exercise with its class loaded using Entity Graph for optimal performance
+     * Get exercise with class
+     */
+    async obtenerEjercicioConClase(requestParameters: ObtenerEjercicioConClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEjercicio> {
+        const response = await this.obtenerEjercicioConClaseRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets an exercise with its deliveries loaded using Entity Graph for optimal performance
+     * Get exercise with deliveries
+     */
+    async obtenerEjercicioConEntregasRaw(requestParameters: ObtenerEjercicioConEntregasRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEjercicio>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerEjercicioConEntregas().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/ejercicios/{id}/con-entregas`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEjercicioFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets an exercise with its deliveries loaded using Entity Graph for optimal performance
+     * Get exercise with deliveries
+     */
+    async obtenerEjercicioConEntregas(requestParameters: ObtenerEjercicioConEntregasRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEjercicio> {
+        const response = await this.obtenerEjercicioConEntregasRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -312,6 +480,49 @@ export class ExercisesApi extends runtime.BaseAPI {
      */
     async obtenerEjercicios(requestParameters: ObtenerEjerciciosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
         const response = await this.obtenerEjerciciosRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets exercises for a specific class with their deliveries loaded using Entity Graph
+     * Get exercises by class with deliveries
+     */
+    async obtenerEjerciciosConEntregasPorClaseRaw(requestParameters: ObtenerEjerciciosConEntregasPorClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+        if (requestParameters['claseId'] == null) {
+            throw new runtime.RequiredError(
+                'claseId',
+                'Required parameter "claseId" was null or undefined when calling obtenerEjerciciosConEntregasPorClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/ejercicios/clase/{claseId}/con-entregas`;
+        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<string>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Gets exercises for a specific class with their deliveries loaded using Entity Graph
+     * Get exercises by class with deliveries
+     */
+    async obtenerEjerciciosConEntregasPorClase(requestParameters: ObtenerEjerciciosConEntregasPorClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+        const response = await this.obtenerEjerciciosConEntregasPorClaseRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

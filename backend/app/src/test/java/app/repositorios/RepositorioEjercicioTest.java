@@ -94,12 +94,12 @@ class RepositorioEjercicioTest {
         assertEquals("Test Exercise", foundByName.get().getName());
         
         // Find by name containing
-        List<Ejercicio> foundByContaining = repositorioEjercicio.findByNameContainingIgnoreCase("Test");
+        List<Ejercicio> foundByContaining = repositorioEjercicio.findByNameContaining("Test");
         assertFalse(foundByContaining.isEmpty());
         assertTrue(foundByContaining.stream().anyMatch(e -> e.getName().contains("Test")));
         
         // Find by statement containing
-        List<Ejercicio> foundByStatement = repositorioEjercicio.findByStatementContainingIgnoreCase("Test");
+        List<Ejercicio> foundByStatement = repositorioEjercicio.findByStatementContaining("Test");
         assertFalse(foundByStatement.isEmpty());
         assertTrue(foundByStatement.stream().anyMatch(e -> e.getStatement().contains("Test")));
         

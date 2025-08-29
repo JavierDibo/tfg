@@ -14,6 +14,8 @@ import java.util.List;
  * Entidad Ejercicio
  * Representa un ejercicio asignado a una clase
  * Basado en el UML de especificación
+ * 
+ * IMPORTANTE: Esta entidad usa columnDefinition explícito para evitar problemas de tipo de columna
  */
 @Data
 @EqualsAndHashCode
@@ -42,28 +44,29 @@ public class Ejercicio {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", columnDefinition = "BIGSERIAL")
     private Long id;
     
     @NotNull
     @Size(max = 200)
-    @Column(name = "name", length = 200, nullable = false)
+    @Column(name = "name", length = 200, nullable = false, columnDefinition = "VARCHAR(200) NOT NULL")
     private String name;
     
     @NotNull
     @Size(max = 2000)
-    @Column(name = "statement", length = 2000, nullable = false, columnDefinition = "VARCHAR(2000)")
+    @Column(name = "statement", length = 2000, nullable = false, columnDefinition = "VARCHAR(2000) NOT NULL")
     private String statement;
     
     @NotNull
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "start_date", nullable = false, columnDefinition = "TIMESTAMP NOT NULL")
     private LocalDateTime startDate;
     
     @NotNull
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_date", nullable = false, columnDefinition = "TIMESTAMP NOT NULL")
     private LocalDateTime endDate;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_id")
+    @JoinColumn(name = "class_id", columnDefinition = "BIGINT")
     private Clase clase;
     
     @OneToMany(mappedBy = "ejercicio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

@@ -56,6 +56,7 @@ export interface EntityAction<T = Record<string, unknown>> {
 	color: string | ((entity: T) => string);
 	hoverColor: string | ((entity: T) => string);
 	condition?: (entity: T) => boolean;
+	disabled?: boolean | ((entity: T) => boolean);
 	action: (entity: T) => void;
 }
 

@@ -21,16 +21,16 @@ import { mapValues } from '../runtime';
 export interface DTOPeticionActualizarEntregaEjercicio {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOPeticionActualizarEntregaEjercicio
      */
-    alumnoEntreganteId?: string;
+    alumnoId?: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOPeticionActualizarEntregaEjercicio
      */
-    ejercicioId?: string;
+    ejercicioId?: number;
     /**
      * 
      * @type {Array<string>}
@@ -51,16 +51,16 @@ export interface DTOPeticionActualizarEntregaEjercicio {
     comentarios?: string;
     /**
      * 
-     * @type {string}
-     * @memberof DTOPeticionActualizarEntregaEjercicio
-     */
-    comentariosFormateados?: string;
-    /**
-     * 
      * @type {number}
      * @memberof DTOPeticionActualizarEntregaEjercicio
      */
     numeroArchivos?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOPeticionActualizarEntregaEjercicio
+     */
+    comentariosFormateados?: string;
 }
 
 /**
@@ -80,13 +80,13 @@ export function DTOPeticionActualizarEntregaEjercicioFromJSONTyped(json: any, ig
     }
     return {
         
-        'alumnoEntreganteId': json['alumnoEntreganteId'] == null ? undefined : json['alumnoEntreganteId'],
+        'alumnoId': json['alumnoId'] == null ? undefined : json['alumnoId'],
         'ejercicioId': json['ejercicioId'] == null ? undefined : json['ejercicioId'],
         'archivosEntregados': json['archivosEntregados'] == null ? undefined : json['archivosEntregados'],
         'nota': json['nota'] == null ? undefined : json['nota'],
         'comentarios': json['comentarios'] == null ? undefined : json['comentarios'],
-        'comentariosFormateados': json['comentariosFormateados'] == null ? undefined : json['comentariosFormateados'],
         'numeroArchivos': json['numeroArchivos'] == null ? undefined : json['numeroArchivos'],
+        'comentariosFormateados': json['comentariosFormateados'] == null ? undefined : json['comentariosFormateados'],
     };
 }
 
@@ -101,13 +101,13 @@ export function DTOPeticionActualizarEntregaEjercicioToJSONTyped(value?: DTOPeti
 
     return {
         
-        'alumnoEntreganteId': value['alumnoEntreganteId'],
+        'alumnoId': value['alumnoId'],
         'ejercicioId': value['ejercicioId'],
         'archivosEntregados': value['archivosEntregados'],
         'nota': value['nota'],
         'comentarios': value['comentarios'],
-        'comentariosFormateados': value['comentariosFormateados'],
         'numeroArchivos': value['numeroArchivos'],
+        'comentariosFormateados': value['comentariosFormateados'],
     };
 }
 

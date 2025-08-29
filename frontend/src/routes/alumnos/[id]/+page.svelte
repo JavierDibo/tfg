@@ -90,31 +90,11 @@
 		error = null;
 
 		try {
-			// If student is viewing their own profile, get their data by ID
-			if (isOwnProfile()) {
-				const userId = authStore.user?.id;
-
-				if (!userId) {
-					throw new Error('User ID not available from authentication');
-				}
-
-				alumno = await AlumnoService.getAlumno(userId);
-			} else {
-				alumno = await AlumnoService.getAlumno(studentId);
-
-				// Check if current user can access this profile
-				if (!authStore.isAdmin && !authStore.isProfesor) {
-					if (
-						!authStore.isAlumno ||
-						(authStore.user?.usuario !== alumno.username && authStore.user?.sub !== alumno.username)
-					) {
-						error = 'No tienes permisos para ver este perfil';
-						return;
-					}
-				}
-			}
+			// Use the optimized endpoint that loads all relationships
+			alumno = await AlumnoService.getAlumnoCompleto(studentId);
 		} catch (err) {
-			error = `Error al cargar el alumno: ${err}`;
+			error = `Error al cargar alumno: ${err}`;
+			console.error('Error loading alumno:', err);
 		} finally {
 			loading = false;
 		}

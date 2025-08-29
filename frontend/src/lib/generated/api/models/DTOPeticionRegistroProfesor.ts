@@ -63,10 +63,10 @@ export interface DTOPeticionRegistroProfesor {
     phoneNumber?: string;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<number>}
      * @memberof DTOPeticionRegistroProfesor
      */
-    classIds?: Array<string>;
+    classIds?: Array<number>;
 }
 
 /**

@@ -71,9 +71,9 @@
 		}
 	});
 
-	// Load enrollment statuses when classes change
+	// Load enrollment statuses when classes change (only for non-students)
 	$effect(() => {
-		if (clases.length > 0 && authStore.isAlumno) {
+		if (clases.length > 0 && !authStore.isAlumno) {
 			loadEnrollmentStatuses();
 		}
 	});
@@ -113,6 +113,9 @@
 				// Update enrollment status
 				enrollmentStatuses.set(clase.id, false);
 				successMessage = 'Te has desinscrito de la clase correctamente';
+			} else if (result.action === 'already_enrolled') {
+				// Show message for already enrolled students
+				error = result.message || 'Ya estás inscrito en esta clase';
 			}
 		} catch (err) {
 			error = `Error al procesar la inscripción: ${err}`;
@@ -182,18 +185,19 @@
 				params.precioMax = parseFloat(currentFilters.precioMaximo);
 			}
 
-			const response = await ClaseService.buscarClasesConPaginacion(
-				params.page as number,
-				params.size as number,
-				params.sortBy as string,
-				params.sortDirection as string,
-				params
-			);
+			// Use different endpoints based on user role
+			let response;
+			if (authStore.isAlumno) {
+				// For students, use the endpoint that excludes enrolled classes
+				response = await ClaseService.getClasesDisponibles(params);
+			} else {
+				// For admins and professors, use the regular endpoint
+				response = await ClaseService.getClasesOptimizadas(params);
+			}
 
 			clases = response.content || [];
 			totalElements = response.totalElements || 0;
 			totalPages = response.totalPages || 0;
-			currentPage = response.page || 0;
 		} catch (err) {
 			error = `Error al cargar clases: ${err}`;
 			console.error('Error loading clases:', err);
@@ -287,23 +291,8 @@
 		},
 		{
 			label: 'Inscribirse',
-			dynamicLabel: (clase: DTOClase) => {
-				if (!clase.id) return 'Inscribirse';
-				const isEnrolled = enrollmentStatuses.get(clase.id);
-				const isLoading = enrollmentLoading.get(clase.id);
-				if (isLoading) return 'Cargando...';
-				return isEnrolled ? 'Ya inscrito' : 'Inscribirse';
-			},
-			color: (clase: DTOClase) => {
-				if (!clase.id) return 'green';
-				const isEnrolled = enrollmentStatuses.get(clase.id);
-				return isEnrolled ? 'gray' : 'green';
-			},
-			hoverColor: (clase: DTOClase) => {
-				if (!clase.id) return 'green';
-				const isEnrolled = enrollmentStatuses.get(clase.id);
-				return isEnrolled ? 'gray' : 'green';
-			},
+			color: 'green',
+			hoverColor: 'green',
 			action: (clase: DTOClase) => handleEnrollmentAction(clase),
 			condition: () => authStore.isAlumno
 		},
@@ -397,6 +386,47 @@
 			</button>
 		{/if}
 	</div>
+
+	{#if authStore.isAlumno}
+		<div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+			<div class="flex items-start">
+				<div class="flex-shrink-0">
+					<svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+						<path
+							fill-rule="evenodd"
+							d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</div>
+				<div class="ml-3">
+					<h3 class="text-sm font-medium text-blue-800">Clases Disponibles</h3>
+					<div class="mt-2 text-sm text-blue-700">
+						<p>
+							Aquí puedes ver todas las clases disponibles para inscripción. Las clases en las que
+							ya estás inscrito no aparecen en esta lista.
+						</p>
+						<div class="mt-3">
+							<a
+								href="/alumnos/perfil"
+								class="inline-flex items-center text-sm font-medium text-blue-800 hover:text-blue-900"
+							>
+								Ver mis clases inscritas
+								<svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9 5l7 7-7 7"
+									/>
+								</svg>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	<EntityMessages
 		{successMessage}

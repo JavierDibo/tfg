@@ -24,7 +24,7 @@ export interface DTOProfesor {
      * @type {number}
      * @memberof DTOProfesor
      */
-    id: number;
+    id?: number;
     /**
      * Unique username
      * @type {string}
@@ -66,19 +66,19 @@ export interface DTOProfesor {
      * @type {string}
      * @memberof DTOProfesor
      */
-    role: DTOProfesorRoleEnum;
+    role?: DTOProfesorRoleEnum;
     /**
      * Indicates if the account is enabled
      * @type {boolean}
      * @memberof DTOProfesor
      */
-    enabled: boolean;
+    enabled?: boolean;
     /**
      * List of assigned class IDs
-     * @type {Array<string>}
+     * @type {Array<number>}
      * @memberof DTOProfesor
      */
-    classIds?: Array<string>;
+    classIds?: Array<number>;
     /**
      * Profile creation date
      * @type {Date}
@@ -122,14 +122,11 @@ export type DTOProfesorRoleEnum = typeof DTOProfesorRoleEnum[keyof typeof DTOPro
  * Check if a given object implements the DTOProfesor interface.
  */
 export function instanceOfDTOProfesor(value: object): value is DTOProfesor {
-    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('username' in value) || value['username'] === undefined) return false;
     if (!('firstName' in value) || value['firstName'] === undefined) return false;
     if (!('lastName' in value) || value['lastName'] === undefined) return false;
     if (!('dni' in value) || value['dni'] === undefined) return false;
     if (!('email' in value) || value['email'] === undefined) return false;
-    if (!('role' in value) || value['role'] === undefined) return false;
-    if (!('enabled' in value) || value['enabled'] === undefined) return false;
     return true;
 }
 
@@ -143,15 +140,15 @@ export function DTOProfesorFromJSONTyped(json: any, ignoreDiscriminator: boolean
     }
     return {
         
-        'id': json['id'],
+        'id': json['id'] == null ? undefined : json['id'],
         'username': json['username'],
         'firstName': json['firstName'],
         'lastName': json['lastName'],
         'dni': json['dni'],
         'email': json['email'],
         'phoneNumber': json['phoneNumber'] == null ? undefined : json['phoneNumber'],
-        'role': json['role'],
-        'enabled': json['enabled'],
+        'role': json['role'] == null ? undefined : json['role'],
+        'enabled': json['enabled'] == null ? undefined : json['enabled'],
         'classIds': json['classIds'] == null ? undefined : json['classIds'],
         'createdAt': json['createdAt'] == null ? undefined : (new Date(json['createdAt'])),
         'fullName': json['fullName'] == null ? undefined : json['fullName'],

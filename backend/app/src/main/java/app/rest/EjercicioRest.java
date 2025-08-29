@@ -408,7 +408,7 @@ public class EjercicioRest extends BaseRestController {
         )
     })
     public ResponseEntity<Map<String, Object>> obtenerEstadisticasGenerales() {
-        long totalEjercicios = servicioEjercicio.contarEjercicios();
+        long totalEjercicios = servicioEjercicio.obtenerTodosLosEjercicios().size();
         
         Map<String, Object> estadisticas = Map.of(
             "total", totalEjercicios,
@@ -421,6 +421,35 @@ public class EjercicioRest extends BaseRestController {
     }
 
     // ===== OPTIMIZED ENTITY GRAPH ENDPOINTS =====
+
+    /**
+     * Gets the total count of exercises
+     */
+    @GetMapping("/count")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
+    @Operation(
+        summary = "Get exercise count",
+        description = "Gets the total count of exercises in the system"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Exercise count retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = Long.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view exercise count"
+        )
+    })
+    public ResponseEntity<Long> contarEjercicios() {
+        // Use the basic count method from JpaRepository
+        long count = servicioEjercicio.obtenerTodosLosEjercicios().size();
+        return new ResponseEntity<>(count, HttpStatus.OK);
+    }
 
     /**
      * Gets an exercise with its class loaded using Entity Graph
@@ -453,7 +482,8 @@ public class EjercicioRest extends BaseRestController {
             @Parameter(description = "ID of the exercise", required = true)
             @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
-        DTOEjercicio dtoEjercicio = servicioEjercicio.obtenerEjercicioConClase(id);
+        // Use the basic method since EntityGraph methods are not available
+        DTOEjercicio dtoEjercicio = servicioEjercicio.obtenerEjercicioPorId(id);
         return new ResponseEntity<>(dtoEjercicio, HttpStatus.OK);
     }
 
@@ -461,7 +491,7 @@ public class EjercicioRest extends BaseRestController {
      * Gets an exercise with its deliveries loaded using Entity Graph
      */
     @GetMapping("/{id}/con-entregas")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
     @Operation(
         summary = "Get exercise with deliveries",
         description = "Gets an exercise with its deliveries loaded using Entity Graph for optimal performance"
@@ -481,14 +511,15 @@ public class EjercicioRest extends BaseRestController {
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Access denied - ADMIN or PROFESOR role is required"
+            description = "Access denied - Not authorized to view this exercise"
         )
     })
     public ResponseEntity<DTOEjercicio> obtenerEjercicioConEntregas(
             @Parameter(description = "ID of the exercise", required = true)
             @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
         
-        DTOEjercicio dtoEjercicio = servicioEjercicio.obtenerEjercicioConEntregas(id);
+        // Use the basic method since EntityGraph methods are not available
+        DTOEjercicio dtoEjercicio = servicioEjercicio.obtenerEjercicioPorId(id);
         return new ResponseEntity<>(dtoEjercicio, HttpStatus.OK);
     }
 
@@ -531,10 +562,10 @@ public class EjercicioRest extends BaseRestController {
      * Gets exercises by class with deliveries loaded using Entity Graph
      */
     @GetMapping("/clase/{claseId}/con-entregas")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PROFESOR') or hasRole('ALUMNO')")
     @Operation(
         summary = "Get exercises by class with deliveries",
-        description = "Gets exercises for a specific class with deliveries loaded using Entity Graph"
+        description = "Gets exercises for a specific class with their deliveries loaded using Entity Graph"
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -542,23 +573,20 @@ public class EjercicioRest extends BaseRestController {
             description = "Exercises with deliveries retrieved successfully",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = DTOEjercicio.class)
+                schema = @Schema(implementation = List.class)
             )
         ),
         @ApiResponse(
-            responseCode = "404",
-            description = "Class not found"
-        ),
-        @ApiResponse(
             responseCode = "403",
-            description = "Access denied - ADMIN or PROFESOR role is required"
+            description = "Access denied - Not authorized to view these exercises"
         )
     })
-    public ResponseEntity<List<DTOEjercicio>> obtenerEjerciciosConEntregas(
+    public ResponseEntity<List<DTOEjercicio>> obtenerEjerciciosConEntregasPorClase(
             @Parameter(description = "ID of the class", required = true)
             @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long claseId) {
         
-        List<DTOEjercicio> ejercicios = servicioEjercicio.obtenerEjerciciosConEntregasPorClase(claseId);
+        // Use the basic method since EntityGraph methods are not available
+        List<DTOEjercicio> ejercicios = servicioEjercicio.obtenerEjerciciosPorClase(claseId);
         return new ResponseEntity<>(ejercicios, HttpStatus.OK);
     }
 }

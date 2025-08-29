@@ -4,9 +4,11 @@ package app.servicios;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -75,7 +77,7 @@ public class ServicioClase {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
         }
         
-        return repositorioClase.findAllOrderedById().stream()
+        return repositorioClase.findAllByOrderByIdAsc().stream()
                 .map(DTOClase::new)
                 .collect(Collectors.toList());
     }
@@ -443,45 +445,19 @@ public class ServicioClase {
                 Sort.by(Sort.Direction.fromString(parametros.sortDirection()), parametros.sortBy())
         );
         
-        // Enhanced search logic with "q" parameter support
+        // Enhanced search logic using Spring Data JPA method naming conventions
         Page<Clase> resultado;
         
         if (parametros.hasGeneralSearch()) {
-            if (parametros.hasSpecificFilters()) {
-                // Use combined search (general + specific filters)
-                resultado = repositorioClase.findByGeneralAndSpecificFilters(
-                    parametros.q(),
-                    parametros.titulo(),
-                    parametros.descripcion(),
-                    parametros.presencialidad(),
-                    parametros.nivel(),
-                    parametros.precioMinimo(),
-                    parametros.precioMaximo(),
-                    pageable
-                );
-            } else {
-                // Use only general search
-                resultado = repositorioClase.findByGeneralSearch(parametros.q(), pageable);
-            }
+            // Use Spring Data JPA method for general search
+            resultado = repositorioClase.findByTitleContainingOrDescriptionContaining(
+                parametros.q(), parametros.q(), pageable);
+        } else if (parametros.hasSpecificFilters()) {
+            // Use specific filters with Spring Data JPA methods
+            resultado = buscarConFiltrosEspecificos(parametros, pageable);
         } else {
-            // Use existing specific search logic with flexible approach
-            if (parametros.hasSpecificFilters()) {
-                // Use flexible query that handles all combinations
-                resultado = repositorioClase.findByGeneralAndSpecificFilters(
-                    null, // No general search term
-                    parametros.titulo(),
-                    parametros.descripcion(),
-                    parametros.presencialidad(),
-                    parametros.nivel(),
-                    parametros.precioMinimo(),
-                    parametros.precioMaximo(),
-                    pageable
-                );
-            } else {
-                // Si no hay criterios específicos, obtener todas las clases
-                List<Clase> todasLasClases = repositorioClase.findAllOrderedById();
-                resultado = convertirListaAPagina(todasLasClases, pageable);
-            }
+            // Si no hay criterios específicos, obtener todas las clases
+            resultado = repositorioClase.findAll(pageable);
         }
         
         // Ensure resultado is not null before converting to DTOs
@@ -493,6 +469,48 @@ public class ServicioClase {
         Page<DTOClase> pageDTOs = resultado.map(DTOClase::new);
         
         return DTORespuestaPaginada.fromPage(pageDTOs, parametros.sortBy(), parametros.sortDirection());
+    }
+    
+    /**
+     * Busca clases con filtros específicos usando Spring Data JPA methods
+     * @param parametros Parámetros de búsqueda
+     * @param pageable Configuración de paginación
+     * @return Página de clases filtradas
+     */
+    private Page<Clase> buscarConFiltrosEspecificos(DTOParametrosBusquedaClase parametros, Pageable pageable) {
+        // Start with all classes
+        List<Clase> filteredClasses = new ArrayList<>();
+        
+        // Apply filters using Spring Data JPA methods
+        if (parametros.titulo() != null && !parametros.titulo().trim().isEmpty()) {
+            filteredClasses = repositorioClase.findByTitleContaining(parametros.titulo());
+        } else if (parametros.descripcion() != null && !parametros.descripcion().trim().isEmpty()) {
+            filteredClasses = repositorioClase.findByDescriptionContaining(parametros.descripcion());
+        } else if (parametros.presencialidad() != null) {
+            filteredClasses = repositorioClase.findByFormat(parametros.presencialidad());
+        } else if (parametros.nivel() != null) {
+            filteredClasses = repositorioClase.findByDifficulty(parametros.nivel());
+        } else if (parametros.precioMinimo() != null && parametros.precioMaximo() != null) {
+            filteredClasses = repositorioClase.findByPriceBetween(parametros.precioMinimo(), parametros.precioMaximo());
+        } else if (parametros.precioMinimo() != null) {
+            filteredClasses = repositorioClase.findByPriceGreaterThanEqual(parametros.precioMinimo());
+        } else if (parametros.precioMaximo() != null) {
+            filteredClasses = repositorioClase.findByPriceLessThanEqual(parametros.precioMaximo());
+        } else {
+            // No specific filters, return all classes
+            filteredClasses = repositorioClase.findAll();
+        }
+        
+        // Apply pagination manually
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredClasses.size());
+        
+        if (start > filteredClasses.size()) {
+            return new PageImpl<>(new ArrayList<>(), pageable, filteredClasses.size());
+        }
+        
+        List<Clase> pageContent = filteredClasses.subList(start, end);
+        return new PageImpl<>(pageContent, pageable, filteredClasses.size());
     }
 
     /**
@@ -506,7 +524,7 @@ public class ServicioClase {
             ExceptionUtils.throwAccessDenied("No tienes permisos para buscar clases");
         }
         
-        return repositorioClase.findByTitleContainingIgnoreCase(titulo)
+        return repositorioClase.findByTitleContaining(titulo)
                 .stream()
                 .map(DTOClase::new)
                 .collect(Collectors.toList());
@@ -1129,5 +1147,86 @@ public class ServicioClase {
         ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", id);
         
         return new DTOClase(clase);
+    }
+
+    /**
+     * Obtiene clases excluyendo aquellas en las que el estudiante autenticado está inscrito
+     * Solo para estudiantes - administradores y profesores ven todas las clases
+     * @param parametros Parámetros de búsqueda
+     * @return DTORespuestaPaginada con las clases no inscritas
+     */
+    @Transactional(readOnly = true)
+    public DTORespuestaPaginada<DTOClase> buscarClasesExcluyendoInscritas(DTOParametrosBusquedaClase parametros) {
+        // Debug logging
+        System.out.println("=== DEBUG: buscarClasesExcluyendoInscritas ===");
+        System.out.println("User ID: " + securityUtils.getCurrentUserId());
+        System.out.println("Is Admin: " + securityUtils.isAdmin());
+        System.out.println("Is Professor: " + securityUtils.isProfessor());
+        System.out.println("Is Student: " + securityUtils.isStudent());
+        System.out.println("Current User Role: " + securityUtils.getCurrentUserRole());
+        
+        if (securityUtils.isAdmin() || securityUtils.isProfessor()) {
+            // Administradores y profesores ven todas las clases
+            System.out.println("DEBUG: User is Admin or Professor - returning all classes");
+            return buscarClases(parametros);
+        } else if (securityUtils.isStudent()) {
+            // Estudiantes ven solo las clases en las que no están inscritos
+            System.out.println("DEBUG: User is Student - filtering out enrolled classes");
+            Long alumnoId = securityUtils.getCurrentUserId();
+            
+            // Obtener las clases en las que está inscrito el estudiante
+            List<Clase> clasesInscritas = repositorioClase.findByAlumnoId(alumnoId);
+            Set<Long> clasesInscritasIds = clasesInscritas.stream()
+                    .map(Clase::getId)
+                    .collect(Collectors.toSet());
+            
+            System.out.println("DEBUG: Student enrolled in " + clasesInscritasIds.size() + " classes: " + clasesInscritasIds);
+            
+            // Buscar todas las clases con los filtros aplicados
+            Pageable pageable = PageRequest.of(
+                    parametros.page(),
+                    parametros.size(),
+                    Sort.by(Sort.Direction.fromString(parametros.sortDirection()), parametros.sortBy())
+            );
+            
+            // Use the new Spring Data JPA approach
+            Page<Clase> todasLasClases;
+            if (parametros.hasGeneralSearch()) {
+                todasLasClases = repositorioClase.findByTitleContainingOrDescriptionContaining(
+                    parametros.q(), parametros.q(), pageable);
+            } else if (parametros.hasSpecificFilters()) {
+                todasLasClases = buscarConFiltrosEspecificos(parametros, pageable);
+            } else {
+                todasLasClases = repositorioClase.findAll(pageable);
+            }
+            
+            System.out.println("DEBUG: Total classes found: " + todasLasClases.getTotalElements());
+            
+            // Filtrar las clases en las que no está inscrito
+            List<Clase> clasesNoInscritas = todasLasClases.getContent().stream()
+                    .filter(clase -> !clasesInscritasIds.contains(clase.getId()))
+                    .collect(Collectors.toList());
+            
+            System.out.println("DEBUG: Classes after filtering (not enrolled): " + clasesNoInscritas.size());
+            
+            // Convertir a DTOs
+            List<DTOClase> clasesNoInscritasDTOs = clasesNoInscritas.stream()
+                    .map(DTOClase::new)
+                    .collect(Collectors.toList());
+            
+            // Crear una nueva página con las clases filtradas
+            Page<DTOClase> pageFiltrada = new PageImpl<>(
+                    clasesNoInscritasDTOs,
+                    pageable,
+                    todasLasClases.getTotalElements() - clasesInscritasIds.size()
+            );
+            
+            System.out.println("DEBUG: Returning " + clasesNoInscritasDTOs.size() + " available classes");
+            return DTORespuestaPaginada.fromPage(pageFiltrada, parametros.sortBy(), parametros.sortDirection());
+        } else {
+            System.out.println("DEBUG: User has no valid role - access denied");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
+            return null; // This line will never be reached
+        }
     }
 }

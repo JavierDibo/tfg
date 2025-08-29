@@ -4,7 +4,12 @@ import { ValidationUtils } from '$lib/utils/validators';
 import { FormatterUtils } from '$lib/utils/formatters';
 import { PermissionUtils } from '$lib/utils/permissions';
 import { NavigationUtils } from '$lib/utils/navigation';
-import type { DTOPeticionCrearEjercicio, DTOAlumno, DTOProfesor } from '$lib/generated/api';
+import type {
+	DTOPeticionCrearEjercicio,
+	DTOAlumno,
+	DTOProfesor,
+	DTOEjercicio
+} from '$lib/generated/api';
 
 export class EjercicioService {
 	private static api = ejercicioApi;
@@ -39,12 +44,62 @@ export class EjercicioService {
 		}
 	}
 
+	static async getEjercicioCompleto(id: number) {
+		try {
+			const response = await EjercicioService.api.obtenerEjercicioCompleto({ id });
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, `getEjercicioCompleto(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	static async getEjercicioConClase(id: number) {
+		try {
+			const response = await EjercicioService.api.obtenerEjercicioConClase({ id });
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, `getEjercicioConClase(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	static async getEjercicioConEntregas(id: number) {
+		try {
+			const response = await EjercicioService.api.obtenerEjercicioConEntregas({ id });
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, `getEjercicioConEntregas(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	static async getEjerciciosConEntregas(claseId: number) {
+		try {
+			const response = await EjercicioService.api.obtenerEjerciciosConEntregas({ claseId });
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, `getEjerciciosConEntregas(${claseId})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	static async getEntregasEjercicio(id: number) {
+		try {
+			const response = await EjercicioService.api.obtenerEntregasEjercicio({ id });
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, `getEntregasEjercicio(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
 	static async createEjercicio(ejercicio: {
 		nombre: string;
 		enunciado: string;
 		fechaInicioPlazo: Date;
 		fechaFinalPlazo: Date;
-		claseId: string;
+		claseId: number;
 		duracionEnHoras?: number;
 	}) {
 		try {
@@ -75,7 +130,7 @@ export class EjercicioService {
 					enunciado?: string;
 					fechaInicioPlazo?: Date;
 					fechaFinalPlazo?: Date;
-					claseId?: string;
+					claseId?: number;
 					duracionEnHoras?: number;
 			  }>
 			| {
@@ -83,7 +138,7 @@ export class EjercicioService {
 					statement?: string;
 					startDate?: Date;
 					endDate?: Date;
-					classId?: string;
+					classId?: number;
 			  }
 	) {
 		try {
@@ -103,8 +158,8 @@ export class EjercicioService {
 					? (ejercicio as { fechaFinalPlazo?: Date }).fechaFinalPlazo || new Date()
 					: (ejercicio as { endDate?: Date }).endDate || new Date(),
 				claseId: isSpanishFormat
-					? (ejercicio as { claseId?: string }).claseId || ''
-					: (ejercicio as { classId?: string }).classId || '',
+					? (ejercicio as { claseId?: number }).claseId || 0
+					: (ejercicio as { classId?: number }).classId || 0,
 				duracionEnHoras: isSpanishFormat
 					? (ejercicio as { duracionEnHoras?: number }).duracionEnHoras
 					: undefined
@@ -128,7 +183,7 @@ export class EjercicioService {
 			enunciado: string;
 			fechaInicioPlazo: Date;
 			fechaFinalPlazo: Date;
-			claseId: string;
+			claseId: number;
 			duracionEnHoras?: number;
 		}
 	) {
@@ -237,7 +292,7 @@ export class EjercicioService {
 		enunciado: string;
 		fechaInicioPlazo: Date;
 		fechaFinalPlazo: Date;
-		claseId: string;
+		claseId: number;
 		duracionEnHoras?: number;
 	}): {
 		isValid: boolean;
@@ -269,7 +324,7 @@ export class EjercicioService {
 		}
 
 		// Validate class ID
-		if (!data.claseId || data.claseId.trim().length === 0) {
+		if (!data.claseId || data.claseId <= 0) {
 			errors.push('La clase es obligatoria');
 		}
 
@@ -359,5 +414,60 @@ export class EjercicioService {
 	 */
 	static navigateToCreateExercise(): void {
 		NavigationUtils.goToEntityCreate('ejercicios');
+	}
+
+	/**
+	 * Convert API response fields to display format
+	 * Handles the transition from Spanish to English field names
+	 */
+	static convertApiResponseToDisplay(ejercicio: DTOEjercicio): {
+		id?: number;
+		nombre: string;
+		enunciado: string;
+		fechaInicioPlazo: Date;
+		fechaFinalPlazo: Date;
+		claseId: string;
+		duracionEnHoras?: number;
+		numeroEntregas?: number;
+		entregasCalificadas?: number;
+		estado?: string;
+		horasRestantes?: number;
+		porcentajeEntregasCalificadas?: number;
+	} {
+		return {
+			id: ejercicio.id,
+			nombre: ejercicio.name || '',
+			enunciado: ejercicio.statement || '',
+			fechaInicioPlazo: ejercicio.startDate || new Date(),
+			fechaFinalPlazo: ejercicio.endDate || new Date(),
+			claseId: ejercicio.classId || '',
+			duracionEnHoras: undefined, // Not available in response
+			numeroEntregas: ejercicio.numeroEntregas,
+			entregasCalificadas: ejercicio.entregasCalificadas,
+			estado: ejercicio.estado,
+			horasRestantes: ejercicio.horasRestantes,
+			porcentajeEntregasCalificadas: ejercicio.porcentajeEntregasCalificadas
+		};
+	}
+
+	/**
+	 * Convert display format to API request format
+	 */
+	static convertDisplayToApiRequest(data: {
+		nombre: string;
+		enunciado: string;
+		fechaInicioPlazo: Date;
+		fechaFinalPlazo: Date;
+		claseId: string | number;
+		duracionEnHoras?: number;
+	}): DTOPeticionCrearEjercicio {
+		return {
+			nombre: data.nombre,
+			enunciado: data.enunciado,
+			fechaInicioPlazo: data.fechaInicioPlazo,
+			fechaFinalPlazo: data.fechaFinalPlazo,
+			claseId: typeof data.claseId === 'string' ? parseInt(data.claseId) : data.claseId,
+			duracionEnHoras: data.duracionEnHoras
+		};
 	}
 }

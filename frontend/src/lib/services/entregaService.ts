@@ -20,12 +20,14 @@ export interface EntregaFilters {
 }
 
 export interface CreateEntregaData {
-	readonly ejercicioId: string;
-	readonly alumnoEntreganteId: string;
+	readonly ejercicioId: number;
+	readonly alumnoId: number;
 	readonly archivosEntregados?: string[];
 }
 
 export interface UpdateEntregaData {
+	readonly alumnoId?: number;
+	readonly ejercicioId?: number;
 	readonly nota?: number;
 	readonly archivosEntregados?: string[];
 	readonly comentarios?: string;
@@ -51,6 +53,19 @@ export interface PaginatedResult<T> {
 	readonly pageSize: number;
 }
 
+export interface DeliveryStatistics {
+	readonly totalEntregas: number;
+	readonly pendingEntregas: number;
+	readonly gradedEntregas: number;
+	readonly averageGrade: number;
+	readonly formattedStats: {
+		readonly totalFormatted: string;
+		readonly pendingFormatted: string;
+		readonly gradedFormatted: string;
+		readonly averageFormatted: string;
+	};
+}
+
 export class EntregaService {
 	private static readonly api = entregaApi;
 
@@ -66,13 +81,13 @@ export class EntregaService {
 		const errors: string[] = [];
 
 		// Validate ejercicioId
-		if (!data.ejercicioId || data.ejercicioId.trim().length === 0) {
-			errors.push('El ID del ejercicio es obligatorio');
+		if (!data.ejercicioId || data.ejercicioId <= 0) {
+			errors.push('El ID del ejercicio es obligatorio y debe ser mayor que 0');
 		}
 
-		// Validate alumnoEntreganteId
-		if (!data.alumnoEntreganteId || data.alumnoEntreganteId.trim().length === 0) {
-			errors.push('El ID del alumno es obligatorio');
+		// Validate alumnoId
+		if (!data.alumnoId || data.alumnoId <= 0) {
+			errors.push('El ID del alumno es obligatorio y debe ser mayor que 0');
 		}
 
 		// Validate archivosEntregados if provided
@@ -244,6 +259,26 @@ export class EntregaService {
 		}
 	}
 
+	static async getEntregaWithAlumno(id: number): Promise<DTOEntregaEjercicio> {
+		try {
+			const response = await EntregaService.api.obtenerEntregaConAlumno({ id });
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, `getEntregaWithAlumno(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	static async getEntregaWithEjercicio(id: number): Promise<DTOEntregaEjercicio> {
+		try {
+			const response = await EntregaService.api.obtenerEntregaConEjercicio({ id });
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, `getEntregaWithEjercicio(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
 	static async createEntrega(entrega: Readonly<CreateEntregaData>): Promise<DTOEntregaEjercicio> {
 		try {
 			// Validate data before creating
@@ -253,7 +288,11 @@ export class EntregaService {
 			}
 
 			const response = await EntregaService.api.crearEntrega({
-				dTOPeticionCrearEntregaEjercicio: entrega
+				dTOPeticionCrearEntregaEjercicio: {
+					alumnoId: entrega.alumnoId,
+					ejercicioId: entrega.ejercicioId,
+					archivosEntregados: entrega.archivosEntregados
+				}
 			});
 			return response;
 		} catch (error) {
@@ -455,35 +494,27 @@ export class EntregaService {
 	/**
 	 * Get delivery statistics with formatted data
 	 */
-	static async getEstadisticas(): Promise<{
-		totalEntregas: number;
-		pendingEntregas: number;
-		gradedEntregas: number;
-		averageGrade: number;
-		formattedStats: {
-			totalFormatted: string;
-			pendingFormatted: string;
-			gradedFormatted: string;
-			averageFormatted: string;
-		};
-	}> {
+	static async getEstadisticas(): Promise<DeliveryStatistics> {
 		try {
-			// This would need to be implemented in the API
-			// For now, we'll return a placeholder with formatted data
-			const stats = {
-				totalEntregas: 0,
-				pendingEntregas: 0,
-				gradedEntregas: 0,
-				averageGrade: 0
-			};
+			const response = await EntregaService.api.obtenerEstadisticas1();
+
+			// Parse the response and provide default values if needed
+			const stats = (response as Record<string, unknown>) || {};
+			const totalEntregas = (stats.totalEntregas as number) || 0;
+			const pendingEntregas = (stats.pendingEntregas as number) || 0;
+			const gradedEntregas = (stats.gradedEntregas as number) || 0;
+			const averageGrade = (stats.averageGrade as number) || 0;
 
 			return {
-				...stats,
+				totalEntregas,
+				pendingEntregas,
+				gradedEntregas,
+				averageGrade,
 				formattedStats: {
-					totalFormatted: stats.totalEntregas.toString(),
-					pendingFormatted: stats.pendingEntregas.toString(),
-					gradedFormatted: stats.gradedEntregas.toString(),
-					averageFormatted: this.formatGrade(stats.averageGrade)
+					totalFormatted: totalEntregas.toString(),
+					pendingFormatted: pendingEntregas.toString(),
+					gradedFormatted: gradedEntregas.toString(),
+					averageFormatted: this.formatGrade(averageGrade)
 				}
 			};
 		} catch (error) {

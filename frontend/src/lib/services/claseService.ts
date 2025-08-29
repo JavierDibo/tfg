@@ -5,13 +5,12 @@ import type {
 	DTOPeticionCrearCurso,
 	DTOPeticionCrearTaller,
 	DTORespuestaPaginada,
-	DTORespuestaPaginadaDTOClase,
-	DTOProfesor
+	DTOProfesor,
+	ObtenerClasesPresencialidadEnum,
+	DTORespuestaEnrollment
 } from '$lib/generated/api';
 import { claseApi, profesorApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
-import { ValidationUtils } from '$lib/utils/validators';
-import { FormatterUtils } from '$lib/utils/formatters';
 
 export class ClaseService {
 	/**
@@ -27,13 +26,25 @@ export class ClaseService {
 	}
 
 	/**
-	 * Get a class by ID
+	 * Get a class by ID (basic version)
 	 */
 	static async getClaseById(id: number): Promise<DTOClase> {
 		try {
 			return await claseApi.obtenerClasePorId({ id });
 		} catch (error) {
 			ErrorHandler.logError(error, 'getClaseById');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get a class with all relationships loaded using Entity Graph (optimized)
+	 */
+	static async getClaseConDetalles(id: number): Promise<DTOClase> {
+		try {
+			return await claseApi.obtenerClaseConDetalles({ id });
+		} catch (error) {
+			ErrorHandler.logError(error, 'getClaseConDetalles');
 			throw await ErrorHandler.parseError(error);
 		}
 	}
@@ -106,203 +117,113 @@ export class ClaseService {
 		}
 	}
 
+	// ==================== BUSINESS LOGIC METHODS ====================
+
 	/**
-	 * Get classes with pagination and filters
+	 * Get classes with optimized loading based on context
 	 */
-	static async buscarClasesConPaginacion(
-		page: number = 0,
-		size: number = 10,
-		sortBy?: string,
-		sortDirection?: string,
-		filters: Record<string, unknown> = {}
-	): Promise<DTORespuestaPaginadaDTOClase> {
+	static async getClasesOptimizadas(params: {
+		page?: number;
+		size?: number;
+		sortBy?: string;
+		sortDirection?: string;
+		q?: string;
+		titulo?: string;
+		descripcion?: string;
+		nivel?: string;
+		presencialidad?: ObtenerClasesPresencialidadEnum;
+		precioMinimo?: number;
+		precioMaximo?: number;
+		profesorId?: string;
+		cursoId?: string;
+		tallerId?: string;
+	}): Promise<DTORespuestaPaginada> {
 		try {
-			const params = {
-				page,
-				size,
-				sortBy,
-				sortDirection,
-				...filters
-			};
+			// Use the optimized endpoint with all available filters
 			return await claseApi.obtenerClases(params);
 		} catch (error) {
-			ErrorHandler.logError(error, 'buscarClasesConPaginacion');
+			ErrorHandler.logError(error, 'getClasesOptimizadas');
 			throw await ErrorHandler.parseError(error);
 		}
 	}
 
-	// ==================== BUSINESS LOGIC METHODS ====================
-
 	/**
-	 * Handle student enrollment with validation and business logic
+	 * Get available classes for enrollment (excluding those where the student is already enrolled)
+	 * For students: shows only classes they can enroll in
+	 * For admins/professors: shows all classes (same as regular endpoint)
 	 */
-	static async handleStudentEnrollment(
-		claseId: number,
-		alumnoId: number
-	): Promise<{
-		success: boolean;
-		message: string;
-		enrollmentData?: { claseId: number; alumnoId: number; enrollmentDate: string };
-	}> {
+	static async getClasesDisponibles(params: {
+		page?: number;
+		size?: number;
+		sortBy?: string;
+		sortDirection?: string;
+		q?: string;
+		titulo?: string;
+		descripcion?: string;
+		nivel?: string;
+		presencialidad?: ObtenerClasesPresencialidadEnum;
+		precioMinimo?: number;
+		precioMaximo?: number;
+	}): Promise<DTORespuestaPaginada> {
 		try {
-			// Validate input
-			if (!claseId || claseId <= 0) {
-				return {
-					success: false,
-					message: 'ID de clase inválido'
-				};
-			}
-
-			if (!alumnoId || alumnoId <= 0) {
-				return {
-					success: false,
-					message: 'ID de alumno inválido'
-				};
-			}
-
-			// Check if class exists
-			const clase = await this.getClaseById(claseId);
-			if (!clase) {
-				return {
-					success: false,
-					message: 'Clase no encontrada'
-				};
-			}
-
-			// Check if class has available spots (if capacity is defined)
-			// Note: DTOClase doesn't have capacity/enrolledStudents properties
-			// This would need to be implemented when the API supports it
-			if (clase.numeroAlumnos && clase.alumnosId && clase.alumnosId.length >= clase.numeroAlumnos) {
-				return {
-					success: false,
-					message: 'La clase ha alcanzado su capacidad máxima'
-				};
-			}
-
-			// TODO: Add enrollment API call when available
-			// For now, return success with placeholder data
-			return {
-				success: true,
-				message: 'Inscripción realizada correctamente',
-				enrollmentData: {
-					claseId,
-					alumnoId,
-					enrollmentDate: FormatterUtils.formatDate(new Date(), { includeTime: true })
-				}
-			};
+			// Use the new endpoint that excludes enrolled classes for students
+			return await claseApi.obtenerClasesDisponibles(params);
 		} catch (error) {
-			return {
-				success: false,
-				message: error instanceof Error ? error.message : 'Error en la inscripción'
-			};
+			ErrorHandler.logError(error, 'getClasesDisponibles');
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
 	/**
-	 * Handle student unenrollment with validation and business logic
+	 * Get class details with all relationships for detailed view
 	 */
-	static async handleStudentUnenrollment(
-		claseId: number,
-		alumnoId: number
-	): Promise<{ success: boolean; message: string }> {
+	static async getClaseDetallada(id: number): Promise<DTOClase> {
 		try {
-			// Validate input
-			if (!claseId || claseId <= 0) {
-				return {
-					success: false,
-					message: 'ID de clase inválido'
-				};
-			}
-
-			if (!alumnoId || alumnoId <= 0) {
-				return {
-					success: false,
-					message: 'ID de alumno inválido'
-				};
-			}
-
-			// Check if class exists
-			const clase = await this.getClaseById(claseId);
-			if (!clase) {
-				return {
-					success: false,
-					message: 'Clase no encontrada'
-				};
-			}
-
-			// TODO: Add unenrollment API call when available
-			// For now, return success
-			return {
-				success: true,
-				message: 'Baja realizada correctamente'
-			};
+			// Use the optimized endpoint that loads all relationships
+			return await claseApi.obtenerClaseConDetalles({ id });
 		} catch (error) {
-			return {
-				success: false,
-				message: error instanceof Error ? error.message : 'Error en la baja'
-			};
+			ErrorHandler.logError(error, 'getClaseDetallada');
+			throw await ErrorHandler.parseError(error);
 		}
 	}
 
 	/**
-	 * Validate class creation data with business rules using utility functions
+	 * Validate class creation data
 	 */
-	static validateClassCreationData(data: DTOPeticionCrearCurso | DTOPeticionCrearTaller): {
+	static validateClassData(data: DTOPeticionCrearCurso | DTOPeticionCrearTaller): {
 		isValid: boolean;
 		errors: string[];
 	} {
 		const errors: string[] = [];
 
-		// Common validation for both courses and workshops
+		// Common validation for both course and workshop
 		if (!data.titulo || data.titulo.trim().length === 0) {
-			errors.push('El título de la clase es obligatorio');
-		} else if (data.titulo.length < 3) {
-			errors.push('El título debe tener al menos 3 caracteres');
+			errors.push('El título es obligatorio');
 		}
 
 		if (!data.descripcion || data.descripcion.trim().length === 0) {
 			errors.push('La descripción es obligatoria');
-		} else if (data.descripcion.length < 10) {
-			errors.push('La descripción debe tener al menos 10 caracteres');
 		}
 
-		// Use utility function for price validation
-		const priceValidation = ValidationUtils.validatePrice(data.precio);
-		if (!priceValidation.isValid) {
-			errors.push(priceValidation.message);
+		if (data.precio !== undefined && data.precio < 0) {
+			errors.push('El precio no puede ser negativo');
 		}
 
 		// Course-specific validation
-		if ('fechaInicio' in data && 'fechaFin' in data) {
-			const startDate = new Date(data.fechaInicio);
-			const endDate = new Date(data.fechaFin);
-			const now = new Date();
-
-			if (startDate <= now) {
-				errors.push('La fecha de inicio debe ser futura');
-			}
-
-			if (endDate <= startDate) {
-				errors.push('La fecha de fin debe ser posterior a la fecha de inicio');
+		if ('duracionHoras' in data) {
+			if (!data.duracionHoras || data.duracionHoras <= 0) {
+				errors.push('La duración en horas debe ser mayor que 0');
 			}
 		}
 
 		// Workshop-specific validation
-		if ('duracionHoras' in data) {
-			if (!data.duracionHoras || data.duracionHoras <= 0) {
-				errors.push('La duración debe ser mayor que 0');
-			}
-		}
-
-		if ('fechaRealizacion' in data) {
-			if (!data.fechaRealizacion) {
-				errors.push('La fecha del taller es obligatoria');
-			} else {
-				const workshopDate = new Date(data.fechaRealizacion);
-				const now = new Date();
-				if (workshopDate <= now) {
-					errors.push('La fecha del taller debe ser futura');
-				}
+		if ('fechaInicio' in data && 'fechaFin' in data) {
+			if (
+				data.fechaInicio &&
+				data.fechaFin &&
+				new Date(data.fechaInicio) >= new Date(data.fechaFin)
+			) {
+				errors.push('La fecha de inicio debe ser anterior a la fecha de fin');
 			}
 		}
 
@@ -313,21 +234,227 @@ export class ClaseService {
 	}
 
 	/**
-	 * Format class information using utility functions
+	 * Format class data for display
 	 */
-	static formatClassInfo(clase: DTOClase): {
+	static formatClassData(clase: DTOClase): {
+		formattedTitle: string;
+		formattedDescription: string;
 		formattedPrice: string;
 		formattedLevel: string;
-		levelColor: string;
-		studentCount: string;
-		professorCount: string;
+		formattedPresenciality: string;
+		statusText: string;
+		statusColor: string;
 	} {
 		return {
-			formattedPrice: FormatterUtils.formatPrice(clase.precio),
+			formattedTitle: clase.titulo || 'Sin título',
+			formattedDescription: clase.descripcion || 'Sin descripción',
+			formattedPrice: clase.precio ? `${clase.precio}€` : 'Gratis',
 			formattedLevel: clase.nivel || 'N/A',
-			levelColor: FormatterUtils.getNivelColor(clase.nivel),
-			studentCount: `${clase.numeroAlumnos || 0} alumnos`,
-			professorCount: `${clase.numeroProfesores || 0} profesores`
+			formattedPresenciality: clase.presencialidad || 'N/A',
+			statusText: 'Activa', // Assuming active by default
+			statusColor: 'bg-green-100 text-green-800'
 		};
+	}
+
+	/**
+	 * Get available actions for a class based on user permissions
+	 */
+	static getAvailableActions(
+		user: { role?: string }, // User with role property
+		clase?: DTOClase
+	): Array<{
+		id: string;
+		label: string;
+		icon: string;
+		color: string;
+		action: () => void;
+	}> {
+		const actions: Array<{
+			id: string;
+			label: string;
+			icon: string;
+			color: string;
+			action: () => void;
+		}> = [];
+
+		// View action - always available
+		if (clase) {
+			actions.push({
+				id: 'view',
+				label: 'Ver detalles',
+				icon: '👁️',
+				color: 'blue',
+				action: () => {
+					// Navigate to class details
+					console.log('View class details');
+				}
+			});
+		}
+
+		// Edit action - for professors and admins
+		if (user && (user.role === 'PROFESOR' || user.role === 'ADMIN')) {
+			actions.push({
+				id: 'edit',
+				label: 'Editar',
+				icon: '✏️',
+				color: 'green',
+				action: () => {
+					// Navigate to edit class
+					console.log('Edit class');
+				}
+			});
+		}
+
+		// Delete action - for admins only
+		if (user && user.role === 'ADMIN') {
+			actions.push({
+				id: 'delete',
+				label: 'Eliminar',
+				icon: '🗑️',
+				color: 'red',
+				action: () => {
+					// Trigger delete confirmation
+					console.log('Delete class');
+				}
+			});
+		}
+
+		return actions;
+	}
+
+	/**
+	 * Check if user can enroll in a class
+	 */
+	static canEnrollInClass(user: { role?: string }, clase: DTOClase): boolean {
+		// Basic checks - can be expanded based on business rules
+		return user && user.role === 'ALUMNO' && clase && clase.id !== undefined;
+	}
+
+	/**
+	 * Check if user can manage a class
+	 */
+	static canManageClass(user: { role?: string }): boolean {
+		return user && (user.role === 'PROFESOR' || user.role === 'ADMIN');
+	}
+
+	/**
+	 * Get class statistics
+	 */
+	static getClassStatistics(clase: DTOClase): {
+		totalStudents: number;
+		totalProfessors: number;
+		totalExercises: number;
+		totalMaterials: number;
+	} {
+		return {
+			totalStudents: clase.alumnosId?.length || 0,
+			totalProfessors: clase.profesoresId?.length || 0,
+			totalExercises: clase.ejerciciosId?.length || 0,
+			totalMaterials: clase.material?.length || 0
+		};
+	}
+
+	// ==================== ENROLLMENT METHODS ====================
+
+	/**
+	 * Enroll a student in a class (for admins/professors)
+	 */
+	static async enrollStudentInClass(
+		alumnoId: number,
+		claseId: number
+	): Promise<DTORespuestaEnrollment> {
+		try {
+			const { classManagementApi } = await import('$lib/api');
+			return await classManagementApi.inscribirAlumnoEnClase({ claseId, studentId: alumnoId });
+		} catch (error) {
+			ErrorHandler.logError(error, 'enrollStudentInClass');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Unenroll a student from a class (for admins/professors)
+	 */
+	static async unenrollStudentFromClass(
+		alumnoId: number,
+		claseId: number
+	): Promise<DTORespuestaEnrollment> {
+		try {
+			const { classManagementApi } = await import('$lib/api');
+			return await classManagementApi.darDeBajaAlumnoDeClase({ claseId, studentId: alumnoId });
+		} catch (error) {
+			ErrorHandler.logError(error, 'unenrollStudentFromClass');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Check if a student is enrolled in a class
+	 */
+	static async checkStudentEnrollment(alumnoId: number, claseId: number): Promise<boolean> {
+		try {
+			const clase = await this.getClaseById(claseId);
+			return clase.alumnosId?.includes(alumnoId.toString()) || false;
+		} catch (error) {
+			ErrorHandler.logError(error, 'checkStudentEnrollment');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get count of students enrolled in a class
+	 */
+	static async contarAlumnosEnClase(claseId: number): Promise<number> {
+		try {
+			const clase = await this.getClaseById(claseId);
+			return clase.alumnosId?.length || 0;
+		} catch (error) {
+			ErrorHandler.logError(error, 'contarAlumnosEnClase');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Handle enrollment with proper error handling for already enrolled students
+	 */
+	static async handleStudentEnrollment(
+		alumnoId: number,
+		claseId: number
+	): Promise<{
+		success: boolean;
+		message: string;
+		alreadyEnrolled?: boolean;
+	}> {
+		try {
+			// First check if already enrolled
+			const isEnrolled = await this.checkStudentEnrollment(alumnoId, claseId);
+			if (isEnrolled) {
+				return {
+					success: false,
+					message: 'El estudiante ya está inscrito en esta clase',
+					alreadyEnrolled: true
+				};
+			}
+
+			// Try to enroll
+			const result = await this.enrollStudentInClass(alumnoId, claseId);
+			return {
+				success: result.success || false,
+				message: result.message || 'Estudiante inscrito exitosamente'
+			};
+		} catch (error: unknown) {
+			// Handle specific error for already enrolled students
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			if (errorMessage.includes('already enrolled') || errorMessage.includes('ya está inscrito')) {
+				return {
+					success: false,
+					message: 'El estudiante ya está inscrito en esta clase',
+					alreadyEnrolled: true
+				};
+			}
+
+			ErrorHandler.logError(error, 'handleStudentEnrollment');
+			throw await ErrorHandler.parseError(error);
+		}
 	}
 }

@@ -100,25 +100,13 @@
 		error = null;
 
 		try {
-			if (authStore.isAlumno) {
-				// For students, use the student-specific API that includes professor information
-				claseDetalles = await EnrollmentService.getMyClassDetails(claseId);
+			// Use the optimized endpoint that loads all relationships
+			clase = await ClaseService.getClaseDetallada(claseId);
 
-				// Set statistics from the detailed response
-				if (claseDetalles?.id) {
-					numeroAlumnos = claseDetalles.numeroAlumnos || 0;
-					numeroProfesores = claseDetalles.numeroProfesores || 0;
-				}
-			} else {
-				// For teachers and admins, use the general class API
-				clase = await ClaseService.getClaseById(claseId);
-
-				// Load additional statistics - these methods no longer exist in the new API
-				// The statistics are now included in the class details response
-				if (clase?.id) {
-					numeroAlumnos = clase.numeroAlumnos || 0;
-					numeroProfesores = clase.numeroProfesores || 0;
-				}
+			// Set statistics from the detailed response
+			if (clase?.id) {
+				numeroAlumnos = clase.numeroAlumnos || 0;
+				numeroProfesores = clase.numeroProfesores || 0;
 			}
 		} catch (err) {
 			error = `Error al cargar la clase: ${err}`;
@@ -236,6 +224,10 @@
 
 			if (result.action === 'redirect') {
 				goto(result.redirectUrl!);
+				return;
+			} else if (result.action === 'already_enrolled') {
+				// Show message for already enrolled students
+				enrollmentError = result.message || 'Ya estás inscrito en esta clase';
 				return;
 			}
 

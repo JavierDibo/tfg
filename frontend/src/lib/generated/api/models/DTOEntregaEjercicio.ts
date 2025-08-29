@@ -51,16 +51,16 @@ export interface DTOEntregaEjercicio {
     archivosEntregados?: Array<string>;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOEntregaEjercicio
      */
-    alumnoEntreganteId?: string;
+    alumnoId?: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOEntregaEjercicio
      */
-    ejercicioId?: string;
+    ejercicioId?: number;
     /**
      * 
      * @type {number}
@@ -90,6 +90,12 @@ export interface DTOEntregaEjercicio {
      * @type {string}
      * @memberof DTOEntregaEjercicio
      */
+    resumenComentarios?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOEntregaEjercicio
+     */
     comentariosFormateados?: string;
     /**
      * 
@@ -97,12 +103,6 @@ export interface DTOEntregaEjercicio {
      * @memberof DTOEntregaEjercicio
      */
     calificacionCualitativa?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOEntregaEjercicio
-     */
-    resumenComentarios?: string;
 }
 
 
@@ -139,15 +139,15 @@ export function DTOEntregaEjercicioFromJSONTyped(json: any, ignoreDiscriminator:
         'fechaEntrega': json['fechaEntrega'] == null ? undefined : (new Date(json['fechaEntrega'])),
         'estado': json['estado'] == null ? undefined : json['estado'],
         'archivosEntregados': json['archivosEntregados'] == null ? undefined : json['archivosEntregados'],
-        'alumnoEntreganteId': json['alumnoEntreganteId'] == null ? undefined : json['alumnoEntreganteId'],
+        'alumnoId': json['alumnoId'] == null ? undefined : json['alumnoId'],
         'ejercicioId': json['ejercicioId'] == null ? undefined : json['ejercicioId'],
         'numeroArchivos': json['numeroArchivos'] == null ? undefined : json['numeroArchivos'],
         'comentarios': json['comentarios'] == null ? undefined : json['comentarios'],
         'notaFormateada': json['notaFormateada'] == null ? undefined : json['notaFormateada'],
         'estadoDescriptivo': json['estadoDescriptivo'] == null ? undefined : json['estadoDescriptivo'],
+        'resumenComentarios': json['resumenComentarios'] == null ? undefined : json['resumenComentarios'],
         'comentariosFormateados': json['comentariosFormateados'] == null ? undefined : json['comentariosFormateados'],
         'calificacionCualitativa': json['calificacionCualitativa'] == null ? undefined : json['calificacionCualitativa'],
-        'resumenComentarios': json['resumenComentarios'] == null ? undefined : json['resumenComentarios'],
     };
 }
 
@@ -167,15 +167,15 @@ export function DTOEntregaEjercicioToJSONTyped(value?: DTOEntregaEjercicio | nul
         'fechaEntrega': value['fechaEntrega'] == null ? undefined : ((value['fechaEntrega']).toISOString()),
         'estado': value['estado'],
         'archivosEntregados': value['archivosEntregados'],
-        'alumnoEntreganteId': value['alumnoEntreganteId'],
+        'alumnoId': value['alumnoId'],
         'ejercicioId': value['ejercicioId'],
         'numeroArchivos': value['numeroArchivos'],
         'comentarios': value['comentarios'],
         'notaFormateada': value['notaFormateada'],
         'estadoDescriptivo': value['estadoDescriptivo'],
+        'resumenComentarios': value['resumenComentarios'],
         'comentariosFormateados': value['comentariosFormateados'],
         'calificacionCualitativa': value['calificacionCualitativa'],
-        'resumenComentarios': value['resumenComentarios'],
     };
 }
 

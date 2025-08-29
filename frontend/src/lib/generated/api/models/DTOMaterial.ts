@@ -39,24 +39,6 @@ export interface DTOMaterial {
     url?: string;
     /**
      * 
-     * @type {boolean}
-     * @memberof DTOMaterial
-     */
-    video?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DTOMaterial
-     */
-    document?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DTOMaterial
-     */
-    image?: boolean;
-    /**
-     * 
      * @type {string}
      * @memberof DTOMaterial
      */
@@ -67,6 +49,24 @@ export interface DTOMaterial {
      * @memberof DTOMaterial
      */
     fileExtension?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOMaterial
+     */
+    image?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOMaterial
+     */
+    video?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof DTOMaterial
+     */
+    document?: boolean;
 }
 
 /**
@@ -89,11 +89,11 @@ export function DTOMaterialFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'] == null ? undefined : json['name'],
         'url': json['url'] == null ? undefined : json['url'],
-        'video': json['video'] == null ? undefined : json['video'],
-        'document': json['document'] == null ? undefined : json['document'],
-        'image': json['image'] == null ? undefined : json['image'],
         'materialType': json['materialType'] == null ? undefined : json['materialType'],
         'fileExtension': json['fileExtension'] == null ? undefined : json['fileExtension'],
+        'image': json['image'] == null ? undefined : json['image'],
+        'video': json['video'] == null ? undefined : json['video'],
+        'document': json['document'] == null ? undefined : json['document'],
     };
 }
 
@@ -111,11 +111,11 @@ export function DTOMaterialToJSONTyped(value?: DTOMaterial | null, ignoreDiscrim
         'id': value['id'],
         'name': value['name'],
         'url': value['url'],
-        'video': value['video'],
-        'document': value['document'],
-        'image': value['image'],
         'materialType': value['materialType'],
         'fileExtension': value['fileExtension'],
+        'image': value['image'],
+        'video': value['video'],
+        'document': value['document'],
     };
 }
 

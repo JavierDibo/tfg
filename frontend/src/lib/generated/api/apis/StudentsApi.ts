@@ -53,6 +53,14 @@ export interface EliminarAlumnoRequest {
     id: number;
 }
 
+export interface ObtenerAlumnoCompletoRequest {
+    id: number;
+}
+
+export interface ObtenerAlumnoConClasesRequest {
+    id: number;
+}
+
 export interface ObtenerAlumnoPorIdRequest {
     id: number;
 }
@@ -214,6 +222,84 @@ export class StudentsApi extends runtime.BaseAPI {
      */
     async eliminarAlumno(requestParameters: EliminarAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.eliminarAlumnoRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Gets a student with all their relationships (classes, payments, submissions) loaded using Entity Graph
+     * Get student with all relationships
+     */
+    async obtenerAlumnoCompletoRaw(requestParameters: ObtenerAlumnoCompletoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumno>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerAlumnoCompleto().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/alumnos/{id}/completo`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOAlumnoFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a student with all their relationships (classes, payments, submissions) loaded using Entity Graph
+     * Get student with all relationships
+     */
+    async obtenerAlumnoCompleto(requestParameters: ObtenerAlumnoCompletoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumno> {
+        const response = await this.obtenerAlumnoCompletoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets a student with their classes loaded using Entity Graph for optimal performance
+     * Get student with classes
+     */
+    async obtenerAlumnoConClasesRaw(requestParameters: ObtenerAlumnoConClasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumno>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerAlumnoConClases().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/alumnos/{id}/con-clases`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOAlumnoFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a student with their classes loaded using Entity Graph for optimal performance
+     * Get student with classes
+     */
+    async obtenerAlumnoConClases(requestParameters: ObtenerAlumnoConClasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOAlumno> {
+        const response = await this.obtenerAlumnoConClasesRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

@@ -1,18 +1,16 @@
-import type {
-	DTOEstadoInscripcion,
-	DTORespuestaEnrollment,
-	DTOClaseConDetalles
-} from '$lib/generated/api';
+import type { DTORespuestaEnrollment, DTOClaseInscrita } from '$lib/generated/api';
 import { classManagementApi, userOperationsApi, claseApi, alumnoApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
 import { authStore } from '$lib/stores/authStore.svelte';
-import type { DTOAlumno } from '$lib/generated/api';
+import type { DTOAlumno, DTOClase } from '$lib/generated/api';
 
 export class EnrollmentService {
 	/**
 	 * Check if the current student is enrolled in a specific class
 	 */
-	static async checkMyEnrollmentStatus(claseId: number): Promise<DTOEstadoInscripcion> {
+	static async checkMyEnrollmentStatus(
+		claseId: number
+	): Promise<{ isEnrolled: boolean; claseId: number; alumnoId: number }> {
 		try {
 			const userId = authStore.user?.id;
 			if (!userId) {
@@ -36,7 +34,12 @@ export class EnrollmentService {
 	 * Check if a specific student is enrolled in a class (for admins/professors)
 	 * Note: This method has been removed from the API. Use general class information instead.
 	 */
-	static async checkStudentEnrollmentStatus(): Promise<DTOEstadoInscripcion> {
+	static async checkStudentEnrollmentStatus(): Promise<{
+		alumnoId?: number;
+		claseId?: number;
+		isEnrolled?: boolean;
+		fechaInscripcion?: Date;
+	}> {
 		throw new Error(
 			'This method has been removed from the API. Use general class information instead.'
 		);
@@ -46,14 +49,31 @@ export class EnrollmentService {
 	 * Enroll the current student in a class
 	 */
 	static async enrollInClass(claseId: number): Promise<DTORespuestaEnrollment> {
+		const userId = authStore.user?.id;
+		if (!userId) {
+			throw new Error('User ID not available from authentication');
+		}
+
 		try {
-			const userId = authStore.user?.id;
-			if (!userId) {
-				throw new Error('User ID not available from authentication');
+			return await classManagementApi.inscribirAlumnoEnClase({ claseId, studentId: userId });
+		} catch (error: unknown) {
+			// Handle the specific case where student is already enrolled
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			const errorStatus = (error as { status?: number })?.status;
+			if (errorStatus === 400 && errorMessage.includes('already enrolled')) {
+				// Return a success response indicating the student is already enrolled
+				return {
+					success: true,
+					message: 'Ya estás inscrito en esta clase',
+					studentId: userId,
+					classId: claseId,
+					studentName: undefined,
+					className: undefined,
+					operationDate: new Date(),
+					operationType: 'ENROLLMENT'
+				};
 			}
 
-			return await classManagementApi.inscribirAlumnoEnClase({ claseId, studentId: userId });
-		} catch (error) {
 			ErrorHandler.logError(error, 'enrollInClass');
 			throw await ErrorHandler.parseError(error);
 		}
@@ -85,7 +105,24 @@ export class EnrollmentService {
 	): Promise<DTORespuestaEnrollment> {
 		try {
 			return await classManagementApi.inscribirAlumnoEnClase({ claseId, studentId: alumnoId });
-		} catch (error) {
+		} catch (error: unknown) {
+			// Handle the specific case where student is already enrolled
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			const errorStatus = (error as { status?: number })?.status;
+			if (errorStatus === 400 && errorMessage.includes('already enrolled')) {
+				// Return a success response indicating the student is already enrolled
+				return {
+					success: true,
+					message: 'El estudiante ya está inscrito en esta clase',
+					studentId: alumnoId,
+					classId: claseId,
+					studentName: undefined,
+					className: undefined,
+					operationDate: new Date(),
+					operationType: 'ENROLLMENT'
+				};
+			}
+
 			ErrorHandler.logError(error, 'enrollStudentInClass');
 			throw await ErrorHandler.parseError(error);
 		}
@@ -109,7 +146,9 @@ export class EnrollmentService {
 	/**
 	 * Get class details for the current student
 	 */
-	static async getMyClassDetails(claseId: number): Promise<DTOClaseConDetalles> {
+	static async getMyClassDetails(
+		claseId: number
+	): Promise<DTOClase & { alumnosCount?: number; profesoresCount?: number }> {
 		try {
 			// Since /me/ endpoints are removed, use the general class API
 			// and get the current user's ID from auth store
@@ -121,12 +160,12 @@ export class EnrollmentService {
 			// Use the general class API to get class details
 			const clase = await claseApi.obtenerClasePorId({ id: claseId });
 
-			// Convert to the expected format
+			// Return the class details with the expected property names
 			return {
 				...clase,
 				alumnosCount: clase.numeroAlumnos || 0,
 				profesoresCount: clase.numeroProfesores || 0
-			} as DTOClaseConDetalles;
+			};
 		} catch (error) {
 			ErrorHandler.logError(error, 'getMyClassDetails');
 			throw await ErrorHandler.parseError(error);
@@ -137,7 +176,9 @@ export class EnrollmentService {
 	 * Get class details for a specific student (for admins/professors)
 	 * Note: This method has been removed from the API. Use general class information instead.
 	 */
-	static async getStudentClassDetails(): Promise<DTOClaseConDetalles> {
+	static async getStudentClassDetails(): Promise<
+		DTOClase & { alumnosCount?: number; profesoresCount?: number }
+	> {
 		throw new Error(
 			'This method has been removed from the API. Use general class information instead.'
 		);
@@ -208,7 +249,7 @@ export class EnrollmentService {
 	/**
 	 * Get all classes where the current user is enrolled
 	 */
-	static async getMyEnrolledClasses() {
+	static async getMyEnrolledClasses(): Promise<DTOClaseInscrita[]> {
 		try {
 			return await userOperationsApi.obtenerMisClasesInscritas();
 		} catch (error) {
@@ -249,9 +290,15 @@ export class EnrollmentService {
 		claseId: number,
 		currentClase: { titulo?: string; precio?: number }
 	): Promise<{
-		action: 'redirect' | 'unenrolled';
+		action: 'redirect' | 'unenrolled' | 'already_enrolled';
 		redirectUrl?: string;
-		updatedStatus?: DTOEstadoInscripcion;
+		updatedStatus?: {
+			alumnoId?: number;
+			claseId?: number;
+			isEnrolled?: boolean;
+			fechaInscripcion?: Date;
+		};
+		message?: string;
 	}> {
 		try {
 			const userId = authStore.user?.id;
@@ -263,10 +310,12 @@ export class EnrollmentService {
 			const enrollmentStatus = await this.checkMyEnrollmentStatus(claseId);
 
 			if (enrollmentStatus.isEnrolled) {
-				// Students cannot unenroll due to payment requirements
-				throw new Error(
-					'Students cannot unenroll from classes due to payment requirements. Please contact an administrator if you need to be removed from a class.'
-				);
+				// Return already enrolled status instead of throwing error
+				return {
+					action: 'already_enrolled',
+					message:
+						'Ya estás inscrito en esta clase. No puedes desinscribirte debido a los requisitos de pago.'
+				};
 			} else {
 				// Handle enrollment - redirect to payment
 				const redirectUrl = `/payment?classId=${claseId}&amount=${currentClase.precio || 0}&description=${encodeURIComponent(currentClase.titulo || 'Clase')}`;

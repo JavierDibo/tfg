@@ -86,7 +86,7 @@
 				statement: form.statement.trim(),
 				startDate: new Date(form.startDate),
 				endDate: new Date(form.endDate),
-				classId: form.classId.trim()
+				classId: parseInt(form.classId.trim())
 			};
 
 			await EjercicioService.updateEjercicio(ejercicioId, updateData);

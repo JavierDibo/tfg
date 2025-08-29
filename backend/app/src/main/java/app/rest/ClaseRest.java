@@ -36,7 +36,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
+import app.util.SecurityUtils;
 
 /**
  * REST controller for basic CRUD operations of classes (Courses and Workshops)
@@ -50,6 +52,7 @@ import java.util.List;
 public class ClaseRest extends BaseRestController {
 
     private final ServicioClase servicioClase;
+    private final SecurityUtils securityUtils;
 
     // ===== READ OPERATIONS =====
 
@@ -126,7 +129,8 @@ public class ClaseRest extends BaseRestController {
         sortDirection = validateSortDirection(sortDirection);
         
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
-            titulo, descripcion, presencialidad, dificultad, null, null, null, null, page, size, sortBy, sortDirection);
+            q, titulo, descripcion, presencialidad, dificultad, 
+            null, null, null, null, page, size, sortBy, sortDirection);
         
         DTORespuestaPaginada<DTOClase> respuesta = servicioClase.buscarClasesSegunRol(parametros);
         
@@ -376,5 +380,108 @@ public class ClaseRest extends BaseRestController {
         
         servicioClase.borrarClasePorId(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Gets paginated classes excluding those where the authenticated student is enrolled
+     * For students: shows only classes they can enroll in
+     * For admins/professors: shows all classes (same as regular endpoint)
+     */
+    @GetMapping("/disponibles")
+    @Operation(
+        summary = "Get available classes for enrollment",
+        description = "Gets a paginated list of classes excluding those where the student is already enrolled"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Paginated list of available classes retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTORespuestaPaginada.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination parameters"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view these classes"
+        )
+    })
+    public ResponseEntity<DTORespuestaPaginada<DTOClase>> obtenerClasesDisponibles(
+            @Parameter(description = "General search term across title and description")
+            @RequestParam(required = false) String q,
+            
+            @Parameter(description = "Filter by title")
+            @RequestParam(required = false) String titulo,
+            
+            @Parameter(description = "Filter by description")
+            @RequestParam(required = false) String descripcion,
+            
+            @Parameter(description = "Filter by difficulty level")
+            @RequestParam(required = false) EDificultad dificultad,
+            
+            @Parameter(description = "Filter by modality (PRESENCIAL, ONLINE, HIBRIDO)")
+            @RequestParam(required = false) EPresencialidad presencialidad,
+            
+            @Parameter(description = "Filter by minimum price")
+            @RequestParam(required = false) @Min(value = 0, message = "Minimum price must be 0 or greater") Double precioMinimo,
+            
+            @Parameter(description = "Filter by maximum price")
+            @RequestParam(required = false) @Min(value = 0, message = "Maximum price must be 0 or greater") Double precioMaximo,
+            
+            @Parameter(description = "Page number (0-based)")
+            @RequestParam(defaultValue = "0") @Min(value = 0, message = "Page number must be 0 or greater") Integer page,
+            
+            @Parameter(description = "Page size")
+            @RequestParam(defaultValue = "20") @Min(value = 1, message = "Page size must be at least 1") @Max(value = 100, message = "Page size cannot exceed 100") Integer size,
+            
+            @Parameter(description = "Sort field")
+            @RequestParam(defaultValue = "id") @Pattern(regexp = "^(id|titulo|descripcion|precio|nivel|presencialidad)$", message = "Invalid sort field") String sortBy,
+            
+            @Parameter(description = "Sort direction")
+            @RequestParam(defaultValue = "ASC") @Pattern(regexp = "^(ASC|DESC)$", message = "Sort direction must be ASC or DESC") String sortDirection) {
+        
+        // Validate and standardize parameters using BaseRestController
+        page = validatePageNumber(page);
+        size = validatePageSize(size);
+        sortBy = validateSortBy(sortBy, "id", "titulo", "descripcion", "dificultad", "presencialidad", "profesorId", "cursoId", "tallerId");
+        sortDirection = validateSortDirection(sortDirection);
+        
+        DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
+            q, titulo, descripcion, presencialidad, dificultad, 
+            precioMinimo != null ? BigDecimal.valueOf(precioMinimo) : null, 
+            precioMaximo != null ? BigDecimal.valueOf(precioMaximo) : null, 
+            null, null, page, size, sortBy, sortDirection
+        );
+        
+        DTORespuestaPaginada<DTOClase> respuesta = servicioClase.buscarClasesExcluyendoInscritas(parametros);
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
+    /**
+     * Debug endpoint to test role detection and show what's happening
+     */
+    @GetMapping("/debug-user-info")
+    @Operation(
+        summary = "Debug user info",
+        description = "Debug endpoint to check current user role and permissions"
+    )
+    public ResponseEntity<String> debugUserInfo() {
+        try {
+            String userInfo = String.format(
+                "User ID: %d, Role: %s, Is Admin: %b, Is Professor: %b, Is Student: %b",
+                securityUtils.getCurrentUserId(),
+                securityUtils.getCurrentUserRole(),
+                securityUtils.isAdmin(),
+                securityUtils.isProfessor(),
+                securityUtils.isStudent()
+            );
+            return ResponseEntity.ok(userInfo);
+        } catch (Exception e) {
+            return ResponseEntity.ok("Error getting user info: " + e.getMessage());
+        }
     }
 }

@@ -78,13 +78,13 @@ export interface DTOEjercicio {
      * @type {number}
      * @memberof DTOEjercicio
      */
-    porcentajeEntregasCalificadas?: number;
+    horasRestantes?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOEjercicio
      */
-    horasRestantes?: number;
+    porcentajeEntregasCalificadas?: number;
 }
 
 /**
@@ -113,8 +113,8 @@ export function DTOEjercicioFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'numeroEntregas': json['numeroEntregas'] == null ? undefined : json['numeroEntregas'],
         'entregasCalificadas': json['entregasCalificadas'] == null ? undefined : json['entregasCalificadas'],
         'estado': json['estado'] == null ? undefined : json['estado'],
-        'porcentajeEntregasCalificadas': json['porcentajeEntregasCalificadas'] == null ? undefined : json['porcentajeEntregasCalificadas'],
         'horasRestantes': json['horasRestantes'] == null ? undefined : json['horasRestantes'],
+        'porcentajeEntregasCalificadas': json['porcentajeEntregasCalificadas'] == null ? undefined : json['porcentajeEntregasCalificadas'],
     };
 }
 
@@ -138,8 +138,8 @@ export function DTOEjercicioToJSONTyped(value?: DTOEjercicio | null, ignoreDiscr
         'numeroEntregas': value['numeroEntregas'],
         'entregasCalificadas': value['entregasCalificadas'],
         'estado': value['estado'],
-        'porcentajeEntregasCalificadas': value['porcentajeEntregasCalificadas'],
         'horasRestantes': value['horasRestantes'],
+        'porcentajeEntregasCalificadas': value['porcentajeEntregasCalificadas'],
     };
 }
 

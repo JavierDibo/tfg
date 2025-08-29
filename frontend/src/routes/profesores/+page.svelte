@@ -177,12 +177,13 @@
 
 		try {
 			loading = true;
-			const updatedProfesor = await ProfesorService.toggleAccountStatus(
-				profesor.id!,
-				!profesor.enabled
-			);
-			successMessage = `Cuenta ${updatedProfesor.enabled ? 'habilitada' : 'deshabilitada'}`;
-			loadProfesores();
+			const result = await ProfesorService.handleStatusChange(profesor.id!, !profesor.enabled);
+			if (result.success && result.updatedProfesor) {
+				successMessage = `Cuenta ${result.updatedProfesor.enabled ? 'habilitada' : 'deshabilitada'}`;
+				loadProfesores();
+			} else {
+				error = result.message;
+			}
 		} catch (err) {
 			error = `Error al cambiar estado de cuenta: ${err}`;
 		} finally {

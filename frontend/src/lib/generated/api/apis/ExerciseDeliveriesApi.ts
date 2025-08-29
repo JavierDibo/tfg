@@ -47,6 +47,14 @@ export interface EliminarEntregaRequest {
     id: number;
 }
 
+export interface ObtenerEntregaConAlumnoRequest {
+    id: number;
+}
+
+export interface ObtenerEntregaConEjercicioRequest {
+    id: number;
+}
+
 export interface ObtenerEntregaPorIdRequest {
     id: number;
 }
@@ -199,6 +207,84 @@ export class ExerciseDeliveriesApi extends runtime.BaseAPI {
      */
     async eliminarEntrega(requestParameters: EliminarEntregaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.eliminarEntregaRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Gets a delivery with its student loaded using Entity Graph for optimal performance
+     * Get delivery with student
+     */
+    async obtenerEntregaConAlumnoRaw(requestParameters: ObtenerEntregaConAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntregaEjercicio>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerEntregaConAlumno().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/entregas/{id}/con-alumno`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntregaEjercicioFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a delivery with its student loaded using Entity Graph for optimal performance
+     * Get delivery with student
+     */
+    async obtenerEntregaConAlumno(requestParameters: ObtenerEntregaConAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntregaEjercicio> {
+        const response = await this.obtenerEntregaConAlumnoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets a delivery with its exercise loaded using Entity Graph for optimal performance
+     * Get delivery with exercise
+     */
+    async obtenerEntregaConEjercicioRaw(requestParameters: ObtenerEntregaConEjercicioRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntregaEjercicio>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerEntregaConEjercicio().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/entregas/{id}/con-ejercicio`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntregaEjercicioFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a delivery with its exercise loaded using Entity Graph for optimal performance
+     * Get delivery with exercise
+     */
+    async obtenerEntregaConEjercicio(requestParameters: ObtenerEntregaConEjercicioRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntregaEjercicio> {
+        const response = await this.obtenerEntregaConEjercicioRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

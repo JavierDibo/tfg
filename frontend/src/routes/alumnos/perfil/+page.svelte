@@ -153,7 +153,25 @@
 			<!-- Enrolled Classes -->
 			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 				<div class="mb-4 flex items-center justify-between">
-					<h2 class="text-xl font-semibold text-gray-900">Mis Clases Inscritas</h2>
+					<div>
+						<h2 class="text-xl font-semibold text-gray-900">Mis Clases Inscritas</h2>
+						<div class="mt-1">
+							<a
+								href="/clases"
+								class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
+							>
+								Ver clases disponibles para inscripción
+								<svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9 5l7 7-7 7"
+									/>
+								</svg>
+							</a>
+						</div>
+					</div>
 					<span class="text-sm text-gray-500">{enrolledClasses.length} clases</span>
 				</div>
 

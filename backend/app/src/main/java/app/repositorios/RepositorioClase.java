@@ -18,6 +18,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 /**
  * Repositorio para la entidad Clase
  * Proporciona operaciones de acceso a datos para clases (Talleres y Cursos)
+ * Usa Spring Data JPA method naming conventions para evitar problemas de bytea
  */
 @Repository
 public interface RepositorioClase extends JpaRepository<Clase, Long> {
@@ -27,40 +28,60 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @param title Título de la clase
      * @return Optional<Clase>
      */
-    @Query("SELECT c FROM Clase c WHERE c.title = :title")
-    Optional<Clase> findByTitle(@Param("title") String title);
+    Optional<Clase> findByTitle(String title);
     
     /**
-     * Busca clases por título (contiene, ignorando mayúsculas)
+     * Busca clases por título (contiene, case-sensitive)
      * @param title Título a buscar
      * @return Lista de clases
      */
-    @Query("SELECT c FROM Clase c WHERE UPPER(c.title) LIKE UPPER(CONCAT('%', :title, '%'))")
-    List<Clase> findByTitleContainingIgnoreCase(@Param("title") String title);
+    List<Clase> findByTitleContaining(String title);
     
     /**
-     * Busca clases por descripción (contiene, ignorando mayúsculas)
+     * Busca clases por título (contiene, case-sensitive) con paginación
+     * @param title Título a buscar
+     * @param pageable Parámetros de paginación
+     * @return Página de clases
+     */
+    Page<Clase> findByTitleContaining(String title, Pageable pageable);
+    
+    /**
+     * Busca clases por descripción (contiene, case-sensitive)
      * @param description Descripción a buscar
      * @return Lista de clases
      */
-    @Query("SELECT c FROM Clase c WHERE UPPER(c.description) LIKE UPPER(CONCAT('%', :description, '%'))")
-    List<Clase> findByDescriptionContainingIgnoreCase(@Param("description") String description);
+    List<Clase> findByDescriptionContaining(String description);
+    
+    /**
+     * Busca clases por descripción (contiene, case-sensitive) con paginación
+     * @param description Descripción a buscar
+     * @param pageable Parámetros de paginación
+     * @return Página de clases
+     */
+    Page<Clase> findByDescriptionContaining(String description, Pageable pageable);
+    
+    /**
+     * Busca clases por título o descripción (contiene, case-sensitive) con paginación
+     * @param title Título a buscar
+     * @param description Descripción a buscar
+     * @param pageable Parámetros de paginación
+     * @return Página de clases
+     */
+    Page<Clase> findByTitleContainingOrDescriptionContaining(String title, String description, Pageable pageable);
     
     /**
      * Busca clases por presencialidad
      * @param format Tipo de presencialidad
      * @return Lista de clases
      */
-    @Query("SELECT c FROM Clase c WHERE c.format = :format")
-    List<Clase> findByFormat(@Param("format") EPresencialidad format);
+    List<Clase> findByFormat(EPresencialidad format);
     
     /**
      * Busca clases por nivel
      * @param difficulty Nivel de la clase
      * @return Lista de clases
      */
-    @Query("SELECT c FROM Clase c WHERE c.difficulty = :difficulty")
-    List<Clase> findByDifficulty(@Param("difficulty") EDificultad difficulty);
+    List<Clase> findByDifficulty(EDificultad difficulty);
     
     /**
      * Busca clases por rango de precio
@@ -68,92 +89,39 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @param precioMax Precio máximo
      * @return Lista de clases
      */
-    @Query("SELECT c FROM Clase c WHERE c.price BETWEEN :precioMin AND :precioMax")
-    List<Clase> findByPriceBetween(@Param("precioMin") BigDecimal precioMin, @Param("precioMax") BigDecimal precioMax);
+    List<Clase> findByPriceBetween(BigDecimal precioMin, BigDecimal precioMax);
     
     /**
      * Busca clases con precio menor o igual al especificado
      * @param precio Precio máximo
      * @return Lista de clases
      */
-    @Query("SELECT c FROM Clase c WHERE c.price <= :precio")
-    List<Clase> findByPriceLessThanEqual(@Param("precio") BigDecimal precio);
+    List<Clase> findByPriceLessThanEqual(BigDecimal precio);
+    
+    /**
+     * Busca clases con precio mayor o igual al especificado
+     * @param precio Precio mínimo
+     * @return Lista de clases
+     */
+    List<Clase> findByPriceGreaterThanEqual(BigDecimal precio);
     
     /**
      * Obtiene todas las clases ordenadas por ID
      * @return Lista de clases ordenada
      */
-    @Query("SELECT c FROM Clase c ORDER BY c.id")
-    List<Clase> findAllOrderedById();
+    List<Clase> findAllByOrderByIdAsc();
     
     /**
      * Obtiene todas las clases ordenadas por precio ascendente
      * @return Lista de clases ordenada por precio
      */
-    @Query("SELECT c FROM Clase c ORDER BY c.price ASC")
-    List<Clase> findAllOrderedByPrecioAsc();
+    List<Clase> findAllByOrderByPriceAsc();
     
     /**
      * Obtiene todas las clases ordenadas por título
      * @return Lista de clases ordenada por título
      */
-    @Query("SELECT c FROM Clase c ORDER BY c.title ASC")
-    List<Clase> findAllOrderedByTitulo();
-    
-    /**
-     * General search across multiple fields using the "q" parameter
-     * Searches in title and description fields
-     * @param searchTerm Término de búsqueda
-     * @return Lista de clases
-     */
-    @Query("SELECT c FROM Clase c WHERE " +
-           "UPPER(c.title) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
-           "UPPER(c.description) LIKE UPPER(CONCAT('%', :searchTerm, '%'))")
-    List<Clase> findByGeneralSearch(@Param("searchTerm") String searchTerm);
-    
-    /**
-     * General search with pagination
-     * @param searchTerm Término de búsqueda
-     * @param pageable Configuración de paginación
-     * @return Página de clases
-     */
-    @Query("SELECT c FROM Clase c WHERE " +
-           "UPPER(c.title) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
-           "UPPER(c.description) LIKE UPPER(CONCAT('%', :searchTerm, '%'))")
-    Page<Clase> findByGeneralSearch(@Param("searchTerm") String searchTerm, Pageable pageable);
-    
-    /**
-     * Combined search with general term and specific filters
-     * @param searchTerm Término de búsqueda general
-     * @param title Filtro por título
-     * @param description Filtro por descripción
-     * @param format Filtro por formato
-     * @param difficulty Filtro por dificultad
-     * @param precioMinimo Filtro por precio mínimo
-     * @param precioMaximo Filtro por precio máximo
-     * @param pageable Configuración de paginación
-     * @return Página de clases
-     */
-    @Query("SELECT c FROM Clase c WHERE " +
-           "(:searchTerm IS NULL OR (" +
-           "UPPER(c.title) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
-           "UPPER(c.description) LIKE UPPER(CONCAT('%', :searchTerm, '%')))) AND " +
-           "(:title IS NULL OR UPPER(c.title) LIKE UPPER(CONCAT('%', :title, '%'))) AND " +
-           "(:description IS NULL OR UPPER(c.description) LIKE UPPER(CONCAT('%', :description, '%'))) AND " +
-           "(:format IS NULL OR c.format = :format) AND " +
-           "(:difficulty IS NULL OR c.difficulty = :difficulty) AND " +
-           "(:precioMinimo IS NULL OR c.price >= :precioMinimo) AND " +
-           "(:precioMaximo IS NULL OR c.price <= :precioMaximo)")
-    Page<Clase> findByGeneralAndSpecificFilters(
-        @Param("searchTerm") String searchTerm,
-        @Param("title") String title,
-        @Param("description") String description,
-        @Param("format") EPresencialidad format,
-        @Param("difficulty") EDificultad difficulty,
-        @Param("precioMinimo") BigDecimal precioMinimo,
-        @Param("precioMaximo") BigDecimal precioMaximo,
-        Pageable pageable
-    );
+    List<Clase> findAllByOrderByTitleAsc();
     
     /**
      * Busca clases que tienen un alumno específico inscrito

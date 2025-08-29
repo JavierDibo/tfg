@@ -122,13 +122,13 @@ export interface DTOTaller {
      * @type {number}
      * @memberof DTOTaller
      */
-    numeroAlumnos?: number;
+    numeroProfesores?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOTaller
      */
-    numeroProfesores?: number;
+    numeroAlumnos?: number;
 }
 
 
@@ -137,7 +137,8 @@ export interface DTOTaller {
  */
 export const DTOTallerPresencialidadEnum = {
     Online: 'ONLINE',
-    Presencial: 'PRESENCIAL'
+    Presencial: 'PRESENCIAL',
+    Hibrido: 'HIBRIDO'
 } as const;
 export type DTOTallerPresencialidadEnum = typeof DTOTallerPresencialidadEnum[keyof typeof DTOTallerPresencialidadEnum];
 
@@ -184,8 +185,8 @@ export function DTOTallerFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'fechaRealizacion': json['fechaRealizacion'] == null ? undefined : (new Date(json['fechaRealizacion'])),
         'horaComienzo': json['horaComienzo'] == null ? undefined : json['horaComienzo'],
         'horaFinalizacion': json['horaFinalizacion'] == null ? undefined : json['horaFinalizacion'],
-        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
         'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
+        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
     };
 }
 
@@ -215,8 +216,8 @@ export function DTOTallerToJSONTyped(value?: DTOTaller | null, ignoreDiscriminat
         'fechaRealizacion': value['fechaRealizacion'] == null ? undefined : ((value['fechaRealizacion']).toISOString().substring(0,10)),
         'horaComienzo': value['horaComienzo'],
         'horaFinalizacion': value['horaFinalizacion'],
-        'numeroAlumnos': value['numeroAlumnos'],
         'numeroProfesores': value['numeroProfesores'],
+        'numeroAlumnos': value['numeroAlumnos'],
     };
 }
 

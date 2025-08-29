@@ -35,10 +35,10 @@
 		fieldErrors = {};
 
 		// Client-side validation using the service
-		const validationErrors = ProfesorService.validateRegistrationData(formData);
+		const validationResult = ProfesorService.validateRegistrationData(formData);
 
-		if (validationErrors.length > 0) {
-			errors = validationErrors;
+		if (!validationResult.isValid) {
+			errors = validationResult.errors;
 			return false;
 		}
 

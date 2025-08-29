@@ -83,10 +83,10 @@ export interface DTOPeticionCrearTaller {
     horaComienzo: string;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<number>}
      * @memberof DTOPeticionCrearTaller
      */
-    profesoresId?: Array<string>;
+    profesoresId?: Array<number>;
     /**
      * 
      * @type {Array<Material>}
@@ -101,7 +101,8 @@ export interface DTOPeticionCrearTaller {
  */
 export const DTOPeticionCrearTallerPresencialidadEnum = {
     Online: 'ONLINE',
-    Presencial: 'PRESENCIAL'
+    Presencial: 'PRESENCIAL',
+    Hibrido: 'HIBRIDO'
 } as const;
 export type DTOPeticionCrearTallerPresencialidadEnum = typeof DTOPeticionCrearTallerPresencialidadEnum[keyof typeof DTOPeticionCrearTallerPresencialidadEnum];
 

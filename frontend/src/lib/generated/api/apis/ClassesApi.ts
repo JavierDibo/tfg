@@ -52,6 +52,10 @@ export interface EliminarClaseRequest {
     id: number;
 }
 
+export interface ObtenerClaseConDetallesRequest {
+    id: number;
+}
+
 export interface ObtenerClasePorIdRequest {
     id: number;
 }
@@ -65,6 +69,20 @@ export interface ObtenerClasesRequest {
     profesorId?: string;
     cursoId?: string;
     tallerId?: string;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
+}
+
+export interface ObtenerClasesDisponiblesRequest {
+    q?: string;
+    titulo?: string;
+    descripcion?: string;
+    dificultad?: ObtenerClasesDisponiblesDificultadEnum;
+    presencialidad?: ObtenerClasesDisponiblesPresencialidadEnum;
+    precioMinimo?: number;
+    precioMaximo?: number;
     page?: number;
     size?: number;
     sortBy?: string;
@@ -197,6 +215,45 @@ export class ClassesApi extends runtime.BaseAPI {
     }
 
     /**
+     * Gets a class with all its relationships loaded using Entity Graph for optimal performance
+     * Get class with all details
+     */
+    async obtenerClaseConDetallesRaw(requestParameters: ObtenerClaseConDetallesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling obtenerClaseConDetalles().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/{id}/detalles`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a class with all its relationships loaded using Entity Graph for optimal performance
+     * Get class with all details
+     */
+    async obtenerClaseConDetalles(requestParameters: ObtenerClaseConDetallesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
+        const response = await this.obtenerClaseConDetallesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Gets a specific class by its ID
      * Get class by ID
      */
@@ -314,6 +371,143 @@ export class ClassesApi extends runtime.BaseAPI {
         return await response.value();
     }
 
+    /**
+     * Gets a paginated list of classes excluding those where the student is already enrolled
+     * Get available classes for enrollment
+     */
+    async obtenerClasesDisponiblesRaw(requestParameters: ObtenerClasesDisponiblesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginada>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        if (requestParameters['titulo'] != null) {
+            queryParameters['titulo'] = requestParameters['titulo'];
+        }
+
+        if (requestParameters['descripcion'] != null) {
+            queryParameters['descripcion'] = requestParameters['descripcion'];
+        }
+
+        if (requestParameters['dificultad'] != null) {
+            queryParameters['dificultad'] = requestParameters['dificultad'];
+        }
+
+        if (requestParameters['presencialidad'] != null) {
+            queryParameters['presencialidad'] = requestParameters['presencialidad'];
+        }
+
+        if (requestParameters['precioMinimo'] != null) {
+            queryParameters['precioMinimo'] = requestParameters['precioMinimo'];
+        }
+
+        if (requestParameters['precioMaximo'] != null) {
+            queryParameters['precioMaximo'] = requestParameters['precioMaximo'];
+        }
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/disponibles`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a paginated list of classes excluding those where the student is already enrolled
+     * Get available classes for enrollment
+     */
+    async obtenerClasesDisponibles(requestParameters: ObtenerClasesDisponiblesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
+        const response = await this.obtenerClasesDisponiblesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets classes optimized for dashboard display with students and teachers loaded using Entity Graph
+     * Get classes for dashboard
+     */
+    async obtenerClasesParaDashboardRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/dashboard`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets classes optimized for dashboard display with students and teachers loaded using Entity Graph
+     * Get classes for dashboard
+     */
+    async obtenerClasesParaDashboard(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
+        const response = await this.obtenerClasesParaDashboardRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets classes optimized for exercise management with exercises loaded using Entity Graph
+     * Get classes for exercise management
+     */
+    async obtenerClasesParaGestionEjerciciosRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/ejercicios`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets classes optimized for exercise management with exercises loaded using Entity Graph
+     * Get classes for exercise management
+     */
+    async obtenerClasesParaGestionEjercicios(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
+        const response = await this.obtenerClasesParaGestionEjerciciosRaw(initOverrides);
+        return await response.value();
+    }
+
 }
 
 /**
@@ -330,6 +524,25 @@ export type ObtenerClasesDificultadEnum = typeof ObtenerClasesDificultadEnum[key
  */
 export const ObtenerClasesPresencialidadEnum = {
     Online: 'ONLINE',
-    Presencial: 'PRESENCIAL'
+    Presencial: 'PRESENCIAL',
+    Hibrido: 'HIBRIDO'
 } as const;
 export type ObtenerClasesPresencialidadEnum = typeof ObtenerClasesPresencialidadEnum[keyof typeof ObtenerClasesPresencialidadEnum];
+/**
+ * @export
+ */
+export const ObtenerClasesDisponiblesDificultadEnum = {
+    Principiante: 'PRINCIPIANTE',
+    Intermedio: 'INTERMEDIO',
+    Avanzado: 'AVANZADO'
+} as const;
+export type ObtenerClasesDisponiblesDificultadEnum = typeof ObtenerClasesDisponiblesDificultadEnum[keyof typeof ObtenerClasesDisponiblesDificultadEnum];
+/**
+ * @export
+ */
+export const ObtenerClasesDisponiblesPresencialidadEnum = {
+    Online: 'ONLINE',
+    Presencial: 'PRESENCIAL',
+    Hibrido: 'HIBRIDO'
+} as const;
+export type ObtenerClasesDisponiblesPresencialidadEnum = typeof ObtenerClasesDisponiblesPresencialidadEnum[keyof typeof ObtenerClasesDisponiblesPresencialidadEnum];

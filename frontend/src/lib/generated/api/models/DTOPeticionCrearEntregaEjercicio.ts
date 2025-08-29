@@ -21,16 +21,16 @@ import { mapValues } from '../runtime';
 export interface DTOPeticionCrearEntregaEjercicio {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOPeticionCrearEntregaEjercicio
      */
-    alumnoEntreganteId: string;
+    alumnoId: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOPeticionCrearEntregaEjercicio
      */
-    ejercicioId: string;
+    ejercicioId: number;
     /**
      * 
      * @type {Array<string>}
@@ -49,7 +49,7 @@ export interface DTOPeticionCrearEntregaEjercicio {
  * Check if a given object implements the DTOPeticionCrearEntregaEjercicio interface.
  */
 export function instanceOfDTOPeticionCrearEntregaEjercicio(value: object): value is DTOPeticionCrearEntregaEjercicio {
-    if (!('alumnoEntreganteId' in value) || value['alumnoEntreganteId'] === undefined) return false;
+    if (!('alumnoId' in value) || value['alumnoId'] === undefined) return false;
     if (!('ejercicioId' in value) || value['ejercicioId'] === undefined) return false;
     return true;
 }
@@ -64,7 +64,7 @@ export function DTOPeticionCrearEntregaEjercicioFromJSONTyped(json: any, ignoreD
     }
     return {
         
-        'alumnoEntreganteId': json['alumnoEntreganteId'],
+        'alumnoId': json['alumnoId'],
         'ejercicioId': json['ejercicioId'],
         'archivosEntregados': json['archivosEntregados'] == null ? undefined : json['archivosEntregados'],
         'numeroArchivos': json['numeroArchivos'] == null ? undefined : json['numeroArchivos'],
@@ -82,7 +82,7 @@ export function DTOPeticionCrearEntregaEjercicioToJSONTyped(value?: DTOPeticionC
 
     return {
         
-        'alumnoEntreganteId': value['alumnoEntreganteId'],
+        'alumnoId': value['alumnoId'],
         'ejercicioId': value['ejercicioId'],
         'archivosEntregados': value['archivosEntregados'],
         'numeroArchivos': value['numeroArchivos'],

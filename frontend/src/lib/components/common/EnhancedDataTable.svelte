@@ -267,11 +267,17 @@
 										<div class="flex space-x-2">
 											{#each actions as action (action.label)}
 												{#if !action.condition || action.condition(entity)}
+													{@const isDisabled =
+														typeof action.disabled === 'function'
+															? action.disabled(entity)
+															: action.disabled}
 													<button
 														onclick={(e) => {
 															e.preventDefault();
 															e.currentTarget.blur();
-															triggerAction(action, entity);
+															if (!isDisabled) {
+																triggerAction(action, entity);
+															}
 														}}
 														class={tableClasses.actionButton(
 															typeof action.color === 'function'
@@ -281,6 +287,9 @@
 																? action.hoverColor(entity)
 																: action.hoverColor
 														)}
+														class:opacity-50={isDisabled}
+														class:cursor-not-allowed={isDisabled}
+														disabled={isDisabled}
 														title={action.dynamicLabel ? action.dynamicLabel(entity) : action.label}
 													>
 														{action.dynamicLabel ? action.dynamicLabel(entity) : action.label}
