@@ -73,7 +73,7 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @param nombre Nombre a buscar
      * @return Lista de alumnos
      */
-    @Query("SELECT a FROM Alumno a WHERE UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%')) ORDER BY a.id")
+    @Query("SELECT a FROM Alumno a WHERE LOWER(a.firstName) LIKE LOWER(CONCAT('%', :nombre, '%')) ORDER BY a.id")
     List<Alumno> findByNombreContainingIgnoreCase(@Param("nombre") String nombre);
     
     /**
@@ -81,7 +81,7 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @param apellidos Apellidos a buscar
      * @return Lista de alumnos
      */
-    @Query("SELECT a FROM Alumno a WHERE UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%')) ORDER BY a.id")
+    @Query("SELECT a FROM Alumno a WHERE LOWER(a.lastName) LIKE LOWER(CONCAT('%', :apellidos, '%')) ORDER BY a.id")
     List<Alumno> findByApellidosContainingIgnoreCase(@Param("apellidos") String apellidos);
     
     /**
@@ -111,8 +111,8 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @return Página de alumnos
      */
     @Query("SELECT a FROM Alumno a WHERE " +
-           "(UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
-           "(UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%')) OR :apellidos IS NULL) AND " +
+           "(LOWER(a.firstName) LIKE LOWER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
+           "(LOWER(a.lastName) LIKE LOWER(CONCAT('%', :apellidos, '%')) OR :apellidos IS NULL) AND " +
            "(LOWER(a.dni) LIKE LOWER(CONCAT('%', :dni, '%')) OR :dni IS NULL) AND " +
            "(LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%')) OR :email IS NULL) AND " +
            "(a.enrolled = :matriculado OR :matriculado IS NULL)")
@@ -142,8 +142,8 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @return Página de alumnos
      */
     @Query("SELECT a FROM Alumno a WHERE " +
-           "UPPER(a.firstName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
-           "UPPER(a.lastName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(a.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(a.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(a.dni) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(a.email) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     Page<Alumno> findByGeneralSearch(@Param("searchTerm") String searchTerm, Pageable pageable);
@@ -160,12 +160,12 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @return Página de alumnos
      */
     @Query("SELECT a FROM Alumno a WHERE " +
-           "(UPPER(a.firstName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
-           "UPPER(a.lastName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "(LOWER(a.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(a.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(a.dni) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(a.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR :searchTerm IS NULL) AND " +
-           "(UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
-           "(UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%')) OR :apellidos IS NULL) AND " +
+           "(LOWER(a.firstName) LIKE LOWER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
+           "(LOWER(a.lastName) LIKE LOWER(CONCAT('%', :apellidos, '%')) OR :apellidos IS NULL) AND " +
            "(LOWER(a.dni) LIKE LOWER(CONCAT('%', :dni, '%')) OR :dni IS NULL) AND " +
            "(LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%')) OR :email IS NULL) AND " +
            "(a.enrolled = :matriculado OR :matriculado IS NULL)")
@@ -263,7 +263,7 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @return Lista de alumnos con clases cargadas
      */
     @EntityGraph(value = "Alumno.withClasses")
-    @Query("SELECT a FROM Alumno a WHERE UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))")
+    @Query("SELECT a FROM Alumno a WHERE LOWER(a.firstName) LIKE LOWER(CONCAT('%', :nombre, '%'))")
     List<Alumno> findByNombreContainingIgnoreCaseWithClasses(@Param("nombre") String nombre);
 
     /**
@@ -272,7 +272,7 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @return Lista de alumnos con clases cargadas
      */
     @EntityGraph(value = "Alumno.withClasses")
-    @Query("SELECT a FROM Alumno a WHERE UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))")
+    @Query("SELECT a FROM Alumno a WHERE LOWER(a.lastName) LIKE LOWER(CONCAT('%', :apellidos, '%'))")
     List<Alumno> findByApellidosContainingIgnoreCaseWithClasses(@Param("apellidos") String apellidos);
 
     /**

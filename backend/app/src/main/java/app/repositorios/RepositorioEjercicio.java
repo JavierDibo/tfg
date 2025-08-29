@@ -315,10 +315,10 @@ public interface RepositorioEjercicio extends JpaRepository<Ejercicio, Long> {
      * @return Página de ejercicios
      */
     @Query("SELECT e FROM Ejercicio e WHERE " +
-           "(UPPER(e.name) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
-           "UPPER(e.statement) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR :searchTerm IS NULL) AND " +
-           "(UPPER(e.name) LIKE UPPER(CONCAT('%', :name, '%')) OR :name IS NULL) AND " +
-           "(UPPER(e.statement) LIKE UPPER(CONCAT('%', :statement, '%')) OR :statement IS NULL) AND " +
+           "(LOWER(e.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(e.statement) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR :searchTerm IS NULL) AND " +
+           "(LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%')) OR :name IS NULL) AND " +
+           "(LOWER(e.statement) LIKE LOWER(CONCAT('%', :statement, '%')) OR :statement IS NULL) AND " +
            "(:classId IS NULL OR e.clase.id = :classId) AND " +
            "(:status IS NULL OR " +
            "(:status = 'en_plazo' AND e.startDate <= :currentTime AND e.endDate >= :currentTime) OR " +

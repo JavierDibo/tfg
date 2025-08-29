@@ -7,12 +7,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("Tests para DTOActualizacionAlumno")
-class DTOActualizacionAlumnoTest {
+class DTOActualizarAlumnoTest {
 
     @Test
     @DisplayName("Constructor debe crear DTO correctamente con todos los campos")
     void testConstructorCompleto() {
-        DTOActualizacionAlumno dto = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto = new DTOActualizarAlumno(
             "Juan",
             "Pérez García",
             "12345678Z",
@@ -34,7 +34,7 @@ class DTOActualizacionAlumnoTest {
     @Test
     @DisplayName("Constructor debe crear DTO con campos null")
     void testConstructorConCamposNull() {
-        DTOActualizacionAlumno dto = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto = new DTOActualizarAlumno(
             null,
             null,
             null,
@@ -56,7 +56,7 @@ class DTOActualizacionAlumnoTest {
     @Test
     @DisplayName("Constructor debe crear DTO con algunos campos null")
     void testConstructorConAlgunosCamposNull() {
-        DTOActualizacionAlumno dto = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto = new DTOActualizarAlumno(
             "Juan",
             null,
             "12345678Z",
@@ -78,7 +78,7 @@ class DTOActualizacionAlumnoTest {
     @Test
     @DisplayName("Record debe ser inmutable")
     void testInmutabilidad() {
-        DTOActualizacionAlumno dto = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto = new DTOActualizarAlumno(
             "Juan",
             "Pérez García",
             "12345678Z",
@@ -98,7 +98,7 @@ class DTOActualizacionAlumnoTest {
     @Test
     @DisplayName("Equals debe funcionar correctamente")
     void testEquals() {
-        DTOActualizacionAlumno dto1 = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto1 = new DTOActualizarAlumno(
             "Juan",
             "Pérez García",
             "12345678Z",
@@ -108,7 +108,7 @@ class DTOActualizacionAlumnoTest {
             true
         );
 
-        DTOActualizacionAlumno dto2 = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto2 = new DTOActualizarAlumno(
             "Juan",
             "Pérez García",
             "12345678Z",
@@ -125,7 +125,7 @@ class DTOActualizacionAlumnoTest {
     @Test
     @DisplayName("Equals debe funcionar con campos null")
     void testEqualsConCamposNull() {
-        DTOActualizacionAlumno dto1 = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto1 = new DTOActualizarAlumno(
             null,
             null,
             null,
@@ -135,7 +135,7 @@ class DTOActualizacionAlumnoTest {
             null
         );
 
-        DTOActualizacionAlumno dto2 = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto2 = new DTOActualizarAlumno(
             null,
             null,
             null,
@@ -152,7 +152,7 @@ class DTOActualizacionAlumnoTest {
     @Test
     @DisplayName("ToString debe contener información relevante")
     void testToString() {
-        DTOActualizacionAlumno dto = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto = new DTOActualizarAlumno(
             "Juan",
             "Pérez García",
             "12345678Z",
@@ -173,7 +173,7 @@ class DTOActualizacionAlumnoTest {
     @Test
     @DisplayName("ToString debe manejar campos null")
     void testToStringConCamposNull() {
-        DTOActualizacionAlumno dto = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto = new DTOActualizarAlumno(
             null,
             "Pérez García",
             null,
@@ -193,19 +193,19 @@ class DTOActualizacionAlumnoTest {
     @DisplayName("Constructor debe manejar diferentes tipos de teléfono")
     void testDiferentesTiposTelefono() {
         // Teléfono con prefijo
-        DTOActualizacionAlumno dto1 = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto1 = new DTOActualizarAlumno(
             "Juan", "Pérez", "12345678Z", "juan@ejemplo.com", "+34 123 456 789", null, null
         );
         assertEquals("+34 123 456 789", dto1.phoneNumber());
 
         // Teléfono sin prefijo
-        DTOActualizacionAlumno dto2 = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto2 = new DTOActualizarAlumno(
             "María", "García", "87654321Y", "maria@ejemplo.com", "123456789", null, null
         );
         assertEquals("123456789", dto2.phoneNumber());
 
         // Sin teléfono
-        DTOActualizacionAlumno dto3 = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto3 = new DTOActualizarAlumno(
             "Carlos", "López", "11223344X", "carlos@ejemplo.com", null, null, null
         );
         assertNull(dto3.phoneNumber());
@@ -214,7 +214,7 @@ class DTOActualizacionAlumnoTest {
     @Test
     @DisplayName("Constructor debe manejar nombres con acentos")
     void testNombresConAcentos() {
-        DTOActualizacionAlumno dto = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto = new DTOActualizarAlumno(
             "José María",
             "García López",
             "12345678Z",
@@ -231,7 +231,7 @@ class DTOActualizacionAlumnoTest {
     @Test
     @DisplayName("Constructor debe manejar DNI con letra")
     void testDNIConLetra() {
-        DTOActualizacionAlumno dto = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto = new DTOActualizarAlumno(
             "Juan",
             "Pérez",
             "12345678Z",
@@ -247,7 +247,7 @@ class DTOActualizacionAlumnoTest {
     @Test
     @DisplayName("Constructor debe manejar email con dominio")
     void testEmailConDominio() {
-        DTOActualizacionAlumno dto = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto = new DTOActualizarAlumno(
             "Juan",
             "Pérez",
             "12345678Z",
@@ -264,7 +264,7 @@ class DTOActualizacionAlumnoTest {
     @DisplayName("Constructor debe manejar actualización parcial")
     void testActualizacionParcial() {
         // Solo actualizar nombre
-        DTOActualizacionAlumno dto1 = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto1 = new DTOActualizarAlumno(
             "Nuevo Nombre",
             null,
             null,
@@ -282,7 +282,7 @@ class DTOActualizacionAlumnoTest {
         assertNull(dto1.enabled());
 
         // Solo actualizar email
-        DTOActualizacionAlumno dto2 = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dto2 = new DTOActualizarAlumno(
             null,
             null,
             null,

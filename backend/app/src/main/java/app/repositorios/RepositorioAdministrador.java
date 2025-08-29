@@ -48,7 +48,7 @@ public interface RepositorioAdministrador extends JpaRepository<Administrador, L
      * @param nombre Nombre a buscar
      * @return Lista de administradores
      */
-    @Query("SELECT a FROM Administrador a WHERE UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))")
+    @Query("SELECT a FROM Administrador a WHERE LOWER(a.firstName) LIKE LOWER(CONCAT('%', :nombre, '%'))")
     List<Administrador> findByFirstNameContainingIgnoreCase(@Param("nombre") String nombre);
     
     /**
@@ -56,7 +56,7 @@ public interface RepositorioAdministrador extends JpaRepository<Administrador, L
      * @param apellidos Apellidos a buscar
      * @return Lista de administradores
      */
-    @Query("SELECT a FROM Administrador a WHERE UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))")
+    @Query("SELECT a FROM Administrador a WHERE LOWER(a.lastName) LIKE LOWER(CONCAT('%', :apellidos, '%'))")
     List<Administrador> findByLastNameContainingIgnoreCase(@Param("apellidos") String apellidos);
     
     /**

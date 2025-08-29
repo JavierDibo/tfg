@@ -12,13 +12,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import app.dtos.DTOActualizacionAlumno;
+import app.dtos.DTOActualizarAlumno;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOAlumnoPublico;
 import app.dtos.DTOClase;
 import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPerfilAlumno;
-import app.dtos.DTOPeticionRegistroAlumno;
+import app.dtos.DTOCrearAlumno;
 import app.dtos.DTORespuestaAlumnosClase;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Alumno;
@@ -161,7 +161,7 @@ public class ServicioAlumno {
         }
     }
 
-    public DTOAlumno crearAlumno(DTOPeticionRegistroAlumno peticion) {
+    public DTOAlumno crearAlumno(DTOCrearAlumno peticion) {
         // Security check: Only ADMIN can create students
         if (!securityUtils.hasRole("ADMIN")) {
             ExceptionUtils.throwAccessDenied("No tienes permisos para crear alumnos");
@@ -195,7 +195,7 @@ public class ServicioAlumno {
         return new DTOAlumno(alumnoGuardado);
     }
 
-    public DTOAlumno actualizarAlumno(Long id, DTOActualizacionAlumno dtoParcial) {
+    public DTOAlumno actualizarAlumno(Long id, DTOActualizarAlumno dtoParcial) {
         Alumno alumno = repositorioAlumno.findById(id).orElse(null);
         ExceptionUtils.throwIfNotFound(alumno, "Alumno", "ID", id);
 

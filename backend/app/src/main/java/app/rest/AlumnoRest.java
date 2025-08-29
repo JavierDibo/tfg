@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import app.dtos.DTOActualizacionAlumno;
+import app.dtos.DTOActualizarAlumno;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOClaseInscrita;
 import app.dtos.DTOParametrosBusquedaAlumno;
 import app.dtos.DTOPerfilAlumno;
-import app.dtos.DTOPeticionRegistroAlumno;
+import app.dtos.DTOCrearAlumno;
 import app.dtos.DTORespuestaPaginada;
 import app.servicios.ServicioAlumno;
 import app.servicios.ServicioClase;
@@ -175,7 +175,7 @@ public class AlumnoRest extends BaseRestController {
         )
     })
     public ResponseEntity<DTOAlumno> crearAlumno(
-            @Valid @RequestBody DTOPeticionRegistroAlumno peticion) {
+            @Valid @RequestBody DTOCrearAlumno peticion) {
         
         DTOAlumno dtoAlumnoNuevo = servicioAlumno.crearAlumno(peticion);
         return new ResponseEntity<>(dtoAlumnoNuevo, HttpStatus.CREATED);
@@ -213,7 +213,7 @@ public class AlumnoRest extends BaseRestController {
             @Parameter(description = "ID of the student", required = true)
             @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
             @Parameter(description = "Student update data", required = true)
-            @Valid @RequestBody DTOActualizacionAlumno peticion) {
+            @Valid @RequestBody DTOActualizarAlumno peticion) {
         
         DTOAlumno dtoAlumnoActualizado = servicioAlumno.actualizarAlumno(id, peticion);
         return new ResponseEntity<>(dtoAlumnoActualizado, HttpStatus.OK);
@@ -279,7 +279,7 @@ public class AlumnoRest extends BaseRestController {
             @Parameter(description = "ID of the student", required = true)
             @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
             @Parameter(description = "Complete student data", required = true)
-            @Valid @RequestBody DTOActualizacionAlumno peticion) {
+            @Valid @RequestBody DTOActualizarAlumno peticion) {
         
         DTOAlumno dtoAlumnoReemplazado = servicioAlumno.actualizarAlumno(id, peticion);
         return new ResponseEntity<>(dtoAlumnoReemplazado, HttpStatus.OK);

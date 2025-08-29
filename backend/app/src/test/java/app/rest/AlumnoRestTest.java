@@ -3,14 +3,12 @@ package app.rest;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.context.annotation.Import;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -29,17 +27,15 @@ import static org.mockito.Mockito.when;
 
 import app.dtos.DTOAlumno;
 import app.dtos.DTOParametrosBusquedaAlumno;
-import app.dtos.DTOActualizacionAlumno;
+import app.dtos.DTOActualizarAlumno;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Alumno;
 import app.entidades.Usuario;
 import app.repositorios.RepositorioAlumno;
 import app.servicios.ServicioAlumno;
 import app.servicios.ServicioClase;
-import app.servicios.ServicioJwt;
 import app.util.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import app.rest.BaseRestTestConfig;
 
 @WebMvcTest(AlumnoRest.class)
 @ActiveProfiles("test")
@@ -221,7 +217,7 @@ public class AlumnoRestTest {
     public void testActualizarAlumnoConEstadoMatriculaYHabilitado() throws Exception {
         // Given
         Long alumnoId = 1L;
-        DTOActualizacionAlumno dtoActualizacion = new DTOActualizacionAlumno(
+        DTOActualizarAlumno dtoActualizacion = new DTOActualizarAlumno(
             null, null, null, null, null, true, false
         );
         

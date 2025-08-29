@@ -28,10 +28,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import app.dtos.DTOActualizacionAlumno;
+import app.dtos.DTOActualizarAlumno;
 import app.dtos.DTOAlumno;
 import app.dtos.DTOParametrosBusquedaAlumno;
-import app.dtos.DTOPeticionRegistroAlumno;
+import app.dtos.DTOCrearAlumno;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Alumno;
 import app.excepciones.ResourceNotFoundException;
@@ -167,7 +167,7 @@ class ServicioAlumnoTest {
     @Test
     @DisplayName("crearAlumno debe crear alumno correctamente")
     void testCrearAlumno() {
-        DTOPeticionRegistroAlumno peticion = new DTOPeticionRegistroAlumno(
+        DTOCrearAlumno peticion = new DTOCrearAlumno(
             "nuevo", "password123", "Nuevo", "Alumno", "99999999A", "nuevo@ejemplo.com", "111222333"
         );
         
@@ -191,7 +191,7 @@ class ServicioAlumnoTest {
     @Test
     @DisplayName("crearAlumno debe lanzar excepción si usuario ya existe")
     void testCrearAlumnoUsuarioExiste() {
-        DTOPeticionRegistroAlumno peticion = new DTOPeticionRegistroAlumno(
+        DTOCrearAlumno peticion = new DTOCrearAlumno(
             "existente", "password123", "Nuevo", "Alumno", "99999999A", "nuevo@ejemplo.com", "111222333"
         );
         
@@ -207,7 +207,7 @@ class ServicioAlumnoTest {
     @Test
     @DisplayName("crearAlumno debe lanzar excepción si email ya existe")
     void testCrearAlumnoEmailExiste() {
-        DTOPeticionRegistroAlumno peticion = new DTOPeticionRegistroAlumno(
+        DTOCrearAlumno peticion = new DTOCrearAlumno(
             "nuevo", "password123", "Nuevo", "Alumno", "99999999A", "existente@ejemplo.com", "111222333"
         );
         
@@ -225,7 +225,7 @@ class ServicioAlumnoTest {
     @Test
     @DisplayName("actualizarAlumno debe actualizar campos no nulos")
     void testActualizarAlumno() {
-        DTOActualizacionAlumno dtoParcial = new DTOActualizacionAlumno("Nuevo Nombre", null, null, null, null, null, null);
+        DTOActualizarAlumno dtoParcial = new DTOActualizarAlumno("Nuevo Nombre", null, null, null, null, null, null);
         
         when(repositorioAlumno.findById(1L)).thenReturn(Optional.of(alumno1));
         when(repositorioAlumno.save(any(Alumno.class))).thenAnswer(invocation -> {
@@ -245,7 +245,7 @@ class ServicioAlumnoTest {
     @Test
     @DisplayName("actualizarAlumno debe lanzar excepción si alumno no existe")
     void testActualizarAlumnoNoExiste() {
-        DTOActualizacionAlumno dtoParcial = new DTOActualizacionAlumno("Nuevo Nombre", null, null, null, null, null, null);
+        DTOActualizarAlumno dtoParcial = new DTOActualizarAlumno("Nuevo Nombre", null, null, null, null, null, null);
         
         when(repositorioAlumno.findById(999L)).thenReturn(Optional.empty());
 

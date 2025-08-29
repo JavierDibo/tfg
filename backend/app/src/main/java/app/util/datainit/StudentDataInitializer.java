@@ -1,7 +1,7 @@
 package app.util.datainit;
 
 import app.dtos.DTOAlumno;
-import app.dtos.DTOPeticionRegistroAlumno;
+import app.dtos.DTOCrearAlumno;
 import app.servicios.ServicioAlumno;
 import app.repositorios.RepositorioAlumno;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,7 +36,7 @@ public class StudentDataInitializer extends BaseDataInitializer {
         // Password service is now injected automatically
 
         // Create hardcoded student first
-        DTOPeticionRegistroAlumno hardcodedStudent = new DTOPeticionRegistroAlumno(
+        DTOCrearAlumno hardcodedStudent = new DTOCrearAlumno(
                 "estudiante", // username
                 "password", // password
                 "Estudiante",
@@ -66,7 +66,7 @@ public class StudentDataInitializer extends BaseDataInitializer {
             // but we can also encode it here for consistency
             String rawPassword = "password";
 
-            DTOPeticionRegistroAlumno dto = new DTOPeticionRegistroAlumno(
+            DTOCrearAlumno dto = new DTOCrearAlumno(
                     username, // username without accents
                     rawPassword, // The service will encode this password
                     nombreCompleto[0],

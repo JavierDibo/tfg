@@ -82,7 +82,7 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         * @param name Name to search
         * @return List of materials
         */
-       @Query("SELECT m FROM Material m WHERE UPPER(m.name) LIKE UPPER(CONCAT('%', :name, '%'))")
+       @Query("SELECT m FROM Material m WHERE LOWER(m.name) LIKE LOWER(CONCAT('%', :name, '%'))")
        List<Material> findByNameContainingIgnoreCase(@Param("name") String name);
 
        /**
@@ -92,7 +92,7 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         * @return List of materials with classes
         */
        @EntityGraph(value = "Material.withClasses")
-       @Query("SELECT m FROM Material m WHERE UPPER(m.name) LIKE UPPER(CONCAT('%', :name, '%'))")
+       @Query("SELECT m FROM Material m WHERE LOWER(m.name) LIKE LOWER(CONCAT('%', :name, '%'))")
        List<Material> findByNameContainingIgnoreCaseWithClasses(@Param("name") String name);
 
        /**
@@ -102,7 +102,7 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         * @param pageable Pagination parameters
         * @return Page of materials
         */
-       @Query("SELECT m FROM Material m WHERE UPPER(m.name) LIKE UPPER(CONCAT('%', :name, '%'))")
+       @Query("SELECT m FROM Material m WHERE LOWER(m.name) LIKE LOWER(CONCAT('%', :name, '%'))")
        Page<Material> findByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
 
        /**
@@ -114,7 +114,7 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         * @return Page of materials with classes
         */
        @EntityGraph(value = "Material.withClasses")
-       @Query("SELECT m FROM Material m WHERE UPPER(m.name) LIKE UPPER(CONCAT('%', :name, '%'))")
+       @Query("SELECT m FROM Material m WHERE LOWER(m.name) LIKE LOWER(CONCAT('%', :name, '%'))")
        Page<Material> findByNameContainingIgnoreCaseWithClasses(@Param("name") String name, Pageable pageable);
 
        /**
@@ -123,7 +123,7 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         * @param url URL to search
         * @return List of materials
         */
-       @Query("SELECT m FROM Material m WHERE UPPER(m.url) LIKE UPPER(CONCAT('%', :url, '%'))")
+       @Query("SELECT m FROM Material m WHERE LOWER(m.url) LIKE LOWER(CONCAT('%', :url, '%'))")
        List<Material> findByUrlContainingIgnoreCase(@Param("url") String url);
 
        /**
@@ -133,7 +133,7 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         * @return List of materials with classes
         */
        @EntityGraph(value = "Material.withClasses")
-       @Query("SELECT m FROM Material m WHERE UPPER(m.url) LIKE UPPER(CONCAT('%', :url, '%'))")
+       @Query("SELECT m FROM Material m WHERE LOWER(m.url) LIKE LOWER(CONCAT('%', :url, '%'))")
        List<Material> findByUrlContainingIgnoreCaseWithClasses(@Param("url") String url);
 
        /**
@@ -143,7 +143,7 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         * @param pageable Pagination parameters
         * @return Page of materials
         */
-       @Query("SELECT m FROM Material m WHERE UPPER(m.url) LIKE UPPER(CONCAT('%', :url, '%'))")
+       @Query("SELECT m FROM Material m WHERE LOWER(m.url) LIKE LOWER(CONCAT('%', :url, '%'))")
        Page<Material> findByUrlContainingIgnoreCase(@Param("url") String url, Pageable pageable);
 
        /**
@@ -155,7 +155,7 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         * @return Page of materials with classes
         */
        @EntityGraph(value = "Material.withClasses")
-       @Query("SELECT m FROM Material m WHERE UPPER(m.url) LIKE UPPER(CONCAT('%', :url, '%'))")
+       @Query("SELECT m FROM Material m WHERE LOWER(m.url) LIKE LOWER(CONCAT('%', :url, '%'))")
        Page<Material> findByUrlContainingIgnoreCaseWithClasses(@Param("url") String url, Pageable pageable);
 
        /**
@@ -167,8 +167,8 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         * @return Page of materials
         */
        @Query("SELECT m FROM Material m WHERE " +
-                     "UPPER(m.name) LIKE UPPER(CONCAT('%', :name, '%')) OR " +
-                     "UPPER(m.url) LIKE UPPER(CONCAT('%', :url, '%'))")
+                     "LOWER(m.name) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
+                     "LOWER(m.url) LIKE LOWER(CONCAT('%', :url, '%'))")
        Page<Material> findByNameContainingIgnoreCaseOrUrlContainingIgnoreCase(
                      @Param("name") String name,
                      @Param("url") String url,
@@ -185,8 +185,8 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         */
        @EntityGraph(value = "Material.withClasses")
        @Query("SELECT m FROM Material m WHERE " +
-                     "UPPER(m.name) LIKE UPPER(CONCAT('%', :name, '%')) OR " +
-                     "UPPER(m.url) LIKE UPPER(CONCAT('%', :url, '%'))")
+                     "LOWER(m.name) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
+                     "LOWER(m.url) LIKE LOWER(CONCAT('%', :url, '%'))")
        Page<Material> findByNameContainingIgnoreCaseOrUrlContainingIgnoreCaseWithClasses(
                      @Param("name") String name,
                      @Param("url") String url,
@@ -464,10 +464,10 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         * @return Página de materiales
         */
        @Query("SELECT m FROM Material m WHERE " +
-                     "(UPPER(m.name) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
-                     "UPPER(m.url) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR :searchTerm IS NULL) AND " +
-                     "(UPPER(m.name) LIKE UPPER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
-                     "(UPPER(m.url) LIKE UPPER(CONCAT('%', :url, '%')) OR :url IS NULL) AND " +
+                     "(LOWER(m.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                     "LOWER(m.url) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR :searchTerm IS NULL) AND " +
+                     "(LOWER(m.name) LIKE LOWER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
+                     "(LOWER(m.url) LIKE LOWER(CONCAT('%', :url, '%')) OR :url IS NULL) AND " +
                      "(:tipo IS NULL OR (" +
                      "  CASE WHEN :tipo = 'DOCUMENT' THEN (" +
                      "    LOWER(m.url) LIKE '%.pdf' OR LOWER(m.url) LIKE '%.doc' OR " +
@@ -503,10 +503,10 @@ public interface RepositorioMaterial extends JpaRepository<Material, Long> {
         */
        @EntityGraph(value = "Material.withClasses")
        @Query("SELECT m FROM Material m WHERE " +
-                     "(UPPER(m.name) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
-                     "UPPER(m.url) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR :searchTerm IS NULL) AND " +
-                     "(UPPER(m.name) LIKE UPPER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
-                     "(UPPER(m.url) LIKE UPPER(CONCAT('%', :url, '%')) OR :url IS NULL) AND " +
+                     "(LOWER(m.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                     "LOWER(m.url) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR :searchTerm IS NULL) AND " +
+                     "(LOWER(m.name) LIKE LOWER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
+                     "(LOWER(m.url) LIKE LOWER(CONCAT('%', :url, '%')) OR :url IS NULL) AND " +
                      "(:tipo IS NULL OR (" +
                      "  CASE WHEN :tipo = 'DOCUMENT' THEN (" +
                      "    LOWER(m.url) LIKE '%.pdf' OR LOWER(m.url) LIKE '%.doc' OR " +

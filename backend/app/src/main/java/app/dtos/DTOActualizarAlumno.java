@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
  * DTO for partial student updates (PATCH)
  * All fields are optional to allow partial updates
  */
-public record DTOActualizacionAlumno(
+public record DTOActualizarAlumno(
     @NotEmptyIfPresent(message = "First name cannot be empty if provided")
     @Size(max = 100, message = "First name cannot exceed 100 characters")
     @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "First name can only contain letters and spaces")
