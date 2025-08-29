@@ -155,18 +155,17 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      * @return Página de profesores
      */
     @Query("SELECT p FROM Profesor p WHERE " +
-           "(:searchTerm IS NULL OR (" +
-           "UPPER(p.firstName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "(UPPER(p.firstName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
            "UPPER(p.lastName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
            "UPPER(p.email) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
            "UPPER(p.username) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(p.dni) LIKE LOWER(CONCAT('%', :searchTerm, '%')))) AND " +
-           "(:nombre IS NULL OR UPPER(p.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
-           "(:apellidos IS NULL OR UPPER(p.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))) AND " +
-           "(:email IS NULL OR UPPER(p.email) LIKE UPPER(CONCAT('%', :email, '%'))) AND " +
-           "(:usuario IS NULL OR UPPER(p.username) LIKE UPPER(CONCAT('%', :usuario, '%'))) AND " +
-           "(:dni IS NULL OR LOWER(p.dni) LIKE LOWER(CONCAT('%', :dni, '%'))) AND " +
-           "(:habilitado IS NULL OR p.enabled = :habilitado)")
+           "LOWER(p.dni) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR :searchTerm IS NULL) AND " +
+           "(UPPER(p.firstName) LIKE UPPER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
+           "(UPPER(p.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%')) OR :apellidos IS NULL) AND " +
+           "(UPPER(p.email) LIKE UPPER(CONCAT('%', :email, '%')) OR :email IS NULL) AND " +
+           "(UPPER(p.username) LIKE UPPER(CONCAT('%', :usuario, '%')) OR :usuario IS NULL) AND " +
+           "(LOWER(p.dni) LIKE LOWER(CONCAT('%', :dni, '%')) OR :dni IS NULL) AND " +
+           "(p.enabled = :habilitado OR :habilitado IS NULL)")
     Page<Profesor> findByGeneralAndSpecificFilters(
         @Param("searchTerm") String searchTerm,
         @Param("nombre") String nombre,
@@ -215,12 +214,12 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      */
     @Query("SELECT DISTINCT p FROM Profesor p " +
            "WHERE " +
-           "(:nombre IS NULL OR UPPER(p.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
-           "(:apellidos IS NULL OR UPPER(p.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))) AND " +
-           "(:email IS NULL OR UPPER(p.email) LIKE UPPER(CONCAT('%', :email, '%'))) AND " +
-           "(:usuario IS NULL OR UPPER(p.username) LIKE UPPER(CONCAT('%', :usuario, '%'))) AND " +
-           "(:dni IS NULL OR UPPER(p.dni) LIKE UPPER(CONCAT('%', :dni, '%'))) AND " +
-           "(:habilitado IS NULL OR p.enabled = :habilitado) AND " +
+           "(UPPER(p.firstName) LIKE UPPER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
+           "(UPPER(p.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%')) OR :apellidos IS NULL) AND " +
+           "(UPPER(p.email) LIKE UPPER(CONCAT('%', :email, '%')) OR :email IS NULL) AND " +
+           "(UPPER(p.username) LIKE UPPER(CONCAT('%', :usuario, '%')) OR :usuario IS NULL) AND " +
+           "(UPPER(p.dni) LIKE UPPER(CONCAT('%', :dni, '%')) OR :dni IS NULL) AND " +
+           "(p.enabled = :habilitado OR :habilitado IS NULL) AND " +
            "(:claseId IS NULL OR EXISTS (SELECT 1 FROM p.classes c WHERE c.id = :claseId)) AND " +
            "(:sinClases IS NULL OR (:sinClases = true AND SIZE(p.classes) = 0) OR (:sinClases = false)) " +
            "ORDER BY p.id")
@@ -250,12 +249,12 @@ public interface RepositorioProfesor extends JpaRepository<Profesor, Long> {
      */
     @Query("SELECT DISTINCT p FROM Profesor p " +
            "WHERE " +
-           "(:nombre IS NULL OR UPPER(p.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
-           "(:apellidos IS NULL OR UPPER(p.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))) AND " +
-           "(:email IS NULL OR UPPER(p.email) LIKE UPPER(CONCAT('%', :email, '%'))) AND " +
-           "(:usuario IS NULL OR UPPER(p.username) LIKE UPPER(CONCAT('%', :usuario, '%'))) AND " +
-           "(:dni IS NULL OR UPPER(p.dni) LIKE UPPER(CONCAT('%', :dni, '%'))) AND " +
-           "(:habilitado IS NULL OR p.enabled = :habilitado) AND " +
+           "(UPPER(p.firstName) LIKE UPPER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
+           "(UPPER(p.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%')) OR :apellidos IS NULL) AND " +
+           "(UPPER(p.email) LIKE UPPER(CONCAT('%', :email, '%')) OR :email IS NULL) AND " +
+           "(UPPER(p.username) LIKE UPPER(CONCAT('%', :usuario, '%')) OR :usuario IS NULL) AND " +
+           "(UPPER(p.dni) LIKE UPPER(CONCAT('%', :dni, '%')) OR :dni IS NULL) AND " +
+           "(p.enabled = :habilitado OR :habilitado IS NULL) AND " +
            "(:claseId IS NULL OR EXISTS (SELECT 1 FROM p.classes c WHERE c.id = :claseId)) AND " +
            "(:sinClases IS NULL OR (:sinClases = true AND SIZE(p.classes) = 0) OR (:sinClases = false))")
     Page<Profesor> findByFiltrosPaginados(

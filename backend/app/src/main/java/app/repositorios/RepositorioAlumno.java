@@ -111,11 +111,11 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @return Página de alumnos
      */
     @Query("SELECT a FROM Alumno a WHERE " +
-           "(:nombre IS NULL OR UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
-           "(:apellidos IS NULL OR UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))) AND " +
-           "(:dni IS NULL OR LOWER(a.dni) LIKE LOWER(CONCAT('%', :dni, '%'))) AND " +
-           "(:email IS NULL OR LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
-           "(:matriculado IS NULL OR a.enrolled = :matriculado)")
+           "(UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
+           "(UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%')) OR :apellidos IS NULL) AND " +
+           "(LOWER(a.dni) LIKE LOWER(CONCAT('%', :dni, '%')) OR :dni IS NULL) AND " +
+           "(LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%')) OR :email IS NULL) AND " +
+           "(a.enrolled = :matriculado OR :matriculado IS NULL)")
     Page<Alumno> findByFiltrosPaged(
         @Param("nombre") String nombre,
         @Param("apellidos") String apellidos,
@@ -160,16 +160,15 @@ public interface RepositorioAlumno extends JpaRepository<Alumno, Long> {
      * @return Página de alumnos
      */
     @Query("SELECT a FROM Alumno a WHERE " +
-           "(:searchTerm IS NULL OR (" +
-           "UPPER(a.firstName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
+           "(UPPER(a.firstName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
            "UPPER(a.lastName) LIKE UPPER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(a.dni) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(a.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')))) AND " +
-           "(:nombre IS NULL OR UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%'))) AND " +
-           "(:apellidos IS NULL OR UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%'))) AND " +
-           "(:dni IS NULL OR LOWER(a.dni) LIKE LOWER(CONCAT('%', :dni, '%'))) AND " +
-           "(:email IS NULL OR LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
-           "(:matriculado IS NULL OR a.enrolled = :matriculado)")
+           "LOWER(a.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR :searchTerm IS NULL) AND " +
+           "(UPPER(a.firstName) LIKE UPPER(CONCAT('%', :nombre, '%')) OR :nombre IS NULL) AND " +
+           "(UPPER(a.lastName) LIKE UPPER(CONCAT('%', :apellidos, '%')) OR :apellidos IS NULL) AND " +
+           "(LOWER(a.dni) LIKE LOWER(CONCAT('%', :dni, '%')) OR :dni IS NULL) AND " +
+           "(LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%')) OR :email IS NULL) AND " +
+           "(a.enrolled = :matriculado OR :matriculado IS NULL)")
     Page<Alumno> findByGeneralAndSpecificFilters(
         @Param("searchTerm") String searchTerm,
         @Param("nombre") String nombre,
