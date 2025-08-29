@@ -85,11 +85,7 @@ export class MaterialService {
 	 * Get material icon based on type
 	 */
 	static getMaterialIcon(material: DTOMaterial): string {
-		if (material.video) return '🎥';
-		if (material.image) return '🖼️';
-		if (material.document) return '📄';
-
-		// Fallback based on URL
+		// Use URL analysis instead of non-existent properties
 		const type = MaterialService.getMaterialType(material.url || '');
 		switch (type) {
 			case 'VIDEO':
@@ -105,11 +101,7 @@ export class MaterialService {
 	 * Get material type label
 	 */
 	static getMaterialTypeLabel(material: DTOMaterial): string {
-		if (material.video) return 'Video';
-		if (material.image) return 'Image';
-		if (material.document) return 'Document';
-
-		// Fallback based on URL
+		// Use URL analysis instead of non-existent properties
 		const type = MaterialService.getMaterialType(material.url || '');
 		switch (type) {
 			case 'VIDEO':
@@ -150,9 +142,9 @@ export class MaterialService {
 	/**
 	 * Delete a material
 	 */
-	static async deleteMaterial(id: string): Promise<void> {
+	static async deleteMaterial(id: number): Promise<void> {
 		try {
-			await materialApi.eliminarMaterial({ id: parseInt(id) });
+			await materialApi.eliminarMaterial({ id });
 		} catch (error) {
 			ErrorHandler.logError(error, `deleteMaterial(${id})`);
 			throw await ErrorHandler.parseError(error);

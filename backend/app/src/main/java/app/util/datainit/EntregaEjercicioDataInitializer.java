@@ -95,47 +95,54 @@ public class EntregaEjercicioDataInitializer extends BaseDataInitializer {
         int totalDeliveries = 0;
         int totalGraded = 0;
         
-        for (String exerciseId : exerciseIds) {
-            // For each exercise, some students will deliver
-            for (String studentId : studentIds) {
-                // 70% chance of delivery
-                if (random.nextDouble() < DELIVERY_RATE) {
-                    try {
-                        // Generate random files for the delivery
-                        List<String> files = generateRandomFiles();
+        // Create approximately 2 deliveries per student
+        for (String studentId : studentIds) {
+            // Select 2 random exercises for this student
+            List<String> availableExercises = new ArrayList<>(exerciseIds);
+            int deliveriesForStudent = Math.min(2, availableExercises.size());
+            
+            for (int i = 0; i < deliveriesForStudent; i++) {
+                if (availableExercises.isEmpty()) break;
+                
+                // Pick a random exercise
+                int exerciseIndex = random.nextInt(availableExercises.size());
+                String exerciseId = availableExercises.remove(exerciseIndex);
+                
+                try {
+                    // Generate random files for the delivery
+                    List<String> files = generateRandomFiles();
+                    
+                    DTOEntregaEjercicio dtoEntrega = servicioEntregaEjercicio.crearEntrega(
+                        Long.parseLong(studentId),
+                        Long.parseLong(exerciseId),
+                        files
+                    );
+                    
+                    if (dtoEntrega != null) {
+                        createdDeliveries.add(dtoEntrega);
+                        totalDeliveries++;
                         
-                        DTOEntregaEjercicio dtoEntrega = servicioEntregaEjercicio.crearEntrega(
-                            Long.parseLong(studentId),
-                            Long.parseLong(exerciseId),
-                            files
-                        );
-                        
-                        if (dtoEntrega != null) {
-                            createdDeliveries.add(dtoEntrega);
-                            totalDeliveries++;
+                        // 80% chance of being graded
+                        if (random.nextDouble() < GRADING_RATE) {
+                            // Grade the delivery with a random grade
+                            BigDecimal grade = generateRandomGrade();
+                            String comments = generateRandomComments(grade);
                             
-                            // 80% chance of being graded
-                            if (random.nextDouble() < GRADING_RATE) {
-                                // Grade the delivery with a random grade
-                                BigDecimal grade = generateRandomGrade();
-                                String comments = generateRandomComments(grade);
-                                
-                                try {
-                                    servicioEntregaEjercicio.calificarEntrega(
-                                        dtoEntrega.id(),
-                                        grade,
-                                        comments
-                                    );
-                                    totalGraded++;
-                                } catch (Exception e) {
-                                    System.err.println("Error grading delivery: " + e.getMessage());
-                                }
+                            try {
+                                servicioEntregaEjercicio.calificarEntrega(
+                                    dtoEntrega.id(),
+                                    grade,
+                                    comments
+                                );
+                                totalGraded++;
+                            } catch (Exception e) {
+                                System.err.println("Error grading delivery: " + e.getMessage());
                             }
                         }
-                        
-                    } catch (Exception e) {
-                        System.err.println("Error creating delivery: " + e.getMessage());
                     }
+                    
+                } catch (Exception e) {
+                    System.err.println("Error creating delivery: " + e.getMessage());
                 }
             }
         }

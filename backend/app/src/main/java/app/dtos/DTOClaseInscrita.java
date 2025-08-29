@@ -25,7 +25,7 @@ public record DTOClaseInscrita(
         List<String> alumnosId,
         List<String> profesoresId,
         List<String> ejerciciosId,
-        List<Material> material,
+        List<DTOMaterial> material,
         String tipoClase, // "TALLER" o "CURSO"
         
         // Información del profesor principal
@@ -56,7 +56,9 @@ public record DTOClaseInscrita(
             clase.getExercises() != null ? clase.getExercises().stream()
                 .map(ejercicio -> ejercicio.getId().toString())
                 .collect(Collectors.toList()) : null,
-            clase.getMaterial() != null ? new ArrayList<>(clase.getMaterial()) : null,
+            clase.getMaterial() != null ? clase.getMaterial().stream()
+                .map(DTOMaterial::new)
+                .collect(Collectors.toList()) : new ArrayList<>(),
             determinarTipoClase(clase),
             null, // profesor - will be set separately
             null // fechaInscripcion - will be set separately
@@ -84,7 +86,9 @@ public record DTOClaseInscrita(
                 clase.getExercises().stream()
                     .map(exercise -> exercise.getId().toString())
                     .collect(Collectors.toList()),
-                clase.getMaterial() != null ? new ArrayList<>(clase.getMaterial()) : null,
+                clase.getMaterial() != null ? clase.getMaterial().stream()
+                    .map(DTOMaterial::new)
+                    .collect(Collectors.toList()) : new ArrayList<>(),
                 determinarTipoClase(clase),
                 profesor,
                 fechaInscripcion

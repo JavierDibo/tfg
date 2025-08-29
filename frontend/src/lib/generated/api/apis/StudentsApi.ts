@@ -15,25 +15,25 @@
 
 import * as runtime from '../runtime';
 import type {
-  DTOActualizacionAlumno,
+  DTOActualizarAlumno,
   DTOAlumno,
   DTOClaseInscrita,
+  DTOCrearAlumno,
   DTOPerfilAlumno,
-  DTOPeticionRegistroAlumno,
   DTORespuestaPaginada,
   DTORespuestaPaginadaDTOAlumno,
 } from '../models/index';
 import {
-    DTOActualizacionAlumnoFromJSON,
-    DTOActualizacionAlumnoToJSON,
+    DTOActualizarAlumnoFromJSON,
+    DTOActualizarAlumnoToJSON,
     DTOAlumnoFromJSON,
     DTOAlumnoToJSON,
     DTOClaseInscritaFromJSON,
     DTOClaseInscritaToJSON,
+    DTOCrearAlumnoFromJSON,
+    DTOCrearAlumnoToJSON,
     DTOPerfilAlumnoFromJSON,
     DTOPerfilAlumnoToJSON,
-    DTOPeticionRegistroAlumnoFromJSON,
-    DTOPeticionRegistroAlumnoToJSON,
     DTORespuestaPaginadaFromJSON,
     DTORespuestaPaginadaToJSON,
     DTORespuestaPaginadaDTOAlumnoFromJSON,
@@ -42,11 +42,11 @@ import {
 
 export interface ActualizarAlumnoParcialRequest {
     id: number;
-    dTOActualizacionAlumno: DTOActualizacionAlumno;
+    dTOActualizarAlumno: DTOActualizarAlumno;
 }
 
 export interface CrearAlumnoRequest {
-    dTOPeticionRegistroAlumno: DTOPeticionRegistroAlumno;
+    dTOCrearAlumno: DTOCrearAlumno;
 }
 
 export interface EliminarAlumnoRequest {
@@ -88,7 +88,7 @@ export interface ObtenerPerfilAlumnoRequest {
 
 export interface ReemplazarAlumnoRequest {
     id: number;
-    dTOActualizacionAlumno: DTOActualizacionAlumno;
+    dTOActualizarAlumno: DTOActualizarAlumno;
 }
 
 /**
@@ -108,10 +108,10 @@ export class StudentsApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['dTOActualizacionAlumno'] == null) {
+        if (requestParameters['dTOActualizarAlumno'] == null) {
             throw new runtime.RequiredError(
-                'dTOActualizacionAlumno',
-                'Required parameter "dTOActualizacionAlumno" was null or undefined when calling actualizarAlumnoParcial().'
+                'dTOActualizarAlumno',
+                'Required parameter "dTOActualizarAlumno" was null or undefined when calling actualizarAlumnoParcial().'
             );
         }
 
@@ -130,7 +130,7 @@ export class StudentsApi extends runtime.BaseAPI {
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
-            body: DTOActualizacionAlumnoToJSON(requestParameters['dTOActualizacionAlumno']),
+            body: DTOActualizarAlumnoToJSON(requestParameters['dTOActualizarAlumno']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DTOAlumnoFromJSON(jsonValue));
@@ -150,10 +150,10 @@ export class StudentsApi extends runtime.BaseAPI {
      * Create new student
      */
     async crearAlumnoRaw(requestParameters: CrearAlumnoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOAlumno>> {
-        if (requestParameters['dTOPeticionRegistroAlumno'] == null) {
+        if (requestParameters['dTOCrearAlumno'] == null) {
             throw new runtime.RequiredError(
-                'dTOPeticionRegistroAlumno',
-                'Required parameter "dTOPeticionRegistroAlumno" was null or undefined when calling crearAlumno().'
+                'dTOCrearAlumno',
+                'Required parameter "dTOCrearAlumno" was null or undefined when calling crearAlumno().'
             );
         }
 
@@ -171,7 +171,7 @@ export class StudentsApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: DTOPeticionRegistroAlumnoToJSON(requestParameters['dTOPeticionRegistroAlumno']),
+            body: DTOCrearAlumnoToJSON(requestParameters['dTOCrearAlumno']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DTOAlumnoFromJSON(jsonValue));
@@ -502,10 +502,10 @@ export class StudentsApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['dTOActualizacionAlumno'] == null) {
+        if (requestParameters['dTOActualizarAlumno'] == null) {
             throw new runtime.RequiredError(
-                'dTOActualizacionAlumno',
-                'Required parameter "dTOActualizacionAlumno" was null or undefined when calling reemplazarAlumno().'
+                'dTOActualizarAlumno',
+                'Required parameter "dTOActualizarAlumno" was null or undefined when calling reemplazarAlumno().'
             );
         }
 
@@ -524,7 +524,7 @@ export class StudentsApi extends runtime.BaseAPI {
             method: 'PUT',
             headers: headerParameters,
             query: queryParameters,
-            body: DTOActualizacionAlumnoToJSON(requestParameters['dTOActualizacionAlumno']),
+            body: DTOActualizarAlumnoToJSON(requestParameters['dTOActualizarAlumno']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DTOAlumnoFromJSON(jsonValue));

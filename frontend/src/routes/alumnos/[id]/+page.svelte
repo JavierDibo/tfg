@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import type { DTOAlumno, DTOActualizacionAlumno, DTOClase } from '$lib/generated/api';
+	import type { DTOAlumno, DTOActualizarAlumno, DTOClase } from '$lib/generated/api';
 	import { AlumnoService } from '$lib/services/alumnoService';
 	import { EnrollmentService } from '$lib/services/enrollmentService';
 	import { authStore } from '$lib/stores/authStore.svelte';
@@ -23,7 +23,7 @@
 	let loadingClasses = $state(false);
 
 	// Edit form state
-	let editForm: DTOActualizacionAlumno = $state({});
+	let editForm: DTOActualizarAlumno = $state({});
 
 	// Permissions
 	const canEdit = $derived(() => {
@@ -295,7 +295,7 @@
 			const validationErrors: string[] = [];
 
 			// Solo incluir campos que no estén vacíos (PATCH parcial)
-			const updateData: DTOActualizacionAlumno = {};
+			const updateData: DTOActualizarAlumno = {};
 
 			// Validar y incluir nombre si está presente
 			if (shouldIncludeField(editForm.firstName)) {

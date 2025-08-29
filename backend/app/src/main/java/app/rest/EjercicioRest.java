@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import app.dtos.DTOEjercicio;
+import app.dtos.DTOEjercicioConEntrega;
 import app.dtos.DTOParametrosBusquedaEjercicio;
 import app.dtos.DTOPeticionCrearEjercicio;
 import app.dtos.DTOEntregaEjercicio;
@@ -106,6 +107,63 @@ public class EjercicioRest extends BaseRestController {
         DTOParametrosBusquedaEjercicio parametros = new DTOParametrosBusquedaEjercicio(q, name, statement, classId, status);
         
         DTORespuestaPaginada<DTOEjercicio> respuesta = servicioEjercicio.obtenerEjerciciosPaginados(
+            q, name, statement, classId, status, page, size, sortBy, sortDirection);
+        
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
+    // GET exercises with delivery information for students
+    @GetMapping("/with-delivery")
+    @PreAuthorize("hasRole('ALUMNO')")
+    @Operation(
+        summary = "Get exercises with delivery information",
+        description = "Gets a paginated list of exercises with delivery status information for the current student."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Paginated list of exercises with delivery info retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTORespuestaPaginada.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination parameters"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Only students can access this endpoint"
+        )
+    })
+    public ResponseEntity<DTORespuestaPaginada<DTOEjercicioConEntrega>> obtenerEjerciciosConEntrega(
+            @Parameter(description = "Search query", required = false)
+            @RequestParam(required = false) @Size(max = 100) String q,
+            @Parameter(description = "Exercise name filter", required = false)
+            @RequestParam(required = false) @Size(max = 200) String name,
+            @Parameter(description = "Exercise statement filter", required = false)
+            @RequestParam(required = false) @Size(max = 2000) String statement,
+            @Parameter(description = "Class ID filter", required = false)
+            @RequestParam(required = false) @Size(max = 255) String classId,
+            @Parameter(description = "Exercise status filter", required = false)
+            @RequestParam(required = false) String status,
+            @Parameter(description = "Page number (0-indexed)", required = false)
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "Page size", required = false)
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            @Parameter(description = "Field to sort by", required = false)
+            @RequestParam(defaultValue = "id") @Size(max = 50) String sortBy,
+            @Parameter(description = "Sort direction (ASC/DESC)", required = false)
+            @RequestParam(defaultValue = "ASC") @Pattern(regexp = "(?i)^(ASC|DESC)$") String sortDirection) {
+        
+        // Validate and standardize parameters using BaseRestController
+        page = validatePageNumber(page);
+        size = validatePageSize(size);
+        sortBy = validateSortBy(sortBy, "id", "name", "startDate", "endDate", "classId");
+        sortDirection = validateSortDirection(sortDirection);
+        
+        DTORespuestaPaginada<DTOEjercicioConEntrega> respuesta = servicioEjercicio.obtenerEjerciciosConEntregaPaginados(
             q, name, statement, classId, status, page, size, sortBy, sortDirection);
         
         return new ResponseEntity<>(respuesta, HttpStatus.OK);

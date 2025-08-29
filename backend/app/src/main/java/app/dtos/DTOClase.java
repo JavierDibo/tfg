@@ -25,7 +25,7 @@ public record DTOClase(
         List<String> alumnosId,
         List<String> profesoresId,
         List<String> ejerciciosId,
-        List<Material> material,
+        List<DTOMaterial> material,
         String tipoClase // "TALLER" o "CURSO"
 ) {
     
@@ -50,7 +50,9 @@ public record DTOClase(
             clase.getExercises().stream()
                 .map(exercise -> exercise.getId().toString())
                 .collect(Collectors.toList()),
-            clase.getMaterial(),
+            clase.getMaterial().stream()
+                .map(DTOMaterial::new)
+                .collect(Collectors.toList()),
             determinarTipoClase(clase)
         );
     }

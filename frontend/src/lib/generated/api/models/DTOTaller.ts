@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { Material } from './Material';
+import type { DTOMaterial } from './DTOMaterial';
 import {
-    MaterialFromJSON,
-    MaterialFromJSONTyped,
-    MaterialToJSON,
-    MaterialToJSONTyped,
-} from './Material';
+    DTOMaterialFromJSON,
+    DTOMaterialFromJSONTyped,
+    DTOMaterialToJSON,
+    DTOMaterialToJSONTyped,
+} from './DTOMaterial';
 
 /**
  * 
@@ -89,10 +89,10 @@ export interface DTOTaller {
     ejerciciosId?: Array<string>;
     /**
      * 
-     * @type {Array<Material>}
+     * @type {Array<DTOMaterial>}
      * @memberof DTOTaller
      */
-    material?: Array<Material>;
+    material?: Array<DTOMaterial>;
     /**
      * 
      * @type {number}
@@ -113,12 +113,6 @@ export interface DTOTaller {
     horaComienzo?: string;
     /**
      * 
-     * @type {string}
-     * @memberof DTOTaller
-     */
-    horaFinalizacion?: string;
-    /**
-     * 
      * @type {number}
      * @memberof DTOTaller
      */
@@ -129,6 +123,12 @@ export interface DTOTaller {
      * @memberof DTOTaller
      */
     numeroAlumnos?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOTaller
+     */
+    horaFinalizacion?: string;
 }
 
 
@@ -180,13 +180,13 @@ export function DTOTallerFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'alumnosId': json['alumnosId'] == null ? undefined : json['alumnosId'],
         'profesoresId': json['profesoresId'] == null ? undefined : json['profesoresId'],
         'ejerciciosId': json['ejerciciosId'] == null ? undefined : json['ejerciciosId'],
-        'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(MaterialFromJSON)),
+        'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(DTOMaterialFromJSON)),
         'duracionHoras': json['duracionHoras'] == null ? undefined : json['duracionHoras'],
         'fechaRealizacion': json['fechaRealizacion'] == null ? undefined : (new Date(json['fechaRealizacion'])),
         'horaComienzo': json['horaComienzo'] == null ? undefined : json['horaComienzo'],
-        'horaFinalizacion': json['horaFinalizacion'] == null ? undefined : json['horaFinalizacion'],
         'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
         'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
+        'horaFinalizacion': json['horaFinalizacion'] == null ? undefined : json['horaFinalizacion'],
     };
 }
 
@@ -211,13 +211,13 @@ export function DTOTallerToJSONTyped(value?: DTOTaller | null, ignoreDiscriminat
         'alumnosId': value['alumnosId'],
         'profesoresId': value['profesoresId'],
         'ejerciciosId': value['ejerciciosId'],
-        'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(MaterialToJSON)),
+        'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(DTOMaterialToJSON)),
         'duracionHoras': value['duracionHoras'],
         'fechaRealizacion': value['fechaRealizacion'] == null ? undefined : ((value['fechaRealizacion']).toISOString().substring(0,10)),
         'horaComienzo': value['horaComienzo'],
-        'horaFinalizacion': value['horaFinalizacion'],
         'numeroProfesores': value['numeroProfesores'],
         'numeroAlumnos': value['numeroAlumnos'],
+        'horaFinalizacion': value['horaFinalizacion'],
     };
 }
 

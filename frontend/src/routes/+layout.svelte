@@ -319,6 +319,26 @@
 								</span>
 							</a>
 							<a
+								href="/mis-ejercicios"
+								class="relative rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 {isActive(
+									'/mis-ejercicios'
+								)
+									? 'border border-blue-200 bg-blue-50 text-blue-600'
+									: 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'}"
+							>
+								<span class="flex items-center space-x-2">
+									<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+										></path>
+									</svg>
+									<span>Mis Ejercicios</span>
+								</span>
+							</a>
+							<a
 								href="/alumnos/perfil"
 								class="relative rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 {isActive(
 									'/alumnos/perfil'
@@ -856,6 +876,30 @@
 									></path>
 								</svg>
 								Explorar Clases
+							</a>
+							<a
+								href="/mis-ejercicios"
+								onclick={closeMobileMenu}
+								class="group flex items-center rounded-lg px-3 py-3 text-base font-medium transition-all duration-200 {isActive(
+									'/mis-ejercicios'
+								)
+									? 'bg-blue-50 text-blue-600 shadow-sm'
+									: 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:shadow-sm'}"
+							>
+								<svg
+									class="mr-3 h-5 w-5 transition-transform duration-200 group-hover:scale-110"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+									></path>
+								</svg>
+								Mis Ejercicios
 							</a>
 							<a
 								href="/alumnos/perfil"

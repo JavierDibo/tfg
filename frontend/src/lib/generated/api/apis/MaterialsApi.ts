@@ -34,6 +34,18 @@ export interface ActualizarMaterialRequest {
     url: string;
 }
 
+export interface BuscarMaterialesRequest {
+    q?: string;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
+}
+
+export interface ContarMaterialesPorTipoRequest {
+    tipo: string;
+}
+
 export interface CrearMaterialRequest {
     name: string;
     url: string;
@@ -43,7 +55,7 @@ export interface EliminarMaterialRequest {
     id: number;
 }
 
-export interface ObtenerMaterialPorIdRequest {
+export interface ObtenerMaterialRequest {
     id: number;
 }
 
@@ -52,6 +64,14 @@ export interface ObtenerMaterialesRequest {
     name?: string;
     url?: string;
     type?: string;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
+}
+
+export interface ObtenerMaterialesPorTipoRequest {
+    tipo: string;
     page?: number;
     size?: number;
     sortBy?: string;
@@ -125,6 +145,100 @@ export class MaterialsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Searches materials by name with pagination support or returns all if no search term provided
+     * Search materials with pagination
+     */
+    async buscarMaterialesRaw(requestParameters: BuscarMaterialesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginada>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/material/search`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaFromJSON(jsonValue));
+    }
+
+    /**
+     * Searches materials by name with pagination support or returns all if no search term provided
+     * Search materials with pagination
+     */
+    async buscarMateriales(requestParameters: BuscarMaterialesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
+        const response = await this.buscarMaterialesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Counts materials by type (DOCUMENT, IMAGE, VIDEO, or all if not specified)
+     * Count materials by type
+     */
+    async contarMaterialesPorTipoRaw(requestParameters: ContarMaterialesPorTipoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<number>> {
+        if (requestParameters['tipo'] == null) {
+            throw new runtime.RequiredError(
+                'tipo',
+                'Required parameter "tipo" was null or undefined when calling contarMaterialesPorTipo().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/material/count/type/{tipo}`;
+        urlPath = urlPath.replace(`{${"tipo"}}`, encodeURIComponent(String(requestParameters['tipo'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<number>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Counts materials by type (DOCUMENT, IMAGE, VIDEO, or all if not specified)
+     * Count materials by type
+     */
+    async contarMaterialesPorTipo(requestParameters: ContarMaterialesPorTipoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<number> {
+        const response = await this.contarMaterialesPorTipoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates a new material in the system (requires ADMIN or PROFESOR role)
      * Create new material
      */
@@ -181,7 +295,7 @@ export class MaterialsApi extends runtime.BaseAPI {
      * Deletes a material from the system (requires ADMIN or PROFESOR role)
      * Delete material
      */
-    async eliminarMaterialRaw(requestParameters: EliminarMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async eliminarMaterialRaw(requestParameters: EliminarMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOMaterial>> {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError(
                 'id',
@@ -204,26 +318,27 @@ export class MaterialsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOMaterialFromJSON(jsonValue));
     }
 
     /**
      * Deletes a material from the system (requires ADMIN or PROFESOR role)
      * Delete material
      */
-    async eliminarMaterial(requestParameters: EliminarMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.eliminarMaterialRaw(requestParameters, initOverrides);
+    async eliminarMaterial(requestParameters: EliminarMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOMaterial> {
+        const response = await this.eliminarMaterialRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
      * Gets a specific material by its ID
      * Get material by ID
      */
-    async obtenerMaterialPorIdRaw(requestParameters: ObtenerMaterialPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOMaterial>> {
+    async obtenerMaterialRaw(requestParameters: ObtenerMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOMaterial>> {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError(
                 'id',
-                'Required parameter "id" was null or undefined when calling obtenerMaterialPorId().'
+                'Required parameter "id" was null or undefined when calling obtenerMaterial().'
             );
         }
 
@@ -249,8 +364,8 @@ export class MaterialsApi extends runtime.BaseAPI {
      * Gets a specific material by its ID
      * Get material by ID
      */
-    async obtenerMaterialPorId(requestParameters: ObtenerMaterialPorIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOMaterial> {
-        const response = await this.obtenerMaterialPorIdRaw(requestParameters, initOverrides);
+    async obtenerMaterial(requestParameters: ObtenerMaterialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOMaterial> {
+        const response = await this.obtenerMaterialRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -314,6 +429,61 @@ export class MaterialsApi extends runtime.BaseAPI {
      */
     async obtenerMateriales(requestParameters: ObtenerMaterialesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
         const response = await this.obtenerMaterialesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets paginated materials filtered by type (DOCUMENT, IMAGE, VIDEO, or file extension)
+     * Get paginated materials by type
+     */
+    async obtenerMaterialesPorTipoRaw(requestParameters: ObtenerMaterialesPorTipoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginada>> {
+        if (requestParameters['tipo'] == null) {
+            throw new runtime.RequiredError(
+                'tipo',
+                'Required parameter "tipo" was null or undefined when calling obtenerMaterialesPorTipo().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/material/type/{tipo}`;
+        urlPath = urlPath.replace(`{${"tipo"}}`, encodeURIComponent(String(requestParameters['tipo'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets paginated materials filtered by type (DOCUMENT, IMAGE, VIDEO, or file extension)
+     * Get paginated materials by type
+     */
+    async obtenerMaterialesPorTipo(requestParameters: ObtenerMaterialesPorTipoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
+        const response = await this.obtenerMaterialesPorTipoRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

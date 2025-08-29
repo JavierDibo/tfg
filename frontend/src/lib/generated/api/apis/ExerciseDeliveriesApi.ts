@@ -17,21 +17,36 @@ import * as runtime from '../runtime';
 import type {
   DTOEntregaEjercicio,
   DTOPeticionActualizarEntregaEjercicio,
+  DTOPeticionCrearEntregaConArchivos,
   DTOPeticionCrearEntregaEjercicio,
+  DTOPeticionModificarEntrega,
+  DTORespuestaModificacionEntrega,
   DTORespuestaPaginada,
   DTORespuestaPaginadaDTOEntregaEjercicio,
+  DTORespuestaSubidaArchivo,
+  SubirArchivoRequest,
 } from '../models/index';
 import {
     DTOEntregaEjercicioFromJSON,
     DTOEntregaEjercicioToJSON,
     DTOPeticionActualizarEntregaEjercicioFromJSON,
     DTOPeticionActualizarEntregaEjercicioToJSON,
+    DTOPeticionCrearEntregaConArchivosFromJSON,
+    DTOPeticionCrearEntregaConArchivosToJSON,
     DTOPeticionCrearEntregaEjercicioFromJSON,
     DTOPeticionCrearEntregaEjercicioToJSON,
+    DTOPeticionModificarEntregaFromJSON,
+    DTOPeticionModificarEntregaToJSON,
+    DTORespuestaModificacionEntregaFromJSON,
+    DTORespuestaModificacionEntregaToJSON,
     DTORespuestaPaginadaFromJSON,
     DTORespuestaPaginadaToJSON,
     DTORespuestaPaginadaDTOEntregaEjercicioFromJSON,
     DTORespuestaPaginadaDTOEntregaEjercicioToJSON,
+    DTORespuestaSubidaArchivoFromJSON,
+    DTORespuestaSubidaArchivoToJSON,
+    SubirArchivoRequestFromJSON,
+    SubirArchivoRequestToJSON,
 } from '../models/index';
 
 export interface ActualizarEntregaParcialRequest {
@@ -39,12 +54,35 @@ export interface ActualizarEntregaParcialRequest {
     dTOPeticionActualizarEntregaEjercicio: DTOPeticionActualizarEntregaEjercicio;
 }
 
+export interface AgregarArchivosRequest {
+    id: number;
+    files: Array<Blob>;
+}
+
 export interface CrearEntregaRequest {
     dTOPeticionCrearEntregaEjercicio: DTOPeticionCrearEntregaEjercicio;
 }
 
+export interface CrearEntregaConArchivosRequest {
+    dTOPeticionCrearEntregaConArchivos: DTOPeticionCrearEntregaConArchivos;
+}
+
+export interface EliminarArchivoRequest {
+    id: number;
+    rutaArchivo: string;
+}
+
 export interface EliminarEntregaRequest {
     id: number;
+}
+
+export interface EliminarTodosLosArchivosRequest {
+    id: number;
+}
+
+export interface ModificarEntregaRequest {
+    id: number;
+    dTOPeticionModificarEntrega: DTOPeticionModificarEntrega;
 }
 
 export interface ObtenerEntregaConAlumnoRequest {
@@ -74,6 +112,16 @@ export interface ObtenerEntregasRequest {
 export interface ReemplazarEntregaRequest {
     id: number;
     dTOPeticionActualizarEntregaEjercicio: DTOPeticionActualizarEntregaEjercicio;
+}
+
+export interface SubirArchivoOperationRequest {
+    ejercicioId: number;
+    subirArchivoRequest?: SubirArchivoRequest;
+}
+
+export interface SubirArchivosRequest {
+    files: Array<Blob>;
+    ejercicioId: number;
 }
 
 /**
@@ -131,6 +179,60 @@ export class ExerciseDeliveriesApi extends runtime.BaseAPI {
     }
 
     /**
+     * Adds additional files to an existing delivery. Students can only add files to their own deliveries.
+     * Add files to delivery
+     */
+    async agregarArchivosRaw(requestParameters: AgregarArchivosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling agregarArchivos().'
+            );
+        }
+
+        if (requestParameters['files'] == null) {
+            throw new runtime.RequiredError(
+                'files',
+                'Required parameter "files" was null or undefined when calling agregarArchivos().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['files'] != null) {
+            queryParameters['files'] = requestParameters['files'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/entregas/{id}/add-files`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<string>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Adds additional files to an existing delivery. Students can only add files to their own deliveries.
+     * Add files to delivery
+     */
+    async agregarArchivos(requestParameters: AgregarArchivosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+        const response = await this.agregarArchivosRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates a new exercise delivery (requires ALUMNO role)
      * Create new delivery
      */
@@ -172,6 +274,94 @@ export class ExerciseDeliveriesApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates a new exercise delivery using previously uploaded files. Students can only create deliveries for themselves.
+     * Create delivery with uploaded files
+     */
+    async crearEntregaConArchivosRaw(requestParameters: CrearEntregaConArchivosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOEntregaEjercicio>> {
+        if (requestParameters['dTOPeticionCrearEntregaConArchivos'] == null) {
+            throw new runtime.RequiredError(
+                'dTOPeticionCrearEntregaConArchivos',
+                'Required parameter "dTOPeticionCrearEntregaConArchivos" was null or undefined when calling crearEntregaConArchivos().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/entregas/create-with-files`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DTOPeticionCrearEntregaConArchivosToJSON(requestParameters['dTOPeticionCrearEntregaConArchivos']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOEntregaEjercicioFromJSON(jsonValue));
+    }
+
+    /**
+     * Creates a new exercise delivery using previously uploaded files. Students can only create deliveries for themselves.
+     * Create delivery with uploaded files
+     */
+    async crearEntregaConArchivos(requestParameters: CrearEntregaConArchivosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntregaEjercicio> {
+        const response = await this.crearEntregaConArchivosRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Deletes a file from a delivery. Students can only delete files from their own deliveries.
+     * Delete file from delivery
+     */
+    async eliminarArchivoRaw(requestParameters: EliminarArchivoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<object>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling eliminarArchivo().'
+            );
+        }
+
+        if (requestParameters['rutaArchivo'] == null) {
+            throw new runtime.RequiredError(
+                'rutaArchivo',
+                'Required parameter "rutaArchivo" was null or undefined when calling eliminarArchivo().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/entregas/{id}/files/{rutaArchivo}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+        urlPath = urlPath.replace(`{${"rutaArchivo"}}`, encodeURIComponent(String(requestParameters['rutaArchivo'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Deletes a file from a delivery. Students can only delete files from their own deliveries.
+     * Delete file from delivery
+     */
+    async eliminarArchivo(requestParameters: EliminarArchivoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<object> {
+        const response = await this.eliminarArchivoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Deletes a delivery from the system (requires ADMIN or PROFESOR role)
      * Delete delivery
      */
@@ -207,6 +397,94 @@ export class ExerciseDeliveriesApi extends runtime.BaseAPI {
      */
     async eliminarEntrega(requestParameters: EliminarEntregaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.eliminarEntregaRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Deletes all files from a delivery. Students can only delete files from their own deliveries.
+     * Delete all files from delivery
+     */
+    async eliminarTodosLosArchivosRaw(requestParameters: EliminarTodosLosArchivosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<object>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling eliminarTodosLosArchivos().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/entregas/{id}/files`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Deletes all files from a delivery. Students can only delete files from their own deliveries.
+     * Delete all files from delivery
+     */
+    async eliminarTodosLosArchivos(requestParameters: EliminarTodosLosArchivosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<object> {
+        const response = await this.eliminarTodosLosArchivosRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Modifies an existing delivery by updating comments and performing file operations. Students can only modify their own deliveries.
+     * Modify delivery
+     */
+    async modificarEntregaRaw(requestParameters: ModificarEntregaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaModificacionEntrega>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling modificarEntrega().'
+            );
+        }
+
+        if (requestParameters['dTOPeticionModificarEntrega'] == null) {
+            throw new runtime.RequiredError(
+                'dTOPeticionModificarEntrega',
+                'Required parameter "dTOPeticionModificarEntrega" was null or undefined when calling modificarEntrega().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/entregas/{id}/modify`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DTOPeticionModificarEntregaToJSON(requestParameters['dTOPeticionModificarEntrega']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaModificacionEntregaFromJSON(jsonValue));
+    }
+
+    /**
+     * Modifies an existing delivery by updating comments and performing file operations. Students can only modify their own deliveries.
+     * Modify delivery
+     */
+    async modificarEntrega(requestParameters: ModificarEntregaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaModificacionEntrega> {
+        const response = await this.modificarEntregaRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -470,6 +748,104 @@ export class ExerciseDeliveriesApi extends runtime.BaseAPI {
      */
     async reemplazarEntrega(requestParameters: ReemplazarEntregaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOEntregaEjercicio> {
         const response = await this.reemplazarEntregaRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Uploads a single file (PNG or PDF) for exercise delivery. Students can only upload files for themselves.
+     * Upload file for exercise delivery
+     */
+    async subirArchivoRaw(requestParameters: SubirArchivoOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaSubidaArchivo>> {
+        if (requestParameters['ejercicioId'] == null) {
+            throw new runtime.RequiredError(
+                'ejercicioId',
+                'Required parameter "ejercicioId" was null or undefined when calling subirArchivo().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['ejercicioId'] != null) {
+            queryParameters['ejercicioId'] = requestParameters['ejercicioId'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/entregas/upload-file`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SubirArchivoRequestToJSON(requestParameters['subirArchivoRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaSubidaArchivoFromJSON(jsonValue));
+    }
+
+    /**
+     * Uploads a single file (PNG or PDF) for exercise delivery. Students can only upload files for themselves.
+     * Upload file for exercise delivery
+     */
+    async subirArchivo(requestParameters: SubirArchivoOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaSubidaArchivo> {
+        const response = await this.subirArchivoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Uploads multiple files (PNG or PDF) for exercise delivery. Students can only upload files for themselves.
+     * Upload multiple files for exercise delivery
+     */
+    async subirArchivosRaw(requestParameters: SubirArchivosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaSubidaArchivo>> {
+        if (requestParameters['files'] == null) {
+            throw new runtime.RequiredError(
+                'files',
+                'Required parameter "files" was null or undefined when calling subirArchivos().'
+            );
+        }
+
+        if (requestParameters['ejercicioId'] == null) {
+            throw new runtime.RequiredError(
+                'ejercicioId',
+                'Required parameter "ejercicioId" was null or undefined when calling subirArchivos().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['files'] != null) {
+            queryParameters['files'] = requestParameters['files'];
+        }
+
+        if (requestParameters['ejercicioId'] != null) {
+            queryParameters['ejercicioId'] = requestParameters['ejercicioId'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/entregas/upload-files`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaSubidaArchivoFromJSON(jsonValue));
+    }
+
+    /**
+     * Uploads multiple files (PNG or PDF) for exercise delivery. Students can only upload files for themselves.
+     * Upload multiple files for exercise delivery
+     */
+    async subirArchivos(requestParameters: SubirArchivosRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaSubidaArchivo> {
+        const response = await this.subirArchivosRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

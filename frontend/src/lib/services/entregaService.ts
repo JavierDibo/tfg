@@ -1,10 +1,16 @@
 import { entregaApi } from '$lib/api';
-import type { DTOEntregaEjercicio, DTORespuestaPaginada } from '$lib/generated/api';
+import type {
+	DTOEntregaEjercicio,
+	DTORespuestaPaginada,
+	DTORespuestaModificacionEntrega,
+	DTOOperacionArchivoTipoEnum
+} from '$lib/generated/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
 import { FormatterUtils } from '$lib/utils/formatters';
 import { PermissionUtils } from '$lib/utils/permissions';
 import { ValidationUtils } from '$lib/utils/validators';
 import type { DTOAlumno, DTOProfesor } from '$lib/generated/api';
+import { authStore } from '$lib/stores/authStore.svelte';
 
 // Type definitions for better type safety
 export interface EntregaFilters {
@@ -36,6 +42,18 @@ export interface UpdateEntregaData {
 export interface GradeData {
 	readonly nota: number;
 	readonly comentarios?: string;
+}
+
+// New types for delivery modification
+export interface FileOperation {
+	readonly tipo: DTOOperacionArchivoTipoEnum;
+	readonly rutaArchivo: string;
+	readonly nuevoNombre?: string;
+}
+
+export interface ModifyDeliveryData {
+	readonly comentarios?: string;
+	readonly operacionesArchivos?: FileOperation[];
 }
 
 export interface ServiceResult<T = void> {
@@ -170,6 +188,44 @@ export class EntregaService {
 		};
 	}
 
+	/**
+	 * Validate delivery modification data
+	 */
+	static validateModifyData(data: Readonly<ModifyDeliveryData>): {
+		isValid: boolean;
+		errors: string[];
+	} {
+		const errors: string[] = [];
+
+		// Validate comentarios length if provided
+		if (data.comentarios && data.comentarios.length > 1000) {
+			errors.push('Los comentarios no pueden superar 1000 caracteres');
+		}
+
+		// Validate operacionesArchivos if provided
+		if (data.operacionesArchivos && data.operacionesArchivos.length > 0) {
+			for (const operacion of data.operacionesArchivos) {
+				if (!operacion.rutaArchivo || operacion.rutaArchivo.trim().length === 0) {
+					errors.push('La ruta del archivo es obligatoria');
+					break;
+				}
+
+				if (
+					operacion.tipo === DTOOperacionArchivoTipoEnum.Renombrar &&
+					(!operacion.nuevoNombre || operacion.nuevoNombre.trim().length === 0)
+				) {
+					errors.push('El nuevo nombre es obligatorio para operaciones de renombrado');
+					break;
+				}
+			}
+		}
+
+		return {
+			isValid: errors.length === 0,
+			errors
+		};
+	}
+
 	// ==================== PERMISSION METHODS ====================
 
 	/**
@@ -198,6 +254,26 @@ export class EntregaService {
 	 */
 	static canDeleteDelivery(user: DTOAlumno | DTOProfesor): boolean {
 		return PermissionUtils.canDeleteEntity('entregas', user);
+	}
+
+	/**
+	 * Check if user can modify delivery
+	 */
+	static canModifyDelivery(
+		user: DTOAlumno | DTOProfesor | { id?: number; roles?: string[] },
+		deliveryAlumnoId?: number
+	): boolean {
+		// Admins and professors can modify any delivery
+		if (PermissionUtils.isAdmin(user) || PermissionUtils.isProfessor(user)) {
+			return true;
+		}
+
+		// Students can only modify their own deliveries
+		if (PermissionUtils.isStudent(user) && deliveryAlumnoId) {
+			return user.id === deliveryAlumnoId;
+		}
+
+		return false;
 	}
 
 	// ==================== FORMATTING METHODS ====================
@@ -354,6 +430,98 @@ export class EntregaService {
 		}
 	}
 
+	// ==================== DELIVERY MODIFICATION OPERATIONS ====================
+
+	/**
+	 * Modify delivery with comments and file operations
+	 */
+	static async modifyDelivery(
+		id: number,
+		data: Readonly<ModifyDeliveryData>
+	): Promise<DTORespuestaModificacionEntrega> {
+		try {
+			// Validate data before modifying
+			const validation = this.validateModifyData(data);
+			if (!validation.isValid) {
+				throw new Error(`Datos de modificación inválidos: ${validation.errors.join(', ')}`);
+			}
+
+			const response = await EntregaService.api.modificarEntrega({
+				id,
+				dTOPeticionModificarEntrega: {
+					comentarios: data.comentarios,
+					operacionesArchivos: data.operacionesArchivos
+				}
+			});
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, `modifyDelivery(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Add files to delivery
+	 */
+	static async addFilesToDelivery(id: number, files: File[]): Promise<string> {
+		try {
+			if (!files || files.length === 0) {
+				throw new Error('No se han proporcionado archivos para agregar');
+			}
+
+			// Create FormData for proper multipart upload
+			const formData = new FormData();
+			files.forEach((file) => {
+				formData.append('files', file);
+			});
+
+			// Make the request manually since the generated API has issues with file uploads
+			const response = await fetch(`/api/entregas/${id}/add-files`, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${authStore.token}`
+					// Don't set Content-Type for FormData - browser will set it automatically with boundary
+				},
+				body: formData
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({}));
+				throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+			}
+
+			return await response.text();
+		} catch (error) {
+			ErrorHandler.logError(error, `addFilesToDelivery(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Delete all files from delivery
+	 */
+	static async deleteAllFiles(id: number): Promise<object> {
+		try {
+			const response = await EntregaService.api.eliminarTodosLosArchivos({ id });
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, `deleteAllFiles(${id})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Delete a specific file from delivery
+	 */
+	static async deleteFile(id: number, filePath: string): Promise<void> {
+		try {
+			await EntregaService.api.eliminarArchivo({ id, rutaArchivo: filePath });
+		} catch (error) {
+			ErrorHandler.logError(error, `deleteFile(${id}, ${filePath})`);
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
 	// ==================== GRADING OPERATIONS ====================
 
 	static async gradeEntrega(
@@ -487,6 +655,74 @@ export class EntregaService {
 			return {
 				success: false,
 				message: error instanceof Error ? error.message : 'Error al calificar la entrega'
+			};
+		}
+	}
+
+	/**
+	 * Handle delivery modification with validation and business logic
+	 */
+	static async handleDeliveryModification(
+		deliveryId: number,
+		modifyData: Readonly<ModifyDeliveryData>,
+		user: DTOAlumno | DTOProfesor | { id?: number; roles?: string[] },
+		deliveryAlumnoId?: number
+	): Promise<{ success: boolean; message: string; result?: DTORespuestaModificacionEntrega }> {
+		try {
+			// Check permissions
+			if (!this.canModifyDelivery(user, deliveryAlumnoId)) {
+				return {
+					success: false,
+					message: 'No tienes permisos para modificar esta entrega'
+				};
+			}
+
+			// Validate input
+			if (!deliveryId || deliveryId <= 0) {
+				return {
+					success: false,
+					message: 'ID de entrega inválido'
+				};
+			}
+
+			// Validate modification data
+			const validation = this.validateModifyData(modifyData);
+			if (!validation.isValid) {
+				return {
+					success: false,
+					message: `Datos de modificación inválidos: ${validation.errors.join(', ')}`
+				};
+			}
+
+			// Check if delivery exists and can be modified
+			const existingDelivery = await this.getEntregaById(deliveryId);
+			if (!existingDelivery) {
+				return {
+					success: false,
+					message: 'Entrega no encontrada'
+				};
+			}
+
+			// Check if delivery can be modified (not graded)
+			if (existingDelivery.estado === 'CALIFICADO') {
+				return {
+					success: false,
+					message: 'No se puede modificar una entrega ya calificada'
+				};
+			}
+
+			// Perform the modification
+			const result = await this.modifyDelivery(deliveryId, modifyData);
+
+			return {
+				success: true,
+				message: 'Entrega modificada correctamente',
+				result
+			};
+		} catch (error) {
+			return {
+				success: false,
+				message: error instanceof Error ? error.message : 'Error al modificar la entrega'
 			};
 		}
 	}

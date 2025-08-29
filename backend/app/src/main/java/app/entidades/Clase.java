@@ -25,51 +25,6 @@ import java.util.List;
 @Table(name = "clases")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "tipo_clase", discriminatorType = DiscriminatorType.STRING)
-@NamedEntityGraph(
-    name = "Clase.withStudents",
-    attributeNodes = {
-        @NamedAttributeNode("students")
-    }
-)
-@NamedEntityGraph(
-    name = "Clase.withTeachers",
-    attributeNodes = {
-        @NamedAttributeNode("teachers")
-    }
-)
-@NamedEntityGraph(
-    name = "Clase.withExercises",
-    attributeNodes = {
-        @NamedAttributeNode("exercises")
-    }
-)
-@NamedEntityGraph(
-    name = "Clase.withMaterial",
-    attributeNodes = {
-        @NamedAttributeNode("material")
-    }
-)
-@NamedEntityGraph(
-    name = "Clase.withStudentsAndTeachers",
-    attributeNodes = {
-        @NamedAttributeNode("students"),
-        @NamedAttributeNode("teachers")
-    }
-)
-@NamedEntityGraph(
-    name = "Clase.withStudentsAndExercises",
-    attributeNodes = {
-        @NamedAttributeNode("students"),
-        @NamedAttributeNode("exercises")
-    }
-)
-@NamedEntityGraph(
-    name = "Clase.withTeachersAndExercises",
-    attributeNodes = {
-        @NamedAttributeNode("teachers"),
-        @NamedAttributeNode("exercises")
-    }
-)
 public abstract class Clase {
     
     @Id

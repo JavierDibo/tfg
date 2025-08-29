@@ -47,7 +47,7 @@ export interface InscribirAlumnoEnClaseRequest {
 
 export interface QuitarMaterialDeClaseRequest {
     claseId: number;
-    materialId: string;
+    materialId: number;
 }
 
 export interface QuitarProfesorDeClaseRequest {

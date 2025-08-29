@@ -24,6 +24,7 @@ import app.dtos.DTOAlumnoPublico;
 import app.dtos.DTOClase;
 import app.dtos.DTOClaseConDetalles;
 import app.dtos.DTOClaseConDetallesPublico;
+import app.dtos.DTOClaseConEstadoInscripcion;
 import app.dtos.DTOClaseInscrita;
 import app.dtos.DTOCurso;
 import app.dtos.DTOEstadoInscripcion;
@@ -449,8 +450,8 @@ public class ServicioClase {
         Page<Clase> resultado;
         
         if (parametros.hasGeneralSearch()) {
-            // Use Spring Data JPA method for general search
-            resultado = repositorioClase.findByTitleContainingOrDescriptionContaining(
+            // Use Spring Data JPA method for general search (case-insensitive)
+            resultado = repositorioClase.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
                 parametros.q(), parametros.q(), pageable);
         } else if (parametros.hasSpecificFilters()) {
             // Use specific filters with Spring Data JPA methods
@@ -1096,58 +1097,7 @@ public class ServicioClase {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Obtiene todas las clases con relaciones cargadas para el dashboard
-     * @return Lista de DTOClase con relaciones optimizadas
-     */
-    @Transactional(readOnly = true)
-    public List<DTOClase> obtenerClasesParaDashboard() {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access classes
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
-        }
-        
-        // Use Entity Graph to load students and teachers for dashboard
-        return repositorioClase.findAllForDashboard().stream()
-                .map(DTOClase::new)
-                .collect(Collectors.toList());
-    }
 
-    /**
-     * Obtiene todas las clases con ejercicios cargados para gestión de ejercicios
-     * @return Lista de DTOClase con ejercicios optimizados
-     */
-    @Transactional(readOnly = true)
-    public List<DTOClase> obtenerClasesParaGestionEjercicios() {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access classes
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
-        }
-        
-        // Use Entity Graph to load exercises for exercise management
-        return repositorioClase.findAllForExerciseManagement().stream()
-                .map(DTOClase::new)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Obtiene una clase con todos sus detalles usando Entity Graph
-     * @param id ID de la clase
-     * @return DTOClase con todas las relaciones cargadas
-     * @throws EntidadNoEncontradaException si no se encuentra la clase
-     */
-    @Transactional(readOnly = true)
-    public DTOClase obtenerClaseConDetalles(Long id) {
-        // Security check: Only ADMIN, PROFESOR, or ALUMNO can access classes
-        if (!securityUtils.hasRole("ADMIN") && !securityUtils.hasRole("PROFESOR") && !securityUtils.hasRole("ALUMNO")) {
-            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
-        }
-        
-        Clase clase = repositorioClase.findById(id).orElse(null);
-        ExceptionUtils.throwIfNotFound(clase, "Clase", "ID", id);
-        
-        return new DTOClase(clase);
-    }
 
     /**
      * Obtiene clases excluyendo aquellas en las que el estudiante autenticado está inscrito
@@ -1192,7 +1142,7 @@ public class ServicioClase {
             // Use the new Spring Data JPA approach
             Page<Clase> todasLasClases;
             if (parametros.hasGeneralSearch()) {
-                todasLasClases = repositorioClase.findByTitleContainingOrDescriptionContaining(
+                todasLasClases = repositorioClase.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
                     parametros.q(), parametros.q(), pageable);
             } else if (parametros.hasSpecificFilters()) {
                 todasLasClases = buscarConFiltrosEspecificos(parametros, pageable);
@@ -1225,6 +1175,84 @@ public class ServicioClase {
             return DTORespuestaPaginada.fromPage(pageFiltrada, parametros.sortBy(), parametros.sortDirection());
         } else {
             System.out.println("DEBUG: User has no valid role - access denied");
+            ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
+            return null; // This line will never be reached
+        }
+    }
+
+    /**
+     * Obtiene todas las clases con información de estado de inscripción para estudiantes
+     * Para estudiantes: muestra todas las clases con indicación de si están inscritos
+     * Para administradores/profesores: muestra todas las clases (sin estado de inscripción)
+     * @param parametros Parámetros de búsqueda
+     * @return DTORespuestaPaginada con las clases y estado de inscripción
+     */
+    @Transactional(readOnly = true)
+    public DTORespuestaPaginada<DTOClaseConEstadoInscripcion> buscarClasesConEstadoInscripcion(DTOParametrosBusquedaClase parametros) {
+        if (securityUtils.isAdmin() || securityUtils.isProfessor()) {
+            // Administradores y profesores ven todas las clases sin estado de inscripción
+            DTORespuestaPaginada<DTOClase> clasesPaginadas = buscarClases(parametros);
+            
+            // Convertir a DTOClaseConEstadoInscripcion con isEnrolled = false para todos
+            List<DTOClaseConEstadoInscripcion> clasesConEstado = clasesPaginadas.content().stream()
+                    .map(clase -> new DTOClaseConEstadoInscripcion(clase, false, null))
+                    .collect(Collectors.toList());
+            
+            // Crear nueva página con el nuevo tipo de DTO
+            Page<DTOClaseConEstadoInscripcion> pageConEstado = new PageImpl<>(
+                    clasesConEstado,
+                    PageRequest.of(parametros.page(), parametros.size()),
+                    clasesPaginadas.totalElements()
+            );
+            
+            return DTORespuestaPaginada.fromPage(pageConEstado, parametros.sortBy(), parametros.sortDirection());
+        } else if (securityUtils.isStudent()) {
+            // Estudiantes ven todas las clases con estado de inscripción
+            Long alumnoId = securityUtils.getCurrentUserId();
+            
+            // Obtener las clases en las que está inscrito el estudiante
+            List<Clase> clasesInscritas = repositorioClase.findByAlumnoId(alumnoId);
+            Set<Long> clasesInscritasIds = clasesInscritas.stream()
+                    .map(Clase::getId)
+                    .collect(Collectors.toSet());
+            
+            // Buscar todas las clases con los filtros aplicados
+            Pageable pageable = PageRequest.of(
+                    parametros.page(),
+                    parametros.size(),
+                    Sort.by(Sort.Direction.fromString(parametros.sortDirection()), parametros.sortBy())
+            );
+            
+            Page<Clase> todasLasClases;
+            if (parametros.hasGeneralSearch()) {
+                todasLasClases = repositorioClase.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                    parametros.q(), parametros.q(), pageable);
+            } else if (parametros.hasSpecificFilters()) {
+                todasLasClases = buscarConFiltrosEspecificos(parametros, pageable);
+            } else {
+                todasLasClases = repositorioClase.findAll(pageable);
+            }
+            
+            // Convertir a DTOs con estado de inscripción
+            List<DTOClaseConEstadoInscripcion> clasesConEstado = todasLasClases.getContent().stream()
+                    .map(clase -> {
+                        boolean isEnrolled = clasesInscritasIds.contains(clase.getId());
+                        // Por ahora, usamos la fecha actual como fecha de inscripción
+                        // En una implementación real, esto debería venir de una tabla de enrollments
+                        LocalDateTime fechaInscripcion = isEnrolled ? LocalDateTime.now() : null;
+                        return new DTOClaseConEstadoInscripcion(clase, isEnrolled, fechaInscripcion);
+                    })
+                    .collect(Collectors.toList());
+            
+            // Crear nueva página con el nuevo tipo de DTO
+            Page<DTOClaseConEstadoInscripcion> pageConEstado = new PageImpl<>(
+                    clasesConEstado,
+                    pageable,
+                    todasLasClases.getTotalElements()
+            );
+            
+            return DTORespuestaPaginada.fromPage(pageConEstado, parametros.sortBy(), parametros.sortDirection());
+        } else {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a clases");
             return null; // This line will never be reached
         }

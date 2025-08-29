@@ -20,6 +20,7 @@ import type {
   DTOPeticionCrearEjercicio,
   DTORespuestaPaginada,
   DTORespuestaPaginadaDTOEjercicio,
+  DTORespuestaPaginadaDTOEjercicioConEntrega,
 } from '../models/index';
 import {
     DTOEjercicioFromJSON,
@@ -32,6 +33,8 @@ import {
     DTORespuestaPaginadaToJSON,
     DTORespuestaPaginadaDTOEjercicioFromJSON,
     DTORespuestaPaginadaDTOEjercicioToJSON,
+    DTORespuestaPaginadaDTOEjercicioConEntregaFromJSON,
+    DTORespuestaPaginadaDTOEjercicioConEntregaToJSON,
 } from '../models/index';
 
 export interface ActualizarEjercicioParcialRequest {
@@ -64,6 +67,18 @@ export interface ObtenerEjercicioPorIdRequest {
 }
 
 export interface ObtenerEjerciciosRequest {
+    q?: string;
+    name?: string;
+    statement?: string;
+    classId?: string;
+    status?: string;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
+}
+
+export interface ObtenerEjerciciosConEntregaRequest {
     q?: string;
     name?: string;
     statement?: string;
@@ -480,6 +495,73 @@ export class ExercisesApi extends runtime.BaseAPI {
      */
     async obtenerEjercicios(requestParameters: ObtenerEjerciciosRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
         const response = await this.obtenerEjerciciosRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets a paginated list of exercises with delivery status information for the current student.
+     * Get exercises with delivery information
+     */
+    async obtenerEjerciciosConEntregaRaw(requestParameters: ObtenerEjerciciosConEntregaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginada>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        if (requestParameters['name'] != null) {
+            queryParameters['name'] = requestParameters['name'];
+        }
+
+        if (requestParameters['statement'] != null) {
+            queryParameters['statement'] = requestParameters['statement'];
+        }
+
+        if (requestParameters['classId'] != null) {
+            queryParameters['classId'] = requestParameters['classId'];
+        }
+
+        if (requestParameters['status'] != null) {
+            queryParameters['status'] = requestParameters['status'];
+        }
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/ejercicios/with-delivery`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a paginated list of exercises with delivery status information for the current student.
+     * Get exercises with delivery information
+     */
+    async obtenerEjerciciosConEntrega(requestParameters: ObtenerEjerciciosConEntregaRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
+        const response = await this.obtenerEjerciciosConEntregaRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { DTOClase } from '$lib/generated/api';
+	import type { DTOClaseConEstadoInscripcion } from '$lib/generated/api';
 	import { ClaseService } from '$lib/services/claseService';
 	import { EnrollmentService } from '$lib/services/enrollmentService';
 	import { authStore } from '$lib/stores/authStore.svelte';
@@ -25,7 +25,7 @@
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
-	let clases = $state<DTOClase[]>([]);
+	let clases = $state<DTOClaseConEstadoInscripcion[]>([]);
 	let totalElements = $state(0);
 	let totalPages = $state(0);
 	let currentPage = $state(0);
@@ -33,7 +33,7 @@
 	let sortBy = $state('id');
 	let sortDirection = $state<'ASC' | 'DESC'>('ASC');
 
-	// Enrollment state
+	// Enrollment state (for backward compatibility with old API calls)
 	let enrollmentStatuses = $state<Map<number, boolean>>(new Map());
 	let enrollmentLoading = $state<Map<number, boolean>>(new Map());
 
@@ -54,7 +54,7 @@
 
 	// Modal state
 	let showDeleteModal = $state(false);
-	let claseToDelete: DTOClase | null = $state(null);
+	let claseToDelete: DTOClaseConEstadoInscripcion | null = $state(null);
 
 	// Check authentication
 	$effect(() => {
@@ -78,7 +78,7 @@
 		}
 	});
 
-	// Load enrollment statuses for all classes
+	// Load enrollment statuses for all classes (for backward compatibility)
 	async function loadEnrollmentStatuses() {
 		if (!authStore.isAlumno) return;
 
@@ -96,7 +96,7 @@
 	}
 
 	// Handle enrollment action
-	async function handleEnrollmentAction(clase: DTOClase) {
+	async function handleEnrollmentAction(clase: DTOClaseConEstadoInscripcion) {
 		if (!clase.id) return;
 
 		enrollmentLoading.set(clase.id, true);
@@ -113,6 +113,8 @@
 				// Update enrollment status
 				enrollmentStatuses.set(clase.id, false);
 				successMessage = 'Te has desinscrito de la clase correctamente';
+				// Reload classes to update enrollment status
+				loadClases();
 			} else if (result.action === 'already_enrolled') {
 				// Show message for already enrolled students
 				error = result.message || 'Ya estás inscrito en esta clase';
@@ -161,7 +163,7 @@
 				typeof currentFilters.nivel === 'string' &&
 				currentFilters.nivel.trim()
 			) {
-				params.nivel = currentFilters.nivel.trim();
+				params.dificultad = currentFilters.nivel.trim();
 			}
 			if (
 				currentFilters.presencialidad &&
@@ -170,30 +172,10 @@
 			) {
 				params.presencialidad = currentFilters.presencialidad.trim();
 			}
-			if (
-				currentFilters.precioMinimo &&
-				typeof currentFilters.precioMinimo === 'string' &&
-				currentFilters.precioMinimo.trim()
-			) {
-				params.precioMin = parseFloat(currentFilters.precioMinimo);
-			}
-			if (
-				currentFilters.precioMaximo &&
-				typeof currentFilters.precioMaximo === 'string' &&
-				currentFilters.precioMaximo.trim()
-			) {
-				params.precioMax = parseFloat(currentFilters.precioMaximo);
-			}
 
-			// Use different endpoints based on user role
-			let response;
-			if (authStore.isAlumno) {
-				// For students, use the endpoint that excludes enrolled classes
-				response = await ClaseService.getClasesDisponibles(params);
-			} else {
-				// For admins and professors, use the regular endpoint
-				response = await ClaseService.getClasesOptimizadas(params);
-			}
+			// Use the new catalog endpoint for all users
+			// This endpoint returns all classes with enrollment status
+			const response = await ClaseService.getClasesCatalog(params);
 
 			clases = response.content || [];
 			totalElements = response.totalElements || 0;
@@ -246,7 +228,7 @@
 	}
 
 	// Delete functions
-	function openDeleteModal(clase: DTOClase) {
+	function openDeleteModal(clase: DTOClaseConEstadoInscripcion) {
 		claseToDelete = clase;
 		showDeleteModal = true;
 	}
@@ -286,21 +268,28 @@
 			label: 'Ver',
 			color: 'blue',
 			hoverColor: 'blue',
-			action: (clase: DTOClase) => goto(`/clases/${clase.id}`),
+			action: (clase: DTOClaseConEstadoInscripcion) => goto(`/clases/${clase.id}`),
 			condition: () => true
 		},
 		{
 			label: 'Inscribirse',
 			color: 'green',
 			hoverColor: 'green',
-			action: (clase: DTOClase) => handleEnrollmentAction(clase),
-			condition: () => authStore.isAlumno
+			action: (clase: DTOClaseConEstadoInscripcion) => handleEnrollmentAction(clase),
+			condition: (clase: DTOClaseConEstadoInscripcion) => authStore.isAlumno && !clase.isEnrolled
+		},
+		{
+			label: 'Ya Inscrito',
+			color: 'gray',
+			hoverColor: 'gray',
+			action: (clase: DTOClaseConEstadoInscripcion) => handleEnrollmentAction(clase),
+			condition: (clase: DTOClaseConEstadoInscripcion) => authStore.isAlumno && clase.isEnrolled
 		},
 		{
 			label: 'Eliminar',
 			color: 'red',
 			hoverColor: 'red',
-			action: (clase: DTOClase) => openDeleteModal(clase),
+			action: (clase: DTOClaseConEstadoInscripcion) => openDeleteModal(clase),
 			condition: () => authStore.isAdmin
 		}
 	];
@@ -372,7 +361,7 @@
 			{:else if authStore.isProfesor}
 				Mis Clases
 			{:else if authStore.isAlumno}
-				Explorar Clases
+				Catálogo de Clases
 			{:else}
 				Clases
 			{/if}
@@ -386,47 +375,6 @@
 			</button>
 		{/if}
 	</div>
-
-	{#if authStore.isAlumno}
-		<div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
-			<div class="flex items-start">
-				<div class="flex-shrink-0">
-					<svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-						<path
-							fill-rule="evenodd"
-							d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-							clip-rule="evenodd"
-						/>
-					</svg>
-				</div>
-				<div class="ml-3">
-					<h3 class="text-sm font-medium text-blue-800">Clases Disponibles</h3>
-					<div class="mt-2 text-sm text-blue-700">
-						<p>
-							Aquí puedes ver todas las clases disponibles para inscripción. Las clases en las que
-							ya estás inscrito no aparecen en esta lista.
-						</p>
-						<div class="mt-3">
-							<a
-								href="/alumnos/perfil"
-								class="inline-flex items-center text-sm font-medium text-blue-800 hover:text-blue-900"
-							>
-								Ver mis clases inscritas
-								<svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M9 5l7 7-7 7"
-									/>
-								</svg>
-							</a>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	{/if}
 
 	<EntityMessages
 		{successMessage}

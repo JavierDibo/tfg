@@ -34,6 +34,26 @@ export class EjercicioService {
 		}
 	}
 
+	static async getEjerciciosConEntrega(params?: {
+		q?: string;
+		name?: string;
+		statement?: string;
+		classId?: string;
+		status?: string;
+		page?: number;
+		size?: number;
+		sortBy?: string;
+		sortDirection?: string;
+	}) {
+		try {
+			const response = await EjercicioService.api.obtenerEjerciciosConEntrega(params);
+			return response;
+		} catch (error) {
+			ErrorHandler.logError(error, 'getEjerciciosConEntrega');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
 	static async getEjercicioById(id: number) {
 		try {
 			const response = await EjercicioService.api.obtenerEjercicioPorId({ id });

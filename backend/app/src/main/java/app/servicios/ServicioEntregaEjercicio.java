@@ -14,6 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import app.dtos.DTOEntregaEjercicio;
 import app.dtos.DTORespuestaPaginada;
+import app.dtos.DTOPeticionModificarEntrega;
+import app.dtos.DTORespuestaModificacionEntrega;
+import app.dtos.DTOOperacionArchivo;
+import app.dtos.DTOOperacionArchivoResultado;
 import app.entidades.EntregaEjercicio;
 import app.entidades.Ejercicio;
 import app.entidades.enums.EEstadoEjercicio;
@@ -21,9 +25,13 @@ import app.repositorios.RepositorioEntregaEjercicio;
 import app.repositorios.RepositorioEjercicio;
 import app.util.ExceptionUtils;
 import app.util.SecurityUtils;
+import app.util.FileUploadUtils;
 import lombok.RequiredArgsConstructor;
 import app.entidades.Alumno;
 import app.repositorios.RepositorioAlumno;
+import app.dtos.DTORespuestaSubidaArchivo;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +42,7 @@ public class ServicioEntregaEjercicio {
     private final RepositorioEjercicio repositorioEjercicio;
     private final RepositorioAlumno repositorioAlumno;
     private final SecurityUtils securityUtils;
+    private final FileUploadUtils fileUploadUtils;
 
     @Transactional(readOnly = true)
     public DTOEntregaEjercicio obtenerEntregaPorId(Long id) {
@@ -464,7 +473,14 @@ public class ServicioEntregaEjercicio {
         // Prepare filter parameters
         Long alumnoIdFilter = (alumnoId != null && !alumnoId.trim().isEmpty()) ? Long.parseLong(alumnoId.trim()) : null;
         Long ejercicioIdFilter = (ejercicioId != null && !ejercicioId.trim().isEmpty()) ? Long.parseLong(ejercicioId.trim()) : null;
-        String estadoFilter = (estado != null && !estado.trim().isEmpty()) ? estado.toUpperCase() : null;
+        app.entidades.enums.EEstadoEjercicio estadoFilter = null;
+        if (estado != null && !estado.trim().isEmpty()) {
+            try {
+                estadoFilter = app.entidades.enums.EEstadoEjercicio.valueOf(estado.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                ExceptionUtils.throwValidationError("Estado inválido. Valores permitidos: PENDIENTE, ENTREGADO, CALIFICADO");
+            }
+        }
         BigDecimal notaMinFilter = notaMin;
         BigDecimal notaMaxFilter = notaMax;
         
@@ -626,5 +642,470 @@ public class ServicioEntregaEjercicio {
             ExceptionUtils.throwAccessDenied("No tienes permisos para acceder a entregas de ejercicios");
             return null; // This line will never be reached due to the exception above
         }
+    }
+
+    /**
+     * Sube un archivo para una entrega de ejercicio
+     * @param file El archivo a subir
+     * @param ejercicioId ID del ejercicio
+     * @return DTORespuestaSubidaArchivo con información del archivo subido
+     */
+    public DTORespuestaSubidaArchivo subirArchivoEntrega(MultipartFile file, Long ejercicioId) {
+        // Security check: Only students can upload files for their own deliveries
+        if (!securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("Solo los alumnos pueden subir archivos para entregas");
+        }
+        
+        Long currentUserId = securityUtils.getCurrentUserId();
+        
+        // Validate exercise exists
+        Ejercicio ejercicio = repositorioEjercicio.findById(ejercicioId).orElse(null);
+        ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", ejercicioId);
+        
+        // Check if exercise is still active
+        if (ejercicio.haVencido()) {
+            ExceptionUtils.throwValidationError("No se puede subir archivos para un ejercicio que ya ha vencido");
+        }
+        
+        // Save the file
+        String relativePath = fileUploadUtils.saveExerciseDeliveryFile(file, currentUserId, ejercicioId);
+        
+        // Create response DTO
+        return new DTORespuestaSubidaArchivo(
+            file.getOriginalFilename(),
+            relativePath.substring(relativePath.lastIndexOf("/") + 1),
+            relativePath,
+            file.getContentType(),
+            file.getSize(),
+            null, // Will be calculated by the DTO
+            null, // Will be set to now by the DTO
+            null, // Will be calculated by the DTO
+            false, // Will be calculated by the DTO
+            false  // Will be calculated by the DTO
+        );
+    }
+    
+    /**
+     * Sube múltiples archivos para una entrega de ejercicio
+     * @param files Lista de archivos a subir
+     * @param ejercicioId ID del ejercicio
+     * @return Lista de DTORespuestaSubidaArchivo con información de los archivos subidos
+     */
+    public List<DTORespuestaSubidaArchivo> subirArchivosEntrega(List<MultipartFile> files, Long ejercicioId) {
+        // Security check: Only students can upload files for their own deliveries
+        if (!securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("Solo los alumnos pueden subir archivos para entregas");
+        }
+        
+        Long currentUserId = securityUtils.getCurrentUserId();
+        
+        // Validate exercise exists
+        Ejercicio ejercicio = repositorioEjercicio.findById(ejercicioId).orElse(null);
+        ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", ejercicioId);
+        
+        // Check if exercise is still active
+        if (ejercicio.haVencido()) {
+            ExceptionUtils.throwValidationError("No se puede subir archivos para un ejercicio que ya ha vencido");
+        }
+        
+        // Validate files list
+        if (files == null || files.isEmpty()) {
+            ExceptionUtils.throwValidationError("Debe proporcionar al menos un archivo");
+        }
+        
+        // Save all files
+        return files.stream()
+            .map(file -> {
+                String relativePath = fileUploadUtils.saveExerciseDeliveryFile(file, currentUserId, ejercicioId);
+                return new DTORespuestaSubidaArchivo(
+                    file.getOriginalFilename(),
+                    relativePath.substring(relativePath.lastIndexOf("/") + 1),
+                    relativePath,
+                    file.getContentType(),
+                    file.getSize(),
+                    null, // Will be calculated by the DTO
+                    null, // Will be set to now by the DTO
+                    null, // Will be calculated by the DTO
+                    false, // Will be calculated by the DTO
+                    false  // Will be calculated by the DTO
+                );
+            })
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Crea una entrega con archivos subidos previamente
+     * @param ejercicioId ID del ejercicio
+     * @param archivosRutas Lista de rutas de archivos ya subidos
+     * @return DTOEntregaEjercicio de la entrega creada
+     */
+    public DTOEntregaEjercicio crearEntregaConArchivos(Long ejercicioId, List<String> archivosRutas) {
+        // Security check: Only students can create deliveries for themselves
+        if (!securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("Solo los alumnos pueden crear entregas");
+        }
+        
+        Long currentUserId = securityUtils.getCurrentUserId();
+        
+        // Validate exercise exists
+        Ejercicio ejercicio = repositorioEjercicio.findById(ejercicioId).orElse(null);
+        ExceptionUtils.throwIfNotFound(ejercicio, "Ejercicio", "ID", ejercicioId);
+        
+        // Check if exercise is still active
+        if (ejercicio.haVencido()) {
+            ExceptionUtils.throwValidationError("No se puede entregar un ejercicio que ya ha vencido");
+        }
+        
+        // Check if student already has a delivery for this exercise
+        repositorioEntregaEjercicio.findByAlumnoEntreganteIdAndEjercicioId(currentUserId, ejercicioId)
+                .ifPresent(existing -> {
+                    ExceptionUtils.throwValidationError("Ya tienes una entrega para este ejercicio");
+                });
+        
+        // Validate that all files exist
+        if (archivosRutas != null && !archivosRutas.isEmpty()) {
+            for (String ruta : archivosRutas) {
+                if (!fileUploadUtils.fileExists(ruta)) {
+                    ExceptionUtils.throwValidationError("El archivo " + ruta + " no existe");
+                }
+            }
+        }
+        
+        // Create delivery
+        EntregaEjercicio entrega = new EntregaEjercicio(
+            repositorioAlumno.findById(currentUserId).orElse(null), 
+            ejercicio
+        );
+        
+        // Add files if provided
+        if (archivosRutas != null && !archivosRutas.isEmpty()) {
+            archivosRutas.forEach(entrega::agregarArchivo);
+        }
+        
+        EntregaEjercicio entregaGuardada = repositorioEntregaEjercicio.save(entrega);
+        return new DTOEntregaEjercicio(entregaGuardada);
+    }
+    
+    /**
+     * Elimina un archivo de una entrega
+     * @param entregaId ID de la entrega
+     * @param rutaArchivo Ruta del archivo a eliminar
+     * @return true si se eliminó correctamente
+     */
+    public boolean eliminarArchivoEntrega(Long entregaId, String rutaArchivo) {
+        EntregaEjercicio entrega = repositorioEntregaEjercicio.findById(entregaId).orElse(null);
+        ExceptionUtils.throwIfNotFound(entrega, "Entrega", "ID", entregaId);
+        
+        // Security check: Only the student who owns the delivery can delete files
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can delete files from any delivery
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!entrega.getAlumno().getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para eliminar archivos de esta entrega");
+            }
+        } else {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para eliminar archivos");
+        }
+        
+        // Check if delivery can be modified (only pending deliveries can have files deleted)
+        if (entrega.getEstado() != EEstadoEjercicio.PENDIENTE && entrega.getEstado() != EEstadoEjercicio.ENTREGADO) {
+            ExceptionUtils.throwValidationError("Solo se pueden eliminar archivos de entregas pendientes o entregadas");
+        }
+        
+        // Remove file from delivery
+        entrega.removerArchivo(rutaArchivo);
+        repositorioEntregaEjercicio.save(entrega);
+        
+        // Delete physical file
+        return fileUploadUtils.deleteFile(rutaArchivo);
+    }
+    
+    /**
+     * Modifica una entrega existente
+     * Permite actualizar comentarios y realizar operaciones con archivos
+     * @param entregaId ID de la entrega a modificar
+     * @param peticion Petición de modificación
+     * @return Respuesta con los resultados de las operaciones
+     */
+    public DTORespuestaModificacionEntrega modificarEntrega(Long entregaId, DTOPeticionModificarEntrega peticion) {
+        EntregaEjercicio entrega = repositorioEntregaEjercicio.findById(entregaId).orElse(null);
+        ExceptionUtils.throwIfNotFound(entrega, "Entrega", "ID", entregaId);
+        
+        // Security check: Only the student who owns the delivery can modify it
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can modify any delivery
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!entrega.getAlumno().getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para modificar esta entrega");
+            }
+        } else {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para modificar entregas");
+        }
+        
+        // Check if delivery can be modified (only pending or delivered deliveries can be modified)
+        if (entrega.getEstado() != EEstadoEjercicio.PENDIENTE && entrega.getEstado() != EEstadoEjercicio.ENTREGADO) {
+            ExceptionUtils.throwValidationError("Solo se pueden modificar entregas pendientes o entregadas");
+        }
+        
+        // Validate request
+        if (!peticion.esValida()) {
+            ExceptionUtils.throwValidationError("La petición debe incluir comentarios o operaciones con archivos");
+        }
+        
+        List<DTOOperacionArchivoResultado> operacionesRealizadas = new ArrayList<>();
+        List<String> errores = new ArrayList<>();
+        
+        // Update comments if provided
+        if (peticion.tieneComentarios()) {
+            entrega.setComentarios(peticion.comentarios());
+        }
+        
+        // Process file operations if provided
+        if (peticion.tieneOperacionesArchivos()) {
+            for (DTOOperacionArchivo operacion : peticion.operacionesArchivos()) {
+                if (!operacion.esValida()) {
+                    operacionesRealizadas.add(new DTOOperacionArchivoResultado(
+                        operacion.tipo(),
+                        operacion.rutaArchivo(),
+                        operacion.nuevoNombre(),
+                        false,
+                        "Operación inválida",
+                        "Los parámetros de la operación no son válidos"
+                    ));
+                    continue;
+                }
+                
+                try {
+                    DTOOperacionArchivoResultado resultado = procesarOperacionArchivo(entrega, operacion);
+                    operacionesRealizadas.add(resultado);
+                    
+                    if (!resultado.fueExitosa()) {
+                        errores.add(resultado.error());
+                    }
+                } catch (Exception e) {
+                    operacionesRealizadas.add(new DTOOperacionArchivoResultado(
+                        operacion.tipo(),
+                        operacion.rutaArchivo(),
+                        operacion.nuevoNombre(),
+                        false,
+                        "Error procesando operación",
+                        e.getMessage()
+                    ));
+                    errores.add("Error procesando operación " + operacion.tipo() + ": " + e.getMessage());
+                }
+            }
+        }
+        
+        // Save the modified delivery
+        EntregaEjercicio entregaModificada = repositorioEntregaEjercicio.save(entrega);
+        
+        return new DTORespuestaModificacionEntrega(
+            entregaModificada.getId(),
+            entregaModificada.getComentarios(),
+            entregaModificada.getArchivosEntregados(),
+            entregaModificada.contarArchivos(),
+            LocalDateTime.now(),
+            operacionesRealizadas,
+            errores
+        );
+    }
+    
+    /**
+     * Procesa una operación específica con archivos
+     * @param entrega Entrega a modificar
+     * @param operacion Operación a realizar
+     * @return Resultado de la operación
+     */
+    private DTOOperacionArchivoResultado procesarOperacionArchivo(EntregaEjercicio entrega, DTOOperacionArchivo operacion) {
+        // Verify file exists in delivery
+        if (!entrega.getArchivosEntregados().contains(operacion.rutaArchivo())) {
+            return new DTOOperacionArchivoResultado(
+                operacion.tipo(),
+                operacion.rutaArchivo(),
+                operacion.nuevoNombre(),
+                false,
+                "Archivo no encontrado",
+                "El archivo " + operacion.rutaArchivo() + " no existe en esta entrega"
+            );
+        }
+        
+        if (operacion.esEliminacion()) {
+            return procesarEliminacionArchivo(entrega, operacion);
+        } else if (operacion.esRenombrado()) {
+            return procesarRenombradoArchivo(entrega, operacion);
+        } else {
+            return new DTOOperacionArchivoResultado(
+                operacion.tipo(),
+                operacion.rutaArchivo(),
+                operacion.nuevoNombre(),
+                false,
+                "Tipo de operación no soportado",
+                "El tipo de operación " + operacion.tipo() + " no está soportado"
+            );
+        }
+    }
+    
+    /**
+     * Procesa la eliminación de un archivo
+     * @param entrega Entrega a modificar
+     * @param operacion Operación de eliminación
+     * @return Resultado de la operación
+     */
+    private DTOOperacionArchivoResultado procesarEliminacionArchivo(EntregaEjercicio entrega, DTOOperacionArchivo operacion) {
+        try {
+            // Remove file from delivery
+            entrega.removerArchivo(operacion.rutaArchivo());
+            
+            // Delete physical file
+            boolean archivoEliminado = fileUploadUtils.deleteFile(operacion.rutaArchivo());
+            
+            if (archivoEliminado) {
+                return new DTOOperacionArchivoResultado(
+                    operacion.tipo(),
+                    operacion.rutaArchivo(),
+                    null,
+                    true,
+                    "Archivo eliminado exitosamente",
+                    null
+                );
+            } else {
+                return new DTOOperacionArchivoResultado(
+                    operacion.tipo(),
+                    operacion.rutaArchivo(),
+                    null,
+                    false,
+                    "Error eliminando archivo físico",
+                    "No se pudo eliminar el archivo físico del sistema"
+                );
+            }
+        } catch (Exception e) {
+            return new DTOOperacionArchivoResultado(
+                operacion.tipo(),
+                operacion.rutaArchivo(),
+                null,
+                false,
+                "Error en eliminación",
+                e.getMessage()
+            );
+        }
+    }
+    
+    /**
+     * Procesa el renombrado de un archivo
+     * @param entrega Entrega a modificar
+     * @param operacion Operación de renombrado
+     * @return Resultado de la operación
+     */
+    private DTOOperacionArchivoResultado procesarRenombradoArchivo(EntregaEjercicio entrega, DTOOperacionArchivo operacion) {
+        try {
+            // Generate new file path with new name
+            String nuevaRuta = fileUploadUtils.renombrarArchivo(operacion.rutaArchivo(), operacion.nuevoNombre());
+            
+            if (nuevaRuta != null) {
+                // Update file path in delivery
+                entrega.removerArchivo(operacion.rutaArchivo());
+                entrega.agregarArchivo(nuevaRuta);
+                
+                return new DTOOperacionArchivoResultado(
+                    operacion.tipo(),
+                    operacion.rutaArchivo(),
+                    operacion.nuevoNombre(),
+                    true,
+                    "Archivo renombrado exitosamente",
+                    null
+                );
+            } else {
+                return new DTOOperacionArchivoResultado(
+                    operacion.tipo(),
+                    operacion.rutaArchivo(),
+                    operacion.nuevoNombre(),
+                    false,
+                    "Error renombrando archivo",
+                    "No se pudo renombrar el archivo físico"
+                );
+            }
+        } catch (Exception e) {
+            return new DTOOperacionArchivoResultado(
+                operacion.tipo(),
+                operacion.rutaArchivo(),
+                operacion.nuevoNombre(),
+                false,
+                "Error en renombrado",
+                e.getMessage()
+            );
+        }
+    }
+    
+    /**
+     * Agrega archivos adicionales a una entrega existente
+     * @param entregaId ID de la entrega
+     * @param archivos Lista de archivos a agregar
+     * @return Respuesta con información de los archivos agregados
+     */
+    public List<DTORespuestaSubidaArchivo> agregarArchivosEntrega(Long entregaId, List<MultipartFile> archivos) {
+        EntregaEjercicio entrega = repositorioEntregaEjercicio.findById(entregaId).orElse(null);
+        ExceptionUtils.throwIfNotFound(entrega, "Entrega", "ID", entregaId);
+        
+        // Security check: Only the student who owns the delivery can add files
+        if (securityUtils.hasRole("ADMIN") || securityUtils.hasRole("PROFESOR")) {
+            // Admins and professors can add files to any delivery
+        } else if (securityUtils.hasRole("ALUMNO")) {
+            Long currentUserId = securityUtils.getCurrentUserId();
+            if (!entrega.getAlumno().getId().equals(currentUserId)) {
+                ExceptionUtils.throwAccessDenied("No tienes permisos para agregar archivos a esta entrega");
+            }
+        } else {
+            ExceptionUtils.throwAccessDenied("No tienes permisos para agregar archivos");
+        }
+        
+        // Check if delivery can be modified
+        if (entrega.getEstado() != EEstadoEjercicio.PENDIENTE && entrega.getEstado() != EEstadoEjercicio.ENTREGADO) {
+            ExceptionUtils.throwValidationError("Solo se pueden agregar archivos a entregas pendientes o entregadas");
+        }
+        
+        // Validate files
+        if (archivos == null || archivos.isEmpty()) {
+            ExceptionUtils.throwValidationError("Debe proporcionar al menos un archivo");
+        }
+        
+        List<DTORespuestaSubidaArchivo> archivosAgregados = new ArrayList<>();
+        
+        for (MultipartFile archivo : archivos) {
+            try {
+                // Upload file
+                String rutaArchivo = fileUploadUtils.guardarArchivoEntrega(
+                    entrega.getAlumno().getId(),
+                    entrega.getEjercicio().getId(),
+                    archivo
+                );
+                
+                // Add to delivery
+                entrega.agregarArchivo(rutaArchivo);
+                
+                // Create response
+                archivosAgregados.add(new DTORespuestaSubidaArchivo(
+                    archivo.getOriginalFilename(),
+                    rutaArchivo,
+                    rutaArchivo,
+                    archivo.getContentType(),
+                    archivo.getSize(),
+                    fileUploadUtils.formatFileSize(archivo.getSize()),
+                    LocalDateTime.now(),
+                    fileUploadUtils.getFileExtension(archivo.getOriginalFilename()),
+                    fileUploadUtils.isImageFile(archivo.getOriginalFilename()),
+                    fileUploadUtils.isPdfFile(archivo.getOriginalFilename())
+                ));
+                
+            } catch (Exception e) {
+                throw new RuntimeException("Error procesando archivo " + archivo.getOriginalFilename() + ": " + e.getMessage());
+            }
+        }
+        
+        // Save the modified delivery
+        repositorioEntregaEjercicio.save(entrega);
+        
+        return archivosAgregados;
     }
 }

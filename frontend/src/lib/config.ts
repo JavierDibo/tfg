@@ -14,7 +14,6 @@ export const API_CONFIG = {
 
 // Environment-based configuration
 export const getApiBasePath = (): string => {
-	// In production, you might want to use environment variables
-	// return import.meta.env.VITE_API_BASE_URL || API_CONFIG.basePath;
-	return API_CONFIG.basePath;
+	// Use environment variable if available, otherwise fall back to default
+	return import.meta.env?.PUBLIC_BACKEND_URL || API_CONFIG.basePath;
 };

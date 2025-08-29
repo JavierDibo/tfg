@@ -59,7 +59,7 @@
 			loading = true;
 			error = null;
 
-			await MaterialService.deleteMaterial(materialId);
+			await MaterialService.deleteMaterial(parseInt(materialId));
 			goto('/materiales');
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Error deleting material';
@@ -85,6 +85,27 @@
 
 	function getMaterialTypeLabel(material: DTOMaterial): string {
 		return MaterialService.getMaterialTypeLabel(material);
+	}
+
+	function getFileExtension(url: string): string | null {
+		const extension = url.split('.').pop()?.toLowerCase();
+		return extension || null;
+	}
+
+	function getMaterialType(url: string): 'DOCUMENT' | 'IMAGE' | 'VIDEO' {
+		return MaterialService.getMaterialType(url);
+	}
+
+	function isVideo(url: string): boolean {
+		return getMaterialType(url) === 'VIDEO';
+	}
+
+	function isImage(url: string): boolean {
+		return getMaterialType(url) === 'IMAGE';
+	}
+
+	function isDocument(url: string): boolean {
+		return getMaterialType(url) === 'DOCUMENT';
 	}
 
 	onMount(() => {
@@ -228,16 +249,16 @@
 										</a>
 									</dd>
 								</div>
-								{#if material.fileExtension}
+								{#if material.url && getFileExtension(material.url)}
 									<div>
 										<dt class="text-sm font-medium text-gray-500">File Extension</dt>
-										<dd class="mt-1 text-sm text-gray-900">{material.fileExtension}</dd>
+										<dd class="mt-1 text-sm text-gray-900">{getFileExtension(material.url)}</dd>
 									</div>
 								{/if}
-								{#if material.materialType}
+								{#if material.url}
 									<div>
 										<dt class="text-sm font-medium text-gray-500">Material Type</dt>
-										<dd class="mt-1 text-sm text-gray-900">{material.materialType}</dd>
+										<dd class="mt-1 text-sm text-gray-900">{getMaterialTypeLabel(material)}</dd>
 									</div>
 								{/if}
 							</dl>
@@ -246,9 +267,9 @@
 						<div class="rounded-lg bg-gray-50 p-4">
 							<h3 class="mb-2 text-sm font-medium text-gray-900">Type Detection</h3>
 							<div class="flex items-center space-x-2 text-sm text-gray-600">
-								<span>Video: {material.video ? '✅' : '❌'}</span>
-								<span>Image: {material.image ? '✅' : '❌'}</span>
-								<span>Document: {material.document ? '✅' : '❌'}</span>
+								<span>Video: {material.url && isVideo(material.url) ? '✅' : '❌'}</span>
+								<span>Image: {material.url && isImage(material.url) ? '✅' : '❌'}</span>
+								<span>Document: {material.url && isDocument(material.url) ? '✅' : '❌'}</span>
 							</div>
 						</div>
 					</div>

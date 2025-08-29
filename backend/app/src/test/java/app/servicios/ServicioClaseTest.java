@@ -43,6 +43,7 @@ import app.dtos.DTOProfesorPublico;
 import app.entidades.Profesor;
 import app.entidades.Alumno;
 import app.entidades.Ejercicio;
+import java.util.ArrayList;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests para ServicioClase")
@@ -840,5 +841,128 @@ class ServicioClaseTest {
         
         // Verify that buscarClases was called (for student)
         verify(repositorioClase).findByGeneralSearch(eq("Java"), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("buscarClasesConEstadoInscripcion para ALUMNO debe incluir estado de inscripción")
+    void testBuscarClasesConEstadoInscripcionParaAlumno() {
+        // Given
+        Long alumnoId = 1L;
+        DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
+            null, null, null, null, null, null, null, null, 0, 20, "id", "ASC");
+        
+        Clase clase1 = new Curso();
+        clase1.setId(1L);
+        clase1.setTitle("Curso 1");
+        clase1.setDescription("Descripción 1");
+        clase1.setPrice(new BigDecimal("100"));
+        clase1.setFormat(EPresencialidad.ONLINE);
+        clase1.setImage("imagen1.jpg");
+        clase1.setDifficulty(EDificultad.INTERMEDIO);
+        clase1.setStudents(new ArrayList<>());
+        clase1.setTeachers(new ArrayList<>());
+        clase1.setExercises(new ArrayList<>());
+        clase1.setMaterial(new ArrayList<>());
+        
+        Clase clase2 = new Taller();
+        clase2.setId(2L);
+        clase2.setTitle("Taller 1");
+        clase2.setDescription("Descripción 2");
+        clase2.setPrice(new BigDecimal("50"));
+        clase2.setFormat(EPresencialidad.PRESENCIAL);
+        clase2.setImage("imagen2.jpg");
+        clase2.setDifficulty(EDificultad.BASICO);
+        clase2.setStudents(new ArrayList<>());
+        clase2.setTeachers(new ArrayList<>());
+        clase2.setExercises(new ArrayList<>());
+        clase2.setMaterial(new ArrayList<>());
+        
+        List<Clase> todasLasClases = Arrays.asList(clase1, clase2);
+        List<Clase> clasesInscritas = Arrays.asList(clase1); // El alumno está inscrito en clase1
+        
+        Page<Clase> page = new PageImpl<>(todasLasClases);
+        
+        // Mock security utils
+        when(securityUtils.isStudent()).thenReturn(true);
+        when(securityUtils.getCurrentUserId()).thenReturn(alumnoId);
+        
+        // Mock repository methods
+        when(repositorioClase.findByAlumnoId(alumnoId)).thenReturn(clasesInscritas);
+        when(repositorioClase.findAll(any(Pageable.class))).thenReturn(page);
+        
+        // When
+        DTORespuestaPaginada<DTOClaseConEstadoInscripcion> resultado = servicioClase.buscarClasesConEstadoInscripcion(parametros);
+        
+        // Then
+        assertNotNull(resultado);
+        assertEquals(2, resultado.content().size());
+        
+        // Verificar que la clase1 tiene isEnrolled = true
+        DTOClaseConEstadoInscripcion clase1DTO = resultado.content().get(0);
+        assertEquals(1L, clase1DTO.id());
+        assertTrue(clase1DTO.isEnrolled());
+        assertNotNull(clase1DTO.fechaInscripcion());
+        
+        // Verificar que la clase2 tiene isEnrolled = false
+        DTOClaseConEstadoInscripcion clase2DTO = resultado.content().get(1);
+        assertEquals(2L, clase2DTO.id());
+        assertFalse(clase2DTO.isEnrolled());
+        assertNull(clase2DTO.fechaInscripcion());
+        
+        // Verify interactions
+        verify(securityUtils).isStudent();
+        verify(securityUtils).getCurrentUserId();
+        verify(repositorioClase).findByAlumnoId(alumnoId);
+        verify(repositorioClase).findAll(any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("buscarClasesConEstadoInscripcion para ADMIN debe retornar todas las clases sin estado de inscripción")
+    void testBuscarClasesConEstadoInscripcionParaAdmin() {
+        // Given
+        DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
+            null, null, null, null, null, null, null, null, 0, 20, "id", "ASC");
+        
+        Clase clase1 = new Curso();
+        clase1.setId(1L);
+        clase1.setTitle("Curso 1");
+        clase1.setDescription("Descripción 1");
+        clase1.setPrice(new BigDecimal("100"));
+        clase1.setFormat(EPresencialidad.ONLINE);
+        clase1.setImage("imagen1.jpg");
+        clase1.setDifficulty(EDificultad.INTERMEDIO);
+        clase1.setStudents(new ArrayList<>());
+        clase1.setTeachers(new ArrayList<>());
+        clase1.setExercises(new ArrayList<>());
+        clase1.setMaterial(new ArrayList<>());
+        
+        List<Clase> clases = Arrays.asList(clase1);
+        Page<Clase> page = new PageImpl<>(clases);
+        
+        DTORespuestaPaginada<DTOClase> respuestaEsperada = DTORespuestaPaginada.fromPage(page, "id", "ASC");
+        
+        // Mock security utils
+        when(securityUtils.isAdmin()).thenReturn(true);
+        when(securityUtils.isProfessor()).thenReturn(false);
+        
+        // Mock service method
+        when(servicioClase.buscarClases(parametros)).thenReturn(respuestaEsperada);
+        
+        // When
+        DTORespuestaPaginada<DTOClaseConEstadoInscripcion> resultado = servicioClase.buscarClasesConEstadoInscripcion(parametros);
+        
+        // Then
+        assertNotNull(resultado);
+        assertEquals(1, resultado.content().size());
+        
+        // Verificar que todas las clases tienen isEnrolled = false para admin
+        DTOClaseConEstadoInscripcion claseDTO = resultado.content().get(0);
+        assertEquals(1L, claseDTO.id());
+        assertFalse(claseDTO.isEnrolled());
+        assertNull(claseDTO.fechaInscripcion());
+        
+        // Verify interactions
+        verify(securityUtils).isAdmin();
+        verify(servicioClase).buscarClases(parametros);
     }
 }

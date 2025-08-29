@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { DTOPeticionRegistroAlumno } from '$lib/generated/api';
+	import type { DTOCrearAlumno } from '$lib/generated/api';
 	import { AlumnoService } from '$lib/services/alumnoService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 
 	// Form state
-	let formData: DTOPeticionRegistroAlumno = $state({
+	let formData: DTOCrearAlumno = $state({
 		username: '',
 		password: '',
 		firstName: '',
@@ -116,7 +116,7 @@
 	}
 
 	// Real-time field validation
-	function validateField(field: keyof DTOPeticionRegistroAlumno, value: string) {
+	function validateField(field: keyof DTOCrearAlumno, value: string) {
 		delete fieldErrors[field];
 
 		switch (field) {

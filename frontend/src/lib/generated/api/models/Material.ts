@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Clase } from './Clase';
+import {
+    ClaseFromJSON,
+    ClaseFromJSONTyped,
+    ClaseToJSON,
+    ClaseToJSONTyped,
+} from './Clase';
+
 /**
  * 
  * @export
@@ -21,10 +29,10 @@ import { mapValues } from '../runtime';
 export interface Material {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof Material
      */
-    id: string;
+    id?: number;
     /**
      * 
      * @type {string}
@@ -37,13 +45,18 @@ export interface Material {
      * @memberof Material
      */
     url: string;
+    /**
+     * 
+     * @type {Array<Clase>}
+     * @memberof Material
+     */
+    classes?: Array<Clase>;
 }
 
 /**
  * Check if a given object implements the Material interface.
  */
 export function instanceOfMaterial(value: object): value is Material {
-    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('url' in value) || value['url'] === undefined) return false;
     return true;
@@ -59,9 +72,10 @@ export function MaterialFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     }
     return {
         
-        'id': json['id'],
+        'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'],
         'url': json['url'],
+        'classes': json['classes'] == null ? undefined : ((json['classes'] as Array<any>).map(ClaseFromJSON)),
     };
 }
 
@@ -79,6 +93,7 @@ export function MaterialToJSONTyped(value?: Material | null, ignoreDiscriminator
         'id': value['id'],
         'name': value['name'],
         'url': value['url'],
+        'classes': value['classes'] == null ? undefined : ((value['classes'] as Array<any>).map(ClaseToJSON)),
     };
 }
 

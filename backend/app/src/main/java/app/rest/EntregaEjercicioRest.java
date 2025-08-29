@@ -3,6 +3,7 @@ package app.rest;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +19,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import app.dtos.DTOEntregaEjercicio;
 import app.dtos.DTOPeticionCrearEntregaEjercicio;
 import app.dtos.DTOPeticionActualizarEntregaEjercicio;
+import app.dtos.DTOPeticionModificarEntrega;
+import app.dtos.DTORespuestaModificacionEntrega;
+import app.dtos.DTOOperacionArchivo;
 import app.dtos.DTORespuestaPaginada;
+import app.dtos.DTOPeticionSubirArchivoEntrega;
+import app.dtos.DTORespuestaSubidaArchivo;
+import app.dtos.DTOPeticionCrearEntregaConArchivos;
 import app.servicios.ServicioEntregaEjercicio;
 import app.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -409,5 +417,317 @@ public class EntregaEjercicioRest extends BaseRestController {
         
         DTOEntregaEjercicio dtoEntrega = servicioEntregaEjercicio.obtenerEntregaConEjercicio(id);
         return new ResponseEntity<>(dtoEntrega, HttpStatus.OK);
+    }
+
+    // ===== FILE UPLOAD ENDPOINTS =====
+
+    /**
+     * Upload a single file for exercise delivery
+     */
+    @PostMapping("/upload-file")
+    @Operation(
+        summary = "Upload file for exercise delivery",
+        description = "Uploads a single file (PNG or PDF) for exercise delivery. Students can only upload files for themselves."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "File uploaded successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTORespuestaSubidaArchivo.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid file or exercise ID"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ALUMNO role is required"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Exercise not found"
+        )
+    })
+    public ResponseEntity<DTORespuestaSubidaArchivo> subirArchivo(
+            @Parameter(description = "File to upload (PNG or PDF, max 10MB)", required = true)
+            @RequestParam("file") MultipartFile file,
+            @Parameter(description = "Exercise ID", required = true)
+            @RequestParam("ejercicioId") @Min(value = 1, message = "The exercise ID must be greater than 0") Long ejercicioId) {
+        
+        DTORespuestaSubidaArchivo respuesta = servicioEntregaEjercicio.subirArchivoEntrega(file, ejercicioId);
+        return new ResponseEntity<>(respuesta, HttpStatus.CREATED);
+    }
+
+    /**
+     * Upload multiple files for exercise delivery
+     */
+    @PostMapping("/upload-files")
+    @Operation(
+        summary = "Upload multiple files for exercise delivery",
+        description = "Uploads multiple files (PNG or PDF) for exercise delivery. Students can only upload files for themselves."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Files uploaded successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTORespuestaSubidaArchivo.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid files or exercise ID"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ALUMNO role is required"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Exercise not found"
+        )
+    })
+    public ResponseEntity<List<DTORespuestaSubidaArchivo>> subirArchivos(
+            @Parameter(description = "Files to upload (PNG or PDF, max 10MB each)", required = true)
+            @RequestParam("files") List<MultipartFile> files,
+            @Parameter(description = "Exercise ID", required = true)
+            @RequestParam("ejercicioId") @Min(value = 1, message = "The exercise ID must be greater than 0") Long ejercicioId) {
+        
+        List<DTORespuestaSubidaArchivo> respuestas = servicioEntregaEjercicio.subirArchivosEntrega(files, ejercicioId);
+        return new ResponseEntity<>(respuestas, HttpStatus.CREATED);
+    }
+
+    /**
+     * Create delivery with previously uploaded files
+     */
+    @PostMapping("/create-with-files")
+    @Operation(
+        summary = "Create delivery with uploaded files",
+        description = "Creates a new exercise delivery using previously uploaded files. Students can only create deliveries for themselves."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Delivery created successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTOEntregaEjercicio.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input data"
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Conflict - Delivery already exists"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - ALUMNO role is required"
+        )
+    })
+    public ResponseEntity<DTOEntregaEjercicio> crearEntregaConArchivos(
+            @Parameter(description = "Delivery creation data with file paths", required = true)
+            @Valid @RequestBody DTOPeticionCrearEntregaConArchivos peticion) {
+        
+        DTOEntregaEjercicio dtoEntrega = servicioEntregaEjercicio.crearEntregaConArchivos(
+            peticion.ejercicioId(),
+            peticion.archivosRutas()
+        );
+        
+        return new ResponseEntity<>(dtoEntrega, HttpStatus.CREATED);
+    }
+
+    /**
+     * Delete a file from a delivery
+     */
+    @DeleteMapping("/{id}/files/{rutaArchivo}")
+    @Operation(
+        summary = "Delete file from delivery",
+        description = "Deletes a file from a delivery. Students can only delete files from their own deliveries."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "File deleted successfully"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid delivery ID or file path"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to delete this file"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Delivery or file not found"
+        )
+    })
+    public ResponseEntity<Object> eliminarArchivo(
+            @Parameter(description = "ID of the delivery", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
+            @Parameter(description = "File path to delete", required = true)
+            @PathVariable String rutaArchivo) {
+        
+        boolean eliminado = servicioEntregaEjercicio.eliminarArchivoEntrega(id, rutaArchivo);
+        
+        var respuesta = new Object() {
+            public final boolean success = eliminado;
+            public final String message = eliminado ? "Archivo eliminado correctamente" : "Error al eliminar el archivo";
+        };
+        
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
+    // ===== DELIVERY MODIFICATION ENDPOINTS =====
+
+    /**
+     * Modify an existing delivery
+     */
+    @PatchMapping("/{id}/modify")
+    @Operation(
+        summary = "Modify delivery",
+        description = "Modifies an existing delivery by updating comments and performing file operations. Students can only modify their own deliveries."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Delivery modified successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTORespuestaModificacionEntrega.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input data or operation"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to modify this delivery"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Delivery not found"
+        )
+    })
+    public ResponseEntity<DTORespuestaModificacionEntrega> modificarEntrega(
+            @Parameter(description = "ID of the delivery", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
+            @Parameter(description = "Modification request", required = true)
+            @Valid @RequestBody DTOPeticionModificarEntrega peticion) {
+        
+        DTORespuestaModificacionEntrega respuesta = servicioEntregaEjercicio.modificarEntrega(id, peticion);
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
+    /**
+     * Add files to an existing delivery
+     */
+    @PostMapping("/{id}/add-files")
+    @Operation(
+        summary = "Add files to delivery",
+        description = "Adds additional files to an existing delivery. Students can only add files to their own deliveries."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Files added successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = List.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid files or delivery ID"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to add files to this delivery"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Delivery not found"
+        )
+    })
+    public ResponseEntity<List<DTORespuestaSubidaArchivo>> agregarArchivos(
+            @Parameter(description = "ID of the delivery", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id,
+            @Parameter(description = "Files to add (PNG or PDF, max 10MB each)", required = true)
+            @RequestParam("files") List<MultipartFile> files) {
+        
+        List<DTORespuestaSubidaArchivo> archivosAgregados = servicioEntregaEjercicio.agregarArchivosEntrega(id, files);
+        return new ResponseEntity<>(archivosAgregados, HttpStatus.OK);
+    }
+
+    /**
+     * Delete all files from a delivery
+     */
+    @DeleteMapping("/{id}/files")
+    @Operation(
+        summary = "Delete all files from delivery",
+        description = "Deletes all files from a delivery. Students can only delete files from their own deliveries."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "All files deleted successfully"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid delivery ID"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to delete files from this delivery"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Delivery not found"
+        )
+    })
+    public ResponseEntity<Object> eliminarTodosLosArchivos(
+            @Parameter(description = "ID of the delivery", required = true)
+            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
+        
+        // Create a modification request to delete all files
+        List<DTOOperacionArchivo> operaciones = new ArrayList<>();
+        
+        // Get the delivery to find all files
+        DTOEntregaEjercicio entrega = servicioEntregaEjercicio.obtenerEntregaPorId(id);
+        if (entrega.archivosEntregados() != null) {
+            for (String archivo : entrega.archivosEntregados()) {
+                operaciones.add(new DTOOperacionArchivo(
+                    DTOOperacionArchivo.TipoOperacion.ELIMINAR,
+                    archivo,
+                    null
+                ));
+            }
+        }
+        
+        DTOPeticionModificarEntrega peticion = new DTOPeticionModificarEntrega(
+            entrega.comentarios(), // Keep existing comments
+            operaciones
+        );
+        
+        DTORespuestaModificacionEntrega respuesta = servicioEntregaEjercicio.modificarEntrega(id, peticion);
+        
+        var resultado = new Object() {
+            public final boolean success = respuesta.fueExitosa();
+            public final String message = respuesta.fueExitosa() ? 
+                "Todos los archivos eliminados correctamente" : 
+                "Error al eliminar algunos archivos";
+            public final int archivosEliminados = (int) respuesta.getOperacionesExitosas();
+            public final int errores = (int) respuesta.getOperacionesFallidas();
+        };
+        
+        return new ResponseEntity<>(resultado, HttpStatus.OK);
     }
 }

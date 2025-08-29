@@ -21,10 +21,10 @@ import { mapValues } from '../runtime';
 export interface DTOMaterial {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOMaterial
      */
-    id?: string;
+    id?: number;
     /**
      * 
      * @type {string}
@@ -37,36 +37,6 @@ export interface DTOMaterial {
      * @memberof DTOMaterial
      */
     url?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOMaterial
-     */
-    materialType?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOMaterial
-     */
-    fileExtension?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DTOMaterial
-     */
-    image?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DTOMaterial
-     */
-    video?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DTOMaterial
-     */
-    document?: boolean;
 }
 
 /**
@@ -89,11 +59,6 @@ export function DTOMaterialFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'] == null ? undefined : json['name'],
         'url': json['url'] == null ? undefined : json['url'],
-        'materialType': json['materialType'] == null ? undefined : json['materialType'],
-        'fileExtension': json['fileExtension'] == null ? undefined : json['fileExtension'],
-        'image': json['image'] == null ? undefined : json['image'],
-        'video': json['video'] == null ? undefined : json['video'],
-        'document': json['document'] == null ? undefined : json['document'],
     };
 }
 
@@ -111,11 +76,6 @@ export function DTOMaterialToJSONTyped(value?: DTOMaterial | null, ignoreDiscrim
         'id': value['id'],
         'name': value['name'],
         'url': value['url'],
-        'materialType': value['materialType'],
-        'fileExtension': value['fileExtension'],
-        'image': value['image'],
-        'video': value['video'],
-        'document': value['document'],
     };
 }
 

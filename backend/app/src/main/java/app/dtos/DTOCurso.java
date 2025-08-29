@@ -27,7 +27,7 @@ public record DTOCurso(
         List<String> alumnosId,
         List<String> profesoresId,
         List<String> ejerciciosId,
-        List<Material> material,
+        List<DTOMaterial> material,
         LocalDate fechaInicio,
         LocalDate fechaFin
 ) {
@@ -53,7 +53,9 @@ public record DTOCurso(
             curso.getExercises() != null ? curso.getExercises().stream()
                 .map(ejercicio -> ejercicio.getId().toString())
                 .collect(Collectors.toList()) : null,
-            curso.getMaterial() != null ? new ArrayList<>(curso.getMaterial()) : null,
+            curso.getMaterial() != null ? curso.getMaterial().stream()
+                .map(DTOMaterial::new)
+                .collect(Collectors.toList()) : new ArrayList<>(),
             curso.getFechaInicio(),
             curso.getFechaFin()
         );

@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { Material } from './Material';
+import type { DTOMaterial } from './DTOMaterial';
 import {
-    MaterialFromJSON,
-    MaterialFromJSONTyped,
-    MaterialToJSON,
-    MaterialToJSONTyped,
-} from './Material';
+    DTOMaterialFromJSON,
+    DTOMaterialFromJSONTyped,
+    DTOMaterialToJSON,
+    DTOMaterialToJSONTyped,
+} from './DTOMaterial';
 
 /**
  * 
@@ -89,10 +89,10 @@ export interface DTOCurso {
     ejerciciosId?: Array<string>;
     /**
      * 
-     * @type {Array<Material>}
+     * @type {Array<DTOMaterial>}
      * @memberof DTOCurso
      */
-    material?: Array<Material>;
+    material?: Array<DTOMaterial>;
     /**
      * 
      * @type {Date}
@@ -110,13 +110,13 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
-    porcentajeProgreso?: number;
+    numeroProfesores?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOCurso
      */
-    duracionEnSemanas?: number;
+    numeroAlumnos?: number;
     /**
      * 
      * @type {number}
@@ -128,13 +128,13 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
-    numeroProfesores?: number;
+    porcentajeProgreso?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOCurso
      */
-    numeroAlumnos?: number;
+    duracionEnSemanas?: number;
 }
 
 
@@ -186,14 +186,14 @@ export function DTOCursoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'alumnosId': json['alumnosId'] == null ? undefined : json['alumnosId'],
         'profesoresId': json['profesoresId'] == null ? undefined : json['profesoresId'],
         'ejerciciosId': json['ejerciciosId'] == null ? undefined : json['ejerciciosId'],
-        'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(MaterialFromJSON)),
+        'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(DTOMaterialFromJSON)),
         'fechaInicio': json['fechaInicio'] == null ? undefined : (new Date(json['fechaInicio'])),
         'fechaFin': json['fechaFin'] == null ? undefined : (new Date(json['fechaFin'])),
-        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
-        'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
-        'duracionEnDias': json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
         'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
         'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
+        'duracionEnDias': json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
+        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
+        'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
     };
 }
 
@@ -218,14 +218,14 @@ export function DTOCursoToJSONTyped(value?: DTOCurso | null, ignoreDiscriminator
         'alumnosId': value['alumnosId'],
         'profesoresId': value['profesoresId'],
         'ejerciciosId': value['ejerciciosId'],
-        'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(MaterialToJSON)),
+        'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(DTOMaterialToJSON)),
         'fechaInicio': value['fechaInicio'] == null ? undefined : ((value['fechaInicio']).toISOString().substring(0,10)),
         'fechaFin': value['fechaFin'] == null ? undefined : ((value['fechaFin']).toISOString().substring(0,10)),
-        'porcentajeProgreso': value['porcentajeProgreso'],
-        'duracionEnSemanas': value['duracionEnSemanas'],
-        'duracionEnDias': value['duracionEnDias'],
         'numeroProfesores': value['numeroProfesores'],
         'numeroAlumnos': value['numeroAlumnos'],
+        'duracionEnDias': value['duracionEnDias'],
+        'porcentajeProgreso': value['porcentajeProgreso'],
+        'duracionEnSemanas': value['duracionEnSemanas'],
     };
 }
 

@@ -664,4 +664,37 @@ public class EntregaEjercicioRestTest {
         // Verify that the service was called with current user ID
         verify(servicioEntregaEjercicio).crearEntrega(1L, 1L, Arrays.asList("file1.pdf"));
     }
+
+    @Test
+    @WithMockUser(roles = "ALUMNO")
+    public void testObtenerEntregasPaginadas_ConEstadoPendiente_DebeFuncionarCorrectamente() throws Exception {
+        // Given
+        List<DTOEntregaEjercicio> mockEntregas = Arrays.asList(
+            new DTOEntregaEjercicio(1L, null, LocalDateTime.now(), 
+                EEstadoEjercicio.PENDIENTE, Arrays.asList("file1.pdf"), 12L, 1L, 1, null)
+        );
+        
+        DTORespuestaPaginada<DTOEntregaEjercicio> mockResponse = DTORespuestaPaginada.of(
+            mockEntregas, 0, 20, 1, "fechaEntrega", "desc"
+        );
+        
+        // Mock the service method
+        when(servicioEntregaEjercicio.obtenerEntregasPaginadas(
+            eq("12"), isNull(), eq("PENDIENTE"), isNull(), isNull(), eq(0), eq(20), eq("fechaEntrega"), eq("desc")
+        )).thenReturn(mockResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/entregas")
+                .param("alumnoId", "12")
+                .param("estado", "PENDIENTE")
+                .param("page", "0")
+                .param("size", "20")
+                .param("sortBy", "fechaEntrega")
+                .param("sortDirection", "desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").exists())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].id").value(1))
+                .andExpect(jsonPath("$.content[0].estado").value("PENDIENTE"));
+    }
 }

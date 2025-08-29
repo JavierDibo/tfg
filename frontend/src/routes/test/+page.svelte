@@ -17,9 +17,9 @@
 		DTOProfesor,
 		DTOMaterial,
 		DTOPeticionCrearCurso,
-		DTOPeticionRegistroAlumno,
+		DTOCrearAlumno,
 		DTOPeticionRegistroProfesor,
-		DTOActualizacionAlumno,
+		DTOActualizarAlumno,
 		DTOActualizacionProfesor
 	} from '$lib/generated/api';
 
@@ -383,7 +383,7 @@
 			);
 			try {
 				const testDataGen = generateValidTestData();
-				const newStudent: DTOPeticionRegistroAlumno = {
+				const newStudent: DTOCrearAlumno = {
 					firstName: testDataGen.validName,
 					lastName: 'TestStudent',
 					email: testDataGen.validEmail,
@@ -393,7 +393,7 @@
 					dni: testDataGen.validDNI
 				};
 				const createdStudent = await alumnoApi.crearAlumno({
-					dTOPeticionRegistroAlumno: newStudent
+					dTOCrearAlumno: newStudent
 				});
 				testData.createdIds.student = createdStudent.id || null;
 				addResult(
@@ -425,7 +425,7 @@
 				);
 				try {
 					const testDataGen = generateValidTestData();
-					const updateData: DTOActualizacionAlumno = {
+					const updateData: DTOActualizarAlumno = {
 						firstName: testDataGen.validName,
 						lastName: 'UpdatedStudent',
 						email: testDataGen.validEmail,
@@ -433,7 +433,7 @@
 					};
 					const updatedStudent = await alumnoApi.actualizarAlumnoParcial({
 						id: testData.createdIds.student,
-						dTOActualizacionAlumno: updateData
+						dTOActualizarAlumno: updateData
 					});
 					addResult(
 						'Students',
@@ -637,8 +637,8 @@
 					'running',
 					`Getting material ${testMaterial.id}...`
 				);
-				const materialById = await materialApi.obtenerMaterialPorId({
-					id: parseInt(testMaterial.id!)
+				const materialById = await materialApi.obtenerMaterial({
+					id: testMaterial.id!
 				});
 				addResult(
 					'Materials',
@@ -657,7 +657,7 @@
 					url: 'https://example.com/material.pdf'
 				};
 				const createdMaterial = await materialApi.crearMaterial(newMaterial);
-				testData.createdIds.material = createdMaterial.id ? parseInt(createdMaterial.id) : null;
+				testData.createdIds.material = createdMaterial.id || null;
 				addResult(
 					'Materials',
 					'Create',

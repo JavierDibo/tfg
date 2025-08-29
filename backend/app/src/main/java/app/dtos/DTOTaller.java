@@ -27,7 +27,7 @@ public record DTOTaller(
         List<String> alumnosId,
         List<String> profesoresId,
         List<String> ejerciciosId,
-        List<Material> material,
+        List<DTOMaterial> material,
         Integer duracionHoras,
         LocalDate fechaRealizacion,
         LocalTime horaComienzo
@@ -54,7 +54,9 @@ public record DTOTaller(
             taller.getExercises() != null ? taller.getExercises().stream()
                 .map(ejercicio -> ejercicio.getId().toString())
                 .collect(Collectors.toList()) : null,
-            taller.getMaterial() != null ? new ArrayList<>(taller.getMaterial()) : null,
+            taller.getMaterial() != null ? taller.getMaterial().stream()
+                .map(DTOMaterial::new)
+                .collect(Collectors.toList()) : new ArrayList<>(),
             taller.getDuracionHoras(),
             taller.getFechaRealizacion(),
             taller.getHoraComienzo()

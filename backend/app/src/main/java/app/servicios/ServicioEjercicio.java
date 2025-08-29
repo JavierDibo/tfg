@@ -12,11 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import app.dtos.DTOEjercicio;
+import app.dtos.DTOEjercicioConEntrega;
+import app.dtos.DTOEntregaEjercicio;
 import app.dtos.DTORespuestaPaginada;
 import app.entidades.Ejercicio;
 import app.entidades.Clase;
 import app.repositorios.RepositorioEjercicio;
 import app.repositorios.RepositorioClase;
+import app.repositorios.RepositorioEntregaEjercicio;
 import app.util.ExceptionUtils;
 import app.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class ServicioEjercicio {
 
     private final RepositorioEjercicio repositorioEjercicio;
     private final RepositorioClase repositorioClase;
+    private final RepositorioEntregaEjercicio repositorioEntregaEjercicio;
     private final SecurityUtils securityUtils;
 
     @Transactional(readOnly = true)
@@ -378,6 +382,125 @@ public class ServicioEjercicio {
 
         // Build response
         return new DTORespuestaPaginada<DTOEjercicio>(
+            ejercicios,
+            ejercicioPage.getNumber(),
+            ejercicioPage.getSize(),
+            ejercicioPage.getTotalElements(),
+            ejercicioPage.getTotalPages(),
+            ejercicioPage.isFirst(),
+            ejercicioPage.isLast(),
+            ejercicioPage.hasContent(),
+            sortBy,
+            sortDirection
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public DTORespuestaPaginada<DTOEjercicioConEntrega> obtenerEjerciciosConEntregaPaginados(
+            String q,
+            String name,
+            String statement,
+            String classId,
+            String status,
+            int page,
+            int size,
+            String sortBy,
+            String sortDirection) {
+
+        // Security check: Only ALUMNO can access exercises with delivery info
+        if (!securityUtils.hasRole("ALUMNO")) {
+            ExceptionUtils.throwAccessDenied("Solo los estudiantes pueden acceder a ejercicios con información de entrega");
+        }
+
+        // Get current user ID
+        Long currentUserId = securityUtils.getCurrentUserId();
+        if (currentUserId == null) {
+            ExceptionUtils.throwAccessDenied("Usuario no autenticado");
+        }
+
+        // Validate pagination parameters
+        if (page < 0) {
+            ExceptionUtils.throwValidationError("El número de página no puede ser negativo");
+        }
+        if (size < 1 || size > 100) {
+            ExceptionUtils.throwValidationError("El tamaño de página debe estar entre 1 y 100");
+        }
+
+        // Create pageable
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // Build query based on filters using simple approach
+        Page<Ejercicio> ejercicioPage;
+        
+        // Prepare filter parameters
+        String searchTerm = (q != null && !q.trim().isEmpty()) ? q.trim() : null;
+        String nombreFilter = (name != null && !name.trim().isEmpty()) ? name.trim() : null;
+        String enunciadoFilter = (statement != null && !statement.trim().isEmpty()) ? statement.trim() : null;
+        String classIdFilter = (classId != null && !classId.trim().isEmpty()) ? classId.trim() : null;
+        
+        // Simple filtering approach - use basic Spring Data JPA methods
+        if (searchTerm != null) {
+            // Search in both name and statement
+            ejercicioPage = repositorioEjercicio.findByNameContainingOrStatementContaining(
+                searchTerm, searchTerm, pageable);
+        } else if (nombreFilter != null && enunciadoFilter != null) {
+            // Both name and statement filters
+            ejercicioPage = repositorioEjercicio.findByNameContainingOrStatementContaining(
+                nombreFilter, enunciadoFilter, pageable);
+        } else if (nombreFilter != null) {
+            // Only name filter
+            ejercicioPage = repositorioEjercicio.findByNameContaining(nombreFilter, pageable);
+        } else if (enunciadoFilter != null) {
+            // Only statement filter
+            ejercicioPage = repositorioEjercicio.findByStatementContaining(enunciadoFilter, pageable);
+        } else if (classIdFilter != null) {
+            // Only class ID filter
+            ejercicioPage = repositorioEjercicio.findByClaseId(Long.parseLong(classIdFilter), pageable);
+        } else {
+            // No filters, get all
+            ejercicioPage = repositorioEjercicio.findAll(pageable);
+        }
+
+        // Apply status filter in memory if needed
+        List<Ejercicio> filteredContent = ejercicioPage.getContent();
+        if (status != null && !status.trim().isEmpty()) {
+            String statusFilter = status.toUpperCase();
+            filteredContent = filteredContent.stream()
+                .filter(ejercicio -> {
+                    switch (statusFilter) {
+                        case "ACTIVE":
+                            return ejercicio.estaEnPlazo();
+                        case "EXPIRED":
+                            return ejercicio.haVencido();
+                        case "FUTURE":
+                            return ejercicio.noHaComenzado();
+                        case "WITH_DELIVERIES":
+                            return ejercicio.contarEntregas() > 0;
+                        case "WITHOUT_DELIVERIES":
+                            return ejercicio.contarEntregas() == 0;
+                        default:
+                            return true;
+                    }
+                })
+                .collect(Collectors.toList());
+        }
+
+        // Convert to DTOs with delivery information
+        List<DTOEjercicioConEntrega> ejercicios = filteredContent.stream()
+                .map(ejercicio -> {
+                    // Check if current user has a delivery for this exercise
+                    var entrega = repositorioEntregaEjercicio.findByAlumnoEntreganteIdAndEjercicioId(currentUserId, ejercicio.getId());
+                    if (entrega.isPresent()) {
+                        return DTOEjercicioConEntrega.from(ejercicio, new DTOEntregaEjercicio(entrega.get()));
+                    } else {
+                        return DTOEjercicioConEntrega.from(ejercicio);
+                    }
+                })
+                .collect(Collectors.toList());
+
+        // Build response
+        return new DTORespuestaPaginada<DTOEjercicioConEntrega>(
             ejercicios,
             ejercicioPage.getNumber(),
             ejercicioPage.getSize(),

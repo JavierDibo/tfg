@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { Material } from './Material';
+import type { DTOMaterial } from './DTOMaterial';
 import {
-    MaterialFromJSON,
-    MaterialFromJSONTyped,
-    MaterialToJSON,
-    MaterialToJSONTyped,
-} from './Material';
+    DTOMaterialFromJSON,
+    DTOMaterialFromJSONTyped,
+    DTOMaterialToJSON,
+    DTOMaterialToJSONTyped,
+} from './DTOMaterial';
 
 /**
  * 
@@ -89,10 +89,10 @@ export interface DTOClase {
     ejerciciosId?: Array<string>;
     /**
      * 
-     * @type {Array<Material>}
+     * @type {Array<DTOMaterial>}
      * @memberof DTOClase
      */
-    material?: Array<Material>;
+    material?: Array<DTOMaterial>;
     /**
      * 
      * @type {string}
@@ -174,7 +174,7 @@ export function DTOClaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'alumnosId': json['alumnosId'] == null ? undefined : json['alumnosId'],
         'profesoresId': json['profesoresId'] == null ? undefined : json['profesoresId'],
         'ejerciciosId': json['ejerciciosId'] == null ? undefined : json['ejerciciosId'],
-        'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(MaterialFromJSON)),
+        'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(DTOMaterialFromJSON)),
         'tipoClase': json['tipoClase'] == null ? undefined : json['tipoClase'],
         'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
         'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
@@ -204,7 +204,7 @@ export function DTOClaseToJSONTyped(value?: DTOClase | null, ignoreDiscriminator
         'alumnosId': value['alumnosId'],
         'profesoresId': value['profesoresId'],
         'ejerciciosId': value['ejerciciosId'],
-        'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(MaterialToJSON)),
+        'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(DTOMaterialToJSON)),
         'tipoClase': value['tipoClase'],
         'numeroProfesores': value['numeroProfesores'],
         'numeroAlumnos': value['numeroAlumnos'],

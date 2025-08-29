@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import app.dtos.DTOClase;
+import app.dtos.DTOClaseConEstadoInscripcion;
 import app.dtos.DTOCurso;
 import app.dtos.DTOParametrosBusquedaClase;
 import app.dtos.DTOPeticionCrearClase;
@@ -125,14 +126,100 @@ public class ClaseRest extends BaseRestController {
         // Validate and standardize parameters using BaseRestController
         page = validatePageNumber(page);
         size = validatePageSize(size);
-        sortBy = validateSortBy(sortBy, "id", "titulo", "descripcion", "dificultad", "presencialidad", "profesorId", "cursoId", "tallerId");
+        sortBy = validateSortBy(sortBy, "id", "titulo", "descripcion", "dificultad", "presencialidad", "precio", "nivel", "profesorId", "cursoId", "tallerId");
         sortDirection = validateSortDirection(sortDirection);
+        
+        // Map Spanish field names to English entity property names for Spring Data JPA
+        sortBy = mapSortFieldToEntityProperty(sortBy);
         
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
             q, titulo, descripcion, presencialidad, dificultad, 
             null, null, null, null, page, size, sortBy, sortDirection);
         
         DTORespuestaPaginada<DTOClase> respuesta = servicioClase.buscarClasesSegunRol(parametros);
+        
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+    }
+
+    /**
+     * Gets paginated classes with enrollment status information for students
+     * For students: shows all classes with enrollment status
+     * For admins/professors: shows all classes (without enrollment status)
+     */
+    @GetMapping("/catalog")
+    @Operation(
+        summary = "Get classes catalog with enrollment status",
+        description = "Gets a paginated list of all classes with enrollment status information for students"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Paginated list of classes with enrollment status retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DTORespuestaPaginada.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination parameters"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - Not authorized to view these classes"
+        )
+    })
+    public ResponseEntity<DTORespuestaPaginada<DTOClaseConEstadoInscripcion>> obtenerCatalogoClases(
+            @Parameter(description = "General search term across title and description")
+            @RequestParam(required = false) String q,
+            
+            @Parameter(description = "Filter by title")
+            @RequestParam(required = false) String titulo,
+            
+            @Parameter(description = "Filter by description")
+            @RequestParam(required = false) String descripcion,
+            
+            @Parameter(description = "Filter by difficulty level")
+            @RequestParam(required = false) EDificultad dificultad,
+            
+            @Parameter(description = "Filter by modality (PRESENCIAL, ONLINE, HIBRIDO)")
+            @RequestParam(required = false) EPresencialidad presencialidad,
+            
+            @Parameter(description = "Filter by professor ID")
+            @RequestParam(required = false) String profesorId,
+            
+            @Parameter(description = "Filter by course ID")
+            @RequestParam(required = false) String cursoId,
+            
+            @Parameter(description = "Filter by workshop ID")
+            @RequestParam(required = false) String tallerId,
+            
+            @Parameter(description = "Page number (0-indexed)")
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            
+            @Parameter(description = "Page size")
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            
+            @Parameter(description = "Field to sort by")
+            @RequestParam(defaultValue = "id") String sortBy,
+            
+            @Parameter(description = "Sort direction")
+            @RequestParam(defaultValue = "ASC") @Pattern(regexp = "(?i)^(ASC|DESC)$") String sortDirection) {
+        
+        // Validate and standardize parameters using BaseRestController
+        page = validatePageNumber(page);
+        size = validatePageSize(size);
+        sortBy = validateSortBy(sortBy, "id", "titulo", "descripcion", "dificultad", "presencialidad", "precio", "nivel", "profesorId", "cursoId", "tallerId");
+        sortDirection = validateSortDirection(sortDirection);
+        
+        // Map Spanish field names to English entity property names for Spring Data JPA
+        sortBy = mapSortFieldToEntityProperty(sortBy);
+        
+        DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
+            q, titulo, descripcion, presencialidad, dificultad, 
+            null, null, null, null, page, size, sortBy, sortDirection);
+        
+        DTORespuestaPaginada<DTOClaseConEstadoInscripcion> respuesta = servicioClase.buscarClasesConEstadoInscripcion(parametros);
         
         return new ResponseEntity<>(respuesta, HttpStatus.OK);
     }
@@ -171,95 +258,7 @@ public class ClaseRest extends BaseRestController {
         return new ResponseEntity<>(dtoClase, HttpStatus.OK);
     }
 
-    // ===== OPTIMIZED ENTITY GRAPH ENDPOINTS =====
 
-    /**
-     * Gets classes optimized for dashboard display with students and teachers loaded
-     */
-    @GetMapping("/dashboard")
-    @Operation(
-        summary = "Get classes for dashboard",
-        description = "Gets classes optimized for dashboard display with students and teachers loaded using Entity Graph"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Dashboard classes retrieved successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOClase.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied - Not authorized to view classes"
-        )
-    })
-    public ResponseEntity<List<DTOClase>> obtenerClasesParaDashboard() {
-        List<DTOClase> clases = servicioClase.obtenerClasesParaDashboard();
-        return new ResponseEntity<>(clases, HttpStatus.OK);
-    }
-
-    /**
-     * Gets classes optimized for exercise management with exercises loaded
-     */
-    @GetMapping("/ejercicios")
-    @Operation(
-        summary = "Get classes for exercise management",
-        description = "Gets classes optimized for exercise management with exercises loaded using Entity Graph"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Exercise management classes retrieved successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOClase.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied - Not authorized to view classes"
-        )
-    })
-    public ResponseEntity<List<DTOClase>> obtenerClasesParaGestionEjercicios() {
-        List<DTOClase> clases = servicioClase.obtenerClasesParaGestionEjercicios();
-        return new ResponseEntity<>(clases, HttpStatus.OK);
-    }
-
-    /**
-     * Gets a class with all its details and relationships loaded using Entity Graph
-     */
-    @GetMapping("/{id}/detalles")
-    @Operation(
-        summary = "Get class with all details",
-        description = "Gets a class with all its relationships loaded using Entity Graph for optimal performance"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Class details retrieved successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = DTOClase.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Class not found"
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied - Not authorized to view this class"
-        )
-    })
-    public ResponseEntity<DTOClase> obtenerClaseConDetalles(
-            @Parameter(description = "ID of the class", required = true)
-            @PathVariable @Min(value = 1, message = "The ID must be greater than 0") Long id) {
-        
-        DTOClase dtoClase = servicioClase.obtenerClaseConDetalles(id);
-        return new ResponseEntity<>(dtoClase, HttpStatus.OK);
-    }
 
     // ===== CREATE OPERATIONS =====
 
@@ -447,8 +446,11 @@ public class ClaseRest extends BaseRestController {
         // Validate and standardize parameters using BaseRestController
         page = validatePageNumber(page);
         size = validatePageSize(size);
-        sortBy = validateSortBy(sortBy, "id", "titulo", "descripcion", "dificultad", "presencialidad", "profesorId", "cursoId", "tallerId");
+        sortBy = validateSortBy(sortBy, "id", "titulo", "descripcion", "dificultad", "presencialidad", "precio", "nivel", "profesorId", "cursoId", "tallerId");
         sortDirection = validateSortDirection(sortDirection);
+        
+        // Map Spanish field names to English entity property names for Spring Data JPA
+        sortBy = mapSortFieldToEntityProperty(sortBy);
         
         DTOParametrosBusquedaClase parametros = new DTOParametrosBusquedaClase(
             q, titulo, descripcion, presencialidad, dificultad, 
@@ -483,5 +485,22 @@ public class ClaseRest extends BaseRestController {
         } catch (Exception e) {
             return ResponseEntity.ok("Error getting user info: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Maps Spanish field names (used by frontend) to English entity property names (used by Spring Data JPA)
+     * @param sortBy Spanish field name
+     * @return English entity property name
+     */
+    private String mapSortFieldToEntityProperty(String sortBy) {
+        return switch (sortBy.toLowerCase()) {
+            case "titulo" -> "title";
+            case "descripcion" -> "description";
+            case "dificultad" -> "difficulty";
+            case "presencialidad" -> "format";
+            case "precio" -> "price";
+            case "nivel" -> "difficulty";
+            default -> sortBy; // Keep as is for fields that don't need mapping (id, etc.)
+        };
     }
 }

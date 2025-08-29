@@ -59,7 +59,7 @@
 			material = [
 				...material,
 				{
-					id: Date.now().toString(), // Temporary ID
+					id: Date.now(), // Temporary ID
 					name: nuevoMaterial.nombre.trim(),
 					url: nuevoMaterial.url.trim()
 				}

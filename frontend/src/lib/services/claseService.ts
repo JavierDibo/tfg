@@ -5,6 +5,7 @@ import type {
 	DTOPeticionCrearCurso,
 	DTOPeticionCrearTaller,
 	DTORespuestaPaginada,
+	DTORespuestaPaginadaDTOClaseConEstadoInscripcion,
 	DTOProfesor,
 	ObtenerClasesPresencialidadEnum,
 	DTORespuestaEnrollment
@@ -42,7 +43,7 @@ export class ClaseService {
 	 */
 	static async getClaseConDetalles(id: number): Promise<DTOClase> {
 		try {
-			return await claseApi.obtenerClaseConDetalles({ id });
+			return await claseApi.obtenerClasePorId({ id });
 		} catch (error) {
 			ErrorHandler.logError(error, 'getClaseConDetalles');
 			throw await ErrorHandler.parseError(error);
@@ -175,12 +176,43 @@ export class ClaseService {
 	}
 
 	/**
+	 * Get classes catalog with enrollment status information
+	 * This endpoint returns all classes with enrollment status for students
+	 * For students: shows enrollment status for each class
+	 * For admins/professors: shows all classes (isEnrolled is always false)
+	 */
+	static async getClasesCatalog(params: {
+		page?: number;
+		size?: number;
+		sortBy?: string;
+		sortDirection?: string;
+		q?: string;
+		titulo?: string;
+		descripcion?: string;
+		dificultad?: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZADO';
+		presencialidad?: 'ONLINE' | 'PRESENCIAL' | 'HIBRIDO';
+		profesorId?: string;
+		cursoId?: string;
+		tallerId?: string;
+	}): Promise<DTORespuestaPaginadaDTOClaseConEstadoInscripcion> {
+		try {
+			// Use the new catalog endpoint that includes enrollment status
+			const response = await claseApi.obtenerCatalogoClases(params);
+			// Cast the response to the correct type since the API might not be properly typed
+			return response as unknown as DTORespuestaPaginadaDTOClaseConEstadoInscripcion;
+		} catch (error) {
+			ErrorHandler.logError(error, 'getClasesCatalog');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
 	 * Get class details with all relationships for detailed view
 	 */
 	static async getClaseDetallada(id: number): Promise<DTOClase> {
 		try {
 			// Use the optimized endpoint that loads all relationships
-			return await claseApi.obtenerClaseConDetalles({ id });
+			return await claseApi.obtenerClasePorId({ id });
 		} catch (error) {
 			ErrorHandler.logError(error, 'getClaseDetallada');
 			throw await ErrorHandler.parseError(error);

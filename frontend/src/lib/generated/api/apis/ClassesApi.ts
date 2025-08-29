@@ -21,6 +21,7 @@ import type {
   DTOPeticionCrearTaller,
   DTORespuestaPaginada,
   DTORespuestaPaginadaDTOClase,
+  DTORespuestaPaginadaDTOClaseConEstadoInscripcion,
   DTOTaller,
 } from '../models/index';
 import {
@@ -36,6 +37,8 @@ import {
     DTORespuestaPaginadaToJSON,
     DTORespuestaPaginadaDTOClaseFromJSON,
     DTORespuestaPaginadaDTOClaseToJSON,
+    DTORespuestaPaginadaDTOClaseConEstadoInscripcionFromJSON,
+    DTORespuestaPaginadaDTOClaseConEstadoInscripcionToJSON,
     DTOTallerFromJSON,
     DTOTallerToJSON,
 } from '../models/index';
@@ -52,8 +55,19 @@ export interface EliminarClaseRequest {
     id: number;
 }
 
-export interface ObtenerClaseConDetallesRequest {
-    id: number;
+export interface ObtenerCatalogoClasesRequest {
+    q?: string;
+    titulo?: string;
+    descripcion?: string;
+    dificultad?: ObtenerCatalogoClasesDificultadEnum;
+    presencialidad?: ObtenerCatalogoClasesPresencialidadEnum;
+    profesorId?: string;
+    cursoId?: string;
+    tallerId?: string;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
 }
 
 export interface ObtenerClasePorIdRequest {
@@ -177,6 +191,41 @@ export class ClassesApi extends runtime.BaseAPI {
     }
 
     /**
+     * Debug endpoint to check current user role and permissions
+     * Debug user info
+     */
+    async debugUserInfoRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/debug-user-info`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<string>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Debug endpoint to check current user role and permissions
+     * Debug user info
+     */
+    async debugUserInfo(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+        const response = await this.debugUserInfoRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Deletes a class from the system (requires ADMIN role)
      * Delete class
      */
@@ -215,24 +264,64 @@ export class ClassesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets a class with all its relationships loaded using Entity Graph for optimal performance
-     * Get class with all details
+     * Gets a paginated list of all classes with enrollment status information for students
+     * Get classes catalog with enrollment status
      */
-    async obtenerClaseConDetallesRaw(requestParameters: ObtenerClaseConDetallesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling obtenerClaseConDetalles().'
-            );
+    async obtenerCatalogoClasesRaw(requestParameters: ObtenerCatalogoClasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginada>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
         }
 
-        const queryParameters: any = {};
+        if (requestParameters['titulo'] != null) {
+            queryParameters['titulo'] = requestParameters['titulo'];
+        }
+
+        if (requestParameters['descripcion'] != null) {
+            queryParameters['descripcion'] = requestParameters['descripcion'];
+        }
+
+        if (requestParameters['dificultad'] != null) {
+            queryParameters['dificultad'] = requestParameters['dificultad'];
+        }
+
+        if (requestParameters['presencialidad'] != null) {
+            queryParameters['presencialidad'] = requestParameters['presencialidad'];
+        }
+
+        if (requestParameters['profesorId'] != null) {
+            queryParameters['profesorId'] = requestParameters['profesorId'];
+        }
+
+        if (requestParameters['cursoId'] != null) {
+            queryParameters['cursoId'] = requestParameters['cursoId'];
+        }
+
+        if (requestParameters['tallerId'] != null) {
+            queryParameters['tallerId'] = requestParameters['tallerId'];
+        }
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/api/clases/{id}/detalles`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+        let urlPath = `/api/clases/catalog`;
 
         const response = await this.request({
             path: urlPath,
@@ -241,15 +330,15 @@ export class ClassesApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaFromJSON(jsonValue));
     }
 
     /**
-     * Gets a class with all its relationships loaded using Entity Graph for optimal performance
-     * Get class with all details
+     * Gets a paginated list of all classes with enrollment status information for students
+     * Get classes catalog with enrollment status
      */
-    async obtenerClaseConDetalles(requestParameters: ObtenerClaseConDetallesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
-        const response = await this.obtenerClaseConDetallesRaw(requestParameters, initOverrides);
+    async obtenerCatalogoClases(requestParameters: ObtenerCatalogoClasesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
+        const response = await this.obtenerCatalogoClasesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -446,70 +535,26 @@ export class ClassesApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
-     * Gets classes optimized for dashboard display with students and teachers loaded using Entity Graph
-     * Get classes for dashboard
-     */
-    async obtenerClasesParaDashboardRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/dashboard`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets classes optimized for dashboard display with students and teachers loaded using Entity Graph
-     * Get classes for dashboard
-     */
-    async obtenerClasesParaDashboard(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
-        const response = await this.obtenerClasesParaDashboardRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Gets classes optimized for exercise management with exercises loaded using Entity Graph
-     * Get classes for exercise management
-     */
-    async obtenerClasesParaGestionEjerciciosRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/api/clases/ejercicios`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets classes optimized for exercise management with exercises loaded using Entity Graph
-     * Get classes for exercise management
-     */
-    async obtenerClasesParaGestionEjercicios(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
-        const response = await this.obtenerClasesParaGestionEjerciciosRaw(initOverrides);
-        return await response.value();
-    }
-
 }
 
+/**
+ * @export
+ */
+export const ObtenerCatalogoClasesDificultadEnum = {
+    Principiante: 'PRINCIPIANTE',
+    Intermedio: 'INTERMEDIO',
+    Avanzado: 'AVANZADO'
+} as const;
+export type ObtenerCatalogoClasesDificultadEnum = typeof ObtenerCatalogoClasesDificultadEnum[keyof typeof ObtenerCatalogoClasesDificultadEnum];
+/**
+ * @export
+ */
+export const ObtenerCatalogoClasesPresencialidadEnum = {
+    Online: 'ONLINE',
+    Presencial: 'PRESENCIAL',
+    Hibrido: 'HIBRIDO'
+} as const;
+export type ObtenerCatalogoClasesPresencialidadEnum = typeof ObtenerCatalogoClasesPresencialidadEnum[keyof typeof ObtenerCatalogoClasesPresencialidadEnum];
 /**
  * @export
  */

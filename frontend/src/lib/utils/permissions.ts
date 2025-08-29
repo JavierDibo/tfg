@@ -11,59 +11,160 @@ export interface Action {
 	label: string;
 	icon?: string;
 	color?: string;
-	condition: (user: DTOAlumno | DTOProfesor, entity?: EntityWithStatus) => boolean;
+	condition: (
+		user: DTOAlumno | DTOProfesor | { roles?: string[] },
+		entity?: EntityWithStatus
+	) => boolean;
 }
 
 export class PermissionUtils {
-	static canEditEntity(entityType: string, user: DTOAlumno | DTOProfesor): boolean {
-		return (
-			user.role.includes('ADMIN') || (entityType === 'profesores' && user.role.includes('PROFESOR'))
-		);
+	static canEditEntity(
+		entityType: string,
+		user: DTOAlumno | DTOProfesor | { roles?: string[] }
+	): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return (
+				user.roles.includes('ROLE_ADMIN') ||
+				(entityType === 'profesores' && user.roles.includes('ROLE_PROFESOR'))
+			);
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return (
+				user.role.includes('ADMIN') ||
+				(entityType === 'profesores' && user.role.includes('PROFESOR'))
+			);
+		}
+		return false;
 	}
 
-	static canDeleteEntity(entityType: string, user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ADMIN');
+	static canDeleteEntity(
+		entityType: string,
+		user: DTOAlumno | DTOProfesor | { roles?: string[] }
+	): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ADMIN');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ADMIN');
+		}
+		return false;
 	}
 
-	static canGradeDelivery(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+	static canGradeDelivery(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ADMIN') || user.roles.includes('ROLE_PROFESOR');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+		}
+		return false;
 	}
 
-	static canEnrollInClass(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ALUMNO');
+	static canEnrollInClass(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ALUMNO');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ALUMNO');
+		}
+		return false;
 	}
 
-	static canManagePayments(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ADMIN');
+	static canManagePayments(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ADMIN');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ADMIN');
+		}
+		return false;
 	}
 
-	static canViewAllDeliveries(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+	static canViewAllDeliveries(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ADMIN') || user.roles.includes('ROLE_PROFESOR');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+		}
+		return false;
 	}
 
-	static canViewAllStudents(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+	static canViewAllStudents(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ADMIN') || user.roles.includes('ROLE_PROFESOR');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+		}
+		return false;
 	}
 
-	static canViewAllTeachers(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ADMIN');
+	static canViewAllTeachers(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ADMIN');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ADMIN');
+		}
+		return false;
 	}
 
-	static canCreateClasses(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+	static canCreateClasses(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ADMIN') || user.roles.includes('ROLE_PROFESOR');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+		}
+		return false;
 	}
 
-	static canCreateExercises(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+	static canCreateExercises(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ADMIN') || user.roles.includes('ROLE_PROFESOR');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+		}
+		return false;
 	}
 
-	static canCreateMaterials(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+	static canCreateMaterials(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ADMIN') || user.roles.includes('ROLE_PROFESOR');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ADMIN') || user.role.includes('PROFESOR');
+		}
+		return false;
 	}
 
 	static getVisibleActions(
 		entityType: string,
-		user: DTOAlumno | DTOProfesor,
+		user: DTOAlumno | DTOProfesor | { roles?: string[] },
 		entity?: EntityWithStatus
 	): Action[] {
 		const actions: Action[] = [
@@ -110,7 +211,10 @@ export class PermissionUtils {
 		return actions.filter((action) => action.condition(user, entity));
 	}
 
-	static canAccessRoute(route: string, user: DTOAlumno | DTOProfesor): boolean {
+	static canAccessRoute(
+		route: string,
+		user: DTOAlumno | DTOProfesor | { roles?: string[] }
+	): boolean {
 		const routePermissions: Record<string, string[]> = {
 			'/admin': ['ADMIN'],
 			'/profesores': ['ADMIN', 'PROFESOR'],
@@ -124,24 +228,56 @@ export class PermissionUtils {
 		const requiredrole = routePermissions[route];
 		if (!requiredrole) return true;
 
-		return requiredrole.some((role) => user.role.includes(role));
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return requiredrole.some((role) => user.roles.includes(`ROLE_${role}`));
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return requiredrole.some((role) => user.role.includes(role));
+		}
+		return false;
 	}
 
-	static isAdmin(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ADMIN');
+	static isAdmin(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ADMIN');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ADMIN');
+		}
+		return false;
 	}
 
-	static isProfessor(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('PROFESOR');
+	static isProfessor(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_PROFESOR');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('PROFESOR');
+		}
+		return false;
 	}
 
-	static isStudent(user: DTOAlumno | DTOProfesor): boolean {
-		return user.role.includes('ALUMNO');
+	static isStudent(user: DTOAlumno | DTOProfesor | { roles?: string[] }): boolean {
+		// Handle auth store format (roles array)
+		if ('roles' in user && user.roles) {
+			return user.roles.includes('ROLE_ALUMNO');
+		}
+		// Handle DTO format (role string)
+		if ('role' in user && user.role) {
+			return user.role.includes('ALUMNO');
+		}
+		return false;
 	}
 
 	static canViewEntity(
 		entityType: string,
-		user: DTOAlumno | DTOProfesor,
+		user: DTOAlumno | DTOProfesor | { roles?: string[] },
 		entity?: EntityWithStatus
 	): boolean {
 		// Students can only view their own entities

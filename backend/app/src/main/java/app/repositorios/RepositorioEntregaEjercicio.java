@@ -193,7 +193,7 @@ public interface RepositorioEntregaEjercicio extends JpaRepository<EntregaEjerci
     Page<EntregaEjercicio> findByFiltrosFlexibles(
         @Param("alumnoId") Long alumnoId,
         @Param("ejercicioId") Long ejercicioId,
-        @Param("estado") String estado,
+        @Param("estado") app.entidades.enums.EEstadoEjercicio estado,
         @Param("notaMin") BigDecimal notaMin,
         @Param("notaMax") BigDecimal notaMax,
         Pageable pageable

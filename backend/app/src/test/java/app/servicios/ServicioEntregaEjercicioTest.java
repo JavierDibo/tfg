@@ -263,7 +263,7 @@ class ServicioEntregaEjercicioTest {
 
         // Mock the flexible filtering method
         when(repositorioEntregaEjercicio.findByFiltrosFlexibles(
-            eq(12L), eq(35L), eq("CALIFICADO"), eq(notaMin), eq(notaMax), any(Pageable.class)))
+            eq(12L), eq(35L), eq(EEstadoEjercicio.CALIFICADO), eq(notaMin), eq(notaMax), any(Pageable.class)))
             .thenReturn(entregaPage);
 
         // Act
@@ -309,7 +309,7 @@ class ServicioEntregaEjercicioTest {
 
         // Mock the flexible filtering method
         when(repositorioEntregaEjercicio.findByFiltrosFlexibles(
-            eq(12L), isNull(), eq("ENTREGADO"), isNull(), isNull(), any(Pageable.class)))
+            eq(12L), isNull(), eq(EEstadoEjercicio.ENTREGADO), isNull(), isNull(), any(Pageable.class)))
             .thenReturn(entregaPage);
 
         // Act
@@ -365,7 +365,7 @@ class ServicioEntregaEjercicioTest {
 
         // Mock the flexible filtering method
         when(repositorioEntregaEjercicio.findByFiltrosFlexibles(
-            isNull(), eq(35L), eq("CALIFICADO"), isNull(), isNull(), any(Pageable.class)))
+            isNull(), eq(35L), eq(EEstadoEjercicio.CALIFICADO), isNull(), isNull(), any(Pageable.class)))
             .thenReturn(entregaPage);
 
         // Act
@@ -505,22 +505,19 @@ class ServicioEntregaEjercicioTest {
         Page<EntregaEjercicio> entregaPage = new PageImpl<>(entregas);
         Pageable pageable = PageRequest.of(page, size);
 
-        // Mock the flexible filtering method - the service doesn't validate the state parameter
+        // Mock the flexible filtering method - the service now validates the state parameter
         when(repositorioEntregaEjercicio.findByFiltrosFlexibles(
-            isNull(), isNull(), eq("ESTADO_INVALIDO"), isNull(), isNull(), any(Pageable.class)))
+            isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
             .thenReturn(entregaPage);
 
-        // Act
-        DTORespuestaPaginada<DTOEntregaEjercicio> resultado = servicioEntregaEjercicio.obtenerEntregasPaginadas(
-            alumnoId, ejercicioId, estado, notaMin, notaMax, page, size, sortBy, sortDirection);
-
-        // Assert
-        assertNotNull(resultado);
-        assertEquals(0, resultado.content().size());
+        // Act & Assert - should throw validation error for invalid state
+        assertThrows(RuntimeException.class, () -> {
+            servicioEntregaEjercicio.obtenerEntregasPaginadas(
+                alumnoId, ejercicioId, estado, notaMin, notaMax, page, size, sortBy, sortDirection);
+        });
         
-        // Verify that the repository method was called with the invalid state
-        verify(repositorioEntregaEjercicio).findByFiltrosFlexibles(
-            any(), any(), any(), any(), any(), any());
+        // Verify that no repository methods were called due to validation error
+        verify(repositorioEntregaEjercicio, never()).findByFiltrosFlexibles(any(), any(), any(), any(), any(), any());
     }
 
     @Test

@@ -27,7 +27,7 @@ public record DTOClaseConDetallesPublico(
         List<String> alumnosId,
         List<String> profesoresId,
         List<String> ejerciciosId,
-        List<Material> material,
+        List<DTOMaterial> material,
         String tipoClase, // "TALLER" o "CURSO"
         
         // Información pública del profesor principal
@@ -64,7 +64,9 @@ public record DTOClaseConDetallesPublico(
                 clase.getExercises().stream()
                     .map(exercise -> exercise.getId().toString())
                     .collect(Collectors.toList()),
-                clase.getMaterial() != null ? new ArrayList<>(clase.getMaterial()) : null,
+                clase.getMaterial() != null ? clase.getMaterial().stream()
+                    .map(DTOMaterial::new)
+                    .collect(Collectors.toList()) : new ArrayList<>(),
                 determinarTipoClase(clase),
                 profesor,
                 inscrito,
