@@ -149,7 +149,8 @@ export type DTOClaseInscritaPresencialidadEnum = typeof DTOClaseInscritaPresenci
 export const DTOClaseInscritaNivelEnum = {
     Principiante: 'PRINCIPIANTE',
     Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
+    Avanzado: 'AVANZADO',
+    Basico: 'BASICO'
 } as const;
 export type DTOClaseInscritaNivelEnum = typeof DTOClaseInscritaNivelEnum[keyof typeof DTOClaseInscritaNivelEnum];
 

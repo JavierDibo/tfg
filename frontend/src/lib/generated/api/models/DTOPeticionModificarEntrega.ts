@@ -39,6 +39,12 @@ export interface DTOPeticionModificarEntrega {
      * @memberof DTOPeticionModificarEntrega
      */
     operacionesArchivos?: Array<DTOOperacionArchivo>;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOPeticionModificarEntrega
+     */
+    debugInfo?: string;
 }
 
 /**
@@ -60,6 +66,7 @@ export function DTOPeticionModificarEntregaFromJSONTyped(json: any, ignoreDiscri
         
         'comentarios': json['comentarios'] == null ? undefined : json['comentarios'],
         'operacionesArchivos': json['operacionesArchivos'] == null ? undefined : ((json['operacionesArchivos'] as Array<any>).map(DTOOperacionArchivoFromJSON)),
+        'debugInfo': json['debugInfo'] == null ? undefined : json['debugInfo'],
     };
 }
 
@@ -76,6 +83,7 @@ export function DTOPeticionModificarEntregaToJSONTyped(value?: DTOPeticionModifi
         
         'comentarios': value['comentarios'],
         'operacionesArchivos': value['operacionesArchivos'] == null ? undefined : ((value['operacionesArchivos'] as Array<any>).map(DTOOperacionArchivoToJSON)),
+        'debugInfo': value['debugInfo'],
     };
 }
 

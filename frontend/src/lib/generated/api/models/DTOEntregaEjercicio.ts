@@ -84,13 +84,13 @@ export interface DTOEntregaEjercicio {
      * @type {string}
      * @memberof DTOEntregaEjercicio
      */
-    calificacionCualitativa?: string;
+    estadoDescriptivo?: string;
     /**
      * 
      * @type {string}
      * @memberof DTOEntregaEjercicio
      */
-    estadoDescriptivo?: string;
+    calificacionCualitativa?: string;
     /**
      * 
      * @type {string}
@@ -144,8 +144,8 @@ export function DTOEntregaEjercicioFromJSONTyped(json: any, ignoreDiscriminator:
         'numeroArchivos': json['numeroArchivos'] == null ? undefined : json['numeroArchivos'],
         'comentarios': json['comentarios'] == null ? undefined : json['comentarios'],
         'notaFormateada': json['notaFormateada'] == null ? undefined : json['notaFormateada'],
-        'calificacionCualitativa': json['calificacionCualitativa'] == null ? undefined : json['calificacionCualitativa'],
         'estadoDescriptivo': json['estadoDescriptivo'] == null ? undefined : json['estadoDescriptivo'],
+        'calificacionCualitativa': json['calificacionCualitativa'] == null ? undefined : json['calificacionCualitativa'],
         'comentariosFormateados': json['comentariosFormateados'] == null ? undefined : json['comentariosFormateados'],
         'resumenComentarios': json['resumenComentarios'] == null ? undefined : json['resumenComentarios'],
     };
@@ -172,8 +172,8 @@ export function DTOEntregaEjercicioToJSONTyped(value?: DTOEntregaEjercicio | nul
         'numeroArchivos': value['numeroArchivos'],
         'comentarios': value['comentarios'],
         'notaFormateada': value['notaFormateada'],
-        'calificacionCualitativa': value['calificacionCualitativa'],
         'estadoDescriptivo': value['estadoDescriptivo'],
+        'calificacionCualitativa': value['calificacionCualitativa'],
         'comentariosFormateados': value['comentariosFormateados'],
         'resumenComentarios': value['resumenComentarios'],
     };

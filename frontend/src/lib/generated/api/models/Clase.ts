@@ -133,7 +133,8 @@ export type ClaseFormatEnum = typeof ClaseFormatEnum[keyof typeof ClaseFormatEnu
 export const ClaseDifficultyEnum = {
     Principiante: 'PRINCIPIANTE',
     Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
+    Avanzado: 'AVANZADO',
+    Basico: 'BASICO'
 } as const;
 export type ClaseDifficultyEnum = typeof ClaseDifficultyEnum[keyof typeof ClaseDifficultyEnum];
 

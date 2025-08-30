@@ -110,6 +110,18 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
+    duracionEnSemanas?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOCurso
+     */
+    porcentajeProgreso?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOCurso
+     */
     duracionEnDias?: number;
     /**
      * 
@@ -123,18 +135,6 @@ export interface DTOCurso {
      * @memberof DTOCurso
      */
     numeroProfesores?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    duracionEnSemanas?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    porcentajeProgreso?: number;
 }
 
 
@@ -154,7 +154,8 @@ export type DTOCursoPresencialidadEnum = typeof DTOCursoPresencialidadEnum[keyof
 export const DTOCursoNivelEnum = {
     Principiante: 'PRINCIPIANTE',
     Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
+    Avanzado: 'AVANZADO',
+    Basico: 'BASICO'
 } as const;
 export type DTOCursoNivelEnum = typeof DTOCursoNivelEnum[keyof typeof DTOCursoNivelEnum];
 
@@ -189,11 +190,11 @@ export function DTOCursoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(DTOMaterialFromJSON)),
         'fechaInicio': json['fechaInicio'] == null ? undefined : (new Date(json['fechaInicio'])),
         'fechaFin': json['fechaFin'] == null ? undefined : (new Date(json['fechaFin'])),
+        'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
+        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
         'duracionEnDias': json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
         'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
         'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
-        'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
-        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
     };
 }
 
@@ -221,11 +222,11 @@ export function DTOCursoToJSONTyped(value?: DTOCurso | null, ignoreDiscriminator
         'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(DTOMaterialToJSON)),
         'fechaInicio': value['fechaInicio'] == null ? undefined : ((value['fechaInicio']).toISOString().substring(0,10)),
         'fechaFin': value['fechaFin'] == null ? undefined : ((value['fechaFin']).toISOString().substring(0,10)),
+        'duracionEnSemanas': value['duracionEnSemanas'],
+        'porcentajeProgreso': value['porcentajeProgreso'],
         'duracionEnDias': value['duracionEnDias'],
         'numeroAlumnos': value['numeroAlumnos'],
         'numeroProfesores': value['numeroProfesores'],
-        'duracionEnSemanas': value['duracionEnSemanas'],
-        'porcentajeProgreso': value['porcentajeProgreso'],
     };
 }
 

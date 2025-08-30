@@ -543,7 +543,8 @@ export class ClassesApi extends runtime.BaseAPI {
 export const ObtenerCatalogoClasesDificultadEnum = {
     Principiante: 'PRINCIPIANTE',
     Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
+    Avanzado: 'AVANZADO',
+    Basico: 'BASICO'
 } as const;
 export type ObtenerCatalogoClasesDificultadEnum = typeof ObtenerCatalogoClasesDificultadEnum[keyof typeof ObtenerCatalogoClasesDificultadEnum];
 /**
@@ -561,7 +562,8 @@ export type ObtenerCatalogoClasesPresencialidadEnum = typeof ObtenerCatalogoClas
 export const ObtenerClasesDificultadEnum = {
     Principiante: 'PRINCIPIANTE',
     Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
+    Avanzado: 'AVANZADO',
+    Basico: 'BASICO'
 } as const;
 export type ObtenerClasesDificultadEnum = typeof ObtenerClasesDificultadEnum[keyof typeof ObtenerClasesDificultadEnum];
 /**
@@ -579,7 +581,8 @@ export type ObtenerClasesPresencialidadEnum = typeof ObtenerClasesPresencialidad
 export const ObtenerClasesDisponiblesDificultadEnum = {
     Principiante: 'PRINCIPIANTE',
     Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
+    Avanzado: 'AVANZADO',
+    Basico: 'BASICO'
 } as const;
 export type ObtenerClasesDisponiblesDificultadEnum = typeof ObtenerClasesDisponiblesDificultadEnum[keyof typeof ObtenerClasesDisponiblesDificultadEnum];
 /**

@@ -111,10 +111,10 @@ export interface DTOEjercicioConEntrega {
     estadoEntregaDescriptivo?: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof DTOEjercicioConEntrega
      */
-    porcentajeEntregasCalificadas?: number;
+    estado?: string;
     /**
      * 
      * @type {number}
@@ -141,10 +141,10 @@ export interface DTOEjercicioConEntrega {
     estadoEntregaIcono?: string;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOEjercicioConEntrega
      */
-    estado?: string;
+    porcentajeEntregasCalificadas?: number;
 }
 
 
@@ -191,12 +191,12 @@ export function DTOEjercicioConEntregaFromJSONTyped(json: any, ignoreDiscriminat
         'fechaEntrega': json['fechaEntrega'] == null ? undefined : (new Date(json['fechaEntrega'])),
         'notaFormateada': json['notaFormateada'] == null ? undefined : json['notaFormateada'],
         'estadoEntregaDescriptivo': json['estadoEntregaDescriptivo'] == null ? undefined : json['estadoEntregaDescriptivo'],
-        'porcentajeEntregasCalificadas': json['porcentajeEntregasCalificadas'] == null ? undefined : json['porcentajeEntregasCalificadas'],
+        'estado': json['estado'] == null ? undefined : json['estado'],
         'horasRestantes': json['horasRestantes'] == null ? undefined : json['horasRestantes'],
         'estadoEntregaUsuario': json['estadoEntregaUsuario'] == null ? undefined : json['estadoEntregaUsuario'],
         'estadoEntregaTexto': json['estadoEntregaTexto'] == null ? undefined : json['estadoEntregaTexto'],
         'estadoEntregaIcono': json['estadoEntregaIcono'] == null ? undefined : json['estadoEntregaIcono'],
-        'estado': json['estado'] == null ? undefined : json['estado'],
+        'porcentajeEntregasCalificadas': json['porcentajeEntregasCalificadas'] == null ? undefined : json['porcentajeEntregasCalificadas'],
     };
 }
 
@@ -226,12 +226,12 @@ export function DTOEjercicioConEntregaToJSONTyped(value?: DTOEjercicioConEntrega
         'fechaEntrega': value['fechaEntrega'] == null ? undefined : ((value['fechaEntrega']).toISOString()),
         'notaFormateada': value['notaFormateada'],
         'estadoEntregaDescriptivo': value['estadoEntregaDescriptivo'],
-        'porcentajeEntregasCalificadas': value['porcentajeEntregasCalificadas'],
+        'estado': value['estado'],
         'horasRestantes': value['horasRestantes'],
         'estadoEntregaUsuario': value['estadoEntregaUsuario'],
         'estadoEntregaTexto': value['estadoEntregaTexto'],
         'estadoEntregaIcono': value['estadoEntregaIcono'],
-        'estado': value['estado'],
+        'porcentajeEntregasCalificadas': value['porcentajeEntregasCalificadas'],
     };
 }
 

@@ -112,7 +112,8 @@ export type DTOPeticionCrearTallerPresencialidadEnum = typeof DTOPeticionCrearTa
 export const DTOPeticionCrearTallerNivelEnum = {
     Principiante: 'PRINCIPIANTE',
     Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
+    Avanzado: 'AVANZADO',
+    Basico: 'BASICO'
 } as const;
 export type DTOPeticionCrearTallerNivelEnum = typeof DTOPeticionCrearTallerNivelEnum[keyof typeof DTOPeticionCrearTallerNivelEnum];
 

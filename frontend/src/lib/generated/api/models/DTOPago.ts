@@ -110,7 +110,7 @@ export interface DTOPago {
      * @type {string}
      * @memberof DTOPago
      */
-    descripcionMetodoPago?: string;
+    descripcionEstado?: string;
     /**
      * 
      * @type {number}
@@ -122,7 +122,7 @@ export interface DTOPago {
      * @type {string}
      * @memberof DTOPago
      */
-    descripcionEstado?: string;
+    descripcionMetodoPago?: string;
 }
 
 
@@ -181,9 +181,9 @@ export function DTOPagoFromJSONTyped(json: any, ignoreDiscriminator: boolean): D
         'failureReason': json['failureReason'] == null ? undefined : json['failureReason'],
         'clientSecret': json['clientSecret'] == null ? undefined : json['clientSecret'],
         'classId': json['classId'] == null ? undefined : json['classId'],
-        'descripcionMetodoPago': json['descripcionMetodoPago'] == null ? undefined : json['descripcionMetodoPago'],
-        'numeroItems': json['numeroItems'] == null ? undefined : json['numeroItems'],
         'descripcionEstado': json['descripcionEstado'] == null ? undefined : json['descripcionEstado'],
+        'numeroItems': json['numeroItems'] == null ? undefined : json['numeroItems'],
+        'descripcionMetodoPago': json['descripcionMetodoPago'] == null ? undefined : json['descripcionMetodoPago'],
     };
 }
 
@@ -211,9 +211,9 @@ export function DTOPagoToJSONTyped(value?: DTOPago | null, ignoreDiscriminator: 
         'failureReason': value['failureReason'],
         'clientSecret': value['clientSecret'],
         'classId': value['classId'],
-        'descripcionMetodoPago': value['descripcionMetodoPago'],
-        'numeroItems': value['numeroItems'],
         'descripcionEstado': value['descripcionEstado'],
+        'numeroItems': value['numeroItems'],
+        'descripcionMetodoPago': value['descripcionMetodoPago'],
     };
 }
 

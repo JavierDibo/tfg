@@ -69,10 +69,10 @@ export interface DTOEjercicio {
     entregasCalificadas?: number;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof DTOEjercicio
      */
-    porcentajeEntregasCalificadas?: number;
+    estado?: string;
     /**
      * 
      * @type {number}
@@ -81,10 +81,10 @@ export interface DTOEjercicio {
     horasRestantes?: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof DTOEjercicio
      */
-    estado?: string;
+    porcentajeEntregasCalificadas?: number;
 }
 
 /**
@@ -112,9 +112,9 @@ export function DTOEjercicioFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'classId': json['classId'] == null ? undefined : json['classId'],
         'numeroEntregas': json['numeroEntregas'] == null ? undefined : json['numeroEntregas'],
         'entregasCalificadas': json['entregasCalificadas'] == null ? undefined : json['entregasCalificadas'],
-        'porcentajeEntregasCalificadas': json['porcentajeEntregasCalificadas'] == null ? undefined : json['porcentajeEntregasCalificadas'],
-        'horasRestantes': json['horasRestantes'] == null ? undefined : json['horasRestantes'],
         'estado': json['estado'] == null ? undefined : json['estado'],
+        'horasRestantes': json['horasRestantes'] == null ? undefined : json['horasRestantes'],
+        'porcentajeEntregasCalificadas': json['porcentajeEntregasCalificadas'] == null ? undefined : json['porcentajeEntregasCalificadas'],
     };
 }
 
@@ -137,9 +137,9 @@ export function DTOEjercicioToJSONTyped(value?: DTOEjercicio | null, ignoreDiscr
         'classId': value['classId'],
         'numeroEntregas': value['numeroEntregas'],
         'entregasCalificadas': value['entregasCalificadas'],
-        'porcentajeEntregasCalificadas': value['porcentajeEntregasCalificadas'],
-        'horasRestantes': value['horasRestantes'],
         'estado': value['estado'],
+        'horasRestantes': value['horasRestantes'],
+        'porcentajeEntregasCalificadas': value['porcentajeEntregasCalificadas'],
     };
 }
 

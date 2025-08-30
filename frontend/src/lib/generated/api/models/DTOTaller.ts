@@ -113,6 +113,12 @@ export interface DTOTaller {
     horaComienzo?: string;
     /**
      * 
+     * @type {string}
+     * @memberof DTOTaller
+     */
+    horaFinalizacion?: string;
+    /**
+     * 
      * @type {number}
      * @memberof DTOTaller
      */
@@ -123,12 +129,6 @@ export interface DTOTaller {
      * @memberof DTOTaller
      */
     numeroProfesores?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof DTOTaller
-     */
-    horaFinalizacion?: string;
 }
 
 
@@ -148,7 +148,8 @@ export type DTOTallerPresencialidadEnum = typeof DTOTallerPresencialidadEnum[key
 export const DTOTallerNivelEnum = {
     Principiante: 'PRINCIPIANTE',
     Intermedio: 'INTERMEDIO',
-    Avanzado: 'AVANZADO'
+    Avanzado: 'AVANZADO',
+    Basico: 'BASICO'
 } as const;
 export type DTOTallerNivelEnum = typeof DTOTallerNivelEnum[keyof typeof DTOTallerNivelEnum];
 
@@ -184,9 +185,9 @@ export function DTOTallerFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'duracionHoras': json['duracionHoras'] == null ? undefined : json['duracionHoras'],
         'fechaRealizacion': json['fechaRealizacion'] == null ? undefined : (new Date(json['fechaRealizacion'])),
         'horaComienzo': json['horaComienzo'] == null ? undefined : json['horaComienzo'],
+        'horaFinalizacion': json['horaFinalizacion'] == null ? undefined : json['horaFinalizacion'],
         'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
         'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
-        'horaFinalizacion': json['horaFinalizacion'] == null ? undefined : json['horaFinalizacion'],
     };
 }
 
@@ -215,9 +216,9 @@ export function DTOTallerToJSONTyped(value?: DTOTaller | null, ignoreDiscriminat
         'duracionHoras': value['duracionHoras'],
         'fechaRealizacion': value['fechaRealizacion'] == null ? undefined : ((value['fechaRealizacion']).toISOString().substring(0,10)),
         'horaComienzo': value['horaComienzo'],
+        'horaFinalizacion': value['horaFinalizacion'],
         'numeroAlumnos': value['numeroAlumnos'],
         'numeroProfesores': value['numeroProfesores'],
-        'horaFinalizacion': value['horaFinalizacion'],
     };
 }
 

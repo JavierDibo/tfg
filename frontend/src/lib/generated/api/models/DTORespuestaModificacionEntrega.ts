@@ -74,13 +74,13 @@ export interface DTORespuestaModificacionEntrega {
      * @type {number}
      * @memberof DTORespuestaModificacionEntrega
      */
-    operacionesFallidas?: number;
+    operacionesExitosas?: number;
     /**
      * 
      * @type {number}
      * @memberof DTORespuestaModificacionEntrega
      */
-    operacionesExitosas?: number;
+    operacionesFallidas?: number;
 }
 
 /**
@@ -107,8 +107,8 @@ export function DTORespuestaModificacionEntregaFromJSONTyped(json: any, ignoreDi
         'fechaModificacion': json['fechaModificacion'] == null ? undefined : (new Date(json['fechaModificacion'])),
         'operacionesRealizadas': json['operacionesRealizadas'] == null ? undefined : ((json['operacionesRealizadas'] as Array<any>).map(DTOOperacionArchivoResultadoFromJSON)),
         'errores': json['errores'] == null ? undefined : json['errores'],
-        'operacionesFallidas': json['operacionesFallidas'] == null ? undefined : json['operacionesFallidas'],
         'operacionesExitosas': json['operacionesExitosas'] == null ? undefined : json['operacionesExitosas'],
+        'operacionesFallidas': json['operacionesFallidas'] == null ? undefined : json['operacionesFallidas'],
     };
 }
 
@@ -130,8 +130,8 @@ export function DTORespuestaModificacionEntregaToJSONTyped(value?: DTORespuestaM
         'fechaModificacion': value['fechaModificacion'] == null ? undefined : ((value['fechaModificacion']).toISOString()),
         'operacionesRealizadas': value['operacionesRealizadas'] == null ? undefined : ((value['operacionesRealizadas'] as Array<any>).map(DTOOperacionArchivoResultadoToJSON)),
         'errores': value['errores'],
-        'operacionesFallidas': value['operacionesFallidas'],
         'operacionesExitosas': value['operacionesExitosas'],
+        'operacionesFallidas': value['operacionesFallidas'],
     };
 }
 
