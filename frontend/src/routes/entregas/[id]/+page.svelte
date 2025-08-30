@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import type { DTOEntregaEjercicio } from '$lib/generated/api';
+	import type { DTOEntregaEjercicio, FileInfo } from '$lib/generated/api';
 	import { EntregaService, type FileOperation } from '$lib/services/entregaService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import { FormatterUtils } from '$lib/utils/formatters.js';
@@ -18,20 +18,7 @@
 	let selectedFile = $state<string | null>(null);
 	let originalFilePath = $state<string | null>(null);
 	let fileError = $state<string | null>(null);
-	let fileMetadata = $state<
-		Array<{
-			nombreOriginal: string;
-			nombreGuardado: string;
-			rutaRelativa: string;
-			tipoMime: string;
-			tamanoBytes: number;
-			tamanoFormateado: string;
-			fechaSubida: string;
-			extension: string;
-			esImagen: boolean;
-			esPdf: boolean;
-		}>
-	>([]);
+	let fileMetadata = $state<FileInfo[]>([]);
 
 	// Grading form state
 	let gradingMode = $state(false);
@@ -113,9 +100,9 @@
 
 	function isImageFile(filename: string): boolean {
 		// First try to find file metadata
-		const fileInfo = fileMetadata.find((f) => f.rutaRelativa === filename);
-		if (fileInfo) {
-			return fileInfo.esImagen;
+		const fileInfo = fileMetadata.find((f) => f.filePath === filename);
+		if (fileInfo?.isImage !== undefined) {
+			return fileInfo.isImage;
 		}
 
 		// Fallback to extension-based detection
@@ -125,9 +112,9 @@
 
 	function isPdfFile(filename: string): boolean {
 		// First try to find file metadata
-		const fileInfo = fileMetadata.find((f) => f.rutaRelativa === filename);
-		if (fileInfo) {
-			return fileInfo.esPdf;
+		const fileInfo = fileMetadata.find((f) => f.filePath === filename);
+		if (fileInfo?.isPdf !== undefined) {
+			return fileInfo.isPdf;
 		}
 
 		// Fallback to extension-based detection
@@ -144,6 +131,24 @@
 		if (isImageFile(filename)) return 'Imagen';
 		if (isPdfFile(filename)) return 'PDF';
 		return 'Documento';
+	}
+
+	function getFileDisplayName(filePath: string): string {
+		// First try to find file metadata with original file name
+		const fileInfo = fileMetadata.find((f) => f.filePath === filePath);
+		console.log(`Looking for file: ${filePath}`);
+		console.log(`Available metadata:`, fileMetadata.map(f => ({ filePath: f.filePath, originalFileName: f.originalFileName })));
+		console.log(`Found fileInfo:`, fileInfo);
+		
+		if (fileInfo?.originalFileName) {
+			console.log(`Using original file name for ${filePath}: ${fileInfo.originalFileName}`);
+			return fileInfo.originalFileName;
+		}
+		
+		// Fallback to extracting filename from path
+		const fileName = filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
+		console.log(`Using fallback file name for ${filePath}: ${fileName}`);
+		return fileName;
 	}
 
 	async function openFileViewer(filePath: string) {
@@ -670,7 +675,7 @@
 				</div>
 				<div class="space-y-3">
 					{#each entrega.archivosEntregados as archivo (archivo)}
-						{@const fileInfo = fileMetadata.find((f) => f.rutaRelativa === archivo)}
+						{@const fileInfo = fileMetadata.find((f) => f.filePath === archivo)}
 						{@const isPendingOperation = modificationForm.fileOperations.some(
 							(op) => op.rutaArchivo === archivo && op.tipo === 'ELIMINAR'
 						)}
@@ -680,11 +685,11 @@
 									<div class="text-2xl">{getFileIcon(archivo)}</div>
 									<div>
 										<p class="font-medium text-gray-900">
-											{fileInfo?.nombreOriginal || archivo.split('/').pop()}
+											{getFileDisplayName(archivo)}
 										</p>
 										<p class="text-sm text-gray-500">
 											{fileInfo
-												? `${fileInfo.tamanoFormateado} • ${fileInfo.extension.toUpperCase()}`
+												? `${fileInfo.formattedSize || 'Unknown size'} • ${(fileInfo.extension || 'unknown').toUpperCase()}`
 												: getFileTypeLabel(archivo)}
 										</p>
 									</div>
@@ -699,7 +704,7 @@
 										</button>
 									{/if}
 									<button
-										onclick={() => downloadFile(archivo, fileInfo?.nombreOriginal)}
+										onclick={() => downloadFile(archivo, fileInfo?.originalFileName)}
 										class="rounded-lg bg-green-600 px-3 py-1 text-sm font-medium text-white hover:bg-green-700"
 									>
 										Descargar
@@ -762,8 +767,8 @@
 					<div class="mb-4 flex items-center justify-between">
 						<h3 class="text-lg font-semibold text-gray-900">
 							{(() => {
-								const fileInfo = fileMetadata.find((f) => f.rutaRelativa === selectedFile);
-								return fileInfo?.nombreOriginal || selectedFile.split('/').pop();
+								const fileInfo = fileMetadata.find((f) => f.filePath === selectedFile);
+								return fileInfo?.originalFileName || selectedFile.split('/').pop();
 							})()}
 						</h3>
 						<div class="flex space-x-2">

@@ -2,6 +2,7 @@ package app.servicios;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,27 +12,26 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import app.dtos.DTOEntregaEjercicio;
-import app.dtos.DTORespuestaPaginada;
-import app.dtos.DTOPeticionModificarEntrega;
-import app.dtos.DTORespuestaModificacionEntrega;
 import app.dtos.DTOOperacionArchivo;
 import app.dtos.DTOOperacionArchivoResultado;
-import app.entidades.EntregaEjercicio;
-import app.entidades.Ejercicio;
-import app.entidades.enums.EEstadoEjercicio;
-import app.repositorios.RepositorioEntregaEjercicio;
-import app.repositorios.RepositorioEjercicio;
-import app.util.ExceptionUtils;
-import app.util.SecurityUtils;
-import app.util.FileUploadUtils;
-import lombok.RequiredArgsConstructor;
-import app.entidades.Alumno;
-import app.repositorios.RepositorioAlumno;
+import app.dtos.DTOPeticionModificarEntrega;
+import app.dtos.DTORespuestaModificacionEntrega;
+import app.dtos.DTORespuestaPaginada;
 import app.dtos.DTORespuestaSubidaArchivo;
-import org.springframework.web.multipart.MultipartFile;
-import java.util.ArrayList;
+import app.entidades.Alumno;
+import app.entidades.Ejercicio;
+import app.entidades.EntregaEjercicio;
+import app.entidades.enums.EEstadoEjercicio;
+import app.repositorios.RepositorioAlumno;
+import app.repositorios.RepositorioEjercicio;
+import app.repositorios.RepositorioEntregaEjercicio;
+import app.util.ExceptionUtils;
+import app.util.FileUploadUtils;
+import app.util.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -668,13 +668,13 @@ public class ServicioEntregaEjercicio {
         }
         
         // Save the file
-        String relativePath = fileUploadUtils.saveExerciseDeliveryFile(file, currentUserId, ejercicioId);
+        FileUploadUtils.FileUploadResult uploadResult = fileUploadUtils.saveExerciseDeliveryFile(file, currentUserId, ejercicioId);
         
         // Create response DTO
         return new DTORespuestaSubidaArchivo(
-            file.getOriginalFilename(),
-            relativePath.substring(relativePath.lastIndexOf("/") + 1),
-            relativePath,
+            uploadResult.getOriginalFilename(),
+            uploadResult.getUniqueFilename(),
+            uploadResult.getRelativePath(),
             file.getContentType(),
             file.getSize(),
             null, // Will be calculated by the DTO
@@ -716,11 +716,11 @@ public class ServicioEntregaEjercicio {
         // Save all files
         return files.stream()
             .map(file -> {
-                String relativePath = fileUploadUtils.saveExerciseDeliveryFile(file, currentUserId, ejercicioId);
+                FileUploadUtils.FileUploadResult uploadResult = fileUploadUtils.saveExerciseDeliveryFile(file, currentUserId, ejercicioId);
                 return new DTORespuestaSubidaArchivo(
-                    file.getOriginalFilename(),
-                    relativePath.substring(relativePath.lastIndexOf("/") + 1),
-                    relativePath,
+                    uploadResult.getOriginalFilename(),
+                    uploadResult.getUniqueFilename(),
+                    uploadResult.getRelativePath(),
                     file.getContentType(),
                     file.getSize(),
                     null, // Will be calculated by the DTO
@@ -1075,20 +1075,20 @@ public class ServicioEntregaEjercicio {
         for (MultipartFile archivo : archivos) {
             try {
                 // Upload file
-                String rutaArchivo = fileUploadUtils.guardarArchivoEntrega(
+                FileUploadUtils.FileUploadResult uploadResult = fileUploadUtils.guardarArchivoEntrega(
                     entrega.getAlumno().getId(),
                     entrega.getEjercicio().getId(),
                     archivo
                 );
                 
                 // Add to delivery
-                entrega.agregarArchivo(rutaArchivo);
+                entrega.agregarArchivo(uploadResult.getRelativePath());
                 
                 // Create response
                 archivosAgregados.add(new DTORespuestaSubidaArchivo(
-                    archivo.getOriginalFilename(),
-                    rutaArchivo,
-                    rutaArchivo,
+                    uploadResult.getOriginalFilename(),
+                    uploadResult.getUniqueFilename(),
+                    uploadResult.getRelativePath(),
                     archivo.getContentType(),
                     archivo.getSize(),
                     fileUploadUtils.formatFileSize(archivo.getSize()),

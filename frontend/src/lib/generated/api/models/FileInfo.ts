@@ -30,6 +30,12 @@ export interface FileInfo {
      * @type {string}
      * @memberof FileInfo
      */
+    originalFileName?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof FileInfo
+     */
     filePath?: string;
     /**
      * 
@@ -87,6 +93,7 @@ export function FileInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     return {
         
         'fileName': json['fileName'] == null ? undefined : json['fileName'],
+        'originalFileName': json['originalFileName'] == null ? undefined : json['originalFileName'],
         'filePath': json['filePath'] == null ? undefined : json['filePath'],
         'extension': json['extension'] == null ? undefined : json['extension'],
         'contentType': json['contentType'] == null ? undefined : json['contentType'],
@@ -109,6 +116,7 @@ export function FileInfoToJSONTyped(value?: FileInfo | null, ignoreDiscriminator
     return {
         
         'fileName': value['fileName'],
+        'originalFileName': value['originalFileName'],
         'filePath': value['filePath'],
         'extension': value['extension'],
         'contentType': value['contentType'],

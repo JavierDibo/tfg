@@ -104,7 +104,13 @@ export interface DTOClase {
      * @type {number}
      * @memberof DTOClase
      */
-    numeroProfesores?: number;
+    numeroEjercicios?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOClase
+     */
+    numeroMateriales?: number;
     /**
      * 
      * @type {number}
@@ -116,13 +122,7 @@ export interface DTOClase {
      * @type {number}
      * @memberof DTOClase
      */
-    numeroEjercicios?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOClase
-     */
-    numeroMateriales?: number;
+    numeroProfesores?: number;
 }
 
 
@@ -176,10 +176,10 @@ export function DTOClaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'ejerciciosId': json['ejerciciosId'] == null ? undefined : json['ejerciciosId'],
         'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(DTOMaterialFromJSON)),
         'tipoClase': json['tipoClase'] == null ? undefined : json['tipoClase'],
-        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
-        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
         'numeroEjercicios': json['numeroEjercicios'] == null ? undefined : json['numeroEjercicios'],
         'numeroMateriales': json['numeroMateriales'] == null ? undefined : json['numeroMateriales'],
+        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
+        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
     };
 }
 
@@ -206,10 +206,10 @@ export function DTOClaseToJSONTyped(value?: DTOClase | null, ignoreDiscriminator
         'ejerciciosId': value['ejerciciosId'],
         'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(DTOMaterialToJSON)),
         'tipoClase': value['tipoClase'],
-        'numeroProfesores': value['numeroProfesores'],
-        'numeroAlumnos': value['numeroAlumnos'],
         'numeroEjercicios': value['numeroEjercicios'],
         'numeroMateriales': value['numeroMateriales'],
+        'numeroAlumnos': value['numeroAlumnos'],
+        'numeroProfesores': value['numeroProfesores'],
     };
 }
 

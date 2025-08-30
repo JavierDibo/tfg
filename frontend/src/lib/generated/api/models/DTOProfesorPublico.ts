@@ -72,13 +72,13 @@ export interface DTOProfesorPublico {
      * @type {string}
      * @memberof DTOProfesorPublico
      */
-    fullName?: string;
+    enabledStatus?: string;
     /**
      * 
      * @type {string}
      * @memberof DTOProfesorPublico
      */
-    enabledStatus?: string;
+    fullName?: string;
 }
 
 /**
@@ -112,8 +112,8 @@ export function DTOProfesorPublicoFromJSONTyped(json: any, ignoreDiscriminator: 
         'enabled': json['enabled'],
         'classCount': json['classCount'],
         'createdAt': json['createdAt'] == null ? undefined : (new Date(json['createdAt'])),
-        'fullName': json['fullName'] == null ? undefined : json['fullName'],
         'enabledStatus': json['enabledStatus'] == null ? undefined : json['enabledStatus'],
+        'fullName': json['fullName'] == null ? undefined : json['fullName'],
     };
 }
 
@@ -136,8 +136,8 @@ export function DTOProfesorPublicoToJSONTyped(value?: DTOProfesorPublico | null,
         'enabled': value['enabled'],
         'classCount': value['classCount'],
         'createdAt': value['createdAt'] == null ? undefined : ((value['createdAt']).toISOString()),
-        'fullName': value['fullName'],
         'enabledStatus': value['enabledStatus'],
+        'fullName': value['fullName'],
     };
 }
 

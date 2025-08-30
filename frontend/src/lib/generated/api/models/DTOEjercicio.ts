@@ -72,6 +72,12 @@ export interface DTOEjercicio {
      * @type {number}
      * @memberof DTOEjercicio
      */
+    porcentajeEntregasCalificadas?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOEjercicio
+     */
     horasRestantes?: number;
     /**
      * 
@@ -79,12 +85,6 @@ export interface DTOEjercicio {
      * @memberof DTOEjercicio
      */
     estado?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOEjercicio
-     */
-    porcentajeEntregasCalificadas?: number;
 }
 
 /**
@@ -112,9 +112,9 @@ export function DTOEjercicioFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'classId': json['classId'] == null ? undefined : json['classId'],
         'numeroEntregas': json['numeroEntregas'] == null ? undefined : json['numeroEntregas'],
         'entregasCalificadas': json['entregasCalificadas'] == null ? undefined : json['entregasCalificadas'],
+        'porcentajeEntregasCalificadas': json['porcentajeEntregasCalificadas'] == null ? undefined : json['porcentajeEntregasCalificadas'],
         'horasRestantes': json['horasRestantes'] == null ? undefined : json['horasRestantes'],
         'estado': json['estado'] == null ? undefined : json['estado'],
-        'porcentajeEntregasCalificadas': json['porcentajeEntregasCalificadas'] == null ? undefined : json['porcentajeEntregasCalificadas'],
     };
 }
 
@@ -137,9 +137,9 @@ export function DTOEjercicioToJSONTyped(value?: DTOEjercicio | null, ignoreDiscr
         'classId': value['classId'],
         'numeroEntregas': value['numeroEntregas'],
         'entregasCalificadas': value['entregasCalificadas'],
+        'porcentajeEntregasCalificadas': value['porcentajeEntregasCalificadas'],
         'horasRestantes': value['horasRestantes'],
         'estado': value['estado'],
-        'porcentajeEntregasCalificadas': value['porcentajeEntregasCalificadas'],
     };
 }
 

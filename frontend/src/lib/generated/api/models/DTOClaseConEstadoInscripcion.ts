@@ -116,7 +116,7 @@ export interface DTOClaseConEstadoInscripcion {
      * @type {number}
      * @memberof DTOClaseConEstadoInscripcion
      */
-    numeroProfesores?: number;
+    numeroEjercicios?: number;
     /**
      * 
      * @type {number}
@@ -128,7 +128,7 @@ export interface DTOClaseConEstadoInscripcion {
      * @type {number}
      * @memberof DTOClaseConEstadoInscripcion
      */
-    numeroEjercicios?: number;
+    numeroProfesores?: number;
 }
 
 
@@ -184,9 +184,9 @@ export function DTOClaseConEstadoInscripcionFromJSONTyped(json: any, ignoreDiscr
         'tipoClase': json['tipoClase'] == null ? undefined : json['tipoClase'],
         'isEnrolled': json['isEnrolled'] == null ? undefined : json['isEnrolled'],
         'fechaInscripcion': json['fechaInscripcion'] == null ? undefined : (new Date(json['fechaInscripcion'])),
-        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
-        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
         'numeroEjercicios': json['numeroEjercicios'] == null ? undefined : json['numeroEjercicios'],
+        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
+        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
     };
 }
 
@@ -215,9 +215,9 @@ export function DTOClaseConEstadoInscripcionToJSONTyped(value?: DTOClaseConEstad
         'tipoClase': value['tipoClase'],
         'isEnrolled': value['isEnrolled'],
         'fechaInscripcion': value['fechaInscripcion'] == null ? undefined : ((value['fechaInscripcion']).toISOString()),
-        'numeroProfesores': value['numeroProfesores'],
-        'numeroAlumnos': value['numeroAlumnos'],
         'numeroEjercicios': value['numeroEjercicios'],
+        'numeroAlumnos': value['numeroAlumnos'],
+        'numeroProfesores': value['numeroProfesores'],
     };
 }
 

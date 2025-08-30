@@ -1,10 +1,5 @@
 package app.util;
 
-import app.excepciones.ValidationException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +10,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+import app.excepciones.ValidationException;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Utility class for handling file uploads with validation and secure storage
@@ -38,15 +39,34 @@ public class FileUploadUtils {
     private static final String EXERCISE_DELIVERIES_DIR = "exercise-deliveries";
     
     /**
+     * Result object for file upload operations
+     */
+    public static class FileUploadResult {
+        private final String uniqueFilename;
+        private final String originalFilename;
+        private final String relativePath;
+        
+        public FileUploadResult(String uniqueFilename, String originalFilename, String relativePath) {
+            this.uniqueFilename = uniqueFilename;
+            this.originalFilename = originalFilename;
+            this.relativePath = relativePath;
+        }
+        
+        public String getUniqueFilename() { return uniqueFilename; }
+        public String getOriginalFilename() { return originalFilename; }
+        public String getRelativePath() { return relativePath; }
+    }
+
+    /**
      * Validates and saves an uploaded file for exercise delivery
      * 
      * @param file The uploaded file
      * @param studentId The ID of the student uploading the file
      * @param exerciseId The ID of the exercise
-     * @return The relative path where the file was saved
+     * @return FileUploadResult with filename information and storage path
      * @throws ValidationException if file validation fails
      */
-    public String saveExerciseDeliveryFile(MultipartFile file, Long studentId, Long exerciseId) {
+    public FileUploadResult saveExerciseDeliveryFile(MultipartFile file, Long studentId, Long exerciseId) {
         validateFile(file);
         
         try {
@@ -56,7 +76,7 @@ public class FileUploadUtils {
             // Generate unique filename
             String originalFilename = file.getOriginalFilename();
             String fileExtension = getFileExtension(originalFilename);
-            String uniqueFilename = generateUniqueFilename(fileExtension);
+            String uniqueFilename = generateUniqueFilename(originalFilename, fileExtension);
             
             // Full path for saving
             Path fullPath = Paths.get(UPLOAD_BASE_DIR, EXERCISE_DELIVERIES_DIR, 
@@ -75,7 +95,7 @@ public class FileUploadUtils {
             log.info("File saved successfully: {} for student {} exercise {}", 
                 relativeFilePath, studentId, exerciseId);
             
-            return relativeFilePath;
+            return new FileUploadResult(uniqueFilename, originalFilename, relativeFilePath);
             
         } catch (IOException e) {
             log.error("Error saving file for student {} exercise {}: {}", 
@@ -182,12 +202,43 @@ public class FileUploadUtils {
     }
     
     /**
-     * Generates a unique filename with timestamp and UUID
+     * Generates a unique filename with timestamp, UUID, and original filename
      */
-    private String generateUniqueFilename(String extension) {
+    private String generateUniqueFilename(String originalFilename, String extension) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String uuid = UUID.randomUUID().toString().substring(0, 8);
-        return String.format("delivery_%s_%s.%s", timestamp, uuid, extension);
+        
+        // Clean the original filename to make it safe for filesystem
+        String safeOriginalName = sanitizeFilename(originalFilename);
+        
+        return String.format("delivery_%s_%s_%s.%s", timestamp, uuid, safeOriginalName, extension);
+    }
+    
+    /**
+     * Sanitizes a filename to make it safe for filesystem storage
+     */
+    private String sanitizeFilename(String filename) {
+        if (filename == null) return "";
+        
+        // Remove extension for processing
+        String nameWithoutExt = filename;
+        if (filename.contains(".")) {
+            nameWithoutExt = filename.substring(0, filename.lastIndexOf("."));
+        }
+        
+        // Replace problematic characters and limit length
+        String sanitized = nameWithoutExt
+            .replaceAll("[^a-zA-Z0-9\\s\\-_]", "_")  // Replace special chars with underscore
+            .replaceAll("\\s+", "_")                  // Replace spaces with underscore
+            .replaceAll("_+", "_")                    // Replace multiple underscores with single
+            .toLowerCase();                           // Convert to lowercase
+        
+        // Limit length to prevent extremely long filenames
+        if (sanitized.length() > 50) {
+            sanitized = sanitized.substring(0, 50);
+        }
+        
+        return sanitized;
     }
     
     /**
@@ -287,7 +338,7 @@ public class FileUploadUtils {
     /**
      * Saves a file for exercise delivery (alias for saveExerciseDeliveryFile)
      */
-    public String guardarArchivoEntrega(Long studentId, Long exerciseId, MultipartFile file) {
+    public FileUploadResult guardarArchivoEntrega(Long studentId, Long exerciseId, MultipartFile file) {
         return saveExerciseDeliveryFile(file, studentId, exerciseId);
     }
     

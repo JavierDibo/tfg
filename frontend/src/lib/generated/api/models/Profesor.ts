@@ -123,13 +123,13 @@ export interface Profesor {
      * @type {boolean}
      * @memberof Profesor
      */
-    accountNonExpired?: boolean;
+    credentialsNonExpired?: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof Profesor
      */
-    credentialsNonExpired?: boolean;
+    accountNonExpired?: boolean;
 }
 
 
@@ -182,8 +182,8 @@ export function ProfesorFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'numeroClases': json['numeroClases'] == null ? undefined : json['numeroClases'],
         'authorities': json['authorities'] == null ? undefined : ((json['authorities'] as Array<any>).map(GrantedAuthorityFromJSON)),
         'accountNonLocked': json['accountNonLocked'] == null ? undefined : json['accountNonLocked'],
-        'accountNonExpired': json['accountNonExpired'] == null ? undefined : json['accountNonExpired'],
         'credentialsNonExpired': json['credentialsNonExpired'] == null ? undefined : json['credentialsNonExpired'],
+        'accountNonExpired': json['accountNonExpired'] == null ? undefined : json['accountNonExpired'],
     };
 }
 
@@ -212,8 +212,8 @@ export function ProfesorToJSONTyped(value?: Profesor | null, ignoreDiscriminator
         'numeroClases': value['numeroClases'],
         'authorities': value['authorities'] == null ? undefined : ((value['authorities'] as Array<any>).map(GrantedAuthorityToJSON)),
         'accountNonLocked': value['accountNonLocked'],
-        'accountNonExpired': value['accountNonExpired'],
         'credentialsNonExpired': value['credentialsNonExpired'],
+        'accountNonExpired': value['accountNonExpired'],
     };
 }
 

@@ -51,16 +51,16 @@ export interface DTOPeticionActualizarEntregaEjercicio {
     comentarios?: string;
     /**
      * 
-     * @type {string}
-     * @memberof DTOPeticionActualizarEntregaEjercicio
-     */
-    comentariosFormateados?: string;
-    /**
-     * 
      * @type {number}
      * @memberof DTOPeticionActualizarEntregaEjercicio
      */
     numeroArchivos?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DTOPeticionActualizarEntregaEjercicio
+     */
+    comentariosFormateados?: string;
 }
 
 /**
@@ -85,8 +85,8 @@ export function DTOPeticionActualizarEntregaEjercicioFromJSONTyped(json: any, ig
         'archivosEntregados': json['archivosEntregados'] == null ? undefined : json['archivosEntregados'],
         'nota': json['nota'] == null ? undefined : json['nota'],
         'comentarios': json['comentarios'] == null ? undefined : json['comentarios'],
-        'comentariosFormateados': json['comentariosFormateados'] == null ? undefined : json['comentariosFormateados'],
         'numeroArchivos': json['numeroArchivos'] == null ? undefined : json['numeroArchivos'],
+        'comentariosFormateados': json['comentariosFormateados'] == null ? undefined : json['comentariosFormateados'],
     };
 }
 
@@ -106,8 +106,8 @@ export function DTOPeticionActualizarEntregaEjercicioToJSONTyped(value?: DTOPeti
         'archivosEntregados': value['archivosEntregados'],
         'nota': value['nota'],
         'comentarios': value['comentarios'],
-        'comentariosFormateados': value['comentariosFormateados'],
         'numeroArchivos': value['numeroArchivos'],
+        'comentariosFormateados': value['comentariosFormateados'],
     };
 }
 

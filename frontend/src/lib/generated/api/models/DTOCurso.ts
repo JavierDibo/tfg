@@ -110,7 +110,7 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
-    numeroProfesores?: number;
+    duracionEnDias?: number;
     /**
      * 
      * @type {number}
@@ -122,19 +122,19 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
-    duracionEnDias?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    porcentajeProgreso?: number;
+    numeroProfesores?: number;
     /**
      * 
      * @type {number}
      * @memberof DTOCurso
      */
     duracionEnSemanas?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOCurso
+     */
+    porcentajeProgreso?: number;
 }
 
 
@@ -189,11 +189,11 @@ export function DTOCursoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(DTOMaterialFromJSON)),
         'fechaInicio': json['fechaInicio'] == null ? undefined : (new Date(json['fechaInicio'])),
         'fechaFin': json['fechaFin'] == null ? undefined : (new Date(json['fechaFin'])),
-        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
-        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
         'duracionEnDias': json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
-        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
+        'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
+        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
         'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
+        'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
     };
 }
 
@@ -221,11 +221,11 @@ export function DTOCursoToJSONTyped(value?: DTOCurso | null, ignoreDiscriminator
         'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(DTOMaterialToJSON)),
         'fechaInicio': value['fechaInicio'] == null ? undefined : ((value['fechaInicio']).toISOString().substring(0,10)),
         'fechaFin': value['fechaFin'] == null ? undefined : ((value['fechaFin']).toISOString().substring(0,10)),
-        'numeroProfesores': value['numeroProfesores'],
-        'numeroAlumnos': value['numeroAlumnos'],
         'duracionEnDias': value['duracionEnDias'],
-        'porcentajeProgreso': value['porcentajeProgreso'],
+        'numeroAlumnos': value['numeroAlumnos'],
+        'numeroProfesores': value['numeroProfesores'],
         'duracionEnSemanas': value['duracionEnSemanas'],
+        'porcentajeProgreso': value['porcentajeProgreso'],
     };
 }
 

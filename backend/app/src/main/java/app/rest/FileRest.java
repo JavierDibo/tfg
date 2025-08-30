@@ -237,6 +237,7 @@ public class FileRest extends BaseRestController {
             List<FileInfo> fileInfos = delivery.archivosEntregados().stream()
                 .map(filePath -> {
                     String fileName = getFileName(filePath);
+                    String originalFileName = extractOriginalFileName(fileName);
                     String extension = getFileExtension(fileName);
                     String contentType = determineContentType(filePath);
                     long fileSize = fileUploadUtils.getFileSize(filePath);
@@ -244,6 +245,7 @@ public class FileRest extends BaseRestController {
                     
                     return new FileInfo(
                         fileName,
+                        originalFileName,
                         filePath,
                         extension,
                         contentType,
@@ -303,6 +305,48 @@ public class FileRest extends BaseRestController {
     }
 
     /**
+     * Extracts the original file name from a generated file name.
+     * Expected format: delivery_YYYYMMDD_HHMMSS_uuid_originalname.extension
+     */
+    private String extractOriginalFileName(String fileName) {
+        if (fileName == null || !fileName.startsWith("delivery_")) {
+            return fileName; // Return as-is if not in expected format
+        }
+        
+        try {
+            // Split by underscore to get parts
+            String[] parts = fileName.split("_");
+            
+            // Expected format: delivery_YYYYMMDD_HHMMSS_uuid_originalname.extension
+            if (parts.length >= 4) {
+                // Get the part after the UUID (parts[3]) and before the extension
+                String partWithExtension = parts[3];
+                
+                // If there are more parts, concatenate them (in case original filename had underscores)
+                if (parts.length > 4) {
+                    StringBuilder originalName = new StringBuilder(parts[3]);
+                    for (int i = 4; i < parts.length - 1; i++) {
+                        originalName.append("_").append(parts[i]);
+                    }
+                    partWithExtension = originalName.toString();
+                }
+                
+                // Remove extension if present
+                if (partWithExtension.contains(".")) {
+                    return partWithExtension.substring(0, partWithExtension.lastIndexOf("."));
+                }
+                
+                return partWithExtension;
+            }
+        } catch (Exception e) {
+            // If parsing fails, return the original filename
+            log.warn("Failed to parse original filename from: {}", fileName);
+        }
+        
+        return fileName; // Fallback to original filename
+    }
+
+    /**
      * Checks if a file is an image based on its extension
      */
     private boolean isImageFile(String extension) {
@@ -322,6 +366,7 @@ public class FileRest extends BaseRestController {
      */
     public record FileInfo(
         String fileName,
+        String originalFileName,
         String filePath,
         String extension,
         String contentType,
