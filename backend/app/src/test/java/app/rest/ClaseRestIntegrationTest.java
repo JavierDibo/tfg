@@ -55,7 +55,7 @@ class ClaseRestIntegrationTest {
     @BeforeEach
     void setUp() {
         // Crear material de prueba
-        material = new Material("mat1", "Apuntes de Java", "https://ejemplo.com/apuntes.pdf");
+        material = new Material("Apuntes de Java", "https://ejemplo.com/apuntes.pdf");
 
         // Crear clase de prueba
         claseTest = new DTOClase(

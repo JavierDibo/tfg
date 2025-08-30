@@ -53,7 +53,7 @@ class ClaseManagementRestTest {
         );
 
         material = new Material();
-        material.setId("material1");
+        material.setId(1L);
         material.setName("Material de prueba");
     }
 
@@ -62,16 +62,16 @@ class ClaseManagementRestTest {
     @Test
     @DisplayName("POST /api/clases/{claseId}/profesores/{profesorId} debe agregar profesor")
     void testAgregarProfesor() throws Exception {
-        when(servicioClase.agregarProfesor(1L, "profesor1")).thenReturn(dtoClase);
+        when(servicioClase.agregarProfesor(1L, "1")).thenReturn(dtoClase);
 
-        mockMvc.perform(post("/api/clases/1/profesores/profesor1"))
+        mockMvc.perform(post("/api/clases/1/profesores/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.titulo").value("Matemáticas I"))
                 .andExpect(jsonPath("$.profesoresId").isArray());
 
-        verify(servicioClase).agregarProfesor(1L, "profesor1");
+        verify(servicioClase).agregarProfesor(1L, "1");
     }
 
     @Test
@@ -157,7 +157,7 @@ class ClaseManagementRestTest {
     void testAgregarMaterialValidacionTamano() throws Exception {
         // Test with fields exceeding maximum size limits
         Material materialTamanoInvalido = new Material();
-        materialTamanoInvalido.setId("a".repeat(256)); // Exceeds @Size(max = 255)
+        materialTamanoInvalido.setId(1L); // Use Long ID instead of String
         materialTamanoInvalido.setName("b".repeat(201)); // Exceeds @Size(max = 200)
         materialTamanoInvalido.setUrl("c".repeat(501)); // Exceeds @Size(max = 500)
 
@@ -174,15 +174,15 @@ class ClaseManagementRestTest {
     @Test
     @DisplayName("DELETE /api/clases/{claseId}/material/{materialId} debe remover material")
     void testRemoverMaterial() throws Exception {
-        when(servicioClase.removerMaterial(1L, "material1")).thenReturn(dtoClase);
+        when(servicioClase.removerMaterial(1L, 1L)).thenReturn(dtoClase);
 
-        mockMvc.perform(delete("/api/clases/1/material/material1"))
+        mockMvc.perform(delete("/api/clases/1/material/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.titulo").value("Matemáticas I"));
 
-        verify(servicioClase).removerMaterial(1L, "material1");
+        verify(servicioClase).removerMaterial(1L, 1L);
     }
 
     // ===== TESTS PARA GESTIÓN DE ALUMNOS =====
@@ -267,13 +267,13 @@ class ClaseManagementRestTest {
     @Test
     @DisplayName("DELETE /api/clases/{claseId}/material/{materialId} debe manejar errores del servicio")
     void testRemoverMaterialErrorServicio() throws Exception {
-        when(servicioClase.removerMaterial(1L, "material1"))
+        when(servicioClase.removerMaterial(1L, 1L))
                 .thenThrow(new RuntimeException("Error en el servicio"));
 
-        mockMvc.perform(delete("/api/clases/1/material/material1"))
+        mockMvc.perform(delete("/api/clases/1/material/1"))
                 .andExpect(status().isInternalServerError());
 
-        verify(servicioClase).removerMaterial(1L, "material1");
+        verify(servicioClase).removerMaterial(1L, 1L);
     }
 
     @Test

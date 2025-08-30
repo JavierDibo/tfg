@@ -83,7 +83,7 @@ class ServicioClaseTest {
         lenient().when(securityUtils.getCurrentUserId()).thenReturn(1L);
         lenient().when(securityUtils.hasRole(anyString())).thenReturn(true);
         
-        material = new Material("mat1", "Apuntes de Java", "https://ejemplo.com/apuntes.pdf");
+        material = new Material("Apuntes de Java", "https://ejemplo.com/apuntes.pdf");
         
         curso = new Curso(
                 "Curso de Java", "Aprende Java desde cero", new BigDecimal("99.99"),
@@ -437,7 +437,7 @@ class ServicioClaseTest {
         when(repositorioClase.findById(1L)).thenReturn(Optional.of(curso));
         when(repositorioClase.save(any(Curso.class))).thenReturn(curso);
 
-        Material nuevoMaterial = new Material("mat2", "Ejercicios prácticos", "https://ejemplo.com/ejercicios.pdf");
+        Material nuevoMaterial = new Material("Ejercicios prácticos", "https://ejemplo.com/ejercicios.pdf");
         DTOClase resultado = servicioClase.agregarMaterial(1L, nuevoMaterial);
 
         assertNotNull(resultado);
@@ -452,7 +452,7 @@ class ServicioClaseTest {
         when(repositorioClase.findById(1L)).thenReturn(Optional.of(curso));
         when(repositorioClase.save(any(Curso.class))).thenReturn(curso);
 
-        DTOClase resultado = servicioClase.removerMaterial(1L, "mat1");
+        DTOClase resultado = servicioClase.removerMaterial(1L, 1L);
 
         assertNotNull(resultado);
         assertTrue(resultado.material().isEmpty());
@@ -871,7 +871,7 @@ class ServicioClaseTest {
         clase2.setPrice(new BigDecimal("50"));
         clase2.setFormat(EPresencialidad.PRESENCIAL);
         clase2.setImage("imagen2.jpg");
-        clase2.setDifficulty(EDificultad.BASICO);
+        clase2.setDifficulty(EDificultad.PRINCIPIANTE);
         clase2.setStudents(new ArrayList<>());
         clase2.setTeachers(new ArrayList<>());
         clase2.setExercises(new ArrayList<>());
@@ -939,14 +939,12 @@ class ServicioClaseTest {
         List<Clase> clases = Arrays.asList(clase1);
         Page<Clase> page = new PageImpl<>(clases);
         
-        DTORespuestaPaginada<DTOClase> respuestaEsperada = DTORespuestaPaginada.fromPage(page, "id", "ASC");
-        
         // Mock security utils
         when(securityUtils.isAdmin()).thenReturn(true);
         when(securityUtils.isProfessor()).thenReturn(false);
         
-        // Mock service method
-        when(servicioClase.buscarClases(parametros)).thenReturn(respuestaEsperada);
+        // Mock repository method
+        when(repositorioClase.findAll(any(Pageable.class))).thenReturn(page);
         
         // When
         DTORespuestaPaginada<DTOClaseConEstadoInscripcion> resultado = servicioClase.buscarClasesConEstadoInscripcion(parametros);
@@ -963,6 +961,6 @@ class ServicioClaseTest {
         
         // Verify interactions
         verify(securityUtils).isAdmin();
-        verify(servicioClase).buscarClases(parametros);
+        verify(repositorioClase).findAll(any(Pageable.class));
     }
 }

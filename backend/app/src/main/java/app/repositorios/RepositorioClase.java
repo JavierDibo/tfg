@@ -37,6 +37,13 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
     List<Clase> findByTitleContaining(String title);
     
     /**
+     * Busca clases por título (contiene, case-insensitive)
+     * @param title Título a buscar
+     * @return Lista de clases
+     */
+    List<Clase> findByTitleContainingIgnoreCase(String title);
+    
+    /**
      * Busca clases por título (contiene, case-sensitive) con paginación
      * @param title Título a buscar
      * @param pageable Parámetros de paginación
@@ -50,6 +57,13 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      * @return Lista de clases
      */
     List<Clase> findByDescriptionContaining(String description);
+    
+    /**
+     * Busca clases por descripción (contiene, case-insensitive)
+     * @param description Descripción a buscar
+     * @return Lista de clases
+     */
+    List<Clase> findByDescriptionContainingIgnoreCase(String description);
     
     /**
      * Busca clases por descripción (contiene, case-sensitive) con paginación
@@ -120,6 +134,14 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
     List<Clase> findAllByOrderByIdAsc();
     
     /**
+     * Obtiene todas las clases ordenadas por ID (alias para compatibilidad)
+     * @return Lista de clases ordenada
+     */
+    default List<Clase> findAllOrderedById() {
+        return findAllByOrderByIdAsc();
+    }
+    
+    /**
      * Obtiene todas las clases ordenadas por precio ascendente
      * @return Lista de clases ordenada por precio
      */
@@ -184,4 +206,51 @@ public interface RepositorioClase extends JpaRepository<Clase, Long> {
      */
     @Query("SELECT c FROM Clase c WHERE SIZE(c.teachers) = 0")
     List<Clase> findClasesSinProfesores();
+    
+    /**
+     * Busca clases con búsqueda general (título o descripción)
+     * @param searchTerm Término de búsqueda
+     * @param pageable Parámetros de paginación
+     * @return Página de clases
+     */
+    @Query("SELECT c FROM Clase c WHERE LOWER(c.title) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(c.description) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    Page<Clase> findByGeneralSearch(@Param("searchTerm") String searchTerm, Pageable pageable);
+    
+    /**
+     * Busca clases con filtros generales y específicos
+     * @param searchTerm Término de búsqueda general
+     * @param title Título específico
+     * @param description Descripción específica
+     * @param format Tipo de presencialidad
+     * @param difficulty Nivel de dificultad
+     * @param precioMin Precio mínimo
+     * @param precioMax Precio máximo
+     * @param pageable Parámetros de paginación
+     * @return Página de clases
+     */
+    @Query("SELECT c FROM Clase c WHERE " +
+           "(:searchTerm IS NULL OR LOWER(c.title) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(c.description) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND " +
+           "(:title IS NULL OR LOWER(c.title) LIKE LOWER(CONCAT('%', :title, '%'))) AND " +
+           "(:description IS NULL OR LOWER(c.description) LIKE LOWER(CONCAT('%', :description, '%'))) AND " +
+           "(:format IS NULL OR c.format = :format) AND " +
+           "(:difficulty IS NULL OR c.difficulty = :difficulty) AND " +
+           "(:precioMin IS NULL OR c.price >= :precioMin) AND " +
+           "(:precioMax IS NULL OR c.price <= :precioMax)")
+    Page<Clase> findByGeneralAndSpecificFilters(
+            @Param("searchTerm") String searchTerm,
+            @Param("title") String title,
+            @Param("description") String description,
+            @Param("format") EPresencialidad format,
+            @Param("difficulty") EDificultad difficulty,
+            @Param("precioMin") BigDecimal precioMin,
+            @Param("precioMax") BigDecimal precioMax,
+            Pageable pageable);
+    
+    /**
+     * Busca una clase por ID con todas las relaciones cargadas
+     * @param id ID de la clase
+     * @return Optional<Clase> con todas las relaciones
+     */
+    @Query("SELECT c FROM Clase c LEFT JOIN FETCH c.students LEFT JOIN FETCH c.teachers LEFT JOIN FETCH c.exercises LEFT JOIN FETCH c.material WHERE c.id = :id")
+    Optional<Clase> findByIdWithAllRelationships(@Param("id") Long id);
 }

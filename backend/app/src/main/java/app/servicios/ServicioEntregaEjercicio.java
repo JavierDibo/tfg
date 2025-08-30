@@ -257,6 +257,9 @@ public class ServicioEntregaEjercicio {
             archivos.forEach(entrega::agregarArchivo);
         }
 
+        // Establish bidirectional relationship
+        ejercicio.agregarEntrega(entrega);
+
         EntregaEjercicio entregaGuardada = repositorioEntregaEjercicio.save(entrega);
         return new DTOEntregaEjercicio(entregaGuardada);
     }
@@ -781,6 +784,9 @@ public class ServicioEntregaEjercicio {
         if (archivosRutas != null && !archivosRutas.isEmpty()) {
             archivosRutas.forEach(entrega::agregarArchivo);
         }
+        
+        // Establish bidirectional relationship
+        ejercicio.agregarEntrega(entrega);
         
         EntregaEjercicio entregaGuardada = repositorioEntregaEjercicio.save(entrega);
         return new DTOEntregaEjercicio(entregaGuardada);

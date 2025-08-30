@@ -91,6 +91,8 @@ public class EjercicioDataInitializer extends BaseDataInitializer {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
     
+    private int exerciseCounter = 0;
+    
     private String generateRandomExerciseName() {
         String[] exerciseTypes = {
             "Tarea de Programación", "Ejercicio de Matemáticas", "Problema de Física",
@@ -107,7 +109,9 @@ public class EjercicioDataInitializer extends BaseDataInitializer {
         String type = exerciseTypes[random.nextInt(exerciseTypes.length)];
         String subject = subjects[random.nextInt(subjects.length)];
         
-        return type + " - " + subject + " #" + (random.nextInt(100) + 1);
+        // Use a counter to ensure unique names
+        exerciseCounter++;
+        return type + " - " + subject + " #" + exerciseCounter;
     }
     
     private String generateRandomStatement(String exerciseName) {
@@ -131,15 +135,24 @@ public class EjercicioDataInitializer extends BaseDataInitializer {
     }
     
     private LocalDateTime generateRandomStartDate() {
-        // Start dates: from 7 days ago to 14 days in the future (more realistic)
-        int daysOffset = random.nextInt(21) - 7; // -7 to +13
+        // Start dates: from 3 days ago to 5 days in the future (more conservative)
+        int daysOffset = random.nextInt(8) - 3; // -3 to +4
         return LocalDateTime.now().plusDays(daysOffset);
     }
     
     private LocalDateTime generateRandomEndDate(LocalDateTime startDate) {
-        // End dates: from 7 days to 30 days after start date
-        int daysDuration = random.nextInt(24) + 7; // 7 to 30 days
-        return startDate.plusDays(daysDuration);
+        // End dates: always in the future (minimum 2 days after start, maximum 20 days)
+        // This ensures exercises are never expired when deliveries are created
+        int daysDuration = random.nextInt(18) + 2; // 2 to 19 days
+        LocalDateTime endDate = startDate.plusDays(daysDuration);
+        
+        // Ensure end date is always in the future with a safety margin
+        LocalDateTime now = LocalDateTime.now();
+        if (endDate.isBefore(now.plusDays(1))) {
+            endDate = now.plusDays(2); // Safety margin of 2 days
+        }
+        
+        return endDate;
     }
     
     public List<DTOEjercicio> getCreatedExercises() {

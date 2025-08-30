@@ -29,7 +29,8 @@ import java.util.Random;
 @Component
 @Profile("!test")
 public class CourseDataInitializer extends BaseDataInitializer {
-    private static final int COURSES_PER_PROFESSOR = 1;
+    private static final int MIN_COURSES_PER_PROFESSOR = 3;
+    private static final int MAX_COURSES_PER_PROFESSOR = 5;
     private final List<DTOCurso> createdCourses = new ArrayList<>();
     private final Random random = new Random();
 
@@ -58,7 +59,9 @@ public class CourseDataInitializer extends BaseDataInitializer {
         List<Material> availableMaterials = repositorioMaterial.findAll();
 
         for (DTOProfesor profesor : professorInit.getCreatedProfessors()) {
-            for (int i = 0; i < COURSES_PER_PROFESSOR; i++) {
+            // Each professor gets between 3 and 5 classes
+            int coursesForProfessor = random.nextInt(MAX_COURSES_PER_PROFESSOR - MIN_COURSES_PER_PROFESSOR + 1) + MIN_COURSES_PER_PROFESSOR;
+            for (int i = 0; i < coursesForProfessor; i++) {
                 String title = generateRandomCourseName();
                 String description = "Curso de " + title + " impartido por " + profesor.firstName();
                 BigDecimal price = BigDecimal.valueOf(generateRandomPrice());
@@ -71,11 +74,11 @@ public class CourseDataInitializer extends BaseDataInitializer {
 
                 List<Long> profesorIds = Collections.singletonList(profesor.id());
 
-                // Select random materials for this course (minimum 2 materials per course, up
-                // to 4)
+                // Select random materials for this course (minimum 3 materials per course, up
+                // to 6)
                 // Use Material IDs instead of Material objects to avoid Hibernate session
                 // conflicts
-                List<Long> courseMaterialIds = selectRandomMaterialIds(availableMaterials, 2, 4);
+                List<Long> courseMaterialIds = selectRandomMaterialIds(availableMaterials, 3, 6);
 
                 // Fetch Material objects from database using IDs to avoid session conflicts
                 List<Material> courseMaterials = fetchMaterialsByIds(courseMaterialIds);
@@ -108,7 +111,11 @@ public class CourseDataInitializer extends BaseDataInitializer {
                 .mapToInt(course -> course.material().size())
                 .sum();
         System.out.println("Courses created: " + createdCourses.size() + " (avg " +
-                String.format("%.1f", (double) totalMaterialsAssigned / createdCourses.size()) + " materials each)");
+                String.format("%.1f", (double) totalMaterialsAssigned / createdCourses.size()) + " materials each, min 3 per course)");
+        
+        // Log professor distribution
+        int numProfessors = professorInit.getCreatedProfessors().size();
+        System.out.println("Professors: " + numProfessors + " (each with " + MIN_COURSES_PER_PROFESSOR + "-" + MAX_COURSES_PER_PROFESSOR + " classes)");
     }
 
     private void setupSecurityContext() {

@@ -18,8 +18,8 @@ import java.util.Random;
 @Component
 @Profile("!test")
 public class EntregaEjercicioDataInitializer extends BaseDataInitializer {
-    private static final double DELIVERY_RATE = 0.7; // 70% of students will deliver exercises
-    private static final double GRADING_RATE = 0.8; // 80% of deliveries will be graded
+    private static final double DELIVERY_RATE = 0.5; // 50% of students will deliver exercises
+    private static final double GRADING_RATE = 0.2; // 80% of deliveries will be graded
     private final List<DTOEntregaEjercicio> createdDeliveries = new ArrayList<>();
     private final Random random = new Random();
     
@@ -92,21 +92,31 @@ public class EntregaEjercicioDataInitializer extends BaseDataInitializer {
             return;
         }
         
+
+        
         int totalDeliveries = 0;
         int totalGraded = 0;
         
-        // Create approximately 2 deliveries per student
-        for (String studentId : studentIds) {
-            // Select 2 random exercises for this student
-            List<String> availableExercises = new ArrayList<>(exerciseIds);
-            int deliveriesForStudent = Math.min(2, availableExercises.size());
+        // Create 5 deliveries per exercise from students in that class
+        for (String exerciseId : exerciseIds) {
+            // Get students enrolled in this exercise's course
+            List<String> studentsInExerciseClass = getStudentsInExerciseClass(exerciseId);
             
-            for (int i = 0; i < deliveriesForStudent; i++) {
-                if (availableExercises.isEmpty()) break;
+            if (studentsInExerciseClass.isEmpty()) {
+                System.err.println("Warning: No students found for exercise " + exerciseId);
+                continue;
+            }
+            
+            // Create 5 deliveries for this exercise
+            int deliveriesForExercise = Math.min(5, studentsInExerciseClass.size());
+            List<String> availableStudents = new ArrayList<>(studentsInExerciseClass);
+            
+            for (int i = 0; i < deliveriesForExercise; i++) {
+                if (availableStudents.isEmpty()) break;
                 
-                // Pick a random exercise
-                int exerciseIndex = random.nextInt(availableExercises.size());
-                String exerciseId = availableExercises.remove(exerciseIndex);
+                // Pick a random student from this class
+                int studentIndex = random.nextInt(availableStudents.size());
+                String studentId = availableStudents.remove(studentIndex);
                 
                 try {
                     // Generate random files for the delivery
@@ -148,7 +158,7 @@ public class EntregaEjercicioDataInitializer extends BaseDataInitializer {
         }
         
         System.out.println("Exercise deliveries created: " + totalDeliveries + 
-            " (graded: " + totalGraded + ")");
+            " (graded: " + totalGraded + ") - 5 deliveries per exercise from students in that class");
     }
     
     private void setupSecurityContext() {
@@ -224,5 +234,32 @@ public class EntregaEjercicioDataInitializer extends BaseDataInitializer {
     
     public List<DTOEntregaEjercicio> getCreatedDeliveries() {
         return createdDeliveries;
+    }
+    
+    /**
+     * Gets students enrolled in the course that contains the given exercise
+     */
+    private List<String> getStudentsInExerciseClass(String exerciseId) {
+        try {
+            // Get the exercise to find its course
+            app.servicios.ServicioEjercicio servicioEjercicio = context.getBean(app.servicios.ServicioEjercicio.class);
+            app.dtos.DTOEjercicio ejercicio = servicioEjercicio.obtenerEjercicioPorId(Long.parseLong(exerciseId));
+            
+            if (ejercicio == null || ejercicio.classId() == null) {
+                return new ArrayList<>();
+            }
+            
+            // Get students enrolled in this course
+            app.repositorios.RepositorioAlumno repositorioAlumno = context.getBean(app.repositorios.RepositorioAlumno.class);
+            List<app.entidades.Alumno> studentsInClass = repositorioAlumno.findByClaseId(Long.parseLong(ejercicio.classId()));
+            
+            return studentsInClass.stream()
+                .map(student -> student.getId().toString())
+                .toList();
+                
+        } catch (Exception e) {
+            System.err.println("Error getting students for exercise " + exerciseId + ": " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 }

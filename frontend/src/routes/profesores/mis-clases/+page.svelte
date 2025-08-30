@@ -13,7 +13,8 @@
 		DTOPeticionCrearClase,
 		DTOEjercicio,
 		DTOEntregaEjercicio,
-		DTOAlumno
+		DTOAlumno,
+		DTOMaterial
 	} from '$lib/generated/api';
 	import { FormatterUtils } from '$lib/utils/formatters';
 
@@ -172,9 +173,18 @@
 
 	async function loadClassMaterials(claseId: number) {
 		try {
-			classMaterials = await ClaseService.getClassMaterials(claseId);
+			const detailedClass = await ClaseService.getClaseDetallada(claseId);
+			// Convert DTOMaterial to Material, filtering out invalid entries
+			classMaterials = (detailedClass.material || [])
+				.filter((material: DTOMaterial) => material.name && material.url) // Only include materials with required fields
+				.map((material: DTOMaterial) => ({
+					id: material.id,
+					name: material.name!,
+					url: material.url!
+				}));
 		} catch (err) {
 			console.error('Error loading class materials:', err);
+			classMaterials = [];
 		}
 	}
 
