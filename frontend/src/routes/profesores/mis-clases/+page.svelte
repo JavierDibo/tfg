@@ -439,6 +439,26 @@
 								</div>
 							{/if}
 						</div>
+
+						<!-- Exercises Management -->
+						<div class="mb-6">
+							<div class="mb-4 flex items-center justify-between">
+								<h3 class="text-lg font-semibold text-gray-900">Ejercicios de la Clase</h3>
+								<button
+									onclick={() => goto('/ejercicios/nuevo')}
+									class="inline-flex items-center rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
+								>
+									➕ Nuevo Ejercicio
+								</button>
+							</div>
+
+							<div class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
+								<p class="text-gray-500">Funcionalidad de ejercicios en desarrollo.</p>
+								<p class="mt-1 text-sm text-gray-400">
+									Próximamente podrás ver y gestionar los ejercicios de esta clase.
+								</p>
+							</div>
+						</div>
 					</div>
 				{:else}
 					<div class="rounded-lg border border-gray-200 bg-gray-50 p-12 text-center">
