@@ -444,18 +444,29 @@
 						<div class="mb-6">
 							<div class="mb-4 flex items-center justify-between">
 								<h3 class="text-lg font-semibold text-gray-900">Ejercicios de la Clase</h3>
-								<button
-									onclick={() => goto('/ejercicios/nuevo')}
-									class="inline-flex items-center rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
-								>
-									➕ Nuevo Ejercicio
-								</button>
+								<div class="flex space-x-2">
+									<button
+										onclick={() =>
+											selectedClass && goto(`/ejercicios/nuevo?classId=${selectedClass.id}`)}
+										class="inline-flex items-center rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
+									>
+										➕ Nuevo Ejercicio
+									</button>
+									<button
+										onclick={() => goto('/profesores/ejercicios')}
+										class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+									>
+										📚 Gestionar Ejercicios
+									</button>
+								</div>
 							</div>
 
-							<div class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
-								<p class="text-gray-500">Funcionalidad de ejercicios en desarrollo.</p>
-								<p class="mt-1 text-sm text-gray-400">
-									Próximamente podrás ver y gestionar los ejercicios de esta clase.
+							<div class="rounded-lg border border-gray-200 bg-blue-50 p-4">
+								<p class="text-blue-700">
+									Gestiona los ejercicios de esta clase desde el panel de ejercicios.
+								</p>
+								<p class="mt-1 text-sm text-blue-600">
+									Puedes crear nuevos ejercicios, ver entregas y calificar trabajos de estudiantes.
 								</p>
 							</div>
 						</div>

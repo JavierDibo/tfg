@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import type { DTOEntregaEjercicio, FileInfo } from '$lib/generated/api';
+	import type { DTOEntregaEjercicio, FileInfo, DTOAlumno, DTOEjercicio } from '$lib/generated/api';
 	import { EntregaService, type FileOperation } from '$lib/services/entregaService';
+	import { AlumnoService } from '$lib/services/alumnoService';
+	import { EjercicioService } from '$lib/services/ejercicioService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import { FormatterUtils } from '$lib/utils/formatters.js';
 
@@ -12,6 +14,10 @@
 	let error = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
 	let entrega = $state<DTOEntregaEjercicio | null>(null);
+
+	// Additional data state
+	let student = $state<DTOAlumno | null>(null);
+	let exercise = $state<DTOEjercicio | null>(null);
 
 	// File viewer state
 	let fileViewerOpen = $state(false);
@@ -65,6 +71,11 @@
 		try {
 			entrega = await EntregaService.getEntregaById(entregaId);
 
+			// Load additional data if delivery was loaded successfully
+			if (entrega) {
+				await Promise.all([loadStudentData(), loadExerciseData()]);
+			}
+
 			// Load file metadata if there are files
 			if (entrega?.archivosEntregados && entrega.archivosEntregados.length > 0) {
 				await loadFileMetadata();
@@ -74,6 +85,28 @@
 			error = 'Error al cargar la entrega. Por favor, inténtalo de nuevo.';
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function loadStudentData() {
+		if (!entrega?.alumnoId) return;
+
+		try {
+			student = await AlumnoService.getAlumno(entrega.alumnoId);
+		} catch (err) {
+			console.error('Error loading student data:', err);
+			// Don't show error to user as this is optional metadata
+		}
+	}
+
+	async function loadExerciseData() {
+		if (!entrega?.ejercicioId) return;
+
+		try {
+			exercise = await EjercicioService.getEjercicioById(entrega.ejercicioId);
+		} catch (err) {
+			console.error('Error loading exercise data:', err);
+			// Don't show error to user as this is optional metadata
 		}
 	}
 
@@ -582,18 +615,17 @@
 
 				<div class="space-y-4">
 					<div>
-						<span class="text-sm font-medium text-gray-500">ID de Entrega</span>
-						<p class="text-lg text-gray-900">{entrega.id || 'N/A'}</p>
-					</div>
-
-					<div>
 						<span class="text-sm font-medium text-gray-500">Estudiante</span>
-						<p class="text-lg text-gray-900">{entrega.alumnoId || 'N/A'}</p>
+						<p class="text-lg text-gray-900">
+							{student ? `${student.firstName} ${student.lastName}` : entrega?.alumnoId || 'N/A'}
+						</p>
 					</div>
 
 					<div>
-						<span class="text-sm font-medium text-gray-500">Ejercicio ID</span>
-						<p class="text-lg text-gray-900">{entrega.ejercicioId || 'N/A'}</p>
+						<span class="text-sm font-medium text-gray-500">Ejercicio</span>
+						<p class="text-lg text-gray-900">
+							{exercise?.name || entrega?.ejercicioId || 'N/A'}
+						</p>
 					</div>
 
 					<div>
