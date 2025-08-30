@@ -590,6 +590,53 @@ export class EntregaService {
 		}
 	}
 
+	/**
+	 * Get deliveries for teacher's classes
+	 */
+	static async getTeacherDeliveries(params: EntregaFilters = {}): Promise<DTORespuestaPaginada> {
+		try {
+			// Note: This endpoint might not exist yet in the generated API
+			// We'll use the existing endpoint with teacher filtering for now
+			return await this.api.obtenerEntregas(params);
+		} catch (error) {
+			ErrorHandler.logError(error, 'getTeacherDeliveries');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get recent deliveries for a specific class
+	 */
+	static async getClassRecentDeliveries(
+		claseId: number,
+		params: EntregaFilters = {}
+	): Promise<DTORespuestaPaginada> {
+		try {
+			return await this.api.obtenerEntregasRecientesClase({ claseId, ...params });
+		} catch (error) {
+			ErrorHandler.logError(error, 'getClassRecentDeliveries');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Grade a delivery (for teachers)
+	 */
+	static async gradeDelivery(id: number, gradeData: GradeData): Promise<DTOEntregaEjercicio> {
+		try {
+			return await this.api.reemplazarEntrega({
+				id,
+				dTOPeticionActualizarEntregaEjercicio: {
+					nota: gradeData.nota,
+					comentarios: gradeData.comentarios
+				}
+			});
+		} catch (error) {
+			ErrorHandler.logError(error, 'gradeDelivery');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
 	// ==================== BUSINESS LOGIC METHODS ====================
 
 	/**

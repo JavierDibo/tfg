@@ -8,7 +8,9 @@ import type {
 	DTORespuestaPaginadaDTOClaseConEstadoInscripcion,
 	DTOProfesor,
 	ObtenerClasesPresencialidadEnum,
-	DTORespuestaEnrollment
+	DTORespuestaEnrollment,
+	DTOPeticionCrearClase,
+	Material
 } from '$lib/generated/api';
 import { claseApi, profesorApi } from '$lib/api';
 import { ErrorHandler } from '$lib/utils/errorHandler';
@@ -78,6 +80,73 @@ export class ClaseService {
 			return profesores;
 		} catch (error) {
 			ErrorHandler.logError(error, 'getProfesoresPorClase');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get classes that the authenticated teacher teaches
+	 */
+	static async getMyClasses(): Promise<DTOClase[]> {
+		try {
+			const { userOperationsApi } = await import('$lib/api');
+			return await userOperationsApi.obtenerMisClases();
+		} catch (error) {
+			ErrorHandler.logError(error, 'getMyClasses');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Update class parameters (for teachers)
+	 */
+	static async updateClassParameters(
+		id: number,
+		updateData: DTOPeticionCrearClase
+	): Promise<DTOClase> {
+		try {
+			return await claseApi.actualizarClase({ id, dTOPeticionCrearClase: updateData });
+		} catch (error) {
+			ErrorHandler.logError(error, 'updateClassParameters');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Get materials for a specific class
+	 */
+	static async getClassMaterials(claseId: number): Promise<Material[]> {
+		try {
+			const { classManagementApi } = await import('$lib/api');
+			return await classManagementApi.obtenerMaterialesClase({ claseId });
+		} catch (error) {
+			ErrorHandler.logError(error, 'getClassMaterials');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Add material to a class
+	 */
+	static async addMaterialToClass(claseId: number, material: Material): Promise<string> {
+		try {
+			const { classManagementApi } = await import('$lib/api');
+			return await classManagementApi.agregarMaterialAClase({ claseId, material });
+		} catch (error) {
+			ErrorHandler.logError(error, 'addMaterialToClass');
+			throw await ErrorHandler.parseError(error);
+		}
+	}
+
+	/**
+	 * Remove material from a class
+	 */
+	static async removeMaterialFromClass(claseId: number, materialId: number): Promise<string> {
+		try {
+			const { classManagementApi } = await import('$lib/api');
+			return await classManagementApi.quitarMaterialDeClase({ claseId, materialId });
+		} catch (error) {
+			ErrorHandler.logError(error, 'removeMaterialFromClass');
 			throw await ErrorHandler.parseError(error);
 		}
 	}

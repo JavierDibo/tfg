@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   DTOClase,
   DTOCurso,
+  DTOPeticionCrearClase,
   DTOPeticionCrearCurso,
   DTOPeticionCrearTaller,
   DTORespuestaPaginada,
@@ -29,6 +30,8 @@ import {
     DTOClaseToJSON,
     DTOCursoFromJSON,
     DTOCursoToJSON,
+    DTOPeticionCrearClaseFromJSON,
+    DTOPeticionCrearClaseToJSON,
     DTOPeticionCrearCursoFromJSON,
     DTOPeticionCrearCursoToJSON,
     DTOPeticionCrearTallerFromJSON,
@@ -42,6 +45,11 @@ import {
     DTOTallerFromJSON,
     DTOTallerToJSON,
 } from '../models/index';
+
+export interface ActualizarClaseRequest {
+    id: number;
+    dTOPeticionCrearClase: DTOPeticionCrearClase;
+}
 
 export interface CrearCursoRequest {
     dTOPeticionCrearCurso: DTOPeticionCrearCurso;
@@ -107,6 +115,55 @@ export interface ObtenerClasesDisponiblesRequest {
  * 
  */
 export class ClassesApi extends runtime.BaseAPI {
+
+    /**
+     * Updates a class by ID. Teachers can only update classes they teach.
+     * Update class
+     */
+    async actualizarClaseRaw(requestParameters: ActualizarClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTOClase>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling actualizarClase().'
+            );
+        }
+
+        if (requestParameters['dTOPeticionCrearClase'] == null) {
+            throw new runtime.RequiredError(
+                'dTOPeticionCrearClase',
+                'Required parameter "dTOPeticionCrearClase" was null or undefined when calling actualizarClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/clases/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DTOPeticionCrearClaseToJSON(requestParameters['dTOPeticionCrearClase']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTOClaseFromJSON(jsonValue));
+    }
+
+    /**
+     * Updates a class by ID. Teachers can only update classes they teach.
+     * Update class
+     */
+    async actualizarClase(requestParameters: ActualizarClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTOClase> {
+        const response = await this.actualizarClaseRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Creates a new course in the system (requires ADMIN or PROFESOR role)

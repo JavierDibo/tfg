@@ -21,6 +21,7 @@ export * from './DTOOperacionArchivoResultado';
 export * from './DTOPago';
 export * from './DTOPerfilAlumno';
 export * from './DTOPeticionActualizarEntregaEjercicio';
+export * from './DTOPeticionCrearClase';
 export * from './DTOPeticionCrearCurso';
 export * from './DTOPeticionCrearEjercicio';
 export * from './DTOPeticionCrearEntregaConArchivos';

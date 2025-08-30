@@ -120,6 +120,12 @@ export interface DTOEjercicioConEntrega {
      * @type {number}
      * @memberof DTOEjercicioConEntrega
      */
+    porcentajeEntregasCalificadas?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOEjercicioConEntrega
+     */
     horasRestantes?: number;
     /**
      * 
@@ -132,19 +138,13 @@ export interface DTOEjercicioConEntrega {
      * @type {string}
      * @memberof DTOEjercicioConEntrega
      */
-    estadoEntregaTexto?: string;
+    estadoEntregaIcono?: string;
     /**
      * 
      * @type {string}
      * @memberof DTOEjercicioConEntrega
      */
-    estadoEntregaIcono?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOEjercicioConEntrega
-     */
-    porcentajeEntregasCalificadas?: number;
+    estadoEntregaTexto?: string;
 }
 
 
@@ -192,11 +192,11 @@ export function DTOEjercicioConEntregaFromJSONTyped(json: any, ignoreDiscriminat
         'notaFormateada': json['notaFormateada'] == null ? undefined : json['notaFormateada'],
         'estadoEntregaDescriptivo': json['estadoEntregaDescriptivo'] == null ? undefined : json['estadoEntregaDescriptivo'],
         'estado': json['estado'] == null ? undefined : json['estado'],
+        'porcentajeEntregasCalificadas': json['porcentajeEntregasCalificadas'] == null ? undefined : json['porcentajeEntregasCalificadas'],
         'horasRestantes': json['horasRestantes'] == null ? undefined : json['horasRestantes'],
         'estadoEntregaUsuario': json['estadoEntregaUsuario'] == null ? undefined : json['estadoEntregaUsuario'],
-        'estadoEntregaTexto': json['estadoEntregaTexto'] == null ? undefined : json['estadoEntregaTexto'],
         'estadoEntregaIcono': json['estadoEntregaIcono'] == null ? undefined : json['estadoEntregaIcono'],
-        'porcentajeEntregasCalificadas': json['porcentajeEntregasCalificadas'] == null ? undefined : json['porcentajeEntregasCalificadas'],
+        'estadoEntregaTexto': json['estadoEntregaTexto'] == null ? undefined : json['estadoEntregaTexto'],
     };
 }
 
@@ -227,11 +227,11 @@ export function DTOEjercicioConEntregaToJSONTyped(value?: DTOEjercicioConEntrega
         'notaFormateada': value['notaFormateada'],
         'estadoEntregaDescriptivo': value['estadoEntregaDescriptivo'],
         'estado': value['estado'],
+        'porcentajeEntregasCalificadas': value['porcentajeEntregasCalificadas'],
         'horasRestantes': value['horasRestantes'],
         'estadoEntregaUsuario': value['estadoEntregaUsuario'],
-        'estadoEntregaTexto': value['estadoEntregaTexto'],
         'estadoEntregaIcono': value['estadoEntregaIcono'],
-        'porcentajeEntregasCalificadas': value['porcentajeEntregasCalificadas'],
+        'estadoEntregaTexto': value['estadoEntregaTexto'],
     };
 }
 

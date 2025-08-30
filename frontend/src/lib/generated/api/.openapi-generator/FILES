@@ -33,6 +33,7 @@ models/DTOOperacionArchivoResultado.ts
 models/DTOPago.ts
 models/DTOPerfilAlumno.ts
 models/DTOPeticionActualizarEntregaEjercicio.ts
+models/DTOPeticionCrearClase.ts
 models/DTOPeticionCrearCurso.ts
 models/DTOPeticionCrearEjercicio.ts
 models/DTOPeticionCrearEntregaConArchivos.ts

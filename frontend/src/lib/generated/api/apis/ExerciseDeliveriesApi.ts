@@ -109,6 +109,14 @@ export interface ObtenerEntregasRequest {
     sortDirection?: string;
 }
 
+export interface ObtenerEntregasRecientesClaseRequest {
+    claseId: number;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: string;
+}
+
 export interface ReemplazarEntregaRequest {
     id: number;
     dTOPeticionActualizarEntregaEjercicio: DTOPeticionActualizarEntregaEjercicio;
@@ -668,6 +676,61 @@ export class ExerciseDeliveriesApi extends runtime.BaseAPI {
      */
     async obtenerEntregas(requestParameters: ObtenerEntregasRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
         const response = await this.obtenerEntregasRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets recent deliveries for a specific class. Teachers can only access classes they teach.
+     * Get recent deliveries for a class
+     */
+    async obtenerEntregasRecientesClaseRaw(requestParameters: ObtenerEntregasRecientesClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DTORespuestaPaginada>> {
+        if (requestParameters['claseId'] == null) {
+            throw new runtime.RequiredError(
+                'claseId',
+                'Required parameter "claseId" was null or undefined when calling obtenerEntregasRecientesClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
+        }
+
+        if (requestParameters['sortDirection'] != null) {
+            queryParameters['sortDirection'] = requestParameters['sortDirection'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/entregas/class/{claseId}/recent`;
+        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DTORespuestaPaginadaFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets recent deliveries for a specific class. Teachers can only access classes they teach.
+     * Get recent deliveries for a class
+     */
+    async obtenerEntregasRecientesClase(requestParameters: ObtenerEntregasRecientesClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaPaginada> {
+        const response = await this.obtenerEntregasRecientesClaseRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

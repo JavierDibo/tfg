@@ -149,13 +149,13 @@ export interface Alumno {
      * @type {boolean}
      * @memberof Alumno
      */
-    credentialsNonExpired?: boolean;
+    accountNonExpired?: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof Alumno
      */
-    accountNonExpired?: boolean;
+    credentialsNonExpired?: boolean;
     /**
      * 
      * @type {boolean}
@@ -218,8 +218,8 @@ export function AlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean): Al
         'payments': json['payments'] == null ? undefined : ((json['payments'] as Array<any>).map(PagoFromJSON)),
         'submissions': json['submissions'] == null ? undefined : ((json['submissions'] as Array<any>).map(EntregaEjercicioFromJSON)),
         'authorities': json['authorities'] == null ? undefined : ((json['authorities'] as Array<any>).map(GrantedAuthorityFromJSON)),
-        'credentialsNonExpired': json['credentialsNonExpired'] == null ? undefined : json['credentialsNonExpired'],
         'accountNonExpired': json['accountNonExpired'] == null ? undefined : json['accountNonExpired'],
+        'credentialsNonExpired': json['credentialsNonExpired'] == null ? undefined : json['credentialsNonExpired'],
         'accountNonLocked': json['accountNonLocked'] == null ? undefined : json['accountNonLocked'],
     };
 }
@@ -251,8 +251,8 @@ export function AlumnoToJSONTyped(value?: Alumno | null, ignoreDiscriminator: bo
         'payments': value['payments'] == null ? undefined : ((value['payments'] as Array<any>).map(PagoToJSON)),
         'submissions': value['submissions'] == null ? undefined : ((value['submissions'] as Array<any>).map(EntregaEjercicioToJSON)),
         'authorities': value['authorities'] == null ? undefined : ((value['authorities'] as Array<any>).map(GrantedAuthorityToJSON)),
-        'credentialsNonExpired': value['credentialsNonExpired'],
         'accountNonExpired': value['accountNonExpired'],
+        'credentialsNonExpired': value['credentialsNonExpired'],
         'accountNonLocked': value['accountNonLocked'],
     };
 }

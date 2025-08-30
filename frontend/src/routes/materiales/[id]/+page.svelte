@@ -41,7 +41,11 @@
 			loading = true;
 			error = null;
 
-			material = await MaterialService.updateMaterial(materialId, name.trim(), url.trim());
+			material = await MaterialService.updateMaterial(
+				parseInt(materialId),
+				name.trim(),
+				url.trim()
+			);
 			editing = false;
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Error updating material';

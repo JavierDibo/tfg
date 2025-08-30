@@ -45,6 +45,10 @@ export interface InscribirAlumnoEnClaseRequest {
     studentId: number;
 }
 
+export interface ObtenerMaterialesClaseRequest {
+    claseId: number;
+}
+
 export interface QuitarMaterialDeClaseRequest {
     claseId: number;
     materialId: number;
@@ -255,6 +259,45 @@ export class ClassManagementApi extends runtime.BaseAPI {
      */
     async inscribirAlumnoEnClase(requestParameters: InscribirAlumnoEnClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DTORespuestaEnrollment> {
         const response = await this.inscribirAlumnoEnClaseRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets all materials for a specific class
+     * Get class materials
+     */
+    async obtenerMaterialesClaseRaw(requestParameters: ObtenerMaterialesClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<Material>>> {
+        if (requestParameters['claseId'] == null) {
+            throw new runtime.RequiredError(
+                'claseId',
+                'Required parameter "claseId" was null or undefined when calling obtenerMaterialesClase().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/clases/{claseId}/materials`;
+        urlPath = urlPath.replace(`{${"claseId"}}`, encodeURIComponent(String(requestParameters['claseId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(MaterialFromJSON));
+    }
+
+    /**
+     * Gets all materials for a specific class
+     * Get class materials
+     */
+    async obtenerMaterialesClase(requestParameters: ObtenerMaterialesClaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<Material>> {
+        const response = await this.obtenerMaterialesClaseRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -110,6 +110,18 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
+    numeroProfesores?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOCurso
+     */
+    duracionEnDias?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOCurso
+     */
     duracionEnSemanas?: number;
     /**
      * 
@@ -122,19 +134,7 @@ export interface DTOCurso {
      * @type {number}
      * @memberof DTOCurso
      */
-    duracionEnDias?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
     numeroAlumnos?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOCurso
-     */
-    numeroProfesores?: number;
 }
 
 
@@ -190,11 +190,11 @@ export function DTOCursoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'material': json['material'] == null ? undefined : ((json['material'] as Array<any>).map(DTOMaterialFromJSON)),
         'fechaInicio': json['fechaInicio'] == null ? undefined : (new Date(json['fechaInicio'])),
         'fechaFin': json['fechaFin'] == null ? undefined : (new Date(json['fechaFin'])),
+        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
+        'duracionEnDias': json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
         'duracionEnSemanas': json['duracionEnSemanas'] == null ? undefined : json['duracionEnSemanas'],
         'porcentajeProgreso': json['porcentajeProgreso'] == null ? undefined : json['porcentajeProgreso'],
-        'duracionEnDias': json['duracionEnDias'] == null ? undefined : json['duracionEnDias'],
         'numeroAlumnos': json['numeroAlumnos'] == null ? undefined : json['numeroAlumnos'],
-        'numeroProfesores': json['numeroProfesores'] == null ? undefined : json['numeroProfesores'],
     };
 }
 
@@ -222,11 +222,11 @@ export function DTOCursoToJSONTyped(value?: DTOCurso | null, ignoreDiscriminator
         'material': value['material'] == null ? undefined : ((value['material'] as Array<any>).map(DTOMaterialToJSON)),
         'fechaInicio': value['fechaInicio'] == null ? undefined : ((value['fechaInicio']).toISOString().substring(0,10)),
         'fechaFin': value['fechaFin'] == null ? undefined : ((value['fechaFin']).toISOString().substring(0,10)),
+        'numeroProfesores': value['numeroProfesores'],
+        'duracionEnDias': value['duracionEnDias'],
         'duracionEnSemanas': value['duracionEnSemanas'],
         'porcentajeProgreso': value['porcentajeProgreso'],
-        'duracionEnDias': value['duracionEnDias'],
         'numeroAlumnos': value['numeroAlumnos'],
-        'numeroProfesores': value['numeroProfesores'],
     };
 }
 

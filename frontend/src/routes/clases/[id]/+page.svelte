@@ -699,15 +699,23 @@
 													</span>
 												</td>
 												<td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-													{#if authStore.isAdmin}
-														<button
-															onclick={() => handleUnenrollStudent(student.id)}
-															disabled={unenrollLoading === student.id}
-															class="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+													<div class="flex items-center justify-end space-x-2">
+														<a
+															href="/alumnos/{student.id}"
+															class="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
 														>
-															{unenrollLoading === student.id ? 'Cargando...' : 'Dar de baja'}
-														</button>
-													{/if}
+															Ver
+														</a>
+														{#if authStore.isAdmin}
+															<button
+																onclick={() => handleUnenrollStudent(student.id)}
+																disabled={unenrollLoading === student.id}
+																class="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+															>
+																{unenrollLoading === student.id ? 'Cargando...' : 'Dar de baja'}
+															</button>
+														{/if}
+													</div>
 												</td>
 											</tr>
 										{/each}

@@ -21,7 +21,7 @@
 	let tipoClase = $state<'curso' | 'taller'>('curso');
 	let titulo = $state('');
 	let descripcion = $state('');
-	let precio = $state<number>(0);
+	let precio = $state<number>(25);
 	let presencialidad = $state<
 		DTOPeticionCrearCursoPresencialidadEnum | DTOPeticionCrearTallerPresencialidadEnum
 	>('ONLINE');
@@ -38,7 +38,7 @@
 	let material = $state<Material[]>([]);
 
 	// Material form
-	let nuevoMaterial = $state({ nombre: '', url: '' });
+	let nuevoMaterial = $state({ name: '', url: '' });
 
 	// Check authentication and permissions
 	$effect(() => {
@@ -55,16 +55,16 @@
 
 	// Add material
 	function agregarMaterial() {
-		if (nuevoMaterial.nombre.trim() && nuevoMaterial.url.trim()) {
+		if (nuevoMaterial.name.trim() && nuevoMaterial.url.trim()) {
 			material = [
 				...material,
 				{
 					id: Date.now(), // Temporary ID
-					name: nuevoMaterial.nombre.trim(),
+					name: nuevoMaterial.name.trim(),
 					url: nuevoMaterial.url.trim()
 				}
 			];
-			nuevoMaterial = { nombre: '', url: '' };
+			nuevoMaterial = { name: '', url: '' };
 		}
 	}
 
@@ -92,8 +92,8 @@
 			error = 'El título es obligatorio';
 			return false;
 		}
-		if (precio < 0) {
-			error = 'El precio no puede ser negativo';
+		if (precio <= 0) {
+			error = 'El precio debe ser mayor a 0';
 			return false;
 		}
 
@@ -186,7 +186,7 @@
 	function resetForm() {
 		titulo = '';
 		descripcion = '';
-		precio = 0;
+		precio = 25;
 		presencialidad = 'ONLINE';
 		nivel = 'PRINCIPIANTE';
 		imagenPortada = '';
@@ -197,6 +197,7 @@
 		horaComienzo = '';
 		profesoresId = [];
 		material = [];
+		nuevoMaterial = { name: '', url: '' };
 		error = null;
 		successMessage = null;
 	}
@@ -328,6 +329,7 @@
 							required
 							class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 						>
+							<option value="BASICO">Básico</option>
 							<option value="PRINCIPIANTE">Principiante</option>
 							<option value="INTERMEDIO">Intermedio</option>
 							<option value="AVANZADO">Avanzado</option>
@@ -346,6 +348,7 @@
 						>
 							<option value="ONLINE">Online</option>
 							<option value="PRESENCIAL">Presencial</option>
+							<option value="HIBRIDO">Híbrido</option>
 						</select>
 					</div>
 
@@ -461,7 +464,7 @@
 					<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 						<input
 							type="text"
-							bind:value={nuevoMaterial.nombre}
+							bind:value={nuevoMaterial.name}
 							placeholder="Nombre del material"
 							class="rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 						/>

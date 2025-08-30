@@ -137,14 +137,17 @@
 		// First try to find file metadata with original file name
 		const fileInfo = fileMetadata.find((f) => f.filePath === filePath);
 		console.log(`Looking for file: ${filePath}`);
-		console.log(`Available metadata:`, fileMetadata.map(f => ({ filePath: f.filePath, originalFileName: f.originalFileName })));
+		console.log(
+			`Available metadata:`,
+			fileMetadata.map((f) => ({ filePath: f.filePath, originalFileName: f.originalFileName }))
+		);
 		console.log(`Found fileInfo:`, fileInfo);
-		
+
 		if (fileInfo?.originalFileName) {
 			console.log(`Using original file name for ${filePath}: ${fileInfo.originalFileName}`);
 			return fileInfo.originalFileName;
 		}
-		
+
 		// Fallback to extracting filename from path
 		const fileName = filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
 		console.log(`Using fallback file name for ${filePath}: ${fileName}`);

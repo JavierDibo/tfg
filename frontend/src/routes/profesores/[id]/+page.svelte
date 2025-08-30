@@ -376,6 +376,39 @@
 		</button>
 	</div>
 
+	<!-- Teacher Flow Navigation -->
+	{#if authStore.isProfesor && (authStore.user?.sub === profesor?.username || authStore.user?.usuario === profesor?.username)}
+		<div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+			<h2 class="mb-3 text-lg font-semibold text-blue-900">Acciones del Profesor</h2>
+			<div class="flex flex-wrap gap-3">
+				<button
+					onclick={() => goto('/profesores/dashboard')}
+					class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+				>
+					📊 Dashboard
+				</button>
+				<button
+					onclick={() => goto('/profesores/mis-clases')}
+					class="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
+				>
+					📚 Mis Clases
+				</button>
+				<button
+					onclick={() => goto('/entregas')}
+					class="inline-flex items-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700"
+				>
+					📝 Entregas
+				</button>
+				<button
+					onclick={() => goto('/materiales')}
+					class="inline-flex items-center rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700"
+				>
+					📁 Materiales
+				</button>
+			</div>
+		</div>
+	{/if}
+
 	<!-- Success/Error Messages -->
 	{#if successMessage}
 		<div class="mb-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700">

@@ -114,12 +114,11 @@ export class MaterialService {
 	}
 
 	/**
-	 * Create a new material
+	 * Create a new material (independent of classes)
 	 */
 	static async createMaterial(name: string, url: string): Promise<DTOMaterial> {
 		try {
-			const response = await materialApi.crearMaterial({ name, url });
-			return response;
+			return await materialApi.crearMaterial({ name, url });
 		} catch (error) {
 			ErrorHandler.logError(error, 'createMaterial');
 			throw await ErrorHandler.parseError(error);
@@ -129,12 +128,11 @@ export class MaterialService {
 	/**
 	 * Update an existing material
 	 */
-	static async updateMaterial(id: string, name: string, url: string): Promise<DTOMaterial> {
+	static async updateMaterial(id: number, name: string, url: string): Promise<DTOMaterial> {
 		try {
-			const response = await materialApi.actualizarMaterial({ id: parseInt(id), name, url });
-			return response;
+			return await materialApi.actualizarMaterial({ id, name, url });
 		} catch (error) {
-			ErrorHandler.logError(error, `updateMaterial(${id})`);
+			ErrorHandler.logError(error, 'updateMaterial');
 			throw await ErrorHandler.parseError(error);
 		}
 	}
@@ -146,7 +144,7 @@ export class MaterialService {
 		try {
 			await materialApi.eliminarMaterial({ id });
 		} catch (error) {
-			ErrorHandler.logError(error, `deleteMaterial(${id})`);
+			ErrorHandler.logError(error, 'deleteMaterial');
 			throw await ErrorHandler.parseError(error);
 		}
 	}

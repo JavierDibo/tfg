@@ -114,12 +114,6 @@ export interface DTOAlumno {
      * @type {number}
      * @memberof DTOAlumno
      */
-    submissionCount?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DTOAlumno
-     */
     paymentCount?: number;
     /**
      * 
@@ -127,6 +121,12 @@ export interface DTOAlumno {
      * @memberof DTOAlumno
      */
     classCount?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DTOAlumno
+     */
+    submissionCount?: number;
 }
 
 
@@ -183,9 +183,9 @@ export function DTOAlumnoFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'submissionIds': json['submissionIds'] == null ? undefined : json['submissionIds'],
         'role': json['role'],
         'fullName': json['fullName'] == null ? undefined : json['fullName'],
-        'submissionCount': json['submissionCount'] == null ? undefined : json['submissionCount'],
         'paymentCount': json['paymentCount'] == null ? undefined : json['paymentCount'],
         'classCount': json['classCount'] == null ? undefined : json['classCount'],
+        'submissionCount': json['submissionCount'] == null ? undefined : json['submissionCount'],
     };
 }
 
@@ -215,9 +215,9 @@ export function DTOAlumnoToJSONTyped(value?: DTOAlumno | null, ignoreDiscriminat
         'submissionIds': value['submissionIds'],
         'role': value['role'],
         'fullName': value['fullName'],
-        'submissionCount': value['submissionCount'],
         'paymentCount': value['paymentCount'],
         'classCount': value['classCount'],
+        'submissionCount': value['submissionCount'],
     };
 }
 
