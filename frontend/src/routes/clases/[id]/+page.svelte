@@ -256,96 +256,129 @@
 	<title>{currentClase?.titulo || 'Clase'} - Academia</title>
 </svelte:head>
 
-<div class="container mx-auto px-4 py-8">
-	<!-- Back Button -->
-	<div class="mb-6">
-		<button
-			onclick={() => goto('/clases')}
-			class="flex items-center text-blue-600 hover:text-blue-800"
-		>
-			<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-			</svg>
-			Volver a Clases
-		</button>
-	</div>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+	<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+		<!-- Header -->
+		<div class="mb-8 flex items-center justify-between">
+			<div>
+				<h1
+					class="montserrat-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-4xl font-bold text-transparent"
+				>
+					Detalles de Clase
+				</h1>
+				<p class="mt-2 font-medium text-gray-600">
+					Información completa de la clase y sus recursos
+				</p>
+			</div>
+			<button
+				onclick={() => goto('/clases')}
+				class="flex items-center font-medium text-gray-600 transition-all duration-200 hover:text-blue-600"
+			>
+				<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
+					></path>
+				</svg>
+				Volver a Clases
+			</button>
+		</div>
 
-	<!-- Loading State -->
-	{#if loading}
-		<div class="flex items-center justify-center py-12">
-			<div class="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-		</div>
-	{:else if error}
-		<!-- Error State -->
-		<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
-			{error}
-		</div>
-	{:else if currentClase}
-		<!-- Class Details -->
-		<div class="overflow-hidden rounded-lg bg-white shadow-lg">
-			<!-- Header with Image -->
-			<div class="relative h-64 bg-gradient-to-r from-blue-500 to-purple-600">
-				{#if currentClase.imagenPortada}
-					<img
-						src={currentClase.imagenPortada}
-						alt={currentClase.titulo}
-						class="h-full w-full object-cover"
-					/>
-				{/if}
-				<div class="bg-opacity-40 absolute inset-0 bg-black"></div>
-				<div class="absolute right-0 bottom-0 left-0 p-6 text-white">
-					<h1 class="mb-2 text-4xl font-bold">{currentClase.titulo || 'Sin título'}</h1>
-					<div class="flex items-center space-x-4">
-						<span class="text-2xl font-bold">{FormatterUtils.formatPrice(currentClase.precio)}</span
-						>
-						<span
-							class="rounded-full px-3 py-1 text-sm font-medium {FormatterUtils.getNivelColor(
-								currentClase.nivel
-							)}"
-						>
-							{FormatterUtils.formatNivel(currentClase.nivel)}
-						</span>
-						<span
-							class="rounded-full px-3 py-1 text-sm font-medium {FormatterUtils.getPresencialidadColor(
-								currentClase.presencialidad
-							)}"
-						>
-							{FormatterUtils.getPresencialidadText(currentClase.presencialidad)}
-						</span>
-					</div>
+		<!-- Loading State -->
+		{#if loading}
+			<div class="py-16 text-center">
+				<div
+					class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+				></div>
+				<p class="mt-6 text-lg font-medium text-gray-600">Cargando detalles de la clase...</p>
+			</div>
+		{:else if error}
+			<!-- Error State -->
+			<div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-700 shadow-sm">
+				<div class="flex items-center">
+					<svg class="mr-3 h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+						<path
+							fill-rule="evenodd"
+							d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+							clip-rule="evenodd"
+						></path>
+					</svg>
+					{error}
 				</div>
 			</div>
+		{:else if currentClase}
+			<div class="space-y-8">
+				<!-- Class Header Card -->
+				<div
+					class="overflow-hidden rounded-2xl border border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+				>
+					<!-- Header with Image -->
+					<div class="relative h-64 bg-gradient-to-r from-blue-500 to-purple-600">
+						{#if currentClase.imagenPortada}
+							<img
+								src={currentClase.imagenPortada}
+								alt={currentClase.titulo}
+								class="h-full w-full object-cover"
+							/>
+						{/if}
+						<div class="bg-opacity-40 absolute inset-0 bg-black"></div>
+						<div class="absolute right-0 bottom-0 left-0 p-8 text-white">
+							<h2 class="mb-4 text-4xl font-bold">{currentClase.titulo || 'Sin título'}</h2>
+							<div class="flex items-center space-x-4">
+								<span class="text-2xl font-bold"
+									>{FormatterUtils.formatPrice(currentClase.precio)}</span
+								>
+								<span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
+									{FormatterUtils.formatNivel(currentClase.nivel)}
+								</span>
+								<span
+									class="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-800"
+								>
+									{FormatterUtils.getPresencialidadText(currentClase.presencialidad)}
+								</span>
+							</div>
+						</div>
+					</div>
 
-			<!-- Content -->
-			<div class="p-6">
-				<!-- Description -->
-				<div class="mb-8">
-					<h2 class="mb-4 text-2xl font-semibold text-gray-900">Descripción</h2>
-					<p class="leading-relaxed text-gray-700">
-						{currentClase.descripcion || 'No hay descripción disponible para esta clase.'}
-					</p>
+					<!-- Description -->
+					<div class="p-8">
+						<h3
+							class="montserrat-semibold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-2xl font-semibold text-transparent"
+						>
+							Descripción
+						</h3>
+						<p class="leading-relaxed text-gray-700">
+							{currentClase.descripcion || 'No hay descripción disponible para esta clase.'}
+						</p>
+					</div>
 				</div>
 
 				<!-- Statistics Grid -->
-				<div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
-					<div class="rounded-lg bg-blue-50 p-4 text-center">
-						<div class="text-2xl font-bold text-blue-600">{numeroAlumnos}</div>
+				<div class="grid grid-cols-1 gap-6 md:grid-cols-4">
+					<div
+						class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+					>
+						<div class="mb-2 text-3xl font-bold text-blue-600">{numeroAlumnos}</div>
 						<div class="text-sm text-gray-600">Alumnos inscritos</div>
 					</div>
-					<div class="rounded-lg bg-green-50 p-4 text-center">
-						<div class="text-2xl font-bold text-green-600">{numeroProfesores}</div>
+					<div
+						class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+					>
+						<div class="mb-2 text-3xl font-bold text-green-600">{numeroProfesores}</div>
 						<div class="text-sm text-gray-600">Profesores</div>
 					</div>
-					<div class="rounded-lg bg-purple-50 p-4 text-center">
-						<div class="text-2xl font-bold text-purple-600">
+					<div
+						class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+					>
+						<div class="mb-2 text-3xl font-bold text-purple-600">
 							{'numeroMateriales' in currentClase
 								? currentClase.numeroMateriales
 								: currentClase.material?.length || 0}
 						</div>
 						<div class="text-sm text-gray-600">Materiales</div>
 					</div>
-					<div class="rounded-lg bg-orange-50 p-4 text-center">
-						<div class="text-2xl font-bold text-orange-600">
+					<div
+						class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+					>
+						<div class="mb-2 text-3xl font-bold text-orange-600">
 							{'numeroEjercicios' in currentClase
 								? currentClase.numeroEjercicios
 								: currentClase.ejerciciosId?.length || 0}
@@ -356,66 +389,70 @@
 
 				<!-- Professor Profile Section -->
 				{#if (authStore.isProfesor || authStore.isAdmin) && (profesores.length > 0 || profesorLoading)}
-					<div class="mb-8">
-						<h2 class="mb-4 text-2xl font-semibold text-gray-900">
+					<div
+						class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+					>
+						<h3
+							class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-2xl font-semibold text-transparent"
+						>
 							{profesores.length === 1 ? 'Profesor de la Clase' : 'Profesores de la Clase'}
-						</h2>
+						</h3>
 
 						{#if profesorLoading}
-							<div class="flex items-center justify-center py-8">
-								<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+							<div class="py-8 text-center">
+								<div
+									class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+								></div>
+								<p class="mt-4 text-gray-600">Cargando profesores...</p>
 							</div>
 						{:else if profesorError}
-							<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+							<div class="rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-700">
 								{profesorError}
 							</div>
 						{:else if profesores.length > 0}
-							<!-- Teacher/Admin view: Show professors from separate API call -->
-							<div class="space-y-4">
+							<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 								{#each profesores as profesor (profesor.id)}
-									<div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
-										<div class="p-4">
-											<div class="flex items-center justify-between">
-												<div class="flex items-center space-x-3">
-													<!-- Professor Avatar -->
-													<div class="flex-shrink-0">
-														<div
-															class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
-														>
-															<span class="text-lg font-bold text-white">
-																{profesor.firstName?.[0]}{profesor.lastName?.[0]}
-															</span>
-														</div>
-													</div>
-
-													<!-- Professor Information -->
-													<div class="min-w-0 flex-1">
-														<h3 class="text-base font-semibold text-gray-900">
-															{profesor.firstName}
-															{profesor.lastName}
-														</h3>
-														<p class="text-sm text-gray-600">
-															<a
-																href="mailto:{profesor.email}"
-																class="text-blue-600 hover:text-blue-800"
-															>
-																{profesor.email}
-															</a>
-														</p>
-													</div>
+									<div
+										class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md"
+									>
+										<div class="mb-4 flex items-center space-x-4">
+											<!-- Professor Avatar -->
+											<div class="flex-shrink-0">
+												<div
+													class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
+												>
+													<span class="text-lg font-bold text-white">
+														{profesor.firstName?.[0]}{profesor.lastName?.[0]}
+													</span>
 												</div>
+											</div>
 
-												<!-- View Profile Button -->
-												{#if authStore.isAdmin || authStore.isProfesor}
+											<!-- Professor Information -->
+											<div class="min-w-0 flex-1">
+												<h4 class="text-base font-semibold text-gray-900">
+													{profesor.firstName}
+													{profesor.lastName}
+												</h4>
+												<p class="text-sm text-gray-600">
 													<a
-														href="/profesores/{profesor.id}"
-														class="text-sm font-medium text-blue-600 hover:text-blue-800"
+														href="mailto:{profesor.email}"
+														class="text-blue-600 hover:text-blue-800"
 													>
-														Ver perfil completo →
+														{profesor.email}
 													</a>
-												{/if}
+												</p>
 											</div>
 										</div>
+
+										<!-- View Profile Button -->
+										{#if authStore.isAdmin || authStore.isProfesor}
+											<a
+												href="/profesores/{profesor.id}"
+												class="block w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-center text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+											>
+												Ver perfil completo
+											</a>
+										{/if}
 									</div>
 								{/each}
 							</div>
@@ -425,22 +462,30 @@
 
 				<!-- Materials Section -->
 				{#if currentClase.material && currentClase.material.length > 0}
-					<div class="mb-8">
-						<h2 class="mb-4 text-2xl font-semibold text-gray-900">Materiales</h2>
-						<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+					<div
+						class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+					>
+						<h3
+							class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-2xl font-semibold text-transparent"
+						>
+							Materiales
+						</h3>
+						<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 							{#each currentClase.material as material (material.id)}
-								<div class="rounded-lg bg-gray-50 p-4">
-									<h3 class="mb-2 font-semibold text-gray-900">
+								<div
+									class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md"
+								>
+									<h4 class="mb-3 font-semibold text-gray-900">
 										{material.name || 'Sin nombre'}
-									</h3>
+									</h4>
 									{#if material.url}
 										<a
 											href={material.url}
 											target="_blank"
 											rel="noopener noreferrer"
-											class="text-sm font-medium text-blue-600 hover:text-blue-800"
+											class="inline-block w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-center text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
 										>
-											Ver material →
+											Ver material
 										</a>
 									{/if}
 								</div>
@@ -450,55 +495,62 @@
 				{/if}
 
 				<!-- Exercises Section -->
-				<div class="mb-8">
-					<div class="mb-4 flex items-center justify-between">
-						<h2 class="text-2xl font-semibold text-gray-900">Ejercicios</h2>
+				<div
+					class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+				>
+					<div class="mb-6 flex items-center justify-between">
+						<h3
+							class="montserrat-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-2xl font-semibold text-transparent"
+						>
+							Ejercicios
+						</h3>
 						{#if authStore.isProfesor || authStore.isAdmin}
 							<a
 								href="/ejercicios?classId={currentClase.id}"
-								class="text-sm font-medium text-blue-600 hover:text-blue-800"
+								class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
 							>
-								Ver todos los ejercicios →
+								Ver todos los ejercicios
 							</a>
 						{/if}
 					</div>
 
 					{#if ejerciciosLoading}
-						<div class="flex items-center justify-center py-8">
-							<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+						<div class="py-8 text-center">
+							<div
+								class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+							></div>
+							<p class="mt-4 text-gray-600">Cargando ejercicios...</p>
 						</div>
 					{:else if ejerciciosError}
-						<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+						<div class="rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-700">
 							{ejerciciosError}
 						</div>
 					{:else if ejercicios.length === 0}
-						<div class="rounded-lg bg-gray-50 p-6">
-							<div class="text-center">
-								<div class="mb-2 text-4xl text-gray-400">📝</div>
-								<h3 class="mb-2 text-lg font-medium text-gray-900">Ejercicios de la clase</h3>
-								<p class="mb-4 text-gray-500">
-									Esta clase tiene {'numeroEjercicios' in currentClase
-										? currentClase.numeroEjercicios
-										: 0} ejercicios asignados.
-								</p>
-								<a
-									href="/ejercicios?classId={currentClase.id}"
-									class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-								>
-									Ver ejercicios
-								</a>
-							</div>
+						<div class="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center">
+							<div class="mb-4 text-6xl">📝</div>
+							<h4 class="mb-2 text-lg font-medium text-gray-900">Ejercicios de la clase</h4>
+							<p class="mb-4 text-gray-600">
+								Esta clase tiene {'numeroEjercicios' in currentClase
+									? currentClase.numeroEjercicios
+									: 0} ejercicios asignados.
+							</p>
+							<a
+								href="/ejercicios?classId={currentClase.id}"
+								class="inline-block transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+							>
+								Ver ejercicios
+							</a>
 						</div>
 					{:else}
-						<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+						<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 							{#each ejercicios as ejercicio (ejercicio.id)}
 								<div
-									class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+									class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md"
 								>
-									<div class="mb-3 flex items-start justify-between">
-										<h3 class="line-clamp-2 font-semibold text-gray-900">
+									<div class="mb-4 flex items-start justify-between">
+										<h4 class="line-clamp-2 font-semibold text-gray-900">
 											{ejercicio.name || 'Sin nombre'}
-										</h3>
+										</h4>
 										<span
 											class="ml-2 flex-shrink-0 rounded-full px-2 py-1 text-xs font-medium {FormatterUtils.getExerciseStatusColor(
 												ejercicio.estado
@@ -509,16 +561,16 @@
 									</div>
 
 									{#if ejercicio.statement}
-										<p class="mb-3 line-clamp-3 text-sm text-gray-600">
+										<p class="mb-4 line-clamp-3 text-sm text-gray-600">
 											{ejercicio.statement}
 										</p>
 									{/if}
 
-									<div class="space-y-2 text-xs text-gray-500">
+									<div class="mb-4 space-y-2 text-xs text-gray-500">
 										{#if ejercicio.startDate}
 											<div class="flex items-center">
 												<svg
-													class="mr-1 h-3 w-3"
+													class="mr-2 h-3 w-3"
 													fill="none"
 													stroke="currentColor"
 													viewBox="0 0 24 24"
@@ -536,7 +588,7 @@
 										{#if ejercicio.endDate}
 											<div class="flex items-center">
 												<svg
-													class="mr-1 h-3 w-3"
+													class="mr-2 h-3 w-3"
 													fill="none"
 													stroke="currentColor"
 													viewBox="0 0 24 24"
@@ -554,7 +606,7 @@
 										{#if ejercicio.numeroEntregas !== undefined}
 											<div class="flex items-center">
 												<svg
-													class="mr-1 h-3 w-3"
+													class="mr-2 h-3 w-3"
 													fill="none"
 													stroke="currentColor"
 													viewBox="0 0 24 24"
@@ -571,14 +623,12 @@
 										{/if}
 									</div>
 
-									<div class="mt-4 flex justify-end">
-										<a
-											href="/ejercicios/{ejercicio.id}"
-											class="text-sm font-medium text-blue-600 hover:text-blue-800"
-										>
-											Ver ejercicio →
-										</a>
-									</div>
+									<a
+										href="/ejercicios/{ejercicio.id}"
+										class="block w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-center text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+									>
+										Ver ejercicio
+									</a>
 								</div>
 							{/each}
 						</div>
@@ -587,9 +637,15 @@
 
 				<!-- Class Type Information -->
 				{#if currentClase.tipoClase}
-					<div class="mb-8">
-						<h2 class="mb-4 text-2xl font-semibold text-gray-900">Tipo de Clase</h2>
-						<div class="rounded-lg bg-gray-50 p-4">
+					<div
+						class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+					>
+						<h3
+							class="montserrat-semibold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-2xl font-semibold text-transparent"
+						>
+							Tipo de Clase
+						</h3>
+						<div class="rounded-xl border border-orange-200 bg-orange-50 p-4">
 							<span
 								class="rounded-full bg-orange-100 px-3 py-1 text-sm font-medium text-orange-800"
 							>
@@ -601,25 +657,34 @@
 
 				<!-- Students Section (for teachers and admins) -->
 				{#if (authStore.isProfesor && isClassTeacher) || authStore.isAdmin}
-					<div class="mb-8">
-						<h2 class="mb-4 text-2xl font-semibold text-gray-900">Estudiantes Inscritos</h2>
+					<div
+						class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+					>
+						<h3
+							class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-2xl font-semibold text-transparent"
+						>
+							Estudiantes Inscritos
+						</h3>
 
 						{#if studentsLoading}
-							<div class="flex items-center justify-center py-8">
-								<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+							<div class="py-8 text-center">
+								<div
+									class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+								></div>
+								<p class="mt-4 text-gray-600">Cargando estudiantes...</p>
 							</div>
 						{:else if studentsError}
-							<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+							<div class="rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-700">
 								{studentsError}
 							</div>
 						{:else if students.length === 0}
-							<div class="rounded-lg bg-gray-50 p-8 text-center">
-								<div class="mb-2 text-4xl">👥</div>
-								<h3 class="mb-2 text-lg font-medium text-gray-900">No hay estudiantes inscritos</h3>
-								<p class="text-gray-500">Aún no se ha inscrito ningún estudiante en esta clase.</p>
+							<div class="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center">
+								<div class="mb-4 text-6xl">👥</div>
+								<h4 class="mb-2 text-lg font-medium text-gray-900">No hay estudiantes inscritos</h4>
+								<p class="text-gray-600">Aún no se ha inscrito ningún estudiante en esta clase.</p>
 							</div>
 						{:else}
-							<div class="overflow-hidden rounded-lg border border-gray-200">
+							<div class="overflow-hidden rounded-xl border border-gray-200">
 								<table class="min-w-full divide-y divide-gray-200">
 									<thead class="bg-gray-50">
 										<tr>
@@ -674,9 +739,7 @@
 																{student.firstName}
 																{student.lastName}
 															</div>
-															<div class="text-sm text-gray-500">
-																@{student.username}
-															</div>
+															<div class="text-sm text-gray-500">@{student.username}</div>
 														</div>
 													</div>
 												</td>
@@ -702,7 +765,7 @@
 													<div class="flex items-center justify-end space-x-2">
 														<a
 															href="/alumnos/{student.id}"
-															class="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
+															class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-1 text-xs font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
 														>
 															Ver
 														</a>
@@ -710,7 +773,7 @@
 															<button
 																onclick={() => handleUnenrollStudent(student.id)}
 																disabled={unenrollLoading === student.id}
-																class="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+																class="transform rounded-lg bg-gradient-to-r from-red-600 to-pink-600 px-3 py-1 text-xs font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-red-700 hover:to-pink-700 hover:shadow-lg disabled:opacity-50"
 															>
 																{unenrollLoading === student.id ? 'Cargando...' : 'Dar de baja'}
 															</button>
@@ -727,55 +790,75 @@
 				{/if}
 
 				<!-- Action Buttons -->
-				<div class="flex flex-col gap-4 border-t border-gray-200 pt-6 sm:flex-row">
-					{#if authStore.isAlumno}
-						<button
-							onclick={handleEnrollment}
-							class="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:opacity-50"
-							disabled={enrollmentLoading || enrollmentStatus?.isEnrolled}
-						>
-							{enrollmentLoading
-								? 'Cargando...'
-								: enrollmentStatus?.isEnrolled
-									? 'Ya inscrito'
-									: 'Inscribirse en la clase'}
-						</button>
-					{/if}
-					{#if authStore.isAdmin || authStore.isProfesor}
-						<a
-							href="/clases/{currentClase.id}/editar"
-							class="flex-1 rounded-lg bg-green-600 px-6 py-3 text-center font-bold text-white hover:bg-green-700"
-						>
-							Editar Clase
-						</a>
-						<button
-							class="flex-1 rounded-lg bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-700"
-						>
-							Eliminar Clase
-						</button>
+				<div
+					class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+				>
+					<div class="flex flex-col gap-4 sm:flex-row">
+						{#if authStore.isAlumno}
+							<button
+								onclick={handleEnrollment}
+								class="flex-1 transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg disabled:opacity-50"
+								disabled={enrollmentLoading || enrollmentStatus?.isEnrolled}
+							>
+								{enrollmentLoading
+									? 'Cargando...'
+									: enrollmentStatus?.isEnrolled
+										? 'Ya inscrito'
+										: 'Inscribirse en la clase'}
+							</button>
+						{/if}
+						{#if authStore.isAdmin || authStore.isProfesor}
+							<a
+								href="/clases/{currentClase.id}/editar"
+								class="flex-1 transform rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 text-center font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
+							>
+								Editar Clase
+							</a>
+							<button
+								class="flex-1 transform rounded-lg bg-gradient-to-r from-red-600 to-pink-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-red-700 hover:to-pink-700 hover:shadow-lg"
+							>
+								Eliminar Clase
+							</button>
+						{/if}
+					</div>
+
+					<!-- Enrollment Error Message -->
+					{#if enrollmentError}
+						<div class="mt-6 rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-700">
+							{enrollmentError}
+						</div>
 					{/if}
 				</div>
-
-				<!-- Enrollment Error Message -->
-				{#if enrollmentError}
-					<div class="mt-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
-						{enrollmentError}
-					</div>
-				{/if}
 			</div>
-		</div>
-	{:else}
-		<!-- Not Found State -->
-		<div class="py-12 text-center">
-			<div class="mb-4 text-6xl text-gray-400">📚</div>
-			<h3 class="mb-2 text-lg font-medium text-gray-900">Clase no encontrada</h3>
-			<p class="mb-4 text-gray-500">La clase que buscas no existe o ha sido eliminada.</p>
-			<button
-				onclick={() => goto('/clases')}
-				class="rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700"
-			>
-				Volver a Clases
-			</button>
-		</div>
-	{/if}
+		{:else}
+			<!-- Not Found State -->
+			<div class="py-16 text-center">
+				<div
+					class="mx-auto max-w-md rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl"
+				>
+					<svg
+						class="mx-auto mb-4 h-16 w-16 text-gray-400"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+						></path>
+					</svg>
+					<p class="mb-6 text-lg font-medium text-gray-600">Clase no encontrada</p>
+					<p class="mb-6 text-gray-500">La clase que buscas no existe o ha sido eliminada.</p>
+					<button
+						onclick={() => goto('/clases')}
+						class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+					>
+						Volver a Clases
+					</button>
+				</div>
+			</div>
+		{/if}
+	</div>
 </div>

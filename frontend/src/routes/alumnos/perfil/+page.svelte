@@ -6,6 +6,7 @@
 	import { EnrollmentService } from '$lib/services/enrollmentService';
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import { FormatterUtils } from '$lib/utils/formatters.js';
+	import { ProfileHeader, ProfileCard } from '$lib/components/common/index.js';
 
 	// State
 	let loading = $state(false);
@@ -89,19 +90,26 @@
 	{:else if alumno}
 		<div class="space-y-8">
 			<!-- Header -->
-			<div class="flex items-center justify-between">
-				<div>
-					<h1 class="text-3xl font-bold text-gray-900">Mi Perfil</h1>
-					<p class="mt-2 text-gray-600">Gestiona tu información personal y clases inscritas</p>
-				</div>
-				<a href="/clases" class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-					Explorar Clases
-				</a>
-			</div>
+			<ProfileHeader
+				title="Mi Perfil"
+				subtitle="Gestiona tu información personal y clases inscritas"
+				backUrl="/clases"
+				backText="Volver a Clases"
+				showBackButton={true}
+				actions={[
+					{
+						label: 'Explorar Clases',
+						onClick: () => goto('/clases'),
+						variant: 'primary'
+					}
+				]}
+			/>
 
 			<!-- Personal Information -->
-			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-				<h2 class="mb-4 text-xl font-semibold text-gray-900">Información Personal</h2>
+			<ProfileCard
+				title="Información Personal"
+				subtitle="Datos personales y académicos del estudiante"
+			>
 				<div class="grid gap-4 md:grid-cols-2">
 					<div>
 						<div class="text-sm font-medium text-gray-500">Nombre</div>
@@ -148,54 +156,32 @@
 						</span>
 					</div>
 				</div>
-			</div>
+			</ProfileCard>
 
 			<!-- Enrolled Classes -->
-			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-				<div class="mb-4 flex items-center justify-between">
-					<div>
-						<h2 class="text-xl font-semibold text-gray-900">Mis Clases Inscritas</h2>
-						<div class="mt-1">
-							<a
-								href="/clases"
-								class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
-							>
-								Ver clases disponibles para inscripción
-								<svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M9 5l7 7-7 7"
-									/>
-								</svg>
-							</a>
-						</div>
-					</div>
-					<span class="text-sm text-gray-500">{enrolledClasses.length} clases</span>
-				</div>
-
-				{#if enrolledClassesLoading}
-					<div class="flex justify-center py-8">
-						<p class="text-gray-600">Cargando clases...</p>
-					</div>
-				{:else if enrolledClassesError}
+			<ProfileCard
+				title="Mis Clases Inscritas"
+				subtitle="Clases en las que estás matriculado"
+				loading={enrolledClassesLoading}
+				empty={!enrolledClassesLoading && enrolledClasses.length === 0}
+				emptyIcon="📚"
+				emptyTitle="No tienes clases inscritas"
+				emptyDescription="Explora nuestras clases disponibles y comienza tu aprendizaje."
+				emptyAction={{
+					label: 'Explorar Clases',
+					onClick: () => goto('/clases')
+				}}
+				actions={[
+					{
+						label: 'Ver clases disponibles',
+						onClick: () => goto('/clases'),
+						variant: 'secondary'
+					}
+				]}
+			>
+				{#if enrolledClassesError}
 					<div class="rounded-lg border border-red-200 bg-red-50 p-4">
 						<p class="text-red-600">{enrolledClassesError}</p>
-					</div>
-				{:else if enrolledClasses.length === 0}
-					<div class="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
-						<div class="mb-4 text-6xl">📚</div>
-						<h3 class="mb-2 text-lg font-medium text-gray-900">No tienes clases inscritas</h3>
-						<p class="mb-4 text-gray-600">
-							Explora nuestras clases disponibles y comienza tu aprendizaje.
-						</p>
-						<a
-							href="/clases"
-							class="inline-block rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
-						>
-							Explorar Clases
-						</a>
 					</div>
 				{:else}
 					<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -249,7 +235,7 @@
 						{/each}
 					</div>
 				{/if}
-			</div>
+			</ProfileCard>
 		</div>
 	{:else}
 		<div class="py-12 text-center">

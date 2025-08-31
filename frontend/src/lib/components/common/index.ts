@@ -27,3 +27,21 @@ export * from './tableUtils';
 
 // Re-export all types for easier imports
 export * from './types';
+
+// Profile Components
+// =================
+
+// Header component for profile pages with title, subtitle, and actions
+export { default as ProfileHeader } from './ProfileHeader.svelte';
+
+// Card component for profile sections with consistent styling
+export { default as ProfileCard } from './ProfileCard.svelte';
+
+// Information grid component for displaying profile data
+export { default as ProfileInfoGrid } from './ProfileInfoGrid.svelte';
+
+// Form component for profile editing with consistent styling
+export { default as ProfileForm } from './ProfileForm.svelte';
+
+// Input component for profile forms with validation
+export { default as ProfileInput } from './ProfileInput.svelte';

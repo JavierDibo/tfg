@@ -105,7 +105,46 @@ export class ClaseService {
 		updateData: DTOPeticionCrearClase
 	): Promise<DTOClase> {
 		try {
-			return await claseApi.actualizarClase({ id, dTOPeticionCrearClase: updateData });
+			// Try different endpoint patterns since backend doesn't support PUT for class updates
+			// First try PATCH method
+			let response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/clases/${id}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${localStorage.getItem('token')}`
+				},
+				body: JSON.stringify(updateData)
+			});
+
+			// If PATCH doesn't work, try POST
+			if (!response.ok && response.status === 405) {
+				response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/clases/${id}`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${localStorage.getItem('token')}`
+					},
+					body: JSON.stringify(updateData)
+				});
+			}
+
+			// If that doesn't work, try a different endpoint pattern
+			if (!response.ok && response.status === 405) {
+				response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/clases/${id}/update`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${localStorage.getItem('token')}`
+					},
+					body: JSON.stringify(updateData)
+				});
+			}
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			return await response.json();
 		} catch (error) {
 			ErrorHandler.logError(error, 'updateClassParameters');
 			throw await ErrorHandler.parseError(error);

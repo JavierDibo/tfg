@@ -490,672 +490,800 @@
 	<title>Gestión de Clases - Academia</title>
 </svelte:head>
 
-<div class="container mx-auto px-4 py-8">
-	<!-- Header -->
-	<div class="mb-8">
-		<h1 class="text-3xl font-bold text-gray-900">Gestión de Clases</h1>
-		<p class="mt-2 text-gray-600">Gestiona tus clases, materiales, ejercicios y calificaciones</p>
-	</div>
-
-	{#if error}
-		<div class="mb-6 rounded-lg border border-red-400 bg-red-100 px-4 py-3 text-red-700">
-			{error}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+	<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+		<!-- Header -->
+		<div class="mb-8 flex items-center justify-between">
+			<div>
+				<h1
+					class="montserrat-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-4xl font-bold text-transparent"
+				>
+					Gestión de Clases
+				</h1>
+				<p class="mt-2 font-medium text-gray-600">
+					Gestiona tus clases, materiales, ejercicios y calificaciones
+				</p>
+			</div>
 		</div>
-	{/if}
 
-	{#if loading}
-		<div class="flex items-center justify-center py-12">
-			<div class="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-		</div>
-	{:else}
-		<div class="grid grid-cols-1 gap-8 lg:grid-cols-4">
-			<!-- Classes List -->
-			<div class="lg:col-span-1">
-				<div class="mb-4 flex items-center justify-between">
-					<h2 class="text-xl font-semibold text-gray-900">Mis Clases</h2>
-					<button
-						onclick={goToNewClass}
-						class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+		{#if error}
+			<div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-700 shadow-sm">
+				<div class="flex items-center">
+					<svg class="mr-3 h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+						<path
+							fill-rule="evenodd"
+							d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+							clip-rule="evenodd"
+						></path>
+					</svg>
+					{error}
+				</div>
+			</div>
+		{/if}
+
+		{#if loading}
+			<div class="py-16 text-center">
+				<div
+					class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+				></div>
+				<p class="mt-6 text-lg font-medium text-gray-600">Cargando tus clases...</p>
+			</div>
+		{:else}
+			<div class="grid grid-cols-1 gap-8 lg:grid-cols-4">
+				<!-- Classes List -->
+				<div class="lg:col-span-1">
+					<div
+						class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
 					>
-						➕ Nueva
-					</button>
+						<div class="mb-6 flex items-center justify-between">
+							<h2
+								class="montserrat-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+							>
+								Mis Clases
+							</h2>
+							<button
+								onclick={goToNewClass}
+								class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+							>
+								➕ Nueva
+							</button>
+						</div>
+
+						{#if myClasses.length === 0}
+							<div class="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center">
+								<div class="mb-4 text-6xl">📚</div>
+								<p class="mb-4 text-gray-600">No tienes clases asignadas aún.</p>
+								<button
+									onclick={goToNewClass}
+									class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+								>
+									Crear mi primera clase
+								</button>
+							</div>
+						{:else}
+							<div class="space-y-4">
+								{#each myClasses as clase (clase.id)}
+									<button
+										onclick={() => selectClass(clase)}
+										class="w-full rounded-xl border border-gray-200 bg-white p-4 text-left transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md {selectedClass?.id ===
+										clase.id
+											? 'border-blue-500 bg-blue-50 shadow-md'
+											: ''}"
+									>
+										<h3 class="font-semibold text-gray-900">{clase.titulo}</h3>
+										<p class="mt-2 line-clamp-2 text-sm text-gray-600">{clase.descripcion}</p>
+										<div class="mt-3 flex items-center justify-between text-xs text-gray-500">
+											<span>{clase.numeroAlumnos || 0} alumnos</span>
+											<span>{FormatterUtils.formatPrice(clase.precio || 0)}</span>
+										</div>
+									</button>
+								{/each}
+							</div>
+						{/if}
+					</div>
 				</div>
 
-				{#if myClasses.length === 0}
-					<div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
-						<p class="text-gray-500">No tienes clases asignadas aún.</p>
-						<button
-							onclick={goToNewClass}
-							class="mt-4 inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+				<!-- Class Details and Management -->
+				<div class="lg:col-span-3">
+					{#if selectedClass}
+						<div
+							class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
 						>
-							Crear mi primera clase
-						</button>
-					</div>
-				{:else}
-					<div class="space-y-3">
-						{#each myClasses as clase (clase.id)}
-							<button
-								onclick={() => selectClass(clase)}
-								class="w-full rounded-lg border border-gray-200 bg-white p-4 text-left transition-colors hover:border-blue-300 hover:bg-blue-50 {selectedClass?.id ===
-								clase.id
-									? 'border-blue-500 bg-blue-50'
-									: ''}"
-							>
-								<h3 class="font-medium text-gray-900">{clase.titulo}</h3>
-								<p class="mt-1 line-clamp-2 text-sm text-gray-600">{clase.descripcion}</p>
-								<div class="mt-2 flex items-center justify-between text-xs text-gray-500">
-									<span>{clase.numeroAlumnos || 0} alumnos</span>
-									<span>{FormatterUtils.formatPrice(clase.precio || 0)}</span>
+							<!-- Class Header -->
+							<div class="mb-8 flex items-start justify-between">
+								<div>
+									<h2
+										class="montserrat-bold mb-2 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-3xl font-bold text-transparent"
+									>
+										{selectedClass.titulo}
+									</h2>
+									<p class="font-medium text-gray-600">{selectedClass.descripcion}</p>
 								</div>
-							</button>
-						{/each}
-					</div>
-				{/if}
-			</div>
-
-			<!-- Class Details and Management -->
-			<div class="lg:col-span-3">
-				{#if selectedClass}
-					<div class="rounded-lg border border-gray-200 bg-white p-6">
-						<!-- Class Header -->
-						<div class="mb-6 flex items-start justify-between">
-							<div>
-								<h2 class="text-2xl font-bold text-gray-900">{selectedClass.titulo}</h2>
-								<p class="mt-1 text-gray-600">{selectedClass.descripcion}</p>
-							</div>
-							<div class="flex space-x-2">
-								{#if editMode}
-									<button
-										onclick={saveChanges}
-										class="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-									>
-										💾 Guardar
-									</button>
-									<button
-										onclick={cancelEdit}
-										class="rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-									>
-										❌ Cancelar
-									</button>
-								{:else}
-									<button
-										onclick={startEdit}
-										class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-									>
-										✏️ Editar
-									</button>
-									<button
-										onclick={() => selectedClass && goToClassDetail(selectedClass.id!)}
-										class="rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-									>
-										👁️ Ver Detalle
-									</button>
-								{/if}
-							</div>
-						</div>
-
-						<!-- Tab Navigation -->
-						<div class="mb-6 border-b border-gray-200">
-							<nav class="-mb-px flex space-x-8">
-								<button
-									onclick={() => handleTabChange('overview')}
-									class="border-b-2 px-1 py-2 text-sm font-medium {activeTab === 'overview'
-										? 'border-blue-500 text-blue-600'
-										: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
-								>
-									📊 Resumen
-								</button>
-								<button
-									onclick={() => handleTabChange('materials')}
-									class="border-b-2 px-1 py-2 text-sm font-medium {activeTab === 'materials'
-										? 'border-blue-500 text-blue-600'
-										: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
-								>
-									📚 Materiales
-								</button>
-								<button
-									onclick={() => handleTabChange('exercises')}
-									class="border-b-2 px-1 py-2 text-sm font-medium {activeTab === 'exercises'
-										? 'border-blue-500 text-blue-600'
-										: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
-								>
-									✍️ Ejercicios
-								</button>
-								<button
-									onclick={() => handleTabChange('grading')}
-									class="border-b-2 px-1 py-2 text-sm font-medium {activeTab === 'grading'
-										? 'border-blue-500 text-blue-600'
-										: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
-								>
-									📝 Calificaciones
-								</button>
-								<button
-									onclick={() => handleTabChange('alumnos')}
-									class="border-b-2 px-1 py-2 text-sm font-medium {activeTab === 'alumnos'
-										? 'border-blue-500 text-blue-600'
-										: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}"
-								>
-									👥 Alumnos
-								</button>
-							</nav>
-						</div>
-
-						<!-- Tab Content -->
-						{#if activeTab === 'overview'}
-							<!-- Overview Tab -->
-							<div class="space-y-6">
-								<!-- Class Information -->
-								<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+								<div class="flex space-x-3">
 									{#if editMode}
-										<!-- Edit Form -->
-										<div class="rounded-lg border border-gray-200 bg-white p-4">
-											<h3 class="mb-4 text-lg font-semibold text-gray-900">
-												✏️ Editar Información de la Clase
-											</h3>
-											<div class="space-y-4">
-												<div>
-													<label for="titulo" class="block text-sm font-medium text-gray-700">
-														Título de la Clase
-													</label>
-													<input
-														id="titulo"
-														type="text"
-														bind:value={editForm.titulo}
-														class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
-														placeholder="Título de la clase"
-														required
-													/>
-												</div>
+										<button
+											onclick={saveChanges}
+											class="transform rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
+										>
+											💾 Guardar
+										</button>
+										<button
+											onclick={cancelEdit}
+											class="rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:shadow-md"
+										>
+											❌ Cancelar
+										</button>
+									{:else}
+										<button
+											onclick={startEdit}
+											class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+										>
+											✏️ Editar
+										</button>
+										<button
+											onclick={() => selectedClass && goToClassDetail(selectedClass.id!)}
+											class="rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:shadow-md"
+										>
+											👁️ Ver Detalle
+										</button>
+									{/if}
+								</div>
+							</div>
 
-												<div>
-													<label for="descripcion" class="block text-sm font-medium text-gray-700">
-														Descripción
-													</label>
-													<textarea
-														id="descripcion"
-														bind:value={editForm.descripcion}
-														rows="3"
-														class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
-														placeholder="Descripción de la clase"
-													></textarea>
-												</div>
+							<!-- Tab Navigation -->
+							<div class="mb-8 border-b border-gray-200">
+								<nav class="scrollbar-hide -mb-px flex space-x-8 overflow-x-auto">
+									<button
+										onclick={() => handleTabChange('overview')}
+										class="flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition-all duration-200 {activeTab ===
+										'overview'
+											? 'rounded-t-lg border-blue-500 bg-blue-50 text-blue-600'
+											: 'rounded-t-lg border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
+									>
+										📊 Resumen
+									</button>
+									<button
+										onclick={() => handleTabChange('materials')}
+										class="flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition-all duration-200 {activeTab ===
+										'materials'
+											? 'rounded-t-lg border-blue-500 bg-blue-50 text-blue-600'
+											: 'rounded-t-lg border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
+									>
+										📚 Materiales
+									</button>
+									<button
+										onclick={() => handleTabChange('exercises')}
+										class="flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition-all duration-200 {activeTab ===
+										'exercises'
+											? 'rounded-t-lg border-blue-500 bg-blue-50 text-blue-600'
+											: 'rounded-t-lg border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
+									>
+										✍️ Ejercicios
+									</button>
+									<button
+										onclick={() => handleTabChange('grading')}
+										class="flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition-all duration-200 {activeTab ===
+										'grading'
+											? 'rounded-t-lg border-blue-500 bg-blue-50 text-blue-600'
+											: 'rounded-t-lg border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
+									>
+										📝 Calificaciones
+									</button>
+									<button
+										onclick={() => handleTabChange('alumnos')}
+										class="flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition-all duration-200 {activeTab ===
+										'alumnos'
+											? 'rounded-t-lg border-blue-500 bg-blue-50 text-blue-600'
+											: 'rounded-t-lg border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
+									>
+										👥 Alumnos
+									</button>
+								</nav>
+							</div>
 
-												<div class="grid grid-cols-2 gap-4">
+							<!-- Tab Content -->
+							{#if activeTab === 'overview'}
+								<!-- Overview Tab -->
+								<div class="space-y-8">
+									<!-- Class Information -->
+									<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+										{#if editMode}
+											<!-- Edit Form -->
+											<div
+												class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+											>
+												<h3
+													class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+												>
+													✏️ Editar Información de la Clase
+												</h3>
+												<div class="space-y-6">
 													<div>
-														<label for="precio" class="block text-sm font-medium text-gray-700">
-															Precio
+														<label
+															for="titulo"
+															class="mb-2 block text-sm font-medium text-gray-700"
+														>
+															Título de la Clase
 														</label>
 														<input
-															id="precio"
-															type="number"
-															step="0.01"
-															min="0"
-															bind:value={editForm.precio}
-															class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
-															placeholder="0.00"
+															id="titulo"
+															type="text"
+															bind:value={editForm.titulo}
+															class="w-full rounded-lg border border-gray-200 px-4 py-3 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+															placeholder="Título de la clase"
 															required
 														/>
 													</div>
 
 													<div>
 														<label
-															for="presencialidad"
-															class="block text-sm font-medium text-gray-700"
+															for="descripcion"
+															class="mb-2 block text-sm font-medium text-gray-700"
 														>
-															Modalidad
+															Descripción
+														</label>
+														<textarea
+															id="descripcion"
+															bind:value={editForm.descripcion}
+															rows="3"
+															class="w-full rounded-lg border border-gray-200 px-4 py-3 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+															placeholder="Descripción de la clase"
+														></textarea>
+													</div>
+
+													<div class="grid grid-cols-2 gap-4">
+														<div>
+															<label
+																for="precio"
+																class="mb-2 block text-sm font-medium text-gray-700"
+															>
+																Precio
+															</label>
+															<input
+																id="precio"
+																type="number"
+																step="0.01"
+																min="0"
+																bind:value={editForm.precio}
+																class="w-full rounded-lg border border-gray-200 px-4 py-3 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+																placeholder="0.00"
+																required
+															/>
+														</div>
+
+														<div>
+															<label
+																for="presencialidad"
+																class="mb-2 block text-sm font-medium text-gray-700"
+															>
+																Modalidad
+															</label>
+															<select
+																id="presencialidad"
+																bind:value={editForm.presencialidad}
+																class="w-full rounded-lg border border-gray-200 px-4 py-3 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+															>
+																<option value="PRESENCIAL">Presencial</option>
+																<option value="ONLINE">Online</option>
+																<option value="HIBRIDO">Híbrido</option>
+															</select>
+														</div>
+													</div>
+
+													<div>
+														<label for="nivel" class="mb-2 block text-sm font-medium text-gray-700">
+															Nivel
 														</label>
 														<select
-															id="presencialidad"
-															bind:value={editForm.presencialidad}
-															class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
+															id="nivel"
+															bind:value={editForm.nivel}
+															class="w-full rounded-lg border border-gray-200 px-4 py-3 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
 														>
-															<option value="PRESENCIAL">Presencial</option>
-															<option value="ONLINE">Online</option>
-															<option value="HIBRIDO">Híbrido</option>
+															<option value="PRINCIPIANTE">Principiante</option>
+															<option value="BASICO">Básico</option>
+															<option value="INTERMEDIO">Intermedio</option>
+															<option value="AVANZADO">Avanzado</option>
 														</select>
 													</div>
 												</div>
-
-												<div>
-													<label for="nivel" class="block text-sm font-medium text-gray-700">
-														Nivel
-													</label>
-													<select
-														id="nivel"
-														bind:value={editForm.nivel}
-														class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
-													>
-														<option value="PRINCIPIANTE">Principiante</option>
-														<option value="BASICO">Básico</option>
-														<option value="INTERMEDIO">Intermedio</option>
-														<option value="AVANZADO">Avanzado</option>
-													</select>
+											</div>
+										{:else}
+											<!-- Display Class Information -->
+											<div
+												class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+											>
+												<h3
+													class="montserrat-semibold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+												>
+													Información de la Clase
+												</h3>
+												<div class="space-y-3 text-sm text-gray-600">
+													<p><strong>Título:</strong> {selectedClass.titulo}</p>
+													<p>
+														<strong>Precio:</strong>
+														{FormatterUtils.formatPrice(selectedClass.precio || 0)}
+													</p>
+													<p><strong>Presencialidad:</strong> {selectedClass.presencialidad}</p>
+													<p><strong>Nivel:</strong> {selectedClass.nivel}</p>
+													<p><strong>Alumnos:</strong> {selectedClass.numeroAlumnos || 0}</p>
 												</div>
 											</div>
-										</div>
-									{:else}
-										<!-- Display Class Information -->
-										<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-											<h3 class="mb-2 text-lg font-semibold text-gray-900">
-												Información de la Clase
-											</h3>
-											<div class="space-y-2 text-sm text-gray-600">
-												<p>
-													<strong>Título:</strong>
-													{selectedClass.titulo}
-												</p>
-												<p>
-													<strong>Precio:</strong>
-													{FormatterUtils.formatPrice(selectedClass.precio || 0)}
-												</p>
-												<p><strong>Presencialidad:</strong> {selectedClass.presencialidad}</p>
-												<p><strong>Nivel:</strong> {selectedClass.nivel}</p>
-												<p><strong>Alumnos:</strong> {selectedClass.numeroAlumnos || 0}</p>
-											</div>
-										</div>
-									{/if}
+										{/if}
 
-									<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-										<h3 class="mb-2 text-lg font-semibold text-gray-900">Acciones Rápidas</h3>
-										<div class="space-y-2">
-											<button
-												onclick={() => handleTabChange('materials')}
-												class="w-full rounded bg-blue-100 px-3 py-2 text-sm text-blue-700 hover:bg-blue-200"
-											>
-												📚 Gestionar Materiales
-											</button>
-											<button
-												onclick={() => handleTabChange('exercises')}
-												class="w-full rounded bg-green-100 px-3 py-2 text-sm text-green-700 hover:bg-green-200"
-											>
-												✍️ Gestionar Ejercicios
-											</button>
-											<button
-												onclick={() => handleTabChange('grading')}
-												class="w-full rounded bg-purple-100 px-3 py-2 text-sm text-purple-700 hover:bg-purple-200"
-											>
-												📝 Revisar Entregas
-											</button>
-											<button
-												onclick={() => handleTabChange('alumnos')}
-												class="w-full rounded bg-orange-100 px-3 py-2 text-sm text-orange-700 hover:bg-orange-200"
-											>
-												👥 Gestionar Alumnos
-											</button>
-										</div>
-									</div>
-								</div>
-
-								<!-- Quick Stats -->
-								<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-									<div class="rounded-lg border border-gray-200 bg-white p-4 text-center">
-										<div class="text-2xl font-bold text-blue-600">
-											{selectedClass.numeroAlumnos || 0}
-										</div>
-										<div class="text-sm text-gray-600">Alumnos Inscritos</div>
-									</div>
-									<div class="rounded-lg border border-gray-200 bg-white p-4 text-center">
-										<div class="text-2xl font-bold text-green-600">
-											{selectedClass.precio
-												? FormatterUtils.formatPrice(selectedClass.precio)
-												: 'Gratis'}
-										</div>
-										<div class="text-sm text-gray-600">Precio por Clase</div>
-									</div>
-									<div class="rounded-lg border border-gray-200 bg-white p-4 text-center">
-										<div class="text-2xl font-bold text-purple-600">
-											{selectedClass.presencialidad}
-										</div>
-										<div class="text-sm text-gray-600">Modalidad</div>
-									</div>
-								</div>
-							</div>
-						{:else if activeTab === 'materials'}
-							<!-- Materials Tab -->
-							<div class="space-y-6">
-								<div class="flex items-center justify-between">
-									<h3 class="text-lg font-semibold text-gray-900">Materiales de la Clase</h3>
-									<button
-										onclick={openMaterialModal}
-										class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
-									>
-										➕ Agregar Material
-									</button>
-								</div>
-
-								{#if classMaterials.length === 0}
-									<div class="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
-										<p class="text-gray-500">No hay materiales en esta clase.</p>
-										<button
-											onclick={openMaterialModal}
-											class="mt-4 inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+										<div
+											class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
 										>
-											Agregar primer material
-										</button>
-									</div>
-								{:else}
-									<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-										{#each classMaterials as material (material.id)}
-											<div class="rounded-lg border border-gray-200 bg-white p-4">
-												<h4 class="font-medium text-gray-900">{material.name}</h4>
-												<a
-													href={material.url}
-													target="_blank"
-													rel="noopener noreferrer"
-													class="mt-2 inline-block text-sm text-blue-600 hover:text-blue-800"
-												>
-													Ver Material →
-												</a>
+											<h3
+												class="montserrat-semibold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+											>
+												Acciones Rápidas
+											</h3>
+											<div class="space-y-3">
 												<button
-													onclick={() => removeMaterial(material.id!)}
-													class="mt-3 w-full rounded bg-red-100 px-3 py-2 text-sm text-red-700 hover:bg-red-200"
+													onclick={() => handleTabChange('materials')}
+													class="w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
 												>
-													❌ Quitar
+													📚 Gestionar Materiales
+												</button>
+												<button
+													onclick={() => handleTabChange('exercises')}
+													class="w-full transform rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
+												>
+													✍️ Gestionar Ejercicios
+												</button>
+												<button
+													onclick={() => handleTabChange('grading')}
+													class="w-full transform rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-purple-700 hover:to-pink-700 hover:shadow-lg"
+												>
+													📝 Revisar Entregas
+												</button>
+												<button
+													onclick={() => handleTabChange('alumnos')}
+													class="w-full transform rounded-lg bg-gradient-to-r from-orange-600 to-red-600 px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-orange-700 hover:to-red-700 hover:shadow-lg"
+												>
+													👥 Gestionar Alumnos
 												</button>
 											</div>
-										{/each}
-									</div>
-								{/if}
-							</div>
-						{:else if activeTab === 'exercises'}
-							<!-- Exercises Tab -->
-							<div class="space-y-6">
-								<div class="flex items-center justify-between">
-									<h3 class="text-lg font-semibold text-gray-900">Ejercicios de la Clase</h3>
-									<button
-										onclick={createNewExercise}
-										class="inline-flex items-center rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
-									>
-										➕ Nuevo Ejercicio
-									</button>
-								</div>
-
-								{#if classExercises.length === 0}
-									<div class="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
-										<p class="text-gray-500">No hay ejercicios en esta clase.</p>
-										<button
-											onclick={createNewExercise}
-											class="mt-4 inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-										>
-											Crear primer ejercicio
-										</button>
-									</div>
-								{:else}
-									<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-										{#each classExercises as ejercicio (ejercicio.id)}
-											<div class="rounded-lg border border-gray-200 bg-white p-4">
-												<h4 class="font-medium text-gray-900">{ejercicio.name}</h4>
-												<p class="mt-2 line-clamp-3 text-sm text-gray-600">{ejercicio.statement}</p>
-												<div class="mt-3 flex items-center justify-between">
-													<span class="text-xs text-gray-500">
-														{ejercicio.startDate
-															? FormatterUtils.formatDate(ejercicio.startDate)
-															: 'Sin fecha'}
-													</span>
-													<button
-														onclick={() => goto(`/ejercicios/${ejercicio.id}`)}
-														class="rounded bg-blue-100 px-3 py-1 text-xs text-blue-700 hover:bg-blue-200"
-													>
-														Ver Detalles
-													</button>
-												</div>
-											</div>
-										{/each}
-									</div>
-								{/if}
-							</div>
-						{:else if activeTab === 'grading'}
-							<!-- Grading Tab -->
-							<div class="space-y-6">
-								<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-									<!-- Exercises List -->
-									<div>
-										<h3 class="mb-4 text-lg font-semibold text-gray-900">Ejercicios</h3>
-										{#if classExercises.length === 0}
-											<div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
-												<p class="text-gray-500">No hay ejercicios en esta clase.</p>
-											</div>
-										{:else}
-											<div class="space-y-3">
-												{#each classExercises as ejercicio (ejercicio.id)}
-													<div
-														class="rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-blue-300 hover:bg-blue-50 {selectedExercise?.id ===
-														ejercicio.id
-															? 'border-blue-500 bg-blue-50'
-															: ''}"
-													>
-														<div class="flex items-center justify-between">
-															<button
-																onclick={() => selectExercise(ejercicio)}
-																class="flex-1 text-left"
-															>
-																<h4 class="font-medium text-gray-900">{ejercicio.name}</h4>
-																<p class="mt-1 line-clamp-2 text-sm text-gray-600">
-																	{ejercicio.statement}
-																</p>
-															</button>
-															<button
-																onclick={() => goto(`/ejercicios/${ejercicio.id}`)}
-																class="ml-3 rounded bg-blue-100 px-3 py-1 text-xs text-blue-700 hover:bg-blue-200"
-															>
-																Ver Detalles
-															</button>
-														</div>
-													</div>
-												{/each}
-											</div>
-										{/if}
-									</div>
-
-									<!-- Deliveries List -->
-									<div>
-										<h3 class="mb-4 text-lg font-semibold text-gray-900">
-											Entregas {selectedExercise ? `- ${selectedExercise.name}` : ''}
-										</h3>
-										{#if !selectedExercise}
-											<div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
-												<p class="text-gray-500">Selecciona una clase para ver sus ejercicios.</p>
-											</div>
-										{:else if exerciseDeliveries.length === 0}
-											<div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
-												<p class="text-gray-500">No hay entregas para este ejercicio.</p>
-											</div>
-										{:else}
-											<div class="space-y-3">
-												{#each exerciseDeliveries as entrega (entrega.id)}
-													<div class="rounded-lg border border-gray-200 bg-white p-4">
-														<div class="flex items-center justify-between">
-															<div>
-																<p class="font-medium text-gray-900">
-																	Alumno ID: {entrega.alumnoId}
-																</p>
-																<p class="text-sm text-gray-600">
-																	Estado:
-																	<span
-																		class="inline-flex rounded-full px-2 text-xs font-semibold {getStatusColor(
-																			entrega.estado
-																		)}"
-																	>
-																		{formatStatus(entrega.estado)}
-																	</span>
-																</p>
-																<p class="text-sm text-gray-600">
-																	Nota:
-																	<span class={getGradeColor(entrega.nota)}>
-																		{formatGrade(entrega.nota)}
-																	</span>
-																</p>
-															</div>
-															<div class="flex space-x-2">
-																<button
-																	onclick={() => goto(`/entregas/${entrega.id}`)}
-																	class="rounded bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
-																>
-																	👁️ Ver Detalles
-																</button>
-																<button
-																	onclick={() => openGradingModal(entrega)}
-																	class="rounded bg-blue-100 px-3 py-2 text-sm text-blue-700 hover:bg-blue-200"
-																>
-																	{entrega.nota ? '✏️ Editar' : '📝 Calificar'}
-																</button>
-															</div>
-														</div>
-													</div>
-												{/each}
-											</div>
-										{/if}
-									</div>
-								</div>
-							</div>
-						{:else if activeTab === 'alumnos'}
-							<!-- Alumnos Tab -->
-							<div class="space-y-6">
-								<div class="flex items-center justify-between">
-									<h3 class="text-lg font-semibold text-gray-900">Alumnos Inscritos</h3>
-									<div class="text-sm text-gray-600">
-										Total: {selectedClass?.numeroAlumnos || 0} alumnos
-									</div>
-								</div>
-
-								{#if studentsLoading}
-									<div class="flex items-center justify-center py-12">
-										<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
-										<span class="ml-3 text-gray-600">Cargando alumnos...</span>
-									</div>
-								{:else if classStudents.length === 0}
-									<div class="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
-										<div class="mx-auto mb-4 h-16 w-16 rounded-full bg-gray-100 p-3">
-											<span class="text-2xl">👥</span>
-										</div>
-										<p class="text-gray-500">No hay alumnos inscritos en esta clase aún.</p>
-										<p class="mt-2 text-sm text-gray-400">
-											Los alumnos aparecerán aquí una vez se inscriban a la clase.
-										</p>
-									</div>
-								{:else}
-									<!-- Student List -->
-									<div class="rounded-lg border border-gray-200 bg-white p-6">
-										<div class="mb-4 flex items-center justify-between">
-											<h4 class="text-md font-medium text-gray-900">Lista de Alumnos</h4>
-											<span class="text-sm text-gray-500">
-												{classStudents.length} inscritos
-											</span>
-										</div>
-
-										<div class="space-y-3">
-											{#each classStudents as student (student.id)}
-												<div class="rounded-lg border border-gray-200 bg-white p-4">
-													<div class="flex items-center justify-between">
-														<div class="flex items-center space-x-3">
-															<div
-																class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100"
-															>
-																<span class="text-sm font-medium text-blue-600">
-																	{student.firstName?.charAt(0)}{student.lastName?.charAt(0)}
-																</span>
-															</div>
-															<div>
-																<h5 class="font-medium text-gray-900">
-																	{student.firstName}
-																	{student.lastName}
-																</h5>
-																<p class="text-sm text-gray-600">{student.email}</p>
-																{#if student.phoneNumber}
-																	<p class="text-xs text-gray-500">📞 {student.phoneNumber}</p>
-																{/if}
-															</div>
-														</div>
-														<div class="text-right">
-															<div class="text-sm text-gray-600">
-																<span
-																	class="inline-flex items-center rounded-full px-2 text-xs font-semibold {student.enabled
-																		? 'bg-green-100 text-green-800'
-																		: 'bg-red-100 text-red-800'}"
-																>
-																	{student.enabled ? 'Activo' : 'Inactivo'}
-																</span>
-															</div>
-															{#if student.enrollmentDate}
-																<p class="mt-1 text-xs text-gray-500">
-																	📅 {FormatterUtils.formatDate(student.enrollmentDate)}
-																</p>
-															{/if}
-															<button
-																onclick={() => goto(`/alumnos/${student.id}`)}
-																class="mt-2 rounded bg-blue-100 px-3 py-1 text-xs text-blue-700 transition-colors hover:bg-blue-200"
-															>
-																👤 Ver Perfil
-															</button>
-														</div>
-													</div>
-												</div>
-											{/each}
 										</div>
 									</div>
 
 									<!-- Quick Stats -->
-									<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-										<div class="rounded-lg border border-gray-200 bg-white p-4 text-center">
-											<div class="text-2xl font-bold text-blue-600">
-												{classStudents.length}
+									<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+										<div
+											class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+										>
+											<div class="mb-2 text-3xl font-bold text-blue-600">
+												{selectedClass.numeroAlumnos || 0}
 											</div>
-											<div class="text-sm text-gray-600">Total Inscritos</div>
+											<div class="text-sm text-gray-600">Alumnos Inscritos</div>
 										</div>
-										<div class="rounded-lg border border-gray-200 bg-white p-4 text-center">
-											<div class="text-2xl font-bold text-green-600">
-												{classStudents.filter((s) => s.enabled).length}
+										<div
+											class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+										>
+											<div class="mb-2 text-3xl font-bold text-green-600">
+												{selectedClass.precio
+													? FormatterUtils.formatPrice(selectedClass.precio)
+													: 'Gratis'}
 											</div>
-											<div class="text-sm text-gray-600">Activos</div>
+											<div class="text-sm text-gray-600">Precio por Clase</div>
 										</div>
-										<div class="rounded-lg border border-gray-200 bg-white p-4 text-center">
-											<div class="text-2xl font-bold text-purple-600">
-												{classStudents.filter((s) => s.submissionIds && s.submissionIds.length > 0)
-													.length}
+										<div
+											class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+										>
+											<div class="mb-2 text-3xl font-bold text-purple-600">
+												{selectedClass.presencialidad}
 											</div>
-											<div class="text-sm text-gray-600">Con Entregas</div>
+											<div class="text-sm text-gray-600">Modalidad</div>
 										</div>
 									</div>
-								{/if}
-							</div>
-						{/if}
-					</div>
-				{:else}
-					<div class="rounded-lg border border-gray-200 bg-gray-50 p-12 text-center">
-						<p class="text-gray-500">Selecciona una clase para comenzar a gestionar.</p>
-					</div>
-				{/if}
+								</div>
+							{:else if activeTab === 'materials'}
+								<!-- Materials Tab -->
+								<div class="space-y-8">
+									<div class="flex items-center justify-between">
+										<h3
+											class="montserrat-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+										>
+											Materiales de la Clase
+										</h3>
+										<button
+											onclick={openMaterialModal}
+											class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+										>
+											➕ Agregar Material
+										</button>
+									</div>
+
+									{#if classMaterials.length === 0}
+										<div
+											class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+										>
+											<div class="mb-4 text-6xl">📚</div>
+											<p class="mb-4 text-gray-600">No hay materiales en esta clase.</p>
+											<button
+												onclick={openMaterialModal}
+												class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+											>
+												Agregar primer material
+											</button>
+										</div>
+									{:else}
+										<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+											{#each classMaterials as material (material.id)}
+												<div
+													class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+												>
+													<h4 class="mb-3 font-semibold text-gray-900">{material.name}</h4>
+													<a
+														href={material.url}
+														target="_blank"
+														rel="noopener noreferrer"
+														class="mb-3 inline-block w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-center text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+													>
+														Ver Material
+													</a>
+													<button
+														onclick={() => removeMaterial(material.id!)}
+														class="w-full transform rounded-lg bg-gradient-to-r from-red-600 to-pink-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-red-700 hover:to-pink-700 hover:shadow-lg"
+													>
+														❌ Quitar
+													</button>
+												</div>
+											{/each}
+										</div>
+									{/if}
+								</div>
+							{:else if activeTab === 'exercises'}
+								<!-- Exercises Tab -->
+								<div class="space-y-8">
+									<div class="flex items-center justify-between">
+										<h3
+											class="montserrat-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+										>
+											Ejercicios de la Clase
+										</h3>
+										<button
+											onclick={createNewExercise}
+											class="transform rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
+										>
+											➕ Nuevo Ejercicio
+										</button>
+									</div>
+
+									{#if classExercises.length === 0}
+										<div
+											class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+										>
+											<div class="mb-4 text-6xl">✍️</div>
+											<p class="mb-4 text-gray-600">No hay ejercicios en esta clase.</p>
+											<button
+												onclick={createNewExercise}
+												class="transform rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
+											>
+												Crear primer ejercicio
+											</button>
+										</div>
+									{:else}
+										<div class="grid gap-6 md:grid-cols-2">
+											{#each classExercises as ejercicio (ejercicio.id)}
+												<div
+													class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+												>
+													<h4 class="mb-3 font-semibold text-gray-900">{ejercicio.name}</h4>
+													<p class="mb-4 line-clamp-3 text-sm text-gray-600">
+														{ejercicio.statement}
+													</p>
+													<div class="flex items-center justify-between">
+														<span class="text-xs text-gray-500">
+															{ejercicio.startDate
+																? FormatterUtils.formatDate(ejercicio.startDate)
+																: 'Sin fecha'}
+														</span>
+														<button
+															onclick={() => goto(`/ejercicios/${ejercicio.id}`)}
+															class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+														>
+															Ver Detalles
+														</button>
+													</div>
+												</div>
+											{/each}
+										</div>
+									{/if}
+								</div>
+							{:else if activeTab === 'grading'}
+								<!-- Grading Tab -->
+								<div class="space-y-8">
+									<div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+										<!-- Exercises List -->
+										<div
+											class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+										>
+											<h3
+												class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+											>
+												Ejercicios
+											</h3>
+											{#if classExercises.length === 0}
+												<div class="rounded-xl border border-gray-200 bg-gray-50 p-6 text-center">
+													<p class="text-gray-600">No hay ejercicios en esta clase.</p>
+												</div>
+											{:else}
+												<div class="space-y-4">
+													{#each classExercises as ejercicio (ejercicio.id)}
+														<div
+															class="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md {selectedExercise?.id ===
+															ejercicio.id
+																? 'border-blue-500 bg-blue-50 shadow-md'
+																: ''}"
+														>
+															<div class="flex items-center justify-between">
+																<button
+																	onclick={() => selectExercise(ejercicio)}
+																	class="flex-1 text-left"
+																>
+																	<h4 class="font-semibold text-gray-900">{ejercicio.name}</h4>
+																	<p class="mt-2 line-clamp-2 text-sm text-gray-600">
+																		{ejercicio.statement}
+																	</p>
+																</button>
+																<button
+																	onclick={() => goto(`/ejercicios/${ejercicio.id}`)}
+																	class="ml-3 transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-1 text-xs font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+																>
+																	Ver Detalles
+																</button>
+															</div>
+														</div>
+													{/each}
+												</div>
+											{/if}
+										</div>
+
+										<!-- Deliveries List -->
+										<div
+											class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+										>
+											<h3
+												class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+											>
+												Entregas {selectedExercise ? `- ${selectedExercise.name}` : ''}
+											</h3>
+											{#if !selectedExercise}
+												<div class="rounded-xl border border-gray-200 bg-gray-50 p-6 text-center">
+													<p class="text-gray-600">
+														Selecciona un ejercicio para ver sus entregas.
+													</p>
+												</div>
+											{:else if exerciseDeliveries.length === 0}
+												<div class="rounded-xl border border-gray-200 bg-gray-50 p-6 text-center">
+													<p class="text-gray-600">No hay entregas para este ejercicio.</p>
+												</div>
+											{:else}
+												<div class="space-y-4">
+													{#each exerciseDeliveries as entrega (entrega.id)}
+														<div
+															class="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md"
+														>
+															<div class="flex items-center justify-between">
+																<div>
+																	<p class="font-semibold text-gray-900">
+																		Alumno ID: {entrega.alumnoId}
+																	</p>
+																	<p class="mt-1 text-sm text-gray-600">
+																		Estado:
+																		<span
+																			class="inline-flex rounded-full px-2 text-xs font-semibold {getStatusColor(
+																				entrega.estado
+																			)}"
+																		>
+																			{formatStatus(entrega.estado)}
+																		</span>
+																	</p>
+																	<p class="text-sm text-gray-600">
+																		Nota:
+																		<span class={getGradeColor(entrega.nota)}>
+																			{formatGrade(entrega.nota)}
+																		</span>
+																	</p>
+																</div>
+																<div class="flex space-x-2">
+																	<button
+																		onclick={() => goto(`/entregas/${entrega.id}`)}
+																		class="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:shadow-md"
+																	>
+																		👁️ Ver Detalles
+																	</button>
+																	<button
+																		onclick={() => openGradingModal(entrega)}
+																		class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+																	>
+																		{entrega.nota ? '✏️ Editar' : '📝 Calificar'}
+																	</button>
+																</div>
+															</div>
+														</div>
+													{/each}
+												</div>
+											{/if}
+										</div>
+									</div>
+								</div>
+							{:else if activeTab === 'alumnos'}
+								<!-- Alumnos Tab -->
+								<div class="space-y-8">
+									<div class="flex items-center justify-between">
+										<h3
+											class="montserrat-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+										>
+											Alumnos Inscritos
+										</h3>
+										<div class="text-sm text-gray-600">
+											Total: {selectedClass?.numeroAlumnos || 0} alumnos
+										</div>
+									</div>
+
+									{#if studentsLoading}
+										<div class="py-16 text-center">
+											<div
+												class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+											></div>
+											<p class="mt-6 text-lg font-medium text-gray-600">Cargando alumnos...</p>
+										</div>
+									{:else if classStudents.length === 0}
+										<div
+											class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+										>
+											<div class="mb-4 text-6xl">👥</div>
+											<p class="mb-4 text-gray-600">No hay alumnos inscritos en esta clase aún.</p>
+											<p class="text-sm text-gray-500">
+												Los alumnos aparecerán aquí una vez se inscriban a la clase.
+											</p>
+										</div>
+									{:else}
+										<!-- Student List -->
+										<div
+											class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+										>
+											<div class="mb-6 flex items-center justify-between">
+												<h4 class="text-lg font-semibold text-gray-900">Lista de Alumnos</h4>
+												<span class="text-sm text-gray-600">
+													{classStudents.length} inscritos
+												</span>
+											</div>
+
+											<div class="space-y-4">
+												{#each classStudents as student (student.id)}
+													<div
+														class="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md"
+													>
+														<div class="flex items-center justify-between">
+															<div class="flex items-center space-x-4">
+																<div
+																	class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100"
+																>
+																	<span class="text-sm font-medium text-blue-600">
+																		{student.firstName?.charAt(0)}{student.lastName?.charAt(0)}
+																	</span>
+																</div>
+																<div>
+																	<h5 class="font-semibold text-gray-900">
+																		{student.firstName}
+																		{student.lastName}
+																	</h5>
+																	<p class="text-sm text-gray-600">{student.email}</p>
+																	{#if student.phoneNumber}
+																		<p class="text-xs text-gray-500">📞 {student.phoneNumber}</p>
+																	{/if}
+																</div>
+															</div>
+															<div class="text-right">
+																<div class="mb-2 text-sm text-gray-600">
+																	<span
+																		class="inline-flex items-center rounded-full px-2 text-xs font-semibold {student.enabled
+																			? 'bg-green-100 text-green-800'
+																			: 'bg-red-100 text-red-800'}"
+																	>
+																		{student.enabled ? 'Activo' : 'Inactivo'}
+																	</span>
+																</div>
+																{#if student.enrollmentDate}
+																	<p class="mb-2 text-xs text-gray-500">
+																		📅 {FormatterUtils.formatDate(student.enrollmentDate)}
+																	</p>
+																{/if}
+																<button
+																	onclick={() => goto(`/alumnos/${student.id}`)}
+																	class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-1 text-xs font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+																>
+																	👤 Ver Perfil
+																</button>
+															</div>
+														</div>
+													</div>
+												{/each}
+											</div>
+										</div>
+
+										<!-- Quick Stats -->
+										<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+											<div
+												class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+											>
+												<div class="mb-2 text-3xl font-bold text-blue-600">
+													{classStudents.length}
+												</div>
+												<div class="text-sm text-gray-600">Total Inscritos</div>
+											</div>
+											<div
+												class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+											>
+												<div class="mb-2 text-3xl font-bold text-green-600">
+													{classStudents.filter((s) => s.enabled).length}
+												</div>
+												<div class="text-sm text-gray-600">Activos</div>
+											</div>
+											<div
+												class="rounded-2xl border border-gray-200/50 bg-white/80 p-6 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+											>
+												<div class="mb-2 text-3xl font-bold text-purple-600">
+													{classStudents.filter(
+														(s) => s.submissionIds && s.submissionIds.length > 0
+													).length}
+												</div>
+												<div class="text-sm text-gray-600">Con Entregas</div>
+											</div>
+										</div>
+									{/if}
+								</div>
+							{/if}
+						</div>
+					{:else}
+						<div
+							class="rounded-2xl border border-gray-200/50 bg-white/80 p-12 text-center shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+						>
+							<div class="mb-4 text-6xl">📚</div>
+							<p class="mb-4 text-gray-600">Selecciona una clase para comenzar a gestionar.</p>
+						</div>
+					{/if}
+				</div>
 			</div>
-		</div>
-	{/if}
+		{/if}
+	</div>
 </div>
 
 <!-- Material Modal -->
 {#if showMaterialModal}
-	<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-		<div class="w-full max-w-md rounded-lg bg-white p-6">
-			<h3 class="mb-4 text-lg font-semibold text-gray-900">Agregar Material</h3>
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+		<div
+			class="w-full max-w-md rounded-2xl border border-gray-200/50 bg-white/90 p-8 shadow-2xl backdrop-blur-xl"
+		>
+			<h3
+				class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+			>
+				Agregar Material
+			</h3>
 
 			<!-- Create New Material -->
-			<div class="mb-6">
-				<h4 class="mb-3 font-medium text-gray-900">Crear Nuevo Material</h4>
-				<div class="space-y-3">
+			<div class="mb-8">
+				<h4 class="mb-4 font-semibold text-gray-900">Crear Nuevo Material</h4>
+				<div class="space-y-4">
 					<input
 						type="text"
 						bind:value={newMaterial.name}
 						placeholder="Nombre del material"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+						class="w-full rounded-lg border border-gray-200 px-4 py-3 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
 					/>
 					<input
 						type="url"
 						bind:value={newMaterial.url}
 						placeholder="URL del material"
-						class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+						class="w-full rounded-lg border border-gray-200 px-4 py-3 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
 					/>
 					<button
 						onclick={createNewMaterial}
 						disabled={!newMaterial.name || !newMaterial.url}
-						class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-gray-400"
+						class="w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						Crear y Agregar
 					</button>
@@ -1163,14 +1291,14 @@
 			</div>
 
 			<!-- Add Existing Material -->
-			<div class="mb-6">
-				<h4 class="mb-3 font-medium text-gray-900">Agregar Material Existente</h4>
+			<div class="mb-8">
+				<h4 class="mb-4 font-semibold text-gray-900">Agregar Material Existente</h4>
 				{#if availableMaterials.length > 0}
-					<div class="max-h-40 space-y-2 overflow-y-auto">
+					<div class="max-h-40 space-y-3 overflow-y-auto">
 						{#each availableMaterials as material (material.id)}
 							<button
 								onclick={() => addExistingMaterial(material)}
-								class="w-full rounded border border-gray-200 bg-white p-3 text-left hover:bg-gray-50"
+								class="w-full rounded-xl border border-gray-200 bg-white p-4 text-left transition-all duration-200 hover:bg-gray-50 hover:shadow-md"
 							>
 								<div class="font-medium text-gray-900">{material.name}</div>
 								<div class="text-sm text-gray-600">{material.url}</div>
@@ -1184,7 +1312,7 @@
 
 			<button
 				onclick={closeMaterialModal}
-				class="w-full rounded-lg bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+				class="w-full rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:shadow-md"
 			>
 				Cerrar
 			</button>
@@ -1194,13 +1322,19 @@
 
 <!-- Grading Modal -->
 {#if showGradingModal}
-	<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-		<div class="w-full max-w-md rounded-lg bg-white p-6">
-			<h3 class="mb-4 text-lg font-semibold text-gray-900">Calificar Entrega</h3>
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+		<div
+			class="w-full max-w-md rounded-2xl border border-gray-200/50 bg-white/90 p-8 shadow-2xl backdrop-blur-xl"
+		>
+			<h3
+				class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+			>
+				Calificar Entrega
+			</h3>
 
-			<form onsubmit={handleGradeSubmit} class="space-y-4">
+			<form onsubmit={handleGradeSubmit} class="space-y-6">
 				<div>
-					<label for="nota" class="block text-sm font-medium text-gray-700">Nota (0-10)</label>
+					<label for="nota" class="mb-2 block text-sm font-medium text-gray-700">Nota (0-10)</label>
 					<input
 						id="nota"
 						type="number"
@@ -1208,13 +1342,13 @@
 						max="10"
 						step="0.1"
 						bind:value={gradingForm.nota}
-						class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+						class="w-full rounded-lg border border-gray-200 px-4 py-3 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
 						required
 					/>
 				</div>
 
 				<div>
-					<label for="comentarios" class="block text-sm font-medium text-gray-700"
+					<label for="comentarios" class="mb-2 block text-sm font-medium text-gray-700"
 						>Comentarios (opcional)</label
 					>
 					<textarea
@@ -1222,22 +1356,22 @@
 						bind:value={gradingForm.comentarios}
 						rows="3"
 						maxlength="1000"
-						class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+						class="w-full rounded-lg border border-gray-200 px-4 py-3 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
 						placeholder="Comentarios sobre la entrega..."
 					></textarea>
 				</div>
 
-				<div class="flex space-x-3">
+				<div class="flex space-x-4">
 					<button
 						type="submit"
-						class="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+						class="flex-1 transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
 					>
 						Guardar Calificación
 					</button>
 					<button
 						type="button"
 						onclick={closeGradingModal}
-						class="flex-1 rounded-lg bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+						class="flex-1 rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:shadow-md"
 					>
 						Cancelar
 					</button>

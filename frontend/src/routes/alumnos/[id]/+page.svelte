@@ -14,6 +14,7 @@
 	import { authStore } from '$lib/stores/authStore.svelte';
 	import { PermissionUtils } from '$lib/utils/permissions';
 	import { alumnoApi } from '$lib/api';
+	import { ProfileHeader, ProfileCard } from '$lib/components/common';
 
 	// Props and derived state
 	const studentId = $derived(parseInt($page.params.id));
@@ -58,9 +59,6 @@
 		if (!alumno || !authStore.user) return false;
 		return authStore.user.usuario === alumno.username || authStore.user.sub === alumno.username;
 	});
-
-	// Check if user can see sensitive information (admin only)
-	const canSeeSensitiveInfo = $derived(() => authStore.isAdmin);
 
 	// Check if user can view deliveries
 	const canViewDeliveries = $derived(() => {
@@ -519,122 +517,97 @@
 
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
 	<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-		<!-- Header -->
-		<div class="mb-8 flex items-center justify-between">
-			<h1
-				class="montserrat-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-4xl font-bold text-transparent"
-			>
-				Perfil de Alumno
-			</h1>
-			<button
-				onclick={() => goto('/alumnos')}
-				class="flex items-center font-medium text-gray-600 transition-all duration-200 hover:text-blue-600"
-			>
-				<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
-					></path>
-				</svg>
-				Volver a Alumnos
-			</button>
-		</div>
+		<div class="mx-auto max-w-4xl">
+			<ProfileHeader
+				title="Perfil de Alumno"
+				subtitle="Información personal, clases inscritas y entregas"
+				backUrl="/alumnos"
+				backText="Volver a Alumnos"
+				actions={[
+					{
+						label: 'Editar',
+						onClick: startEdit,
+						variant: 'primary',
+						icon: '✏️'
+					}
+				]}
+			/>
 
-		<!-- Success/Error Messages -->
-		{#if successMessage}
-			<div
-				class="mb-6 rounded-xl border border-green-200 bg-green-50 px-6 py-4 text-green-700 shadow-sm"
-			>
-				<div class="flex items-center">
-					<svg class="mr-3 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-						<path
-							fill-rule="evenodd"
-							d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-							clip-rule="evenodd"
-						></path>
-					</svg>
-					{successMessage}
-				</div>
-			</div>
-		{/if}
-
-		{#if error}
-			<div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-700 shadow-sm">
-				<div class="flex items-center justify-between">
-					<div class="flex items-center">
-						<svg class="mr-3 h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								fill-rule="evenodd"
-								d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-								clip-rule="evenodd"
-							></path>
-						</svg>
-						{error}
-					</div>
-					<button
-						onclick={() => (error = null)}
-						class="text-red-500 transition-colors duration-200 hover:text-red-700"
-						aria-label="Cerrar mensaje de error"
-					>
-						<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								fill-rule="evenodd"
-								d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-								clip-rule="evenodd"
-							></path>
-						</svg>
-					</button>
-				</div>
-			</div>
-		{/if}
-
-		<!-- Loading State -->
-		{#if loading}
-			<div class="py-16 text-center">
+			<!-- Success/Error Messages -->
+			{#if successMessage}
 				<div
-					class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
-				></div>
-				<p class="mt-6 text-lg font-medium text-gray-600">Cargando perfil del alumno...</p>
-			</div>
-		{:else if alumno}
-			<div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-				<!-- Main Profile Info -->
-				<div class="lg:col-span-2">
-					<div
-						class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
-					>
-						<div class="mb-8 flex items-start justify-between">
-							<div>
-								<h2
-									class="montserrat-bold mb-2 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-3xl font-bold text-transparent"
-								>
-									{alumno.firstName}
-									{alumno.lastName}
-								</h2>
-								<p class="font-medium text-gray-600">@{alumno.username}</p>
-							</div>
+					class="mb-6 rounded-xl border border-green-200 bg-green-50 px-6 py-4 text-green-700 shadow-sm"
+				>
+					<div class="flex items-center">
+						<svg class="mr-3 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+							<path
+								fill-rule="evenodd"
+								d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+								clip-rule="evenodd"
+							></path>
+						</svg>
+						{successMessage}
+					</div>
+				</div>
+			{/if}
 
-							{#if canEdit() && !editMode}
-								<button
-									onclick={startEdit}
-									class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
-								>
-									<svg
-										class="mr-2 inline h-5 w-5"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-										></path>
-									</svg>
-									Editar Datos
-								</button>
-							{/if}
+			{#if error}
+				<div
+					class="mb-6 rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-700 shadow-sm"
+				>
+					<div class="flex items-center justify-between">
+						<div class="flex items-center">
+							<svg class="mr-3 h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+								<path
+									fill-rule="evenodd"
+									d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+									clip-rule="evenodd"
+								></path>
+							</svg>
+							{error}
 						</div>
+						<button
+							onclick={() => (error = null)}
+							class="text-red-500 transition-colors duration-200 hover:text-red-700"
+							aria-label="Cerrar mensaje de error"
+						>
+							<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+								<path
+									fill-rule="evenodd"
+									d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+									clip-rule="evenodd"
+								></path>
+							</svg>
+						</button>
+					</div>
+				</div>
+			{/if}
 
+			<!-- Loading State -->
+			{#if loading}
+				<div class="py-16 text-center">
+					<div
+						class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+					></div>
+					<p class="mt-6 text-lg font-medium text-gray-600">Cargando perfil del alumno...</p>
+				</div>
+			{:else if alumno}
+				<div class="space-y-8">
+					<!-- Personal Information -->
+					<ProfileCard
+						title={`${alumno.firstName} ${alumno.lastName}`}
+						subtitle={`@${alumno.username}`}
+						actions={canEdit() && !editMode
+							? [
+									{
+										label: 'Editar Datos',
+										onClick: startEdit,
+										variant: 'primary',
+										icon: '✏️'
+									}
+								]
+							: []}
+					>
 						{#if editMode}
 							<!-- Edit Form -->
 							<form
@@ -907,212 +880,216 @@
 							</form>
 						{:else}
 							<!-- View Mode -->
-							<div class="space-y-4">
-								<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-									<div>
-										<h3 class="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase">
-											Información Personal
-										</h3>
-										<dl class="space-y-2">
-											<div>
-												<dt class="text-sm font-medium text-gray-900">Nombre Completo</dt>
-												<dd class="text-sm text-gray-600">{alumno.firstName} {alumno.lastName}</dd>
-											</div>
-											<div>
-												<dt class="text-sm font-medium text-gray-900">DNI</dt>
-												<dd class="text-sm text-gray-600">{alumno.dni}</dd>
-											</div>
-											<div>
-												<dt class="text-sm font-medium text-gray-900">Email</dt>
-												<dd class="text-sm text-gray-600">{alumno.email}</dd>
-											</div>
-											<div>
-												<dt class="text-sm font-medium text-gray-900">Teléfono</dt>
-												<dd class="text-sm text-gray-600">
-													{alumno.phoneNumber || 'No especificado'}
-												</dd>
-											</div>
-										</dl>
+							<div class="grid gap-6 md:grid-cols-2">
+								<div>
+									<h3 class="mb-4 text-lg font-semibold text-gray-900">Información Personal</h3>
+									<div class="space-y-4">
+										<div>
+											<div class="text-sm font-medium text-gray-500">Nombre Completo</div>
+											<p class="font-medium text-gray-900">{alumno.firstName} {alumno.lastName}</p>
+										</div>
+										<div>
+											<div class="text-sm font-medium text-gray-500">DNI</div>
+											<p class="text-gray-900">{alumno.dni}</p>
+										</div>
+										<div>
+											<div class="text-sm font-medium text-gray-500">Email</div>
+											<p class="text-gray-900">{alumno.email}</p>
+										</div>
+										<div>
+											<div class="text-sm font-medium text-gray-500">Teléfono</div>
+											<p class="text-gray-900">{alumno.phoneNumber || 'No especificado'}</p>
+										</div>
 									</div>
+								</div>
 
-									<div>
-										<h3 class="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase">
-											Información Académica
-										</h3>
-										<dl class="space-y-2">
-											<div>
-												<dt class="text-sm font-medium text-gray-900">Usuario</dt>
-												<dd class="text-sm text-gray-600">@{alumno.username}</dd>
-											</div>
-											<div>
-												<dt class="text-sm font-medium text-gray-900">Fecha de Inscripción</dt>
-												<dd class="text-sm text-gray-600">{formatDate(alumno.enrollmentDate)}</dd>
-											</div>
-											<div>
-												<dt class="text-sm font-medium text-gray-900">Estado de Matrícula</dt>
-												<dd class="text-sm">
-													<span
-														class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {alumno.enrolled
-															? 'bg-green-100 text-green-800'
-															: 'bg-yellow-100 text-yellow-800'}"
-													>
-														{alumno.enrolled ? 'Matriculado' : 'No Matriculado'}
-													</span>
-												</dd>
-											</div>
-											<div>
-												<dt class="text-sm font-medium text-gray-900">Estado de Cuenta</dt>
-												<dd class="text-sm">
-													<span
-														class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {alumno.enabled
-															? 'bg-blue-100 text-blue-800'
-															: 'bg-red-100 text-red-800'}"
-													>
-														{alumno.enabled ? 'Habilitado' : 'Deshabilitado'}
-													</span>
-												</dd>
-											</div>
-										</dl>
+								<div>
+									<h3 class="mb-4 text-lg font-semibold text-gray-900">Información Académica</h3>
+									<div class="space-y-4">
+										<div>
+											<div class="text-sm font-medium text-gray-500">Usuario</div>
+											<p class="text-gray-900">@{alumno.username}</p>
+										</div>
+										<div>
+											<div class="text-sm font-medium text-gray-500">Fecha de Inscripción</div>
+											<p class="text-gray-900">{formatDate(alumno.enrollmentDate)}</p>
+										</div>
+										<div>
+											<div class="text-sm font-medium text-gray-500">Estado de Matrícula</div>
+											<span
+												class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {alumno.enrolled
+													? 'bg-green-100 text-green-800'
+													: 'bg-yellow-100 text-yellow-800'}"
+											>
+												{alumno.enrolled ? 'Matriculado' : 'No Matriculado'}
+											</span>
+										</div>
+										<div>
+											<div class="text-sm font-medium text-gray-500">Estado de Cuenta</div>
+											<span
+												class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {alumno.enabled
+													? 'bg-blue-100 text-blue-800'
+													: 'bg-red-100 text-red-800'}"
+											>
+												{alumno.enabled ? 'Habilitado' : 'Deshabilitado'}
+											</span>
+										</div>
 									</div>
 								</div>
 							</div>
-						{/if}
-					</div>
 
-					<!-- Enrolled Classes Section (for users with permission) -->
-					{#if canViewEnrolledClasses()}
-						<div
-							class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
-						>
-							<h3
-								class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
-							>
-								{#if isOwnProfile()}
-									Mis Clases Inscritas
-								{:else if authStore.isProfesor}
-									Clases Inscritas del Alumno
-								{:else}
-									Clases Inscritas
-								{/if}
-							</h3>
-
-							{#if loadingClasses}
-								<div class="py-4 text-center">
-									<div
-										class="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"
-									></div>
-									<p class="mt-2 text-sm text-gray-600">Cargando clases...</p>
-								</div>
-							{:else if enrolledClasses.length === 0}
-								<div class="py-4 text-center">
-									<p class="text-gray-500">
-										{#if isOwnProfile()}
-											No estás inscrito en ninguna clase
-										{:else if authStore.isProfesor}
-											El alumno no está inscrito en ninguna clase
-										{:else}
-											El alumno no está inscrito en ninguna clase
-										{/if}
-									</p>
-									{#if isOwnProfile()}
+							<!-- Admin Actions -->
+							{#if canChangeStatus()}
+								<div class="border-t pt-6">
+									<h3 class="mb-4 text-lg font-semibold text-gray-900">
+										Acciones de Administrador
+									</h3>
+									<div class="flex gap-4">
 										<button
-											onclick={() => goto('/clases')}
-											class="mt-2 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+											onclick={toggleEnrollmentStatus}
+											class="transform rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
 										>
-											Explorar Clases
+											{alumno.enrolled ? 'Desmatricular' : 'Matricular'} Alumno
 										</button>
-									{/if}
+
+										<button
+											onclick={toggleAccountStatus}
+											class="transform rounded-lg px-6 py-3 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg {alumno.enabled
+												? 'bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700'
+												: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'}"
+										>
+											{alumno.enabled ? 'Deshabilitar' : 'Habilitar'} Cuenta
+										</button>
+									</div>
 								</div>
-							{:else}
-								<div class="space-y-4">
+							{/if}
+						{/if}
+					</ProfileCard>
+
+					<!-- Enrolled Classes Section -->
+					{#if canViewEnrolledClasses()}
+						<ProfileCard
+							title={isOwnProfile()
+								? 'Mis Clases Inscritas'
+								: authStore.isProfesor
+									? 'Clases Inscritas del Alumno'
+									: 'Clases Inscritas'}
+							subtitle={`${enrolledClasses.length} clase${enrolledClasses.length !== 1 ? 's' : ''} inscrita${enrolledClasses.length !== 1 ? 's' : ''}`}
+							loading={loadingClasses}
+							empty={enrolledClasses.length === 0}
+							emptyIcon="📚"
+							emptyTitle={isOwnProfile()
+								? 'No tienes clases inscritas'
+								: 'El alumno no tiene clases inscritas'}
+							emptyDescription={isOwnProfile()
+								? 'Explora nuestras clases disponibles y comienza tu aprendizaje.'
+								: 'El alumno aún no se ha inscrito en ninguna clase.'}
+							emptyAction={isOwnProfile()
+								? {
+										label: 'Explorar Clases',
+										onClick: () => goto('/clases')
+									}
+								: null}
+							actions={isOwnProfile()
+								? [
+										{
+											label: 'Explorar Clases',
+											onClick: () => goto('/clases'),
+											variant: 'primary'
+										}
+									]
+								: []}
+						>
+							{#if !loadingClasses && enrolledClasses.length > 0}
+								<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 									{#each enrolledClasses as clase (clase.id)}
 										<div
-											class="flex items-center justify-between rounded-xl border border-gray-200 p-4 transition-all duration-200 hover:bg-gray-50 hover:shadow-md"
+											class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md"
 										>
-											<div class="flex-1">
-												<h4 class="font-medium text-gray-900">{clase.titulo}</h4>
-												<p class="text-sm text-gray-600">{clase.descripcion}</p>
-												<div class="mt-1 flex items-center gap-4 text-xs text-gray-500">
-													<span class="flex items-center">
-														<span class="mr-1">💰</span>
-														{clase.precio}€
-													</span>
-													<span class="flex items-center">
-														<span class="mr-1">📚</span>
+											<div class="mb-4">
+												<h3 class="mb-2 font-semibold text-gray-900">{clase.titulo}</h3>
+												<p class="line-clamp-2 text-sm text-gray-600">{clase.descripcion}</p>
+											</div>
+
+											<div class="mb-4 space-y-3">
+												<div class="flex items-center justify-between">
+													<span class="text-sm text-gray-500">Precio:</span>
+													<span class="font-semibold text-green-600">{clase.precio}€</span>
+												</div>
+												<div class="flex items-center justify-between">
+													<span class="text-sm text-gray-500">Nivel:</span>
+													<span
+														class="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800"
+													>
 														{clase.nivel}
 													</span>
-													<span class="flex items-center">
-														<span class="mr-1">📍</span>
+												</div>
+												<div class="flex items-center justify-between">
+													<span class="text-sm text-gray-500">Modalidad:</span>
+													<span
+														class="inline-flex rounded-full bg-purple-100 px-2 py-1 text-xs font-semibold text-purple-800"
+													>
 														{clase.presencialidad}
 													</span>
 												</div>
 											</div>
+
 											{#if !authStore.isProfesor || isTeacherOfClass(clase)}
-												<button
-													onclick={() => goto(`/clases/${clase.id}`)}
-													class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+												<a
+													href="/clases/{clase.id}"
+													class="block w-full transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-center text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
 												>
-													Ver Detalles
-												</button>
+													Ver Clase
+												</a>
 											{/if}
 										</div>
 									{/each}
 								</div>
 							{/if}
-						</div>
+						</ProfileCard>
 					{/if}
 
-					<!-- Entregas Section (for users with permission) -->
+					<!-- Entregas Section -->
 					{#if canViewDeliveries()}
-						<div
-							class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+						<ProfileCard
+							title={isOwnProfile() ? 'Mis Entregas' : 'Entregas del Alumno'}
+							subtitle={`${entregas.length} entrega${entregas.length !== 1 ? 's' : ''}`}
+							loading={loadingEntregas}
+							empty={entregas.length === 0}
+							emptyIcon="📝"
+							emptyTitle={isOwnProfile()
+								? 'No tienes entregas registradas'
+								: 'El alumno no tiene entregas registradas'}
+							emptyDescription={isOwnProfile()
+								? 'Comienza a trabajar en los ejercicios disponibles.'
+								: 'El alumno aún no ha realizado ninguna entrega.'}
+							emptyAction={isOwnProfile()
+								? {
+										label: 'Ver Ejercicios',
+										onClick: () => goto('/ejercicios')
+									}
+								: null}
+							actions={isOwnProfile()
+								? [
+										{
+											label: 'Ver Ejercicios',
+											onClick: () => goto('/ejercicios'),
+											variant: 'primary'
+										}
+									]
+								: []}
 						>
-							<h3
-								class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
-							>
-								{#if isOwnProfile()}
-									Mis Entregas
-								{:else}
-									Entregas del Alumno
-								{/if}
-							</h3>
-
-							{#if loadingEntregas}
-								<div class="py-4 text-center">
-									<div
-										class="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"
-									></div>
-									<p class="mt-2 text-sm text-gray-600">Cargando entregas...</p>
-								</div>
-							{:else if entregas.length === 0}
-								<div class="py-4 text-center">
-									<p class="text-gray-500">
-										{#if isOwnProfile()}
-											No tienes entregas registradas
-										{:else}
-											El alumno no tiene entregas registradas
-										{/if}
-									</p>
-									{#if isOwnProfile()}
-										<button
-											onclick={() => goto('/ejercicios')}
-											class="mt-2 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
-										>
-											Ver Ejercicios
-										</button>
-									{/if}
-								</div>
-							{:else}
-								<div class="space-y-4">
+							{#if !loadingEntregas && entregas.length > 0}
+								<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 									{#each entregas as entrega (entrega.id)}
 										<div
-											class="flex items-center justify-between rounded-xl border border-gray-200 p-4 transition-all duration-200 hover:bg-gray-50 hover:shadow-md"
+											class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md"
 										>
-											<div class="flex-1">
-												<div class="flex items-center justify-between">
-													<h4 class="font-medium text-gray-900">
+											<div class="mb-4">
+												<div class="mb-2 flex items-center justify-between">
+													<h3 class="font-semibold text-gray-900">
 														Ejercicio #{entrega.ejercicioId}
-													</h4>
+													</h3>
 													<span
 														class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {getEstadoColor(
 															entrega.estado
@@ -1146,27 +1123,27 @@
 												{/if}
 
 												{#if entrega.comentarios}
-													<p class="mt-1 text-sm text-gray-600">
+													<p class="mt-2 text-sm text-gray-600">
 														💬 {entrega.comentarios}
 													</p>
 												{/if}
 											</div>
 
-											<div class="flex flex-col gap-3">
-												<button
-													onclick={() => goto(`/entregas/${entrega.id}`)}
-													class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+											<div class="flex gap-3">
+												<a
+													href="/entregas/{entrega.id}"
+													class="flex-1 transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-center text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
 												>
 													Ver Detalles
-												</button>
+												</a>
 
 												{#if entrega.ejercicioId}
-													<button
-														onclick={() => goto(`/ejercicios/${entrega.ejercicioId}`)}
-														class="transform rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-lg"
+													<a
+														href="/ejercicios/{entrega.ejercicioId}"
+														class="flex-1 transform rounded-lg bg-gray-600 px-4 py-2 text-center text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-lg"
 													>
 														Ver Ejercicio
-													</button>
+													</a>
 												{/if}
 											</div>
 										</div>
@@ -1175,193 +1152,57 @@
 
 								<!-- Summary Stats -->
 								<div
-									class="mt-6 grid grid-cols-3 gap-6 rounded-xl border border-blue-200/50 bg-gradient-to-r from-blue-50 to-indigo-50 p-6"
+									class="mt-8 grid grid-cols-3 gap-6 rounded-xl border border-blue-200/50 bg-gradient-to-r from-blue-50 to-indigo-50 p-6"
 								>
 									<div class="text-center">
-										<div class="text-lg font-semibold text-gray-900">{entregas.length}</div>
-										<div class="text-xs text-gray-600">Total Entregas</div>
+										<div class="text-2xl font-bold text-gray-900">{entregas.length}</div>
+										<div class="text-sm text-gray-600">Total Entregas</div>
 									</div>
 									<div class="text-center">
-										<div class="text-lg font-semibold text-yellow-600">
+										<div class="text-2xl font-bold text-yellow-600">
 											{entregas.filter((e) => e.estado === 'PENDIENTE').length}
 										</div>
-										<div class="text-xs text-gray-600">Pendientes</div>
+										<div class="text-sm text-gray-600">Pendientes</div>
 									</div>
 									<div class="text-center">
-										<div class="text-lg font-semibold text-green-600">
+										<div class="text-2xl font-bold text-green-600">
 											{entregas.filter((e) => e.estado === 'CALIFICADO').length}
 										</div>
-										<div class="text-xs text-gray-600">Calificadas</div>
+										<div class="text-sm text-gray-600">Calificadas</div>
 									</div>
 								</div>
 							{/if}
-						</div>
+						</ProfileCard>
 					{/if}
 				</div>
-
-				<!-- Action Panel -->
-				<div class="space-y-8">
-					{#if canChangeStatus()}
-						<!-- Admin Actions -->
-						<div
-							class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
-						>
-							<h3
-								class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
-							>
-								Acciones de Administrador
-							</h3>
-
-							<div class="space-y-4">
-								<button
-									onclick={toggleEnrollmentStatus}
-									class="w-full transform rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
-								>
-									{alumno.enrolled ? 'Desmatricular' : 'Matricular'} Alumno
-								</button>
-
-								<button
-									onclick={toggleAccountStatus}
-									class="w-full transform rounded-lg px-6 py-3 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg {alumno.enabled
-										? 'bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700'
-										: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'}"
-								>
-									{alumno.enabled ? 'Deshabilitar' : 'Habilitar'} Cuenta
-								</button>
-							</div>
-						</div>
-					{/if}
-
-					<!-- Quick Stats -->
+			{:else if !loading}
+				<div class="py-16 text-center">
 					<div
-						class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
+						class="mx-auto max-w-md rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl"
 					>
-						<h3
-							class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+						<svg
+							class="mx-auto mb-4 h-16 w-16 text-gray-400"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
 						>
-							Información Rápida
-						</h3>
-
-						<div class="space-y-4">
-							{#if canSeeSensitiveInfo()}
-								<div class="flex justify-between">
-									<span class="text-sm text-gray-600">ID del Alumno:</span>
-									<span class="text-sm font-medium text-gray-900">#{alumno.id}</span>
-								</div>
-
-								<div class="flex justify-between">
-									<span class="text-sm text-gray-600">Estado:</span>
-									<span
-										class="text-sm font-medium {alumno.enabled ? 'text-green-600' : 'text-red-600'}"
-									>
-										{alumno.enabled ? 'Activo' : 'Inactivo'}
-									</span>
-								</div>
-							{/if}
-
-							<div class="flex justify-between">
-								<span class="text-sm text-gray-600">Estado de Matrícula:</span>
-								<span
-									class="text-sm font-medium {alumno.enrolled
-										? 'text-green-600'
-										: 'text-yellow-600'}"
-								>
-									{alumno.enrolled ? 'Matriculado' : 'No Matriculado'}
-								</span>
-							</div>
-
-							{#if canViewEnrolledClasses()}
-								<div class="flex justify-between">
-									<span class="text-sm text-gray-600">Clases Inscritas:</span>
-									<span class="text-sm font-medium text-blue-600">
-										{enrolledClasses.length} clases
-									</span>
-								</div>
-							{/if}
-
-							{#if canViewDeliveries() && entregas.length > 0}
-								<div class="flex justify-between">
-									<span class="text-sm text-gray-600">Entregas:</span>
-									<span class="text-sm font-medium text-purple-600">
-										{entregas.length} entregas
-									</span>
-								</div>
-
-								<div class="flex justify-between">
-									<span class="text-sm text-gray-600">Promedio:</span>
-									<span class="text-sm font-medium text-green-600">
-										{(() => {
-											const calificadas = entregas.filter(
-												(e) => e.nota !== undefined && e.nota !== null
-											);
-											if (calificadas.length === 0) return 'N/A';
-											const promedio =
-												calificadas.reduce((sum, e) => sum + (e.nota || 0), 0) / calificadas.length;
-											return promedio.toFixed(1) + '/10';
-										})()}
-									</span>
-								</div>
-							{/if}
-						</div>
-					</div>
-
-					<!-- Navigation -->
-					<div
-						class="rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl"
-					>
-						<h3
-							class="montserrat-semibold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-xl font-semibold text-transparent"
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+							></path>
+						</svg>
+						<p class="mb-6 text-lg font-medium text-gray-600">Alumno no encontrado</p>
+						<button
+							onclick={() => goto('/alumnos')}
+							class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
 						>
-							Navegación
-						</h3>
-
-						<div class="space-y-3">
-							<button
-								onclick={() => goto('/alumnos')}
-								class="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-blue-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-800"
-							>
-								← Volver a Lista de Alumnos
-							</button>
-
-							{#if authStore.isAdmin}
-								<button
-									onclick={() => goto('/alumnos/nuevo')}
-									class="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-blue-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-800"
-								>
-									+ Crear Nuevo Alumno
-								</button>
-							{/if}
-						</div>
+							Volver a Alumnos
+						</button>
 					</div>
 				</div>
-			</div>
-		{:else if !loading}
-			<div class="py-16 text-center">
-				<div
-					class="mx-auto max-w-md rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-xl"
-				>
-					<svg
-						class="mx-auto mb-4 h-16 w-16 text-gray-400"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-						></path>
-					</svg>
-					<p class="mb-6 text-lg font-medium text-gray-600">Alumno no encontrado</p>
-					<button
-						onclick={() => goto('/alumnos')}
-						class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
-					>
-						Volver a Alumnos
-					</button>
-				</div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 </div>

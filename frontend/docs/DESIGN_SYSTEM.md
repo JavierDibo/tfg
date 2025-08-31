@@ -75,6 +75,173 @@ text-sm font-medium montserrat-medium (Small)
 
 ---
 
+## 👤 Profile Page Hierarchy Standard
+
+### Page Structure & Layout
+```css
+/* Main Container */
+min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50
+mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8
+
+/* Content Wrapper */
+mx-auto max-w-4xl (for focused content)
+mx-auto max-w-7xl (for full-width content)
+```
+
+### Header Section
+```css
+/* Page Title */
+text-2xl sm:text-3xl lg:text-4xl font-bold montserrat-bold
+bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent
+
+/* Page Subtitle */
+text-sm sm:text-base font-medium text-gray-600
+
+/* Back Button */
+inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 
+hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200
+```
+
+### Section Headers
+```css
+/* Primary Section Title */
+text-xl font-semibold montserrat-semibold text-gray-900
+
+/* Secondary Section Title */
+text-lg font-semibold montserrat-semibold text-gray-900
+
+/* Section Subtitle */
+text-sm font-medium text-gray-600
+```
+
+### Card Components
+```css
+/* Main Card */
+bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200/50 p-6 sm:p-8
+transition-all duration-300 hover:shadow-2xl
+
+/* Card Header */
+mb-6 flex items-center justify-between
+
+/* Card Title */
+text-xl font-semibold montserrat-semibold text-gray-900
+```
+
+### Information Display
+```css
+/* Field Labels */
+text-sm font-medium text-gray-700 (primary labels)
+text-sm font-medium text-gray-500 (secondary labels)
+
+/* Field Values */
+text-gray-900 (primary values)
+text-gray-600 (secondary values)
+
+/* Status Badges */
+inline-flex rounded-full px-2 py-1 text-xs font-semibold
+bg-green-100 text-green-800 (success)
+bg-red-100 text-red-800 (error)
+bg-yellow-100 text-yellow-800 (warning)
+bg-blue-100 text-blue-800 (info)
+```
+
+### Action Buttons
+```css
+/* Primary Action */
+px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 
+hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg
+transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5
+
+/* Secondary Action */
+px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg
+transition-all duration-200 hover:shadow-md
+
+/* Danger Action */
+px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 
+hover:from-red-700 hover:to-red-800 text-white font-semibold rounded-lg
+transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5
+```
+
+### Form Elements
+```css
+/* Input Fields */
+w-full bg-white border border-gray-200 rounded-lg px-4 py-3 
+focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200
+
+/* Labels */
+text-sm font-medium text-gray-700 mb-2
+
+/* Error States */
+border-red-300 focus:ring-red-500 focus:border-red-500 text-red-600
+```
+
+### Loading States
+```css
+/* Loading Spinner */
+mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600
+
+/* Loading Text */
+text-lg font-medium text-gray-600
+
+/* Loading Container */
+py-12 text-center
+```
+
+### Empty States
+```css
+/* Empty State Container */
+rounded-xl border border-gray-200 bg-gray-50 p-8 text-center
+
+/* Empty State Icon */
+text-6xl mb-4
+
+/* Empty State Title */
+text-lg font-medium text-gray-900 mb-2
+
+/* Empty State Description */
+text-gray-600 mb-4
+```
+
+### Grid Layouts
+```css
+/* Information Grid */
+grid grid-cols-1 gap-6 md:grid-cols-2
+
+/* Card Grid */
+grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3
+
+/* Stats Grid */
+grid grid-cols-3 gap-6
+```
+
+### Spacing System
+```css
+/* Section Spacing */
+space-y-8 (between major sections)
+mb-8 sm:mb-12 (header sections)
+
+/* Card Spacing */
+p-6 sm:p-8 (card padding)
+mb-6 (card header margin)
+space-y-4 (content spacing)
+
+/* Form Spacing */
+space-y-6 (form sections)
+gap-6 (form grid)
+```
+
+### Responsive Breakpoints
+```css
+/* Mobile First */
+text-sm, p-4, space-y-4 (mobile: 320px - 639px)
+sm:text-base, sm:p-6, sm:space-y-6 (sm: 640px+)
+md:text-lg, md:p-8, md:space-y-8 (md: 768px+)
+lg:text-xl, lg:p-12, lg:space-y-12 (lg: 1024px+)
+xl:text-2xl, xl:p-16, xl:space-y-16 (xl: 1280px+)
+```
+
+---
+
 ## 📐 Spacing System
 
 ```css

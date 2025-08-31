@@ -5,6 +5,7 @@
 	import type { DTOProfesor, DTOActualizacionProfesor } from '$lib/generated/api';
 	import { ProfesorService } from '$lib/services/profesorService';
 	import { authStore } from '$lib/stores/authStore.svelte';
+	import { ProfileHeader, ProfileCard } from '$lib/components/common';
 
 	// Props and derived state
 	const profesorId = $derived(parseInt($page.params.id));
@@ -367,504 +368,496 @@
 	}
 </script>
 
-<div class="container mx-auto max-w-4xl px-4 py-8">
-	<!-- Header -->
-	<div class="mb-6 flex items-center justify-between">
-		<h1 class="text-3xl font-bold text-gray-900">Perfil de Profesor</h1>
-		<button onclick={() => goto('/profesores')} class="text-gray-600 hover:text-gray-800">
-			← Volver a Profesores
-		</button>
-	</div>
+<svelte:head>
+	<title>Perfil de Profesor - Academia</title>
+</svelte:head>
 
-	<!-- Teacher Flow Navigation -->
-	{#if authStore.isProfesor && (authStore.user?.sub === profesor?.username || authStore.user?.usuario === profesor?.username)}
-		<div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
-			<h2 class="mb-3 text-lg font-semibold text-blue-900">Acciones del Profesor</h2>
-			<div class="flex flex-wrap gap-3">
-				<button
-					onclick={() => goto('/profesores/dashboard')}
-					class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+<!-- Main Container with Gradient Background -->
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+	<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+		<div class="mx-auto max-w-4xl">
+			<!-- Header Section -->
+			<ProfileHeader
+				title="Perfil de Profesor"
+				subtitle="Gestiona tu información personal y configuración de cuenta"
+				backUrl="/profesores"
+				backText="Volver a Profesores"
+				showBackButton={true}
+			/>
+
+			<!-- Teacher Flow Navigation -->
+			{#if authStore.isProfesor && (authStore.user?.sub === profesor?.username || authStore.user?.usuario === profesor?.username)}
+				<ProfileCard
+					title="Acciones del Profesor"
+					subtitle="Acceso rápido a las herramientas del profesor"
 				>
-					📊 Dashboard
-				</button>
-				<button
-					onclick={() => goto('/profesores/mis-clases')}
-					class="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
-				>
-					📚 Mis Clases
-				</button>
-				<button
-					onclick={() => goto('/entregas')}
-					class="inline-flex items-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700"
-				>
-					📝 Entregas
-				</button>
-				<button
-					onclick={() => goto('/materiales')}
-					class="inline-flex items-center rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700"
-				>
-					📁 Materiales
-				</button>
-			</div>
-		</div>
-	{/if}
-
-	<!-- Success/Error Messages -->
-	{#if successMessage}
-		<div class="mb-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700">
-			{successMessage}
-		</div>
-	{/if}
-
-	{#if error}
-		<div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
-			{error}
-			<button onclick={() => (error = null)} class="float-right text-red-500 hover:text-red-700">
-				×
-			</button>
-		</div>
-	{/if}
-
-	<!-- Loading State -->
-	{#if loading}
-		<div class="py-12 text-center">
-			<div class="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"></div>
-			<p class="mt-4 text-gray-600">Cargando perfil del profesor...</p>
-		</div>
-	{:else if profesor}
-		<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-			<!-- Main Profile Info -->
-			<div class="lg:col-span-2">
-				<div class="rounded-lg bg-white p-6 shadow-md">
-					<div class="mb-6 flex items-start justify-between">
-						<div>
-							<h2 class="text-2xl font-bold text-gray-900">
-								{profesor.firstName}
-								{profesor.lastName}
-							</h2>
-							<p class="text-gray-600">@{profesor.username}</p>
-						</div>
-
-						{#if canEdit() && !editMode}
-							<button
-								onclick={startEdit}
-								class="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-							>
-								Editar Datos
-							</button>
-						{/if}
-					</div>
-
-					{#if editMode}
-						<!-- Edit Form -->
-						<form
-							onsubmit={(e) => {
-								e.preventDefault();
-								saveChanges();
-							}}
-							class="space-y-4"
+					<div class="flex flex-wrap gap-3">
+						<button
+							onclick={() => goto('/profesores/dashboard')}
+							class="inline-flex transform items-center rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
 						>
-							<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-								<!-- NOMBRE -->
-								<div>
-									<label for="nombre" class="mb-1 block text-sm font-medium text-gray-700">
-										Nombre <span class="text-red-500">*</span>
-									</label>
-									<div class="relative">
-										<input
-											id="firstName"
-											type="text"
-											bind:value={editForm.firstName}
-											maxlength="100"
-											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.firstName
-												? validateName(editForm.firstName).isValid
-													? 'border-green-500 bg-green-50'
-													: 'border-red-500 bg-red-50'
-												: 'border-gray-300'}"
-											placeholder="Ej: Juan Carlos"
-										/>
+							📊 Dashboard
+						</button>
+						<button
+							onclick={() => goto('/profesores/mis-clases')}
+							class="inline-flex transform items-center rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
+						>
+							📚 Mis Clases
+						</button>
+						<button
+							onclick={() => goto('/entregas')}
+							class="inline-flex transform items-center rounded-lg bg-gradient-to-r from-purple-600 to-violet-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-purple-700 hover:to-violet-700 hover:shadow-lg"
+						>
+							📝 Entregas
+						</button>
+						<button
+							onclick={() => goto('/materiales')}
+							class="inline-flex transform items-center rounded-lg bg-gradient-to-r from-orange-600 to-red-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-orange-700 hover:to-red-700 hover:shadow-lg"
+						>
+							📁 Materiales
+						</button>
+					</div>
+				</ProfileCard>
+			{/if}
+
+			<!-- Messages -->
+			{#if error}
+				<div class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+					<div class="flex items-center">
+						<svg class="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+							<path
+								fill-rule="evenodd"
+								d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+								clip-rule="evenodd"
+							></path>
+						</svg>
+						{error}
+					</div>
+				</div>
+			{/if}
+
+			{#if successMessage}
+				<div class="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700">
+					<div class="flex items-center">
+						<svg class="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+							<path
+								fill-rule="evenodd"
+								d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+								clip-rule="evenodd"
+							></path>
+						</svg>
+						{successMessage}
+					</div>
+				</div>
+			{/if}
+
+			<!-- Loading State -->
+			{#if loading}
+				<div class="flex justify-center py-12">
+					<div class="text-center">
+						<div class="mb-4 text-6xl">👨‍🏫</div>
+						<p class="text-gray-600">Cargando perfil...</p>
+					</div>
+				</div>
+			{:else if profesor}
+				<div class="space-y-8">
+					<!-- Personal Information -->
+					<ProfileCard
+						title="Información Personal"
+						subtitle="Datos personales y académicos del profesor"
+						actions={canEdit() && !editMode
+							? [
+									{
+										label: 'Editar',
+										onClick: startEdit,
+										icon: 'edit',
+										variant: 'secondary'
+									}
+								]
+							: []}
+					>
+						{#if editMode}
+							<!-- Edit Form -->
+							<form
+								onsubmit={(e) => {
+									e.preventDefault();
+									saveChanges();
+								}}
+								class="space-y-6"
+							>
+								<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+									<!-- NOMBRE -->
+									<div>
+										<label for="firstName" class="mb-2 block text-sm font-medium text-gray-700">
+											Nombre <span class="text-red-500">*</span>
+										</label>
+										<div class="relative">
+											<input
+												id="firstName"
+												type="text"
+												bind:value={editForm.firstName}
+												maxlength="100"
+												class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 pr-10 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 {editForm.firstName
+													? validateName(editForm.firstName).isValid
+														? 'border-green-500 bg-green-50'
+														: 'border-red-500 bg-red-50'
+													: 'border-gray-300'}"
+												placeholder="Ej: Juan Carlos"
+											/>
+											{#if editForm.firstName}
+												<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+													{#if validateName(editForm.firstName).isValid}
+														<span class="text-green-500">✓</span>
+													{:else}
+														<span class="text-red-500">✗</span>
+													{/if}
+												</div>
+											{/if}
+										</div>
 										{#if editForm.firstName}
-											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
-												{#if validateName(editForm.firstName).isValid}
-													<span class="text-green-500">✓</span>
-												{:else}
-													<span class="text-red-500">✗</span>
-												{/if}
-											</div>
+											<p
+												class="mt-1 text-xs {validateName(editForm.firstName).isValid
+													? 'text-green-600'
+													: 'text-red-600'}"
+											>
+												{validateName(editForm.firstName).message}
+											</p>
 										{/if}
 									</div>
-									{#if editForm.firstName}
-										<p
-											class="mt-1 text-xs {validateName(editForm.firstName).isValid
-												? 'text-green-600'
-												: 'text-red-600'}"
-										>
-											{validateName(editForm.firstName).message}
-										</p>
-									{/if}
-									<p class="mt-1 text-xs text-gray-500">
-										Solo letras, acentos y espacios. Máximo 100 caracteres.
-									</p>
-								</div>
 
-								<!-- APELLIDOS -->
-								<div>
-									<label for="apellidos" class="mb-1 block text-sm font-medium text-gray-700">
-										Apellidos <span class="text-red-500">*</span>
-									</label>
-									<div class="relative">
-										<input
-											id="lastName"
-											type="text"
-											bind:value={editForm.lastName}
-											maxlength="100"
-											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.lastName
-												? validateName(editForm.lastName).isValid
-													? 'border-green-500 bg-green-50'
-													: 'border-red-500 bg-red-50'
-												: 'border-gray-300'}"
-											placeholder="Ej: García López"
-										/>
+									<!-- APELLIDOS -->
+									<div>
+										<label for="lastName" class="mb-2 block text-sm font-medium text-gray-700">
+											Apellidos <span class="text-red-500">*</span>
+										</label>
+										<div class="relative">
+											<input
+												id="lastName"
+												type="text"
+												bind:value={editForm.lastName}
+												maxlength="100"
+												class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 pr-10 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 {editForm.lastName
+													? validateName(editForm.lastName).isValid
+														? 'border-green-500 bg-green-50'
+														: 'border-red-500 bg-red-50'
+													: 'border-gray-300'}"
+												placeholder="Ej: García López"
+											/>
+											{#if editForm.lastName}
+												<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+													{#if validateName(editForm.lastName).isValid}
+														<span class="text-green-500">✓</span>
+													{:else}
+														<span class="text-red-500">✗</span>
+													{/if}
+												</div>
+											{/if}
+										</div>
 										{#if editForm.lastName}
-											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
-												{#if validateName(editForm.lastName).isValid}
-													<span class="text-green-500">✓</span>
-												{:else}
-													<span class="text-red-500">✗</span>
-												{/if}
-											</div>
+											<p
+												class="mt-1 text-xs {validateName(editForm.lastName).isValid
+													? 'text-green-600'
+													: 'text-red-600'}"
+											>
+												{validateName(editForm.lastName).message}
+											</p>
 										{/if}
 									</div>
-									{#if editForm.lastName}
-										<p
-											class="mt-1 text-xs {validateName(editForm.lastName).isValid
-												? 'text-green-600'
-												: 'text-red-600'}"
-										>
-											{validateName(editForm.lastName).message}
-										</p>
-									{/if}
-									<p class="mt-1 text-xs text-gray-500">
-										Solo letras, acentos y espacios. Máximo 100 caracteres.
-									</p>
-								</div>
 
-								<!-- DNI -->
-								<div>
-									<label for="dni" class="mb-1 block text-sm font-medium text-gray-700">
-										DNI <span class="text-red-500">*</span>
-									</label>
-									<div class="relative">
-										<input
-											id="dni"
-											type="text"
-											bind:value={editForm.dni}
-											maxlength="9"
-											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.dni
-												? validateDNI(editForm.dni).isValid
-													? 'border-green-500 bg-green-50'
-													: 'border-red-500 bg-red-50'
-												: 'border-gray-300'}"
-											placeholder="12345678Z"
-											style="text-transform: uppercase;"
-										/>
+									<!-- DNI -->
+									<div>
+										<label for="dni" class="mb-2 block text-sm font-medium text-gray-700">
+											DNI <span class="text-red-500">*</span>
+										</label>
+										<div class="relative">
+											<input
+												id="dni"
+												type="text"
+												bind:value={editForm.dni}
+												maxlength="9"
+												class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 pr-10 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 {editForm.dni
+													? validateDNI(editForm.dni).isValid
+														? 'border-green-500 bg-green-50'
+														: 'border-red-500 bg-red-50'
+													: 'border-gray-300'}"
+												placeholder="12345678Z"
+												style="text-transform: uppercase;"
+											/>
+											{#if editForm.dni}
+												<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+													{#if validateDNI(editForm.dni).isValid}
+														<span class="text-green-500">✓</span>
+													{:else}
+														<span class="text-red-500">✗</span>
+													{/if}
+												</div>
+											{/if}
+										</div>
 										{#if editForm.dni}
-											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
-												{#if validateDNI(editForm.dni).isValid}
-													<span class="text-green-500">✓</span>
-												{:else}
-													<span class="text-red-500">✗</span>
-												{/if}
-											</div>
+											<p
+												class="mt-1 text-xs {validateDNI(editForm.dni).isValid
+													? 'text-green-600'
+													: 'text-red-600'}"
+											>
+												{validateDNI(editForm.dni).message}
+											</p>
 										{/if}
 									</div>
-									{#if editForm.dni}
-										<p
-											class="mt-1 text-xs {validateDNI(editForm.dni).isValid
-												? 'text-green-600'
-												: 'text-red-600'}"
-										>
-											{validateDNI(editForm.dni).message}
-										</p>
-									{/if}
-									<p class="mt-1 text-xs text-gray-500">
-										8 números seguidos de 1 letra. Ej: 12345678Z
-									</p>
-								</div>
 
-								<!-- EMAIL -->
-								<div>
-									<label for="email" class="mb-1 block text-sm font-medium text-gray-700">
-										Email <span class="text-red-500">*</span>
-									</label>
-									<div class="relative">
-										<input
-											id="email"
-											type="email"
-											bind:value={editForm.email}
-											maxlength="254"
-											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.email
-												? validateEmail(editForm.email).isValid
-													? 'border-green-500 bg-green-50'
-													: 'border-red-500 bg-red-50'
-												: 'border-gray-300'}"
-											placeholder="usuario@universidad.es"
-										/>
+									<!-- EMAIL -->
+									<div>
+										<label for="email" class="mb-2 block text-sm font-medium text-gray-700">
+											Email <span class="text-red-500">*</span>
+										</label>
+										<div class="relative">
+											<input
+												id="email"
+												type="email"
+												bind:value={editForm.email}
+												maxlength="254"
+												class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 pr-10 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 {editForm.email
+													? validateEmail(editForm.email).isValid
+														? 'border-green-500 bg-green-50'
+														: 'border-red-500 bg-red-50'
+													: 'border-gray-300'}"
+												placeholder="usuario@universidad.es"
+											/>
+											{#if editForm.email}
+												<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+													{#if validateEmail(editForm.email).isValid}
+														<span class="text-green-500">✓</span>
+													{:else}
+														<span class="text-red-500">✗</span>
+													{/if}
+												</div>
+											{/if}
+										</div>
 										{#if editForm.email}
-											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
-												{#if validateEmail(editForm.email).isValid}
-													<span class="text-green-500">✓</span>
-												{:else}
-													<span class="text-red-500">✗</span>
-												{/if}
-											</div>
+											<p
+												class="mt-1 text-xs {validateEmail(editForm.email).isValid
+													? 'text-green-600'
+													: 'text-red-600'}"
+											>
+												{validateEmail(editForm.email).message}
+											</p>
 										{/if}
 									</div>
-									{#if editForm.email}
-										<p
-											class="mt-1 text-xs {validateEmail(editForm.email).isValid
-												? 'text-green-600'
-												: 'text-red-600'}"
-										>
-											{validateEmail(editForm.email).message}
-										</p>
-									{/if}
-									<p class="mt-1 text-xs text-gray-500">
-										Máximo 254 caracteres. Parte local máximo 64 caracteres.
-									</p>
-								</div>
 
-								<!-- TELÉFONO -->
-								<div class="md:col-span-2">
-									<label for="numeroTelefono" class="mb-1 block text-sm font-medium text-gray-700">
-										Teléfono <span class="text-gray-400">(Opcional)</span>
-									</label>
-									<div class="relative">
-										<input
-											id="phoneNumber"
-											type="tel"
-											bind:value={editForm.phoneNumber}
-											class="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:outline-none {editForm.phoneNumber
-												? validatePhoneNumber(editForm.phoneNumber).isValid
-													? 'border-green-500 bg-green-50'
-													: 'border-red-500 bg-red-50'
-												: 'border-gray-300'}"
-											placeholder="Ej: +34 123 456 789, (555) 123-4567, 123456789"
-										/>
+									<!-- TELÉFONO -->
+									<div class="md:col-span-2">
+										<label for="phoneNumber" class="mb-2 block text-sm font-medium text-gray-700">
+											Teléfono <span class="text-gray-400">(Opcional)</span>
+										</label>
+										<div class="relative">
+											<input
+												id="phoneNumber"
+												type="tel"
+												bind:value={editForm.phoneNumber}
+												class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 pr-10 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 {editForm.phoneNumber
+													? validatePhoneNumber(editForm.phoneNumber).isValid
+														? 'border-green-500 bg-green-50'
+														: 'border-red-500 bg-red-50'
+													: 'border-gray-300'}"
+												placeholder="Ej: +34 123 456 789, (555) 123-4567, 123456789"
+											/>
+											{#if editForm.phoneNumber}
+												<div class="absolute inset-y-0 right-0 flex items-center pr-3">
+													{#if validatePhoneNumber(editForm.phoneNumber).isValid}
+														<span class="text-green-500">✓</span>
+													{:else}
+														<span class="text-red-500">✗</span>
+													{/if}
+												</div>
+											{/if}
+										</div>
 										{#if editForm.phoneNumber}
-											<div class="absolute inset-y-0 right-0 flex items-center pr-3">
-												{#if validatePhoneNumber(editForm.phoneNumber).isValid}
-													<span class="text-green-500">✓</span>
-												{:else}
-													<span class="text-red-500">✗</span>
-												{/if}
-											</div>
+											<p
+												class="mt-1 text-xs {validatePhoneNumber(editForm.phoneNumber).isValid
+													? 'text-green-600'
+													: 'text-red-600'}"
+											>
+												{validatePhoneNumber(editForm.phoneNumber).message}
+											</p>
 										{/if}
 									</div>
-									{#if editForm.phoneNumber}
-										<p
-											class="mt-1 text-xs {validatePhoneNumber(editForm.phoneNumber).isValid
-												? 'text-green-600'
-												: 'text-red-600'}"
-										>
-											{validatePhoneNumber(editForm.phoneNumber).message}
-										</p>
-									{/if}
-									<p class="mt-1 text-xs text-gray-500">
-										6-14 dígitos. Permitidos: números, espacios, guiones, puntos, paréntesis y +
-									</p>
 								</div>
-							</div>
 
-							<div class="flex justify-end space-x-3 border-t pt-6">
-								<button
-									type="button"
-									onclick={cancelEdit}
-									class="rounded-md bg-gray-300 px-6 py-2 text-gray-700 transition-colors hover:bg-gray-400"
-									disabled={saving}
+								<!-- Form Actions -->
+								<div
+									class="flex flex-col justify-end space-y-3 border-t border-gray-200 pt-6 sm:flex-row sm:space-y-0 sm:space-x-4"
 								>
-									Cancelar
-								</button>
-								<button
-									type="submit"
-									disabled={saving || !isFormValid()}
-									class="rounded-md px-6 py-2 font-medium transition-colors {isFormValid() &&
-									!saving
-										? 'bg-blue-600 text-white hover:bg-blue-700'
-										: 'cursor-not-allowed bg-gray-400 text-gray-200'}"
-								>
-									{saving
-										? '🔄 Guardando...'
-										: isFormValid()
-											? '✓ Guardar Cambios'
-											: '⚠️ Corregir Errores'}
-								</button>
-							</div>
-
-							<!-- Form Validation Summary -->
-							{#if hasFormErrors()}
-								<div class="mt-4 rounded-md border border-yellow-200 bg-yellow-50 p-3">
-									<h4 class="mb-2 text-sm font-medium text-yellow-800">⚠️ Campos con errores:</h4>
-									<ul class="space-y-1 text-xs text-yellow-700">
-										{#if editForm.firstName && !validateName(editForm.firstName).isValid}
-											<li>• Nombre: {validateName(editForm.firstName).message}</li>
+									<button
+										type="button"
+										onclick={cancelEdit}
+										class="rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:shadow-md"
+										disabled={saving}
+									>
+										Cancelar
+									</button>
+									<button
+										type="submit"
+										disabled={saving || !isFormValid()}
+										class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										{#if saving}
+											<div class="flex items-center">
+												<svg class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+													<circle
+														class="opacity-25"
+														cx="12"
+														cy="12"
+														r="10"
+														stroke="currentColor"
+														stroke-width="4"
+													></circle>
+													<path
+														class="opacity-75"
+														fill="currentColor"
+														d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+													></path>
+												</svg>
+												Guardando...
+											</div>
+										{:else}
+											Guardar Cambios
 										{/if}
-										{#if editForm.lastName && !validateName(editForm.lastName).isValid}
-											<li>• Apellidos: {validateName(editForm.lastName).message}</li>
-										{/if}
-										{#if editForm.dni && !validateDNI(editForm.dni).isValid}
-											<li>• DNI: {validateDNI(editForm.dni).message}</li>
-										{/if}
-										{#if editForm.email && !validateEmail(editForm.email).isValid}
-											<li>• Email: {validateEmail(editForm.email).message}</li>
-										{/if}
-										{#if editForm.phoneNumber && !validatePhoneNumber(editForm.phoneNumber).isValid}
-											<li>• Teléfono: {validatePhoneNumber(editForm.phoneNumber).message}</li>
-										{/if}
-									</ul>
+									</button>
 								</div>
-							{/if}
-						</form>
-					{:else}
-						<!-- View Mode -->
-						<div class="space-y-4">
+
+								<!-- Form Validation Summary -->
+								{#if hasFormErrors()}
+									<div class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+										<h4 class="mb-2 text-sm font-medium text-yellow-800">⚠️ Campos con errores:</h4>
+										<ul class="space-y-1 text-xs text-yellow-700">
+											{#if editForm.firstName && !validateName(editForm.firstName).isValid}
+												<li>• Nombre: {validateName(editForm.firstName).message}</li>
+											{/if}
+											{#if editForm.lastName && !validateName(editForm.lastName).isValid}
+												<li>• Apellidos: {validateName(editForm.lastName).message}</li>
+											{/if}
+											{#if editForm.dni && !validateDNI(editForm.dni).isValid}
+												<li>• DNI: {validateDNI(editForm.dni).message}</li>
+											{/if}
+											{#if editForm.email && !validateEmail(editForm.email).isValid}
+												<li>• Email: {validateEmail(editForm.email).message}</li>
+											{/if}
+											{#if editForm.phoneNumber && !validatePhoneNumber(editForm.phoneNumber).isValid}
+												<li>• Teléfono: {validatePhoneNumber(editForm.phoneNumber).message}</li>
+											{/if}
+										</ul>
+									</div>
+								{/if}
+							</form>
+						{:else}
+							<!-- View Mode -->
 							<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 								<div>
-									<h3 class="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase">
+									<h3 class="mb-4 text-sm font-medium tracking-wide text-gray-500 uppercase">
 										Información Personal
 									</h3>
-									<dl class="space-y-2">
+									<dl class="space-y-3">
 										<div>
-											<dt class="text-sm font-medium text-gray-900">Nombre Completo</dt>
-											<dd class="text-sm text-gray-600">
-												{profesor.firstName}
-												{profesor.lastName}
-											</dd>
+											<dt class="text-sm font-medium text-gray-700">Nombre Completo</dt>
+											<dd class="text-gray-900">{profesor.firstName} {profesor.lastName}</dd>
 										</div>
 										<div>
-											<dt class="text-sm font-medium text-gray-900">DNI</dt>
-											<dd class="text-sm text-gray-600">{profesor.dni}</dd>
+											<dt class="text-sm font-medium text-gray-700">DNI</dt>
+											<dd class="text-gray-900">{profesor.dni}</dd>
 										</div>
 										<div>
-											<dt class="text-sm font-medium text-gray-900">Email</dt>
-											<dd class="text-sm text-gray-600">{profesor.email}</dd>
+											<dt class="text-sm font-medium text-gray-700">Email</dt>
+											<dd class="text-gray-900">{profesor.email}</dd>
 										</div>
 										<div>
-											<dt class="text-sm font-medium text-gray-900">Teléfono</dt>
-											<dd class="text-sm text-gray-600">
-												{profesor.phoneNumber || 'No especificado'}
-											</dd>
+											<dt class="text-sm font-medium text-gray-700">Teléfono</dt>
+											<dd class="text-gray-900">{profesor.phoneNumber || 'No especificado'}</dd>
 										</div>
 									</dl>
 								</div>
 
 								<div>
-									<h3 class="mb-2 text-sm font-medium tracking-wide text-gray-500 uppercase">
+									<h3 class="mb-4 text-sm font-medium tracking-wide text-gray-500 uppercase">
 										Información Académica
 									</h3>
-									<dl class="space-y-2">
+									<dl class="space-y-3">
 										<div>
-											<dt class="text-sm font-medium text-gray-900">Usuario</dt>
-											<dd class="text-sm text-gray-600">@{profesor.username}</dd>
+											<dt class="text-sm font-medium text-gray-700">Usuario</dt>
+											<dd class="text-gray-900">@{profesor.username}</dd>
 										</div>
 										<div>
-											<dt class="text-sm font-medium text-gray-900">Fecha de Inscripción</dt>
-											<dd class="text-sm text-gray-600">{formatDate(profesor.createdAt)}</dd>
+											<dt class="text-sm font-medium text-gray-700">Fecha de Registro</dt>
+											<dd class="text-gray-900">{formatDate(profesor.createdAt)}</dd>
 										</div>
 										<div>
-											<dt class="text-sm font-medium text-gray-900">Estado de Cuenta</dt>
-											<dd class="text-sm">
+											<dt class="text-sm font-medium text-gray-700">Estado de Cuenta</dt>
+											<dd>
 												<span
 													class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {profesor.enabled
-														? 'bg-blue-100 text-blue-800'
+														? 'bg-green-100 text-green-800'
 														: 'bg-red-100 text-red-800'}"
 												>
-													{profesor.enabled ? 'Habilitado' : 'Deshabilitado'}
+													{profesor.enabled ? 'Activo' : 'Inactivo'}
 												</span>
 											</dd>
 										</div>
 									</dl>
 								</div>
 							</div>
-						</div>
-					{/if}
-				</div>
-			</div>
-
-			<!-- Action Panel -->
-			<div class="space-y-6">
-				{#if canChangeStatus()}
-					<!-- Admin Actions -->
-					<div class="rounded-lg bg-white p-6 shadow-md">
-						<h3 class="mb-4 text-lg font-semibold text-gray-900">Acciones de Administrador</h3>
-
-						<div class="space-y-3">
-							<button
-								onclick={toggleAccountStatus}
-								class="w-full {profesor.enabled
-									? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-									: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'} rounded-md px-4 py-2 text-white focus:ring-2 focus:outline-none"
-							>
-								{profesor.enabled ? 'Deshabilitar' : 'Habilitar'} Cuenta
-							</button>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Quick Stats -->
-				<div class="rounded-lg bg-white p-6 shadow-md">
-					<h3 class="mb-4 text-lg font-semibold text-gray-900">Información Rápida</h3>
-
-					<div class="space-y-3">
-						<div class="flex justify-between">
-							<span class="text-sm text-gray-600">ID del Profesor:</span>
-							<span class="text-sm font-medium text-gray-900">#{profesor.id}</span>
-						</div>
-
-						<div class="flex justify-between">
-							<span class="text-sm text-gray-600">Estado:</span>
-							<span
-								class="text-sm font-medium {profesor.enabled ? 'text-green-600' : 'text-red-600'}"
-							>
-								{profesor.enabled ? 'Activo' : 'Inactivo'}
-							</span>
-						</div>
-					</div>
-				</div>
-
-				<!-- Navigation -->
-				<div class="rounded-lg bg-white p-6 shadow-md">
-					<h3 class="mb-4 text-lg font-semibold text-gray-900">Navegación</h3>
-
-					<div class="space-y-2">
-						<button
-							onclick={() => goto('/profesores')}
-							class="w-full text-left text-sm text-blue-600 hover:text-blue-800"
-						>
-							← Volver a Lista de Profesores
-						</button>
-
-						{#if authStore.isAdmin}
-							<button
-								onclick={() => goto('/profesores/nuevo')}
-								class="w-full text-left text-sm text-blue-600 hover:text-blue-800"
-							>
-								+ Crear Nuevo Profesor
-							</button>
 						{/if}
-					</div>
+					</ProfileCard>
+
+					<!-- Admin Actions -->
+					{#if canChangeStatus()}
+						<ProfileCard
+							title="Acciones de Administrador"
+							subtitle="Gestionar el estado de la cuenta del profesor"
+						>
+							<div class="space-y-4">
+								<button
+									onclick={toggleAccountStatus}
+									class="w-full bg-gradient-to-r px-6 py-3 {profesor.enabled
+										? 'from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
+										: 'from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'} transform rounded-lg font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+								>
+									{profesor.enabled ? 'Deshabilitar' : 'Habilitar'} Cuenta
+								</button>
+							</div>
+						</ProfileCard>
+					{/if}
+
+					<!-- Quick Stats -->
+					<ProfileCard title="Información Rápida" subtitle="Datos básicos del perfil del profesor">
+						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+							<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+								<span class="text-sm font-medium text-gray-700">ID del Profesor:</span>
+								<span class="text-sm font-semibold text-gray-900">#{profesor.id}</span>
+							</div>
+							<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+								<span class="text-sm font-medium text-gray-700">Estado:</span>
+								<span
+									class="text-sm font-semibold {profesor.enabled
+										? 'text-green-600'
+										: 'text-red-600'}"
+								>
+									{profesor.enabled ? 'Activo' : 'Inactivo'}
+								</span>
+							</div>
+						</div>
+					</ProfileCard>
 				</div>
-			</div>
+			{:else if !loading}
+				<div class="py-12 text-center">
+					<div class="mb-4 text-6xl text-gray-400">👤</div>
+					<h3 class="mb-2 text-lg font-medium text-gray-900">Perfil no encontrado</h3>
+					<p class="mb-4 text-gray-500">No se pudo cargar la información del perfil.</p>
+					<button
+						onclick={() => goto('/profesores')}
+						class="transform rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+					>
+						Volver a Profesores
+					</button>
+				</div>
+			{/if}
 		</div>
-	{:else if !loading}
-		<div class="py-12 text-center">
-			<p class="text-lg text-gray-500">Profesor no encontrado</p>
-			<button
-				onclick={() => goto('/profesores')}
-				class="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-			>
-				Volver a Profesores
-			</button>
-		</div>
-	{/if}
+	</div>
 </div>
