@@ -18,7 +18,7 @@ import java.util.Random;
 @Component
 @Profile("!test")
 public class EntregaEjercicioDataInitializer extends BaseDataInitializer {
-    private static final double DELIVERY_RATE = 0.5; // 50% of students will deliver exercises
+    private static final double DELIVERY_RATE = 0.4; // 50% of students will deliver exercises
     private static final double GRADING_RATE = 0.2; // 80% of deliveries will be graded
     private final List<DTOEntregaEjercicio> createdDeliveries = new ArrayList<>();
     private final Random random = new Random();

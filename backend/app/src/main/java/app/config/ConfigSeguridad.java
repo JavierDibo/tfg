@@ -45,9 +45,6 @@ public class ConfigSeguridad {
         return new ConfigFiltroJwt(servicioJwt, userDetailsService());
     }
 
-    // Removed AuthenticationProvider bean to avoid conflicts with UserDetailsService
-    // The JWT filter handles authentication directly
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

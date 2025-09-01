@@ -56,7 +56,7 @@
 
 <div>
 	<h2 class="mb-6 text-center text-xl font-bold">
-		{isLogin ? 'Sign in to your account' : 'Create a new account'}
+		{isLogin ? 'Iniciar sesión' : 'Crear una nueva cuenta'}
 	</h2>
 	<form
 		class="space-y-6"
@@ -67,7 +67,7 @@
 	>
 		<div>
 			<label for="username" class="block text-sm leading-6 font-medium text-gray-900"
-				>Username</label
+				>Nombre de usuario</label
 			>
 			<div class="mt-2">
 				<input
@@ -117,7 +117,7 @@
 			</div>
 			<div>
 				<label for="email" class="block text-sm leading-6 font-medium text-gray-900"
-					>Email address</label
+					>Correo electrónico</label
 				>
 				<div class="mt-2">
 					<input
@@ -136,7 +136,7 @@
 		<div>
 			<div class="flex items-center justify-between">
 				<label for="password" class="block text-sm leading-6 font-medium text-gray-900"
-					>Password</label
+					>Contraseña</label
 				>
 			</div>
 			<div class="mt-2">
@@ -164,18 +164,18 @@
 				disabled={loading}
 				class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm leading-6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
 			>
-				{loading ? '...' : isLogin ? 'Sign in' : 'Create account'}
+				{loading ? '...' : isLogin ? 'Iniciar sesión' : 'Crear cuenta'}
 			</button>
 		</div>
 	</form>
 
 	<p class="mt-10 text-center text-sm text-gray-500">
-		{isLogin ? 'Not a member?' : 'Already have an account?'}
+		{isLogin ? 'No eres miembro?' : 'Ya tienes una cuenta?'}
 		<button
 			onclick={() => (isLogin = !isLogin)}
 			class="leading-6 font-semibold text-indigo-600 hover:text-indigo-500"
 		>
-			{isLogin ? 'Create an account' : 'Sign in'}
+			{isLogin ? 'Crear una cuenta' : 'Iniciar sesión'}
 		</button>
 	</p>
 </div>

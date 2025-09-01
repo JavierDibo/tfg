@@ -35,7 +35,7 @@
 </svelte:head>
 
 <div class="mx-auto my-12 max-w-2xl px-5">
-	<h1 class="mb-8 text-center text-4xl font-semibold text-gray-900">Complete Your Payment</h1>
+	<h1 class="mb-8 text-center text-4xl font-semibold text-gray-900">Completa tu pago</h1>
 
 	<PaymentForm
 		{amount}

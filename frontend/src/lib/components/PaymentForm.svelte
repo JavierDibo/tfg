@@ -62,7 +62,7 @@
 
 	// Derived values
 	const isDisabled = $derived(loading || !stripeLoaded || !paymentElementReady);
-	const buttonText = $derived(loading ? 'Processing...' : `Pay €${amount.toFixed(2)}`);
+	const buttonText = $derived(loading ? 'Procesando...' : `Pagar €${amount.toFixed(2)}`);
 
 	async function initializePayment() {
 		if (!stripeInstance) {
@@ -238,16 +238,16 @@
 
 <form onsubmit={handleSubmit} bind:this={paymentForm}>
 	<div class="mx-auto max-w-lg rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-		<h2 class="mb-6 text-center text-2xl font-semibold text-gray-900">Complete Payment</h2>
+		<h2 class="mb-6 text-center text-2xl font-semibold text-gray-900">Vas a inscribirte en {description}</h2>
 
 		<div class="mb-6 rounded-md bg-gray-50 p-4">
-			<p class="mb-2 text-gray-700"><strong>Amount:</strong> €{amount.toFixed(2)}</p>
-			<p class="text-gray-700"><strong>Description:</strong> {description}</p>
+			<p class="mb-2 text-gray-700"><strong>Importe:</strong> €{amount.toFixed(2)}</p>
+			<p class="text-gray-700"><strong>Descripción:</strong> {description}</p>
 		</div>
 
 		{#if !paymentElementReady}
 			<div class="mb-6 rounded-md border border-gray-200 bg-gray-50 p-8 text-center text-gray-500">
-				<p>Loading payment form...</p>
+				<p>Cargando el formulario de pago...</p>
 			</div>
 		{/if}
 
@@ -268,12 +268,6 @@
 		>
 			{buttonText}
 		</button>
-
-		<p
-			class="mt-4 rounded-md border border-blue-200 bg-blue-50 p-3 text-center text-sm text-blue-700"
-		>
-			💡 Your payment will be processed securely through Stripe.
-		</p>
 	</div>
 </form>
 

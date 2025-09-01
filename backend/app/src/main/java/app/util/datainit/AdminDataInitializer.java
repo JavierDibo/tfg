@@ -12,14 +12,11 @@ public class AdminDataInitializer extends BaseDataInitializer {
     @Override
     public void initialize() {
         RepositorioUsuario repositorioUsuario = context.getBean(RepositorioUsuario.class);
-        
-        // Password service is now injected automatically
-        
-        // Check if admin already exists
+
         if (repositorioUsuario.findByUsername("admin").isEmpty()) {
             Usuario admin = new Usuario(
                 "admin",
-                encodePassword("admin"), // Use the base class method for consistency
+                encodePassword("admin"),
                 "Administrador",
                 "Sistema",
                 "12345678Z",
