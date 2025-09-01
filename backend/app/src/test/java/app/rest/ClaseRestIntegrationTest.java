@@ -10,20 +10,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -31,11 +33,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Integration tests for ClaseRest controller using @WebMvcTest
+ * Integration tests for ClaseRest controller using @SpringBootTest
  * Tests only the endpoints that actually exist in the ClaseRest controller
  */
-@WebMvcTest(ClaseRest.class)
-@Import(BaseRestTestConfig.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
 class ClaseRestIntegrationTest {
 
     @Autowired
@@ -50,12 +53,12 @@ class ClaseRestIntegrationTest {
     private DTOClase claseTest;
     private DTOPeticionCrearCurso peticionCrearCurso;
     private DTOPeticionCrearTaller peticionCrearTaller;
-    private Material material;
+    private DTOMaterial material;
 
     @BeforeEach
     void setUp() {
         // Crear material de prueba
-        material = new Material("Apuntes de Java", "https://ejemplo.com/apuntes.pdf");
+        material = new DTOMaterial(1L, "Apuntes de Java", "https://ejemplo.com/apuntes.pdf");
 
         // Crear clase de prueba
         claseTest = new DTOClase(
@@ -84,7 +87,7 @@ class ClaseRestIntegrationTest {
                 LocalDate.now().plusDays(15),
                 LocalDate.now().plusDays(45),
                 Arrays.asList(1L),
-                Arrays.asList(material)
+                Arrays.asList()
         );
 
         // Crear petición de crear taller

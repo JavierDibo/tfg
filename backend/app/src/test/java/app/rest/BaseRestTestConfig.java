@@ -1,5 +1,6 @@
 package app.rest;
 
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
@@ -24,13 +25,24 @@ import app.servicios.ServicioJwt;
 @TestPropertySource(properties = {
     "spring.security.csrf.enabled=false"
 })
+@EnableAutoConfiguration(exclude = {
+    app.config.WebConfig.class,
+    app.config.ApiLoggingInterceptor.class,
+    app.config.RequestResponseLoggingFilter.class
+})
 public class BaseRestTestConfig {
     
     /**
-     * Mock for ServicioJwt which is required by the security configuration
+     * Mock for ServicioJwt which is required by the security configuration and ApiLoggingInterceptor
      */
     @MockBean
     private ServicioJwt servicioJwt;
+    
+    /**
+     * Mock for ApiLoggingInterceptor to prevent autowiring issues
+     */
+    @MockBean
+    private app.config.ApiLoggingInterceptor apiLoggingInterceptor;
     
     /**
      * Security filter chain for testing that disables CSRF and requires authentication
