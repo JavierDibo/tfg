@@ -1025,7 +1025,7 @@
 						{/if}
 
 						<!-- Mobile Logout Button -->
-						<div class="mt-4 border-t border-gray-200/50 pt-4">
+						<div class="mt-4  border-gray-200/50 pt-4">
 							<button
 								onclick={() => {
 									authStore.logout();

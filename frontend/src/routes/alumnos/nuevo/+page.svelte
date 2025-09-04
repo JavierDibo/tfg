@@ -361,7 +361,7 @@
 		</div>
 
 		<!-- Form Actions -->
-		<div class="flex justify-between space-x-4 border-t border-gray-200 pt-6">
+		<div class="flex justify-between space-x-4  border-gray-200 pt-6">
 			<div class="flex space-x-2">
 				<button
 					type="button"

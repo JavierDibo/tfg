@@ -377,7 +377,7 @@
 		<div class="flex items-center justify-center py-12">
 			<div class="text-center">
 				<div
-					class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"
+					class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-600 -transparent"
 				></div>
 				<p class="text-gray-600">Cargando ejercicios...</p>
 			</div>

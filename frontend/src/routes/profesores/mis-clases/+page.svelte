@@ -524,7 +524,7 @@
 		{#if loading}
 			<div class="py-16 text-center">
 				<div
-					class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+					class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 -blue-600"
 				></div>
 				<p class="mt-6 text-lg font-medium text-gray-600">Cargando tus clases...</p>
 			</div>
@@ -638,7 +638,7 @@
 										class="flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition-all duration-200 {activeTab ===
 										'overview'
 											? 'rounded-t-lg border-blue-500 bg-blue-50 text-blue-600'
-											: 'rounded-t-lg border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
+											: 'rounded-t-lg ransparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
 									>
 										📊 Resumen
 									</button>
@@ -647,7 +647,7 @@
 										class="flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition-all duration-200 {activeTab ===
 										'materials'
 											? 'rounded-t-lg border-blue-500 bg-blue-50 text-blue-600'
-											: 'rounded-t-lg border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
+											: 'rounded-t-lg ransparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
 									>
 										📚 Materiales
 									</button>
@@ -656,7 +656,7 @@
 										class="flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition-all duration-200 {activeTab ===
 										'exercises'
 											? 'rounded-t-lg border-blue-500 bg-blue-50 text-blue-600'
-											: 'rounded-t-lg border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
+											: 'rounded-t-lg ransparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
 									>
 										✍️ Ejercicios
 									</button>
@@ -665,7 +665,7 @@
 										class="flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition-all duration-200 {activeTab ===
 										'grading'
 											? 'rounded-t-lg border-blue-500 bg-blue-50 text-blue-600'
-											: 'rounded-t-lg border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
+											: 'rounded-t-lg ransparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
 									>
 										📝 Calificaciones
 									</button>
@@ -674,7 +674,7 @@
 										class="flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium transition-all duration-200 {activeTab ===
 										'alumnos'
 											? 'rounded-t-lg border-blue-500 bg-blue-50 text-blue-600'
-											: 'rounded-t-lg border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
+											: 'rounded-t-lg ransparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'}"
 									>
 										👥 Alumnos
 									</button>
@@ -1126,7 +1126,7 @@
 									{#if studentsLoading}
 										<div class="py-16 text-center">
 											<div
-												class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+												class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 -blue-600"
 											></div>
 											<p class="mt-6 text-lg font-medium text-gray-600">Cargando alumnos...</p>
 										</div>

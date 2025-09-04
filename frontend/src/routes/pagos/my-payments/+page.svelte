@@ -156,7 +156,7 @@
 							</div>
 
 							{#if payment.items && payment.items.length > 0}
-								<div class="mt-4 border-t border-gray-200 pt-4">
+								<div class="mt-4  border-gray-200 pt-4">
 									<h4 class="mb-2 text-sm font-medium text-gray-900">Items:</h4>
 									<div class="space-y-2">
 										{#each payment.items as item (item.id)}
@@ -172,7 +172,7 @@
 							{/if}
 
 							{#if payment.failureReason}
-								<div class="mt-4 border-t border-gray-200 pt-4">
+								<div class="mt-4  border-gray-200 pt-4">
 									<div class="flex items-center">
 										<svg class="mr-2 h-4 w-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
 											<path

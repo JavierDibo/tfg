@@ -153,7 +153,7 @@
 		<!-- Enhanced initial loading state -->
 		<div class="py-20 text-center">
 			<div
-				class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600 shadow-lg"
+				class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 -blue-600 shadow-lg"
 			></div>
 			<p class="mt-6 text-xl font-semibold text-gray-700">Cargando {entityNamePlural}...</p>
 			<p class="mt-2 text-sm text-gray-500">Por favor espera un momento</p>

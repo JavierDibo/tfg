@@ -555,7 +555,7 @@
 
 				<!-- Form Actions -->
 				<div
-					class="mt-8 flex flex-col justify-end space-y-3 border-t border-gray-200 pt-6 sm:flex-row sm:space-y-0 sm:space-x-4"
+					class="mt-8 flex flex-col justify-end space-y-3  border-gray-200 pt-6 sm:flex-row sm:space-y-0 sm:space-x-4"
 				>
 					<button
 						type="button"

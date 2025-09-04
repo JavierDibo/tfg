@@ -587,7 +587,7 @@
 			{#if loading}
 				<div class="py-16 text-center">
 					<div
-						class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+						class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 -blue-600"
 					></div>
 					<p class="mt-6 text-lg font-medium text-gray-600">Cargando perfil del alumno...</p>
 				</div>
@@ -829,7 +829,7 @@
 									</div>
 								</div>
 
-								<div class="flex justify-end space-x-4 border-t pt-8">
+								<div class="flex justify-end space-x-4  pt-8">
 									<button
 										type="button"
 										onclick={cancelEdit}
@@ -940,7 +940,7 @@
 
 							<!-- Admin Actions -->
 							{#if canChangeStatus()}
-								<div class="border-t pt-6">
+								<div class=" pt-6">
 									<h3 class="mb-4 text-lg font-semibold text-gray-900">
 										Acciones de Administrador
 									</h3>

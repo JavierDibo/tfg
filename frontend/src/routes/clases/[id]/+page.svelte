@@ -286,7 +286,7 @@
 		{#if loading}
 			<div class="py-16 text-center">
 				<div
-					class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+					class="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-blue-200 -blue-600"
 				></div>
 				<p class="mt-6 text-lg font-medium text-gray-600">Cargando detalles de la clase...</p>
 			</div>
@@ -401,7 +401,7 @@
 						{#if profesorLoading}
 							<div class="py-8 text-center">
 								<div
-									class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+									class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-200 -blue-600"
 								></div>
 								<p class="mt-4 text-gray-600">Cargando profesores...</p>
 							</div>
@@ -517,7 +517,7 @@
 					{#if ejerciciosLoading}
 						<div class="py-8 text-center">
 							<div
-								class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+								class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-200 -blue-600"
 							></div>
 							<p class="mt-4 text-gray-600">Cargando ejercicios...</p>
 						</div>
@@ -669,7 +669,7 @@
 						{#if studentsLoading}
 							<div class="py-8 text-center">
 								<div
-									class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+									class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-200 -blue-600"
 								></div>
 								<p class="mt-4 text-gray-600">Cargando estudiantes...</p>
 							</div>

@@ -178,14 +178,14 @@
 		<div class="mt-8 flex space-x-4">
 			<a
 				href="/alumnos"
-				class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+				class="inline-flex items-center rounded-md border ransparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
 			>
 				Ver Todos los Alumnos
 			</a>
 			{#if authStore.isAdmin}
 				<a
 					href="/alumnos/nuevo"
-					class="inline-flex items-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
+					class="inline-flex items-center rounded-md border ransparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
 				>
 					Nuevo Alumno
 				</a>

@@ -159,7 +159,7 @@
 								if (searchTimeout) clearTimeout(searchTimeout);
 								updateFilters({ q: localFilters.q });
 							}}
-							class="w-full rounded-lg border border-gray-300 py-3 pr-4 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
+							class="w-full rounded-lg border border-gray-300 py-3 pr-4 pl-10 focus:ransparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
 							placeholder={getGeneralSearchPlaceholder()}
 						/>
 						<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -299,7 +299,7 @@
 	</form>
 
 	<!-- Action Buttons -->
-	<div class="mt-6 flex flex-wrap gap-3 border-t pt-4">
+	<div class="mt-6 flex flex-wrap gap-3  pt-4">
 		<button
 			onclick={clearFilters}
 			class="rounded-md bg-gray-500 px-4 py-2 text-white transition-colors hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:outline-none"
