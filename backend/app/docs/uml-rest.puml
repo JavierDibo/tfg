@@ -1,150 +1,4 @@
 @startuml
-note as Fecha
-UML rest
-Ultima edicion: 26/06/25 10:47
-end note
-
-together {
-    class ServicioAlumno <<Servicio>> #eba9b0 {
-        - EntityManager em
-        + obtenerAlumnos(): List<Alumno>
-        + obtenerAlumnoPorId(id: string): Alumno
-        + obtenerAlumnoPorEmail(email: string): Alumno
-        + crearAlumno(usuario: Alumno): Alumno
-        + borrarAlumnoPorId(id: string): boolean
-    }
-
-    class RESTAlumno <<Servicio>> #c4befa {
-        + obtenerAlumnos(): List<Alumno>
-        + obtenerAlumnoPorId(id: string): Alumno
-        + obtenerAlumnoPorEmail(email: string): Alumno
-        + crearAlumno(usuario: Alumno): Alumno
-        + borrarAlumnoPorId(id: string): boolean
-    }
-
-    RESTAlumno -up-> ServicioAlumno : <<invoca>>
-}
-
-together {
-    class ServicioProfesor <<Servicio>> #eba9b0 {
-        - EntityManager em
-        + obtenerProfesors(): List<Profesor>
-        + obtenerProfesorPorId(id: string): Profesor
-        + obtenerProfesorPorEmail(email: string): Profesor
-        + crearProfesor(usuario: Profesor): Profesor
-        + borrarProfesorPorId(id: string): boolean
-    }
-
-    class RESTProfesor <<Servicio>> #c4befa {
-        + obtenerProfesores(): List<Profesor>
-        + obtenerProfesorPorId(id: string): Profesor
-        + obtenerProfesorPorEmail(email: string): Profesor
-        + crearProfesor(usuario: Profesor): Profesor
-        + borrarProfesorPorId(id: string): boolean
-    }
-
-    RESTProfesor -up-> ServicioProfesor : <<invoca>>
-}
-
-together {
-    class ServicioClase <<Servicio>> #eba9b0 {
-        - EntityManager em
-        + obtenerClases(): List<Clase>
-        + obtenerClasePorId(id: string): Clase
-        + obtenerClasePorTitulo(titulo: string): Clase
-        + crearClase(clase: Clase): Clase
-        + crearClaseDesdeLista(clases: List<Clase>): Clase
-        + borrarClasePorId(id: string): boolean
-        + borrarClasePorTitulo(titulo: string): boolean
-    }
-
-    class RESTClase <<Servicio>> #c4befa {
-        + obtenerClases(): List<Clase>
-        + obtenerClasePorId(id: string): Clase
-        + obtenerClasePorTitulo(titulo: string): Clase
-        + crearClase(clase: Clase): Clase
-        + crearClaseDesdeLista(clases: List<Clase>): Clase
-        + borrarClasePorId(id: string): boolean
-        + borrarClasePorTitulo(titulo: string): boolean
-    }
-
-    RESTClase -up-> ServicioClase : <<invoca>>
-}
-
-together {
-    class ServicioPago <<Servicio>> #eba9b0 {
-        - EntityManager em
-        __
-        + obtenerPagos(): List<Pago>
-        + obtenerPagoPorId(id: string): Pago
-        + obtenerPagoPorTitulo(titulo: string): Pago
-        + crearPago(pago: Pago): Pago
-        + crearPagoDesdeLista(clases: List<Pago>): Pago
-        + borrarPagoPorId(id: string): boolean
-        + borrarPagoPorTitulo(titulo: string): boolean
-        __
-        + registrarPagoManual(): Pago
-    }
-
-    class RESTPago <<Servicio>> #c4befa {
-        + obtenerPagos(): List<Pago>
-        + obtenerPagoPorId(id: string): Pago
-        + obtenerPagoPorTitulo(titulo: string): Pago
-        + crearPago(pago: Pago): Pago
-        + crearPagoDesdeLista(clases: List<Pago>): Pago
-        + borrarPagoPorId(id: string): boolean
-        + borrarPagoPorTitulo(titulo: string): boolean
-    }
-
-    RESTPago -up-> ServicioPago : <<invoca>>
-}
-
-together {
-    class ServicioEjercicio <<Servicio>> #eba9b0 {
-        - EntityManager em
-        + obtenerEjercicios(): List<Ejercicio>
-        + obtenerEjercicioPorId(id: string): Ejercicio
-        + obtenerEjercicioPorNombre(nombre: string): Ejercicio
-        + crearEjercicio(ejercicio: Ejercicio): Ejercicio
-        + borrarEjercicioPorId(id: string): boolean
-        + borrarEjercicioPorNombre(nombre: string): boolean
-    }
-
-    class RESTEjercicio <<Servicio>> #c4befa {
-        + obtenerEjercicios(): List<Ejercicio>
-        + obtenerEjercicioPorId(id: string): Ejercicio
-        + obtenerEjercicioPorNombre(nombre: string): Ejercicio
-        + crearEjercicio(ejercicio: Ejercicio): Ejercicio
-        + borrarEjercicioPorId(id: string): boolean
-        + borrarEjercicioPorNombre(nombre: string): boolean
-    }
-
-    RESTEjercicio -up-> ServicioEjercicio : <<invoca>>
-}
-
-together {
-    class ServicioEntregaEjercicio <<Servicio>> #eba9b0 {
-        - EntityManager em
-        + obtenerEntregasEjercicio(): List<EntregaEjercicio>
-        + obtenerEntregasEjercicioPorAlumnoId(): List<EntregaEjercicio>
-        + obtenerEntregaEjercicioPorId(id: string): EntregaEjercicio
-        + obtenerEntregaEjercicioPorAlumno(alumnoId: string): List<EntregaEjercicio>
-        + crearEntregaEjercicio(entrega: EntregaEjercicio): EntregaEjercicio
-        + borrarEntregaEjercicioPorId(id: string): boolean
-    }
-
-    class RESTEntregaEjercicio <<Servicio>> #c4befa {
-        + obtenerEntregasEjercicio(): List<EntregaEjercicio>
-        + obtenerEntregasEjercicioPorAlumnoId(): List<EntregaEjercicio>
-        + obtenerEntregaEjercicioPorId(id: string): EntregaEjercicio
-        + obtenerEntregaEjercicioPorAlumno(alumnoId: string): List<EntregaEjercicio>
-        + crearEntregaEjercicio(entrega: EntregaEjercicio): EntregaEjercicio
-        + borrarEntregaEjercicioPorId(id: string): boolean
-    }
-
-    RESTEntregaEjercicio -up-> ServicioEntregaEjercicio : <<invoca>>
-}
-
 namespace clase {
 
     abstract class Clase <<Entidad>>  #baf5ba {
@@ -155,12 +9,6 @@ namespace clase {
       - presencialidad : ePresencialidad
       - imagenPortada : string
       - nivel : eNivel
-      ..
-      - alumnosId: List<string>
-      - profesoresId: List<string>
-      - ejerciciosId: List<string>
-      __
-      - material: List<Material>
     }
 
     class Taller <<Entidad>> #baf5ba extends Clase  {
@@ -208,15 +56,11 @@ namespace usuario {
     }
 
     class Profesor <<Entidad>> #baecf5 extends Usuario  {
-      - clasesId: List<string>
     }
 
     class Alumno <<Entidad>> #baecf5 extends Usuario {
       - fechaInscripcion: LocalDateTime
       - matriculado: boolean
-      - clasesId: List<string>
-      - pagosId: List<string>
-      - entregasId: List<string>
     }
 
     class Administrador <<Entidad>> #baecf5 extends Usuario {
@@ -238,18 +82,12 @@ namespace usuario {
     anual pagada una vez por año
     end note
 
-    N . Alumno::matriculado
+    N . Alumno
     Administrador -up[hidden]- N
 }
 
 ' usuario
 namespace pago {
-
-    class FactoriaFacturacion <<Factoria>> #ffd5ba {
-        ~ crearFacturaDesdePago()
-        ~ crearFacturasDesdeListaPago()
-        ~ crearTodasLasFacturas()
-    }
 
     class Pago <<Entidad>> #ffd5ba {
       - id: string
@@ -258,9 +96,6 @@ namespace pago {
       - metodoPago : eMetodoPago
       - estado: eEstadoPago
       - alumnoId: string
-      - facturaCreada: boolean
-      ..
-      - items: List<ItemPago>
     }
 
     class ItemPago <<Agregado>> #ffd5ba {
@@ -310,10 +145,6 @@ namespace ejercicio {
       - enunciado: string
       - fechaInicioPlazo: LocalDateTime
       - fechaFinalPlazo: LocalDateTime
-      ..
-      - claseId: string
-      __
-      - entregas: List<EntregaEjercicio>
     }
 
     class EntregaEjercicio <<Entidad>> #ffdbfe {
@@ -321,10 +152,6 @@ namespace ejercicio {
       - nota: float
       - fechaEntrega: LocalDateTime
       - estado: eEstadoEjercicio
-      - archivosEntregados: List<File>
-      ..
-      - alumnoEntreganteId: string
-      - ejercicioId: string
     }
 
     enum eEstadoEjercicio #ffdbfe {
@@ -333,18 +160,6 @@ namespace ejercicio {
       calificado
     }
 }
-
-' Relaciones
-Profesor --> ServicioClase
-Alumno --> ServicioClase
-Alumno --> ServicioEntregaEjercicio
-Alumno --> ServicioPago
-Pago --> ServicioAlumno
-Clase --> ServicioProfesor
-Clase --> ServicioAlumno
-Clase --> ServicioEjercicio
-Ejercicio --> ServicioClase
-EntregaEjercicio --> ServicioAlumno
 
 Clase::material *- Material
 EntregaEjercicio -- Ejercicio
@@ -356,7 +171,5 @@ ePresencialidad .. Clase
 eNivel .. Clase
 eEstadoPago .. Pago
 eEstadoEjercicio .. EntregaEjercicio
-
-RESTEntregaEjercicio -left[hidden]- RESTClase
 
 @enduml

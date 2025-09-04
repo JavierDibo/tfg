@@ -238,7 +238,9 @@
 
 <form onsubmit={handleSubmit} bind:this={paymentForm}>
 	<div class="mx-auto max-w-lg rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-		<h2 class="mb-6 text-center text-2xl font-semibold text-gray-900">Vas a inscribirte en {description}</h2>
+		<h2 class="mb-6 text-center text-2xl font-semibold text-gray-900">
+			Vas a inscribirte en {description}
+		</h2>
 
 		<div class="mb-6 rounded-md bg-gray-50 p-4">
 			<p class="mb-2 text-gray-700"><strong>Importe:</strong> €{amount.toFixed(2)}</p>

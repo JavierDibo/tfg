@@ -797,7 +797,9 @@
 		<!-- File Viewer Modal -->
 		{#if fileViewerOpen && selectedFile}
 			<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-				<div class="relative max-h-[90vh] min-w-[500px] max-w-[95vw] rounded-lg bg-white p-6 shadow-xl">
+				<div
+					class="relative max-h-[90vh] max-w-[95vw] min-w-[500px] rounded-lg bg-white p-6 shadow-xl"
+				>
 					<!-- Header -->
 					<div class="mb-4 flex items-center justify-between">
 						<h3 class="text-lg font-semibold text-gray-900">
@@ -847,7 +849,7 @@
 								<object
 									data={selectedFile}
 									type="application/pdf"
-									class="h-[70vh] min-w-[500px] w-full rounded-lg border"
+									class="h-[70vh] w-full min-w-[500px] rounded-lg border"
 									title="PDF Viewer"
 								>
 									<p>
